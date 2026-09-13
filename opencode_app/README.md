@@ -87,13 +87,13 @@ docker compose up -d
 The merge runs **after** `resolve-models.mjs` and only merges each pack's `mcp` + `permissions` keys (setting `mcp.servers.<name>.disabled: false` and appending `permissions`-array allow rules `{ "action": "<ns>*", "resource": "*", "effect": "allow" }`; the autodesk pack also carries the full server definitions since they are not in the base config) — it never turns an already-on server off, never touches the `plugins` array or `agents` block. Verify post-build:
 
 ```bash
-docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp['autodesk-revit'].enabled)"
-# Expected: true
+docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp.servers['autodesk-revit'].disabled)"
+# Expected: false
 ```
 
 User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README.md` § Provider Packs).
 
-> **Telemetry hardening — opt-in MCP servers ship with analytics pre-disabled.** `chrome-devtools` (`--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers`, `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1`) and `next-devtools` (`NEXT_TELEMETRY_DISABLED=1`) are hardened in `opencode.json` so `enabled: true` is safe without further edits. See root `README.md` § MCP Servers for the full rationale.
+> **Telemetry hardening — opt-in MCP servers ship with analytics pre-disabled.** `chrome-devtools` (`--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers`, `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1`) and `next-devtools` (`NEXT_TELEMETRY_DISABLED=1`) are hardened in `opencode.json` so `disabled: false` is safe without further edits. See root `README.md` § MCP Servers for the full rationale.
 
 ## Security
 
@@ -149,7 +149,7 @@ See the main `README.md` for full details on MCP tools, supported languages, and
 
 The privacy-hardened `markitdown` MCP launcher is **baked into the Docker image at build time** via `/opt/python-env/bin/pip install /app/mcp-servers/markitdown-local-mcp` (Dockerfile line 71). The `markitdown-local-mcp` binary lands in `/opt/python-env/bin`, which is already on `PATH` via the `ENV PATH="/opt/python-env/bin:${PATH}"` directive (Dockerfile line 33) — no entrypoint changes needed.
 
-The server ships as `enabled: false` (opt-in). To enable inside the container, edit `opencode_app/opencode.json` and flip `markitdown.enabled` to `true`, then rebuild.
+The server ships as `disabled: true` (opt-in). To enable inside the container, edit `opencode_app/opencode.json` and set `mcp.servers.markitdown.disabled` to `false`, then rebuild.
 
 **Privacy guarantees** (see [`opencode_app/mcp-servers/markitdown-local-mcp/README.md`](mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis):
 - Structural dep exclusion — no `markitdown[all]`, no `azure-*`, no `SpeechRecognition`, no `youtube-transcript-api` installed

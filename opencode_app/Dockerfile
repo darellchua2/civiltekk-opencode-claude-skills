@@ -92,14 +92,17 @@ path = "/app/opencode.json"
 with open(path) as f:
     cfg = json.load(f)
 providers = cfg.get("providers", {})
+patched = []
 if "local-llm" in providers:
     providers["local-llm"].setdefault("settings", {})["baseURL"] = "http://llm-server:8080/v1"
+    patched.append("local-llm")
 if "vllm" in providers:
     providers["vllm"].setdefault("settings", {})["baseURL"] = "http://vllm-server:8000/v1"
+    patched.append("vllm")
 with open(path, "w") as f:
     json.dump(cfg, f, indent=2)
-if providers:
-    print("Patched local-llm/vllm baseURLs for Docker networking")
+if patched:
+    print("Patched baseURLs for Docker networking:", ", ".join(patched))
 PYEOF
 
 RUN chmod +x /app/docker-entrypoint.sh \

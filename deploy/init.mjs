@@ -948,14 +948,14 @@ FLAGS
   --dry-run            preview the install manifest, write nothing
   --force              overwrite conflicting files opencode-init didn't write
   --prune              remove opencode-init-owned entries absent from the new set
-  --permit             (user scope) backup config.json + merge permission entries only
+  --permit             (user scope) backup config.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
   --format <f>         (add) target format: opencode (default), claude, or both
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and
   <project>/.opencode. User-scope 'add' is a pure file-drop (auto-discovered);
-  --permit backs up config.json then merges only permissions-array skill rules.
+  --permit backs up config.json then merges permissions-array rules: skill-allow entries plus agents.build subagent rules (deny-all-first seed incl. explore/general when absent or v1-shaped).
 `);
 }
 

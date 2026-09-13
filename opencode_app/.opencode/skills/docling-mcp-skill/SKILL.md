@@ -66,7 +66,7 @@ For users who want docling always available without per-session CLI installs:
 ./deploy/setup.sh --enable-pack docling
 ```
 
-This installs `docling-mcp[local]` (the MCP server wrapper) and flips `mcp.docling.enabled: true` + the root-level `permission` pattern `"docling*": "allow"` in `opencode.json`. After an opencode restart, `docling*` tools register and are callable directly.
+This installs `docling-mcp[local]` (the MCP server wrapper) and sets `mcp.servers.docling.disabled: false` + appends the `permissions` rule `{ "action": "docling*", "resource": "*", "effect": "allow" }` in `opencode.json`. After an opencode restart, `docling*` tools register and are callable directly.
 
 Use the MCP tier when: you process complex/scanned PDFs regularly and want zero per-session friction. Use CLI-on-demand when: you only need it occasionally and don't want a persistent 3-4 GB dependency.
 

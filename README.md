@@ -185,7 +185,7 @@ npx github:darellchua2/opencode-config-template add solid-principles-skill
 
 | Scope | Flag | Destination | Config touch |
 |-------|------|-------------|--------------|
-| **User** (default) | *(none)* | `~/.config/opencode/{skills,agents}/` | None — opencode auto-discovers. `--permit` opts into backup+merge of skill-allow rules (`action:"skill"` entries in the `permissions` array) only. |
+| **User** (default) | *(none)* | `~/.config/opencode/{skills,agents}/` | None — opencode auto-discovers. `--permit` opts into backup+merge of `permissions`-array rules: skill allows (`action:"skill"`) plus build's subagent rules (deny-all-first seed incl. explore/general). |
 | **Project** | `--project [dir]` | `./.opencode/{skills,agents}/` | Full generation: `opencode.json` + `models.json` + `AGENTS.md` (existing `opencode-init` behavior). |
 
 MCPs are **never auto-merged** at user scope — the installer prints the snippet for manual paste (or use `--project` for full-service generation).
@@ -335,7 +335,7 @@ The configuration ships 8 MCP server entries. **3 are enabled by default:**
 | `zai-web-reader` | remote | Web page content extraction |
 | `zai-web-search` | remote | Web search with cited results (GIT-336) |
 
-The remaining 5 are `enabled: false` and opt-in:
+The remaining 5 ship `disabled: true` and are opt-in:
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -373,7 +373,7 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 |------|------------------|----------|
 | `voice` | [@renjfk/opencode-voice](https://github.com/renjfk/opencode-voice) — local speech-to-text (`ctrl+r` to record, `leader+r` to submit; `/stt-mic` picks the mic) into cli.json; also clobbers `session_rename` so `ctrl+r` works | sox + whisper.cpp (`setup.sh` auto-detects GPU vs CPU: brew+Metal on macOS; on Linux — CUDA build when `nvidia-smi` + `nvcc` are present, ROCm/HIP build when `rocminfo` is present, Vulkan build when `vulkaninfo` + `glslc` are present, CPU otherwise, with an optional ROCm install assist for AMD GPUs; NPU/iGPU paths — AMD Ryzen AI 300/400 auto-builds whisper.cpp with VitisAI NPU offload when `xrt-smi` sees the NPU (needs XRT + FlexML runtimes; `.rai` encoder cache fetched alongside the model), Intel GPU/NPU builds with OpenVINO when `/opt/intel/openvino*` + the NPU/iGPU are present (encoder runs on the Arc iGPU — NPU device is broken on Linux, whisper.cpp#2929; Vulkan remains the light cross-vendor fallback); server alternatives wired via the plugin's `sttEndpoint`: [Lemonade Server](https://lemonade-server.ai) (AMD NPU) or [OpenVINO Model Server](https://docs.openvino.ai/2025/model-server/ovms_demos_audio.html)) and suggests a matching model (large-v3-turbo on modern GPUs/Metal/AMD ROCm/Vulkan, medium on older GPUs, small on CPU-only); normalization LLM defaults to local Ollama — edit `endpoint`/`model` in the deployed cli.json for any OpenAI-compatible API; optional Piper TTS for spoken responses. macOS/Linux only |
 
-The plugin array merges **by plugin name** — re-runs replace in place and never touch your other plugins. On Docker, the `tui` merge is skipped with a warning (containers have no microphone).
+The cli.json `plugins` array merges **by package name** — re-runs replace in place and never touch your other plugins. On Docker, the cli.json merge is skipped with a warning (containers have no microphone).
 
 ```bash
 # User-space deploy (setup.sh)
@@ -393,7 +393,7 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 
 #### Skill Profiles — deploy-time primary visibility (#333)
 
-Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (104 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 45 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session at ~90 tokens/description).
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (105 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 46 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session at ~90 tokens/description).
 
 ```bash
 ./deploy/setup.sh                                # default: lean (46 primary-visible skills)
@@ -414,7 +414,7 @@ Key properties:
 
 > **Note — `filesystem` MCP server has been permanently removed.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` was redundant and caused tool-selection ambiguity (the model would call `read_mcp_resource` instead of the built-in `Read` tool). Do not re-add it to project `opencode.json` files.
 
-> **Note — opt-in MCP servers ship with telemetry pre-disabled.** Two of the disabled-by-default servers phone home analytics when naively enabled; both are hardened in `opencode.json` so flipping `enabled: true` is safe without further edits:
+> **Note — opt-in MCP servers ship with telemetry pre-disabled.** Two of the disabled-by-default servers phone home analytics when naively enabled; both are hardened in `opencode.json` so setting `disabled: false` is safe without further edits:
 >
 > - **`chrome-devtools`** — Google's `chrome-devtools-mcp` sends usage statistics and Chrome UX Report (CrUX) trace URLs to Google **by default**, plus polls the npm registry for updates. Hardened with `--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers` (strips sensitive request headers before they reach the LLM), and `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1` (kills the update poll).
 > - **`next-devtools`** — Vercel's `next-devtools-mcp` collects anonymous telemetry (tool names, error events, session metadata) by default, storing a local client ID in `~/.next-devtools-mcp/`. Hardened with `NEXT_TELEMETRY_DISABLED=1`.
@@ -485,7 +485,7 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 
 ## Secret Masking (vibeguard)
 
-Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic — the LLM provider never sees plaintext secret values, but tools (bash, write, etc.) receive real values at execution time. It is the **universal masking layer** covering all agents (primary + subagents), regardless of individual `permission.read` overrides.
+Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic — the LLM provider never sees plaintext secret values, but tools (bash, write, etc.) receive real values at execution time. It is the **universal masking layer** covering all agents (primary + subagents), regardless of individual `read` deny rules in their `permissions` arrays.
 
 **How it works:** regex patterns in `vibeguard.config.json` match known secret shapes (API keys, tokens, passwords, connection strings, PEM blocks, JWTs). Matched values are replaced with `__VG_…__` placeholders in LLM requests and restored at tool-execution time via a per-session map.
 

@@ -146,3 +146,39 @@ print('ok')"
   run bash -c "$INIT --project '$TMP_PROJ' --preset core --dry-run 2>&1 >/dev/null"
   echo "$output" | grep -qi "GLOBAL DEPLOY DETECTED"
 }
+
+@test "--permit seeds deny-all-first build subagent rules incl. explore/general (v2)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME"
+  $INIT add code-review-subagent --permit --yes >/dev/null 2>&1
+  local cfg="$HOME/.config/opencode/config.json"
+  [ -f "$cfg" ]
+  jq_get "json.dumps(d['agents']['build']['permissions'][0])" < "$cfg" > "$TMP_PROJ/first.json"
+  grep -q '"action": "subagent"' "$TMP_PROJ/first.json"
+  grep -q '"resource": "\*"' "$TMP_PROJ/first.json"
+  grep -q '"effect": "deny"' "$TMP_PROJ/first.json"
+  jq_get "any(r['resource'] == 'explore' and r['effect'] == 'allow' for r in d['agents']['build']['permissions'])" < "$cfg" | grep -q True
+  jq_get "any(r['resource'] == 'general' and r['effect'] == 'allow' for r in d['agents']['build']['permissions'])" < "$cfg" | grep -q True
+  jq_get "any(r['resource'] == 'code-review-subagent' and r['effect'] == 'allow' for r in d['agents']['build']['permissions'])" < "$cfg" | grep -q True
+}
+
+@test "--permit does not inject explore/general into existing v2 permissions arrays" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME/.config/opencode"
+  cat > "$HOME/.config/opencode/config.json" <<'EOC'
+{
+  "permissions": [],
+  "agents": {
+    "build": {
+      "permissions": [
+        { "action": "subagent", "resource": "*", "effect": "allow" }
+      ]
+    }
+  }
+}
+EOC
+  $INIT add code-review-subagent --permit --yes >/dev/null 2>&1
+  local cfg="$HOME/.config/opencode/config.json"
+  jq_get "len([r for r in d['agents']['build']['permissions'] if r['resource'] == 'explore'])" < "$cfg" | grep -q '^0$'
+  jq_get "len([r for r in d['agents']['build']['permissions'] if r['resource'] == 'code-review-subagent'])" < "$cfg" | grep -q '^1$'
+}

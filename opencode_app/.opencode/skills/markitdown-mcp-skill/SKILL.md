@@ -11,7 +11,7 @@ category: Configuration
 ## What this skill does
 
 - Documents the `markitdown` MCP server and its single tool `convert_to_markdown`
-- Provides `opencode.json` configuration (both `mcp` and `permission` blocks)
+- Provides `opencode.json` configuration (the `mcp.servers` entry and `permissions` rule)
 - Prescribes a decision tree for choosing markitdown vs `image-analyzer-subagent` vs `pdf-specialist-skill` vs `pdftotext` vs built-in `Read`
 - Covers usage patterns (large docs, batch conversion, table post-processing)
 - Documents privacy guarantees for company-internal document handling
@@ -23,10 +23,10 @@ category: Configuration
 
 | Requirement                                                          | Status                                                  |
 | -------------------------------------------------------------------- | ------------------------------------------------------- |
-| `markitdown` MCP server in `opencode.json` `mcp` block                | Required for MCP tool access                            |
+| `markitdown` MCP server in `opencode.json` `mcp.servers` block        | Required for MCP tool access                            |
 | `markitdown-local-mcp` binary on PATH                                | Installed via `./deploy/setup.sh` (pip) or baked into Docker |
-| `mcp.markitdown.enabled: true` in `opencode.json`                     | **Currently default `false`** — user must opt in (#262)  |
-| `permission."markitdown*": "allow"` in `opencode.json`                | **Currently default `deny`** — user must opt in (#262)   |
+| `mcp.servers.markitdown.disabled: false` in `opencode.json`          | **Ships `disabled: true`** — user must opt in (#262)     |
+| `permissions` rule `{ "action": "markitdown*", "resource": "*", "effect": "allow" }` | **No rule by default** — user must opt in (#262) |
 
 If any requirement is unmet, MCP tool calls return connection errors. Fall back to `pdftotext`, `image-analyzer-subagent`, or built-in `Read` (see **Fallback Strategy** below).
 
@@ -186,14 +186,14 @@ After markitdown conversion, if the document contains charts/diagrams referenced
 
 Three gates, all required:
 - `markitdown-local-mcp` binary on PATH (`--enable-pack markitdown` installs it)
-- `mcp.markitdown.enabled: true` in the deployed config
-- `permission."markitdown*": "allow"` (root-level pattern, string enum)
+- `mcp.servers.markitdown.disabled: false` in the deployed config
+- `permissions` rule `{ "action": "markitdown*", "resource": "*", "effect": "allow" }` (last matching rule wins)
 
 Missing any one leaves the MCP unreachable or its tools denied. Verify with `opencode mcp list` (should show `markitdown` connected) and restart opencode after config edits — there is no hot-reload.
 
 ### Tool denied after upgrading from pre-#370 deploys
 
-Earlier releases carried the opt-in denies under a nested `permission.tool` key, which opencode's permission engine never read — so hand-enabled servers worked despite the "deny". Those denies now live at the `permission` root and **enforce**. If you enabled markitdown/docling/next-devtools by hand, set the matching root pattern to `"allow"` (or re-run `--enable-pack <name>`).
+Earlier releases carried the opt-in denies under a nested `permission.tool` key, which opencode's permission engine never read — so hand-enabled servers worked despite the "deny". Under v2 the denies are `permissions`-array rules and **enforce**. If you enable markitdown/docling/next-devtools by hand, make sure no later deny rule shadows your allow (last matching rule wins) — or re-run `--enable-pack <name>`.
 
 ### `markitdown-local-mcp: command not found`
 

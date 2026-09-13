@@ -280,7 +280,7 @@ grep -q "^description:" "skills/<skill-name>/SKILL.md" || echo "Warning: Missing
 
 ### Configuring Skill Permissions
 
-Skills can be controlled via permissions in agent configurations. Use `permission.skill` in agent frontmatter or config.json:
+Skills can be controlled via permissions in agent configurations: frontmatter (legacy `permission.skill` map spelling — opencode v2 auto-translates) or the v2 `permissions` array in config.json:
 
 **For custom agents (markdown frontmatter)**:
 ```yaml
@@ -395,7 +395,7 @@ edit filePath="PLAN.md" oldString="old text" newString="new text"
 
 ## Configuring Agent Access to Skills
 
-When creating skills, consider how agents will access them. Use `permission.skill` in agent configurations:
+When creating skills, consider how agents will access them. Use skill rules (`action:"skill"`) in the `permissions` array (config.json) or agent frontmatter:
 
 **Pattern-based Permissions**:
 
