@@ -30,34 +30,36 @@ category: Configuration
 
 If any requirement is unmet, MCP tool calls return connection errors. Fall back to `pdftotext`, `image-analyzer-subagent`, or built-in `Read` (see **Fallback Strategy** below).
 
-**Privacy note:** markitdown is privacy-safe for local files — the `markitdown-local-mcp` fork's `pyproject.toml` trust boundary installs only `markitdown[pdf,docx,pptx,xlsx,xls,outlook]` (no azure/speech/youtube extras), so conversion is fully local with zero phone-home network calls. Opt-in (`enabled: false` by default per #262) is a choice of minimal default footprint, not a privacy concern.
+**Privacy note:** markitdown is privacy-safe for local files — the `markitdown-local-mcp` fork's `pyproject.toml` trust boundary installs only `markitdown[pdf,docx,pptx,xlsx,xls,outlook]` (no azure/speech/youtube extras), so conversion is fully local with zero phone-home network calls. Opt-in (`disabled: true` by default per #262) is a choice of minimal default footprint, not a privacy concern.
 
 ## opencode.json Configuration
 
-The markitdown MCP server ships as opt-in (`enabled: false`) per [#262](https://github.com/darellchua2/opencode-config-template/issues/262). To enable:
+The markitdown MCP server ships as opt-in (`disabled: true`) per [#262](https://github.com/darellchua2/opencode-config-template/issues/262). To enable:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "markitdown": {
-      "type": "local",
-      "command": ["markitdown-local-mcp"],
-      "environment": {
-        "MARKITDOWN_ENABLE_PLUGINS": "false"
-      },
-      "enabled": true
+    "servers": {
+      "markitdown": {
+        "type": "local",
+        "command": ["markitdown-local-mcp"],
+        "environment": {
+          "MARKITDOWN_ENABLE_PLUGINS": "false"
+        },
+        "disabled": false
+      }
     }
   },
-  "permission": {
-    "markitdown*": "allow"
-  }
+  "permissions": [
+    { "action": "markitdown*", "resource": "*", "effect": "allow" }
+  ]
 }
 ```
 
 **Both flips are required:**
-1. `mcp.markitdown.enabled: true` — starts the server process
-2. `permission."markitdown*": "allow"` — grants tool-calling permission. Patterns sit **directly under the `permission` root**; the legacy top-level `tools` boolean map is deprecated since opencode v1.1.1, and a nested `permission.tool` key matches nothing.
+1. `mcp.servers.markitdown.disabled: false` — starts the server process
+2. `permissions` rule `{ "action": "markitdown*", "resource": "*", "effect": "allow" }` — grants tool-calling permission. Rules live in the top-level `permissions` array (last matching rule wins); a legacy `permission` map key is ignored by opencode v2.
 
 The sanctioned path does both flips and installs the launcher in one step: `./deploy/setup.sh --enable-pack markitdown` (Linux/macOS) or `.\deploy\setup.ps1 --enable-pack markitdown` (Windows). Manual editing of the deployed config works too. Docker users get the launcher baked in at build time.
 

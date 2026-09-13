@@ -84,7 +84,7 @@ docker compose up -d
 | `nextjs` | next-devtools (1) | `--build-arg OPENCODE_PACKS=nextjs` |
 | `chrome-devtools` | chrome-devtools (1) | `--build-arg OPENCODE_PACKS=chrome-devtools` (privacy-hardened: telemetry + CrUX OFF; needs Chrome in image) |
 
-The merge runs **after** `resolve-models.mjs` and only merges each pack's `mcp` + `permission` keys (flipping `enabled` ON and setting the root pattern `permission."<ns>*": "allow"`; the autodesk pack also carries the full server definitions since they are not in the base config) — it never turns an already-on server off, never touches the `plugin` array or `agent` block. Verify post-build:
+The merge runs **after** `resolve-models.mjs` and only merges each pack's `mcp` + `permissions` keys (setting `mcp.servers.<name>.disabled: false` and appending `permissions`-array allow rules `{ "action": "<ns>*", "resource": "*", "effect": "allow" }`; the autodesk pack also carries the full server definitions since they are not in the base config) — it never turns an already-on server off, never touches the `plugins` array or `agents` block. Verify post-build:
 
 ```bash
 docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp['autodesk-revit'].enabled)"
@@ -176,7 +176,7 @@ The Dockerfile already installs LibreOffice; no additional setup needed.
 
 ## Subagent Chaining
 
-OpenCode supports subagent-to-subagent delegation via the Task tool, controlled by the `permission.task` frontmatter field in each agent `.md` file. Key points:
+OpenCode supports subagent-to-subagent delegation via the Task tool, controlled by the subagent-spawn permission in each agent `.md` frontmatter (legacy `permission.task` spelling — v2 auto-translates). Key points:
 
 - **Task tool** (subagent spawning) and **Skill tool** (skill loading) are separate systems with separate permissions
 - Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)

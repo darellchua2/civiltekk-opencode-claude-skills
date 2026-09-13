@@ -223,7 +223,8 @@ async function main() {
     if (!pack || typeof pack !== "object") {
       die(`Pack ${name} is not a JSON object: ${file}`);
     }
-    const { cli, mcp, permissions, ...restPack } = pack;
+    // $comment is pack metadata — never merge it into the deployed config
+    const { cli, mcp, permissions, $comment, ...restPack } = pack;
     if (Object.keys(restPack).length > 0) deepMerge(config, restPack);
     if (mcp && typeof mcp === "object") {
       // v2 pack fragments are { servers: { name: {...} } }; merge into config.mcp.

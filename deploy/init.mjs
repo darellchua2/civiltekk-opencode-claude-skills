@@ -689,7 +689,12 @@ async function permitMerge(sel) {
   if (!config.agents.build || typeof config.agents.build !== "object") config.agents.build = {};
   if (!Array.isArray(config.agents.build.permissions)) {
     // v1 map (or absent) under v2 — re-seed deny-all-first, matching the generator
-    config.agents.build.permissions = [{ action: "subagent", resource: "*", effect: "deny" }];
+    // (incl. explore/general allows, so build keeps spawning the built-ins)
+    config.agents.build.permissions = [
+      { action: "subagent", resource: "*", effect: "deny" },
+      { action: "subagent", resource: "explore", effect: "allow" },
+      { action: "subagent", resource: "general", effect: "allow" },
+    ];
   }
   const sub = config.agents.build.permissions;
   for (const stem of sel.agents) {

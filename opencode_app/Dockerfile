@@ -66,9 +66,9 @@ RUN node /app/deploy/resolve-models.mjs \
         --state /tmp/.resolved-models.json \
     && rm -f /tmp/.resolved-models.json
 
-# Provider packs (#268): flip mcp.<server>.enabled + set root permission
-# named packs (comma-separated, e.g. --build-arg OPENCODE_PACKS=autodesk);
-# the permission allow pattern is "<ns>*": "allow" at the config root.
+# Provider packs (#268): set mcp.servers.<server>.disabled:false + append
+# permissions-array allow rules ({action:"<ns>*",resource:"*",effect:"allow"});
+# named packs (comma-separated, e.g. --build-arg OPENCODE_PACKS=autodesk).
 # Runs AFTER resolve-models so it merges into the resolved /app/opencode.json.
 # Empty OPENCODE_PACKS is a true no-op (merge-packs.mjs exits 0, writes nothing).
 RUN if [ -n "$OPENCODE_PACKS" ]; then \
@@ -98,7 +98,8 @@ if "vllm" in providers:
     providers["vllm"].setdefault("settings", {})["baseURL"] = "http://vllm-server:8000/v1"
 with open(path, "w") as f:
     json.dump(cfg, f, indent=2)
-print("Patched local-llm/vllm baseURLs for Docker networking")
+if providers:
+    print("Patched local-llm/vllm baseURLs for Docker networking")
 PYEOF
 
 RUN chmod +x /app/docker-entrypoint.sh \

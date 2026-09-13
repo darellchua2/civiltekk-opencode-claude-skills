@@ -38,15 +38,17 @@ Add the `next-devtools` MCP server to your project `opencode.json`:
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "next-devtools": {
-      "type": "local",
-      "command": ["npx", "-y", "next-devtools-mcp@latest"],
-      "enabled": true
+    "servers": {
+      "next-devtools": {
+        "type": "local",
+        "command": ["npx", "-y", "next-devtools-mcp@latest"],
+        "disabled": false
+      }
     }
   },
-  "permission": {
-    "next-devtools*": "allow"
-  }
+  "permissions": [
+    { "action": "next-devtools*", "resource": "*", "effect": "allow" }
+  ]
 }
 ```
 

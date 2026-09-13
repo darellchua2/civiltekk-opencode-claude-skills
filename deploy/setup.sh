@@ -342,7 +342,7 @@ FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
 ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,docling,chrome-devtools)
-SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 45 skills; full = shipped 104 verbatim)
+SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 46 skills; full = shipped 105 verbatim)
 ENABLE_LOCAL_LLM=false   # --enable-local-llm (gemma-4-E4B via llama.cpp, requires NVIDIA GPU)
 ENABLE_VLLM=false        # --enable-vllm (vLLM Docker server, requires >12GB VRAM)
 
@@ -588,11 +588,11 @@ USAGE:
 
   SKILL PROFILE (deploy-time primary visibility):
     --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
-                           config's skill permissions (permissions array) to 45
+                           config's skill permissions (permissions array) to 46
                            primary-visible
                            skills + "*": "deny" (subagents unaffected — they
                            self-scope via frontmatter allows); full deploys the
-                           shipped 104-allow allowlist verbatim.
+                           shipped 105-allow allowlist verbatim.
 
   LOCAL LLM (gemma-4-E4B via llama.cpp in Docker):
     --enable-local-llm   Install local LLM inference server. Requires NVIDIA GPU,
@@ -3556,8 +3556,8 @@ deploy_plugins() {
 # Apply the skill profile (GIT-333): rewrites ONLY the skill rules
 # (action:"skill") inside the permissions array of the DEPLOYED config
 # (never the source opencode_app/opencode.json).
-#   lean (default) -> 45 primary-visible skills + "*": "deny"
-#   full           -> verified no-op (shipped 104-allow allowlist stays verbatim)
+#   lean (default) -> 46 primary-visible skills + "*": "deny"
+#   full           -> verified no-op (shipped 105-allow allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
 # stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
 run_skill_profile() {

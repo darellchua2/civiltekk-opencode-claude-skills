@@ -295,17 +295,15 @@ permission:
 ---
 ```
 
-**For built-in agents (config.json)**:
+**For built-in agents (config.json)** — v2 `permissions` array (last matching rule wins; deny rules first, allows after):
 ```json
 {
-  "agent": {
+  "agents": {
     "plan": {
-      "permission": {
-        "skill": {
-          "*": "allow",
-          "internal-*": "deny"
-        }
-      }
+      "permissions": [
+        { "action": "skill", "resource": "*", "effect": "allow" },
+        { "action": "skill", "resource": "internal-*", "effect": "deny" }
+      ]
     }
   }
 }
@@ -316,7 +314,7 @@ Permission behaviors:
 - `deny`: Skill hidden from agent, access rejected
 - `ask`: User prompted for approval before loading
 
-Note: The legacy `tools: skill: false` approach is deprecated. Use `permission.skill` instead.
+Note: The legacy `tools: skill: false` approach is deprecated. Use skill rules (`action:"skill"`) in the `permissions` array (config) or agent frontmatter instead — frontmatter still uses the legacy `permission.skill` map spelling, which opencode v2 auto-translates.
 
 ## Common Issues
 
