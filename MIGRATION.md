@@ -31,9 +31,10 @@ migration, and how to revert.
   the base config — the `autodesk` provider pack now carries their full
   definitions (`--enable-pack autodesk`, needs `AUTODESK_API_KEY`).
   Enable per-project by
-  adding `<repo>/opencode.json` with `{"mcp":{"atlassian":{"enabled":true}}}`
+  adding `<repo>/opencode.json` with `{"mcp":{"servers":{"atlassian":{"disabled":false}}}}`
   (project wins over global; `opencode-repo-setup-skill` automates this), or
-  flip `enabled: true` in your global config to restore the old behavior.
+  set `mcp.servers.<key>.disabled: false` in your global config to restore
+  the old behavior.
 
 ---
 

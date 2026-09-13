@@ -172,25 +172,29 @@
 
 ### Phase 4: Docs + registry
 
-- [ ] **4.1** Update `AGENTS.md` frontmatter contract tables to v2 names (`disable`→`disabled`, `permission`→`permissions`, `temperature`/`top_p`→`request.body`, JSON `prompt`→`system`, `model#variant`) and note that source agent files remain legacy-translated until a later normalisation pass
+- [x] **4.1** Update `AGENTS.md` frontmatter contract tables to v2 names (`disable`→`disabled`, `permission`→`permissions`, `temperature`/`top_p`→`request.body`, JSON `prompt`→`system`, `model#variant`) and note that source agent files remain legacy-translated until a later normalisation pass
     — **Why:** the contract table is what every future agent/skill edit is validated against; leaving v1 names would reintroduce v1 shapes.
     — **Done when:** contract tables contain no `disable`/`permission`/`temperature` v1 names for agents/skills; agent `.md` files left untouched (v2 auto-translates).
     — **Consumers affected:** contributors; opencode-tooling-subagent validation passes.
+    — **Done:** contract table rewritten to v2 keys (`disabled`, `permissions` array of {action,resource,effect}, `request.body.temperature`/`request.body.top_p`, `system`, `model#variant`) + legacy-spelling deferred-normalisation note; agent `.md` files untouched; gate grep zero backticked v1 names; docs-verified stamp bumped to v2 2026-09-14. files: AGENTS.md; fixes: none
 
-- [ ] **4.2** Update `README.md` and `MIGRATION.md` config-shape references (permission examples, MCP opt-in snippet, model tiering resolution notes)
+- [x] **4.2** Update `README.md` and `MIGRATION.md` config-shape references (permission examples, MCP opt-in snippet, model tiering resolution notes)
     — **Why:** user-facing install/config docs teaching v1 syntax would produce broken setups post-deploy.
     — **Done when:** `rg -n '"permission"\s*:|"enabled":\s*(true|false)' README.md MIGRATION.md` returns matches only inside sections whose heading contains "v1" or "migration" (historical context); every other hit converted to v2 snippets.
     — **Consumers affected:** installer users; issue #304 individual-install flow.
+    — **Done:** MCP opt-in snippets + global-enable prose converted to v2 (`mcp.servers.<key>.disabled:false`) in both files; gate grep returns zero matches (stronger than the heading-gated allowance). files: README.md, MIGRATION.md; fixes: none
 
-- [ ] **4.3** Run `node deploy/build-registry.mjs` and commit regenerated `deploy/registry.json`
+- [x] **4.3** Run `node deploy/build-registry.mjs` and commit regenerated `deploy/registry.json`
     — **Why:** house rule — any frontmatter/config-shape-adjacent change requires the registry rebuild and commit.
     — **Done when:** build exits 0 and `git status` shows `deploy/registry.json` diff committed.
     — **Consumers affected:** `init.mjs` installer, build-site.mjs.
+    — **Done:** build exits 0 (agents=33, skills=148); registry.json diff is generatedAt-only (frontmatter untouched in a docs phase) and committed with the phase. files: deploy/registry.json; fixes: none
 
-- [ ] **4.4** Update v1-shape snippets and comments in deploy-adjacent docs and metadata: `deploy/.AGENTS.md` (ships to users' `~/.config/opencode/AGENTS.md` with `mcp.atlassian.enabled`, `permission.task`, `permission.skill` map snippets — lines 17/29/41), `deploy/dependency-map.json` header comment ("MUST match `mcp.<key>`"), `deploy/skill-profiles.json` header comment ("full = permission.skill"), `deploy/build-registry.mjs` header comment (line 13)
+- [x] **4.4** Update v1-shape snippets and comments in deploy-adjacent docs and metadata: `deploy/.AGENTS.md` (ships to users' `~/.config/opencode/AGENTS.md` with `mcp.atlassian.enabled`, `permission.task`, `permission.skill` map snippets — lines 17/29/41), `deploy/dependency-map.json` header comment ("MUST match `mcp.<key>`"), `deploy/skill-profiles.json` header comment ("full = permission.skill"), `deploy/build-registry.mjs` header comment (line 13)
     — **Why:** `deploy/.AGENTS.md` teaches every deployed user v1 syntax; stale invariants in data-file comments mislead future maintainers even though the data itself is shape-agnostic.
     — **Done when:** `rg -n 'permission\.skill|permission\.task|"mcp":\s*\{|"enabled":' deploy/.AGENTS.md` returns only v2-form matches; the three header comments reference `mcp.servers`/`permissions` array semantics; `LEARNINGS/decisions/skill-permission-allowlist.md` and `LEARNINGS/solutions/plugin-needs-command-block.md` updated to reference the v2 mechanisms (living-doc bump).
     — **Consumers affected:** deployed users (via setup.sh copy), maintainers, future sessions relying on LEARNINGS accuracy.
+    — **Done:** deploy/.AGENTS.md 4 snippets to v2 (atlassian mcp.servers.disabled, subagent permissions-rule gate, skill allowlist deny-all-first array form, read deny rule); 3 header comments reference mcp.servers / permissions-array semantics (+ v2 legacy-shapes note in build-registry.mjs); both LEARNINGS docs bumped to v2 mechanisms with v1-era evidence tagged; gate grep shows only the v2-form mcp.servers match; JSON parse + node --check clean. files: deploy/.AGENTS.md, deploy/dependency-map.json, deploy/skill-profiles.json, deploy/build-registry.mjs, LEARNINGS/decisions/skill-permission-allowlist.md, LEARNINGS/solutions/plugin-needs-command-block.md; fixes: none
 
 ### Phase 5: Validation gate
 

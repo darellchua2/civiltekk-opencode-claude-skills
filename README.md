@@ -350,10 +350,10 @@ The 4 Autodesk servers are **not shipped in the base config** — the `autodesk`
 To enable one **for a single project**, add a `.opencode/opencode.json` in the repo (project config merges over the global one — project wins):
 
 ```json
-{ "mcp": { "atlassian": { "enabled": true } } }
+{ "mcp": { "servers": { "atlassian": { "disabled": false } } } }
 ```
 
-To enable one **globally**, set `"enabled": true` in `config.json`, or use a provider pack below. The `opencode-repo-setup-skill` automates per-project enablement interactively.
+To enable one **globally**, set `"disabled": false` under `mcp.servers` in `config.json`, or use a provider pack below. The `opencode-repo-setup-skill` automates per-project enablement interactively.
 
 #### Provider Packs — deploy-time MCP toggle (#268)
 

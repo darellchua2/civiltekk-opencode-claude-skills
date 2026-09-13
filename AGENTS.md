@@ -61,7 +61,7 @@ Files: `deploy/setup.sh`, `deploy/setup.ps1` (Windows mirror), `README.md` (Skil
 
 ## Skill / Agent Frontmatter Contract
 
-Verified against opencode.ai docs 2026-08-14. All new/edited SKILL.md and agent files MUST conform.
+Verified against opencode.ai v2 docs 2026-09-14. All new/edited SKILL.md and agent files MUST conform.
 
 **Skills — runtime-read keys** (all else ignored):
 | Key | Rule |
@@ -73,9 +73,9 @@ Verified against opencode.ai docs 2026-08-14. All new/edited SKILL.md and agent 
 | `metadata` | Opaque string map, zero runtime behavior. House sub-keys: `protocol`, `pattern` only |
 | `category` | Installer-registry-only (build-registry.mjs, init.mjs, setup.sh counts) — invisible to OpenCode, never delete |
 
-`permission.skill` does NOT belong in SKILL.md — gating lives in `opencode.json` or agent frontmatter only.
+Skill gating does NOT belong in SKILL.md — it lives in the `permissions` array (`action:"skill"` rules) of `opencode.json` or agent frontmatter only.
 
-**Agents — runtime-read keys:** `description` (required), `temperature`, `steps`, `disable`, `prompt`, `model`, `permission` (NOT deprecated `tools`), `mode`, `hidden`, `color`, `top_p`. Source files ship no `model:` — tiers inject it at deploy time. `category` is installer-registry-only.
+**Agents — runtime-read keys:** `description` (required), `steps`, `disabled`, `system` (JSON prompt key; legacy `prompt` auto-translated), `model` (string or `model#variant`), `permissions` (NOT deprecated `tools`; array of `{action,resource,effect}` rules), `mode`, `hidden`, `color`, `request.body.temperature`, `request.body.top_p`. Source files ship no `model:` — tiers inject it at deploy time. `category` is installer-registry-only. Source agent `.md` files still use the legacy key spellings (auto-translated by opencode v2); a normalisation pass to native v2 frontmatter is deferred.
 
 After ANY frontmatter change: run `node deploy/build-registry.mjs` and commit `registry.json`.
 
