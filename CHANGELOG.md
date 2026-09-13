@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.17.0](https://github.com/darellchua2/opencode-config-template/compare/v5.16.0...v5.17.0) (2026-09-13)
+
+### Features
+
+* **config:** convert opencode.json to native v2 shape (Phase 1) ([6f8a407](https://github.com/darellchua2/opencode-config-template/commit/6f8a407031e8e47cd62cf7a74f1e59bc0dfdcb00))
+* **deploy:** implement Phase 2 — v2 deploy tooling (steps 2.1-2.5) ([4810d22](https://github.com/darellchua2/opencode-config-template/commit/4810d22f25b998a4fe59c95f4aee937d281a1e4c))
+* **deploy:** implement Phase 2 remainder — init.mjs + Dockerfile patch (steps 2.6-2.7) ([6261fbc](https://github.com/darellchua2/opencode-config-template/commit/6261fbccfe58a275099c20eacb60fbd3396d0fca))
+* **skills:** add email-drafter-skill (Communication) ([a27482b](https://github.com/darellchua2/opencode-config-template/commit/a27482bcd0ff0f261721d3bc343aa6f69538d3ba))
+
+### Bug Fixes
+
+* **deploy:** address code-review findings — permit seed, docs sweep, counts ([72d5c9c](https://github.com/darellchua2/opencode-config-template/commit/72d5c9ca3c7fee3b0f4a689b6718682c55c4dfc4))
+* **deploy:** review iter-2 residuals — v2 doc sweep + permit tests ([3031d27](https://github.com/darellchua2/opencode-config-template/commit/3031d2728f0ab676607ffe616c9f76cebd0f87ce))
+
+### Documentation
+
+* **deploy:** implement Phase 4 — v2 doc surfaces + registry rebuild (steps 4.1-4.4) ([0bf42fd](https://github.com/darellchua2/opencode-config-template/commit/0bf42fd4d52c7f0a5e6cd14479c77a4a8b6eeb6d))
+* **plan:** add PLAN-374.md for [#374](https://github.com/darellchua2/opencode-config-template/issues/374) ([b478dcf](https://github.com/darellchua2/opencode-config-template/commit/b478dcfa02b40ace34c026c24433c126118e3a25))
+* **plan:** fold review findings into PLAN-374 (init.mjs, Docker, packs, cli.json) ([781660c](https://github.com/darellchua2/opencode-config-template/commit/781660c252de54123149948290e6a0beb87fff60))
+* **plan:** LEARNINGS bump in 4.4, client-config flag wording in 2.3 ([6f3ba20](https://github.com/darellchua2/opencode-config-template/commit/6f3ba20fbb8619dbcacb7cf4b4473531ebab579a))
+* **plan:** tick all acceptance criteria — PLAN-374 complete ([31ebf2b](https://github.com/darellchua2/opencode-config-template/commit/31ebf2be0a433d5961b36a76f7755734e0891b72))
+
 ## [5.16.0](https://github.com/darellchua2/opencode-config-template/compare/v5.15.0...v5.16.0) (2026-09-09)
 
 ### Features
