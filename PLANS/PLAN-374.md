@@ -198,10 +198,11 @@
 
 ### Phase 5: Validation gate
 
-- [ ] **5.1** Run full verification: bats suite, `node deploy/build-registry.mjs`, `./deploy/setup.sh --dry-run`, and grep-based zero-v1-keys audit over the staged preview config
+- [x] **5.1** Run full verification: bats suite, `node deploy/build-registry.mjs`, `./deploy/setup.sh --dry-run`, and grep-based zero-v1-keys audit over the staged preview config
     — **Why:** final gate mirrors the repo's verification rules (lint/tests on logic changes; build on config changes) and proves the deploy pipeline emits v2 natively rather than relying on runtime normalization.
     — **Done when:** all commands exit 0 and the staged `opencode.json` contains none of: `plugin`(singular), `attachment`, `permission`(map form), `command`(singular), `provider`(singular), `agent`(singular), `mcp` without `.servers`, top-level `subagent_depth`.
     — **Consumers affected:** release pipeline; end users.
+    — **Done:** all four commands exit 0 (bats 330/330, build-registry agents=33/skills=148, dry-run --enable-pack markitdown,voice --skill-profile lean); structural audit (node, jq absent) of staged opencode.json: zero v1 top-level keys, mcp.servers x8 (4 enabled via disabled:false), permissions array 58 rules, plugins x11, agents build/plan/explore/general; staged cli.json: plugins object-form voice entry, no v1 plugin key. files: none (verification only); fixes: none
 
 ## Technical Notes
 
