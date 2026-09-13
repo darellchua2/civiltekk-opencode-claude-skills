@@ -21,7 +21,10 @@
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `opencode_app/opencode.json` | — | resolve-models.mjs, merge-packs.mjs, apply-skill-profile.mjs, setup.sh/ps1 echoes, tests/*, README/AGENTS docs, deployed user configs | **high** — silent-ignore trap: scripts writing v1 keys into a v2 file are silently dropped |
+| `opencode_app/opencode.json` | — | resolve-models.mjs, merge-packs.mjs, apply-skill-profile.mjs, **init.mjs**, **Dockerfile inline patch**, setup.sh/ps1 echoes, tests/*, README/AGENTS docs, deployed user configs | **high** — silent-ignore trap: scripts writing v1 keys into a v2 file are silently dropped |
+| `deploy/init.mjs` | opencode.json (v2) | npx `add` installer flow (issue #304), tests/init.bats | **high** — reads source config at 4 sites (`init.mjs:195,414,425-427,868`) with silent fallbacks; writes v1 keys (`init.mjs:420,669-681`) into generated project configs |
+| `opencode_app/Dockerfile` | opencode.json (v2) | docker standalone deploy (repo purpose #2) | **high** — inline python patch at lines 86–99 rewrites v1 `provider.*.options.baseURL`; pins `opencode-ai@1.18.20` (v1 binary) |
+| `deploy/packs/*.json` | opencode.json (v2 shape decision) | merge-packs.mjs, pack tests | medium — pack data files carry v1 shapes (`pack-markitdown.json:3-8`, `pack-voice.json:7` `tui.plugin`) |
 | `deploy/resolve-models.mjs` | opencode.json (v2) | setup.sh (`--models-only` path), built-in agent model pins | medium |
 | `deploy/apply-skill-profile.mjs` | opencode.json (v2) | setup.sh skill-profile step, `deploy/skill-profiles.json` consumers | medium |
 | `deploy/merge-packs.mjs` | opencode.json (v2) | setup.sh `--enable-pack`, tests/test_voice_pack.bats, tests/test_pack_permissions.bats, tests/test_docling_skill.bats | medium — `enabled`→`disabled` inversion is a logic flip, not a rename |
@@ -34,9 +37,9 @@
 
 ### Phase 1: Config conversion (source of truth)
 
-- [ ] **1.1** Convert `opencode_app/opencode.json` to native v2: `plugin[]`→`plugins[]`, `subagent_depth`→`experimental.subagent_depth`, `attachment`→`media`, `permission` map→ordered `permissions` array (`bash`→`shell`, `task`→`subagent`; `skill` map and bare tool-glob keys become `{action, resource, effect}` entries, deny-all skill entry first), `command`→`commands`, `provider`→`providers` (`npm`→`package` with `aisdk:` prefix, `options.baseURL`→`settings.baseURL`, `tool_call`/`modalities`→`capabilities.tools`/`capabilities.input`/`capabilities.output`, `cost.cache_read/write`→`cost.cache.read/write`), `mcp`→`mcp.servers` with `enabled`→inverted `disabled`, `agent`→`agents`
+- [ ] **1.1** Convert `opencode_app/opencode.json` to native v2: `plugin[]`→`plugins[]`, `subagent_depth`→`experimental.subagent_depth`, `attachment`→`media`, `permission` map→ordered `permissions` array (`bash`→`shell`, `task`→`subagent`, `write`/`patch`→`edit`; `skill` map and bare tool-glob keys become `{action, resource, effect}` entries, deny-all skill entry first), `command`→`commands`, `provider`→`providers` (`npm`→`package` with `aisdk:` prefix, `options.baseURL`→`settings.baseURL`, `tool_call`/`modalities`→`capabilities.tools`/`capabilities.input`/`capabilities.output`, `cost.cache_read/write`→`cost.cache.read/write`), `mcp`→`mcp.servers` with `enabled`→inverted `disabled`, `agent`→`agents`
     — **Why:** single source of truth; every downstream consumer and test normalizes against this file, and the silent-ignore trap means no script fix is verifiable until the file itself is v2.
-    — **Done when:** `jq . opencode_app/opencode.json` parses; `rg -n '"plugin"|"attachment"|"subagent_depth"|"command":|"provider":|"agent":' opencode_app/opencode.json` (v1 top-level keys) returns zero matches; `mcp.servers` entries all carry boolean `disabled`.
+    — **Done when:** `jq . opencode_app/opencode.json` parses; `rg -n '"plugin"|"attachment"|"subagent_depth"|"command":|"provider":|"agent":' opencode_app/opencode.json` (v1 top-level keys) returns zero matches; `mcp.servers` entries all carry boolean `disabled`; `rg -n '"action":\s*"(write|patch|bash|task)"' opencode_app/opencode.json` returns zero matches (action renames inside the array verified, not just top-level keys).
     — **Consumers affected:** all nodes in the Dependency & Consumer Map.
 
 ### Phase 2: Deploy tooling
@@ -51,19 +54,34 @@
     — **Done when:** applying the lean profile to the converted config yields a `permissions` array containing `{action:"skill", resource:"*", effect:"deny"}` plus one allow entry per lean-listed skill, and idempotent on re-run.
     — **Consumers affected:** setup.sh skill-profile step; users of `deploy/skill-profiles.json`.
 
-- [ ] **2.3** Update `deploy/merge-packs.mjs` to merge into `mcp.servers` with inverted `disabled` flags, `plugins[]`, and `permissions` array; flip `enabled: true`→`disabled: false` semantics everywhere it currently toggles
-    — **Why:** pack merging is the most complex consumer; the inversion is a logic flip, and missing it would enable servers that packs intend to enable only opt-in.
-    — **Done when:** `node deploy/merge-packs.mjs --config <v2 fixture> --tui-config <tui.json> --packs-dir deploy/packs --packs voice` flips `mcp.servers.<target>.disabled` to `false`, leaves other servers untouched, and leaks no `tui` key.
+- [ ] **2.3** Convert `deploy/packs/*.json` data files to v2 shapes (mcp entries → `servers`-nested `disabled`, permission maps → `permissions` arrays, `tui.plugin` tuples → v2 plugin objects) AND update `deploy/merge-packs.mjs` to read those pack shapes and write `mcp.servers` with inverted `disabled` flags, `plugins[]`, and `permissions` array
+    — **Why:** pack merging is the most complex consumer; the inversion is a logic flip, and packs carrying v1 shapes would either double-translate or fail silently. Repo-owned pack data converts alongside the merger (single format, no runtime translation ambiguity).
+    — **Done when:** `node deploy/merge-packs.mjs --config <v2 fixture> --tui-config <tui.json> --packs-dir deploy/packs --packs markitdown` flips `mcp.servers.markitdown.disabled` to `false`, applies the pack's `permissions` entries, leaves other servers untouched, and leaks no `tui` key; same probe repeated for `--packs voice` covers the `plugins[]` path.
     — **Consumers affected:** setup.sh `--enable-pack`; tests/test_voice_pack.bats, tests/test_pack_permissions.bats, tests/test_docling_skill.bats.
 
-- [ ] **2.4** Update `deploy/setup.sh` and `deploy/setup.ps1` v1-key references: `plugin[]` mentions (setup.sh ~line 3517), permission/skill echoes, help text and count listings tied to config shape
+- [ ] **2.4** Decide and implement the voice-pack client-config target: v2 replaces layered `tui.json` with global `cli.json` (first v2 start one-time-migrates existing tui.json; post-migration tui.json writes are ignored) — verify the cli.json schema at https://opencode.ai/v2/docs/cli/config and point `merge-packs.mjs` plugin merging at `cli.json` `plugins` object form (`{"package": ..., "options": ...}`)
+    — **Why:** writing plugin tuples to tui.json after a v2 client has created cli.json silently stops affecting the client — same silent-ignore class one layer removed.
+    — **Done when:** merge-packs writes `plugins` entries to the configured client-config path in v2 object form; fallback write to `tui.json` only when explicitly requested via flag for v1-compat deploys; behavior documented in `--help` output.
+    — **Consumers affected:** pack-voice users; tests/test_voice_pack.bats.
+
+- [ ] **2.5** Update `deploy/setup.sh` and `deploy/setup.ps1` v1-key references: `plugin[]` mentions (setup.sh ~line 3517), permission/skill echoes, help text and count listings tied to config shape
     — **Why:** setup scripts both document and invoke the tools updated in 2.1–2.3; stale echoes would instruct users with v1 syntax.
-    — **Done when:** `rg -n 'permission\.skill|plugin\[\]|"mcp"\.' deploy/setup.sh deploy/setup.ps1` returns no v1-shape operational references; `./deploy/setup.sh --dry-run` completes and stages a preview config with zero v1-only keys.
+    — **Done when:** `rg -n 'permission\.skill|plugin\[\]|"mcp"\.' deploy/setup.sh deploy/setup.ps1` returns zero matches; `./deploy/setup.sh --dry-run` completes and stages a preview config with zero v1-only keys.
     — **Consumers affected:** end-user deploys; docs consistency tests.
+
+- [ ] **2.6** Update `deploy/init.mjs` for v2: `oc.mcp` enumerations → `oc.mcp.servers` (init.mjs:195,868), `src.mcp[m]` → `src.mcp.servers[m]` (:414), `src.agent.*` → `src.agents.*` (:425-427), generated `subagent_depth` → `experimental.subagent_depth` (:420), `--permit` writes → `permissions` array form (:669-681)
+    — **Why:** the npx `add` installer flow (issue #304) reads the source config at 4 sites with silent fallbacks and writes v1 keys into generated project configs — post-conversion it ships MCP servers with no url/command and drops model pins with no error anywhere.
+    — **Done when:** `tests/init.bats` passes against the converted source config (its `d['agent']['build']['permission']['task']` assertion at init.bats:95 updated to `agents`/`permissions` array form); a generated project config contains `mcp.servers.*` entries with real url/command values and `permissions` arrays.
+    — **Consumers affected:** npx installer users; tests/init.bats.
+
+- [ ] **2.7** Update `opencode_app/Dockerfile`: bump pinned `opencode-ai` version ARG from `1.18.20` to a v2 build, and rewrite the inline python provider patch (lines 86–99) from `cfg["provider"][...]["options"]["baseURL"]` to v2 `providers.<name>.settings.baseURL`
+    — **Why:** the baked `/app/opencode.json` becomes v2-native the moment Phase 1 lands; a v1 binary reading it is the exact combination the migration guide prohibits, and the v1-key patch silently no-ops under v2 keys. Scope delta vs ticket non-goal (base bump): minimal ARG bump + patch rewrite only, no Dockerfile overhaul; recorded as a ticket comment.
+    — **Done when:** the pinned version resolves to a v2 release on npm (`npm view opencode-ai versions` contains it) and `grep -c 'provider"\]\[' opencode_app/Dockerfile` returns zero; `docker compose config` still parses.
+    — **Consumers affected:** docker standalone deploys (repo purpose #2); docker-compose.yml users.
 
 ### Phase 3: Tests
 
-- [ ] **3.1** Update the 6 `.bats` files (`test_voice_pack`, `test_pack_permissions`, `test_mcp_count_consistency`, `skill_profiles`, `init`, `test_docling_skill`) to v2 fixture shapes: `mcp.servers.*.disabled`, `permissions` arrays, `plugins[]`, `agents`
+- [ ] **3.1** Update the 6 `.bats` files (`test_voice_pack`, `test_pack_permissions`, `test_mcp_count_consistency`, `skill_profiles`, `init`, `test_docling_skill`) to v2 fixture shapes: `mcp.servers.*.disabled`, `permissions` arrays, `plugins[]`, `agents`; `init.bats` updates are contingent on step 2.6 (init.mjs) landing first
     — **Why:** the suite is the CI gate proving the tooling flips are correct; stale fixtures would fail regardless of tooling correctness (or worse, pass against v1 leftovers).
     — **Done when:** full bats suite exits 0 from the repo root.
     — **Consumers affected:** CI; future contributors.
@@ -77,13 +95,18 @@
 
 - [ ] **4.2** Update `README.md` and `MIGRATION.md` config-shape references (permission examples, MCP opt-in snippet, model tiering resolution notes)
     — **Why:** user-facing install/config docs teaching v1 syntax would produce broken setups post-deploy.
-    — **Done when:** `rg -n '"permission"\s*:|"enabled":\s*(true|false)' README.md MIGRATION.md` returns no v1 config snippets (or matches only historical/migration-context text clearly labeled as v1).
+    — **Done when:** `rg -n '"permission"\s*:|"enabled":\s*(true|false)' README.md MIGRATION.md` returns matches only inside sections whose heading contains "v1" or "migration" (historical context); every other hit converted to v2 snippets.
     — **Consumers affected:** installer users; issue #304 individual-install flow.
 
 - [ ] **4.3** Run `node deploy/build-registry.mjs` and commit regenerated `deploy/registry.json`
     — **Why:** house rule — any frontmatter/config-shape-adjacent change requires the registry rebuild and commit.
     — **Done when:** build exits 0 and `git status` shows `deploy/registry.json` diff committed.
     — **Consumers affected:** `init.mjs` installer, build-site.mjs.
+
+- [ ] **4.4** Update v1-shape snippets and comments in deploy-adjacent docs and metadata: `deploy/.AGENTS.md` (ships to users' `~/.config/opencode/AGENTS.md` with `mcp.atlassian.enabled`, `permission.task`, `permission.skill` map snippets — lines 17/29/41), `deploy/dependency-map.json` header comment ("MUST match `mcp.<key>`"), `deploy/skill-profiles.json` header comment ("full = permission.skill"), `deploy/build-registry.mjs` header comment (line 13)
+    — **Why:** `deploy/.AGENTS.md` teaches every deployed user v1 syntax; stale invariants in data-file comments mislead future maintainers even though the data itself is shape-agnostic.
+    — **Done when:** `rg -n 'permission\.skill|permission\.task|"mcp":\s*\{|"enabled":' deploy/.AGENTS.md` returns only v2-form matches; the three header comments reference `mcp.servers`/`permissions` array semantics.
+    — **Consumers affected:** deployed users (via setup.sh copy), maintainers.
 
 ### Phase 5: Validation gate
 
@@ -94,10 +117,16 @@
 
 ## Technical Notes
 
-- From ticket #374: the silent-ignore trap (native v2 values take precedence; scripts writing v1 keys are silently dropped) is why Phase 1 and Phase 2 must land in the same change.
+- From ticket #374: the silent-ignore trap (native v2 values take precedence; scripts writing v1 keys are silently dropped) is why Phase 1 and Phase 2 must land in the same change (single PR on one branch makes this structural).
+- **Review decisions (plan review, this branch):**
+  1. `deploy/init.mjs` is IN SCOPE (was unmapped) — it reads the source config at 4 sites with silent fallbacks and writes v1 into npx-generated configs; step 2.6.
+  2. Docker: ticket non-goal ("base bump") is overridden minimally — ARG version bump + inline-patch key rewrite only (step 2.7); ticket gets a comment documenting this delta. Deferring would pair a v1 binary with a v2-native baked config, which the migration guide prohibits.
+  3. `deploy/packs/*.json` convert to v2 shapes (repo-owned data), merge-packs consumes v2 packs — no runtime dual-format translation (step 2.3).
+  4. Voice pack plugin merging targets global `cli.json` (v2) instead of deprecated tui.json, schema verified during implementation (step 2.4).
+  5. `deploy/.AGENTS.md` (shipped user doc) + stale data-file comments fold into Phase 4 (step 4.4).
 - `enabled`→`disabled` is **inverted**, not renamed — merge-packs toggling logic needs a semantic flip, not a find-replace.
 - Nested mixing rules: `mcp`/`compaction`/`experimental` may mix v1/v2 members, but each `agents`/`providers`/`commands` entry must be entirely one format.
-- Agent `.md` frontmatter and local plugins are explicitly out of scope (v2 auto-translates frontmatter; plugins are follow-up issues per ticket Non-goals).
+- Agent `.md` frontmatter and local plugins remain explicitly out of scope (v2 auto-translates frontmatter; plugins are follow-up issues per ticket Non-goals).
 - Reference: https://opencode.ai/v2/docs/migrate-v1/
 
 ## Dependencies
@@ -108,8 +137,10 @@
 
 | Risk | Mitigation |
 |------|------------|
-| Permission-array conversion changes gating semantics (order matters in v2) | Preserve exact v1 precedence when flattening: deny-all `skill` catch-all first, specific allows after; verify against v1 file side-by-side |
-| `enabled`→`disabled` inversion missed in a merge-packs branch | 2.3 done-when exercises the flip; voice-pack test asserts untouched servers stay `disabled: true` (was `enabled: false`) |
-| resolve-models silently no-ops (the ticket's core trap) | 2.1 done-when requires staged config to show the pin, not just a clean exit |
+| Permission-array conversion changes gating semantics (order matters in v2) | Preserve exact v1 precedence when flattening: deny-all `skill` catch-all first, specific allows after; verify against v1 file side-by-side; 1.1 done-when greps action names inside the array |
+| `enabled`→`disabled` inversion missed in a merge-packs branch | 2.3 done-when exercises the flip on pack-markitdown (real mcp+permission keys); voice test asserts untouched servers stay `disabled: true` (was `enabled: false`) |
+| resolve-models/init.mjs silently no-op (the ticket's core trap) | 2.1/2.6 done-whens require generated/staged output to show the converted values, not just a clean exit |
+| Docker standalone breaks: v1 binary + v2-native baked config | 2.7 bumps the pinned version and rewrites the inline patch in the same change; recorded as ticket scope delta |
+| Pack client-config target (tui.json) ignored by v2 clients after cli.json exists | 2.4 targets cli.json object-form plugins, verified against v2 CLI config docs during implementation |
 | Scripts keep dual-shape support ambiguity | Convert fully to v2-only writes; no v1 fallback branches (repo deploys from single source of truth) |
-| Docs drift (counts, snippets) | 2.4/4.1/4.2 grep gates + documentation-consistency check in review |
+| Docs drift (counts, snippets, shipped user docs) | 2.5/4.1/4.2/4.4 grep gates + documentation-consistency check in review |
