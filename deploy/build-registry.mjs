@@ -16,6 +16,12 @@
 // Descriptions are single-line scalars or folded block scalars (`description: >-`
 // with deeper-indented continuation lines, space-joined). No YAML anchors are used.
 //
+// NOTE (opencode v2): these legacy frontmatter shapes remain in the source .md
+// files and are auto-translated at runtime; deployed configs express the same
+// gating as `permissions` arrays ({action,resource,effect}, e.g. action:"task" /
+// action:"skill" rules). Normalisation pass deferred — this parser matches the
+// legacy shapes above until then.
+//
 // Output shape (deploy/registry.json):
 //   { "$comment": …, "generatedAt": …, "agents": [...], "skills": [...] }
 //   agent: { stem, description, mode, tier, category, requiresSkills[], delegatesTo[], requiredBy[] }

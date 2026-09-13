@@ -59,22 +59,24 @@ One multi-select question + one yes/no per extra. Options are built from the det
 
 ## Step 3 — Write (merge-write, delta-only)
 
-Target: `<repo>/opencode.json`. Create if absent; **never clobber existing keys** — deep-merge at the top level manually (read file, add only the `mcp.<server>.enabled` keys chosen). Keep the file comment-free JSON.
+Target: `<repo>/opencode.json`. Create if absent; **never clobber existing keys** — deep-merge at the top level manually (read file, add only the `mcp.servers.<server>.disabled:false` entries chosen). Keep the file comment-free JSON.
 
 Typical delta:
 
 ```json
 {
   "mcp": {
-    "atlassian": { "enabled": true }
+    "servers": {
+      "atlassian": { "disabled": false }
+    }
   }
 }
 ```
 
 Rules:
-- Only `enabled` keys — auth/transport stay as globally configured (Atlassian uses `mcp-remote` OAuth; see caveats)
+- Only `mcp.servers.<name>.disabled` keys — auth/transport stay as globally configured (Atlassian uses `mcp-remote` OAuth; see caveats)
 - If the file exists, preserve every other key verbatim (byte-stable elsewhere; pretty-print 2-space)
-- Never write `enabled: false` to disable something globally enabled — the project layer is for opting IN
+- Never write `disabled: true` to disable something globally enabled — the project layer is for opting IN
 
 Merge procedure (MANDATORY when `<repo>/opencode.json` already exists — never Write-overwrite):
 

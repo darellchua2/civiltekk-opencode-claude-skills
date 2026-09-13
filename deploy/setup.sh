@@ -342,7 +342,7 @@ FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
 ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,docling,chrome-devtools)
-SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 45 skills; full = shipped 104 verbatim)
+SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 46 skills; full = shipped 105 verbatim)
 ENABLE_LOCAL_LLM=false   # --enable-local-llm (gemma-4-E4B via llama.cpp, requires NVIDIA GPU)
 ENABLE_VLLM=false        # --enable-vllm (vLLM Docker server, requires >12GB VRAM)
 
@@ -575,22 +575,24 @@ USAGE:
                           primary/reasoning/fast/docs/vision, e.g. vision on OpenAI)
 
   PROVIDER PACKS (deploy-time MCP toggle):
-    --enable-pack <csv>   Enable provider pack(s) — flips mcp.<server>.enabled
-                          and sets permission "<ns>*": "allow" for the named
-                          packs. Available
+    --enable-pack <csv>   Enable provider pack(s) — flips mcp.servers.<server>.disabled
+                          and appends v2 permissions-array allow rules for the
+                          named packs. Available
                           packs: autodesk, markitdown, nextjs, docling, chrome-devtools
                           (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
                           Plugin pack: voice — installs @renjfk/opencode-voice into
-                          tui.json (local speech-to-text via whisper.cpp + sox; also
+                          the v2 client config cli.json (local speech-to-text via
+                          whisper.cpp + sox; also
                           installs host prereqs; macOS/Linux only).
 
   SKILL PROFILE (deploy-time primary visibility):
     --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
-                           config's permission.skill to 45 primary-visible
+                           config's skill permissions (permissions array) to 46
+                           primary-visible
                            skills + "*": "deny" (subagents unaffected — they
                            self-scope via frontmatter allows); full deploys the
-                           shipped 104-allow allowlist verbatim.
+                           shipped 105-allow allowlist verbatim.
 
   LOCAL LLM (gemma-4-E4B via llama.cpp in Docker):
     --enable-local-llm   Install local LLM inference server. Requires NVIDIA GPU,
@@ -2473,7 +2475,7 @@ setup_config() {
             install_docling
 
             # Voice plugin pack (issue #356): interactive opt-in + host prereqs
-            # (sox, whisper-cli, whisper model). tui.json merge happens later
+            # (sox, whisper-cli, whisper model). cli.json merge happens later
             # in run_pack_merger. Best-effort — non-fatal.
             install_voice
 
@@ -2698,14 +2700,14 @@ install_rocm_linux() {
 
 # Voice plugin pack (--enable-pack voice, issue #356): host prereqs for
 # @renjfk/opencode-voice — local speech-to-text via whisper.cpp + sox.
-# The tui.json plugin entry itself is merged by run_pack_merger (pack-voice.json
+# The cli.json plugin entry itself is merged by run_pack_merger (pack-voice.json
 # "tui" key). Mirrors install_docling: opt-in, best-effort, never fatal.
 # Prereq install is macOS/Linux only (plugin documents no Windows build).
 # Interactive note: when the pack was NOT passed via --enable-pack, offer it
 # once here (prompt_yes_no auto-answers "n" under -y, printing the how-to).
 install_voice() {
     if ! echo "$ENABLE_PACK" | grep -qw "voice"; then
-        # Skills-only mode never reaches run_pack_merger (tui merge) — don't
+        # Skills-only mode never reaches run_pack_merger (cli merge) — don't
         # offer an enable that wouldn't take effect there.
         if [ "$SKILLS_ONLY" = true ]; then
             return 0
@@ -3343,10 +3345,10 @@ run_pack_merger() {
     fi
 
     local target_config="$CONFIG_FILE"
-    local target_tui="${CONFIG_DIR}/tui.json"
+    local target_cli="${CONFIG_DIR}/cli.json"
     if [ "$DRY_RUN" = true ]; then
         target_config="${DRY_RUN_PREVIEW_DIR}/opencode.json"
-        target_tui="${DRY_RUN_PREVIEW_DIR}/tui.json"
+        target_cli="${DRY_RUN_PREVIEW_DIR}/cli.json"
         if [ ! -f "$target_config" ]; then
             log_error "Dry-run preview config not found: ${target_config}"
             log_error "The resolver must run first to stage the preview. Aborting pack merge."
@@ -3363,7 +3365,7 @@ run_pack_merger() {
     log_info "Applying provider packs: ${ENABLE_PACK}"
     node "$MERGE_PACKS_SCRIPT" \
         --config "$target_config" \
-        --tui-config "$target_tui" \
+        --client-config "$target_cli" \
         --packs-dir "$PACKS_DIR" \
         --packs "$ENABLE_PACK"
     local rc=$?
@@ -3514,7 +3516,7 @@ run_migration() {
 
 # Copy repo-owned plugins (opencode_app/.opencode/plugins/*) into the global
 # plugins dir so opencode auto-loads them. Mirrors the skills deploy pattern.
-# These are NOT npm packages (those live in opencode.json `plugin[]`); they are
+# These are NOT npm packages (those live in opencode.json `plugins[]`); they are
 # local TS plugins auto-discovered from ~/.config/opencode/plugins/.
 deploy_plugins() {
     echo ""
@@ -3551,10 +3553,11 @@ deploy_plugins() {
 # ─────────────────────────────────────────────────────────────────────────────
 # AGENT DEPLOYMENT (v2.0 — resolver-driven)
 # ─────────────────────────────────────────────────────────────────────────────
-# Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
-# of the DEPLOYED config (never the source opencode_app/opencode.json).
-#   lean (default) -> 45 primary-visible skills + "*": "deny"
-#   full           -> verified no-op (shipped 104-allow allowlist stays verbatim)
+# Apply the skill profile (GIT-333): rewrites ONLY the skill rules
+# (action:"skill") inside the permissions array of the DEPLOYED config
+# (never the source opencode_app/opencode.json).
+#   lean (default) -> 46 primary-visible skills + "*": "deny"
+#   full           -> verified no-op (shipped 105-allow allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
 # stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
 run_skill_profile() {
@@ -4178,7 +4181,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
         local skill_count=$(count_skills "${SKILLS_DIR}")
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "✓ skill profile: ${SKILL_PROFILE} (primary-visible skills in permission.skill)"
+        echo "✓ skill profile: ${SKILL_PROFILE} (primary-visible skills in skill permissions)"
         print_skill_categories "${SKILLS_DIR}"
 
     else

@@ -31,9 +31,10 @@ migration, and how to revert.
   the base config — the `autodesk` provider pack now carries their full
   definitions (`--enable-pack autodesk`, needs `AUTODESK_API_KEY`).
   Enable per-project by
-  adding `<repo>/opencode.json` with `{"mcp":{"atlassian":{"enabled":true}}}`
+  adding `<repo>/opencode.json` with `{"mcp":{"servers":{"atlassian":{"disabled":false}}}}`
   (project wins over global; `opencode-repo-setup-skill` automates this), or
-  flip `enabled: true` in your global config to restore the old behavior.
+  set `mcp.servers.<key>.disabled: false` in your global config to restore
+  the old behavior.
 
 ---
 
@@ -215,7 +216,7 @@ docker compose build --build-arg OPENCODE_PROVIDER=anthropic
 
 ### Provider Packs (build-time MCP toggle, #268)
 
-v2.0 also adds **provider packs** — build-time toggles that enable groups of opt-in MCP servers (Autodesk, `markitdown`, `next-devtools`) in one shot. The merge runs after model resolution and only flips `mcp.*.enabled` ON and sets root `permission` allow patterns (`"<ns>*": "allow"`); it never affects an already-enabled server.
+v2.0 also adds **provider packs** — build-time toggles that enable groups of opt-in MCP servers (Autodesk, `markitdown`, `next-devtools`) in one shot. The merge runs after model resolution and only sets `mcp.servers.<name>.disabled: false` and appends `permissions`-array allow rules (`{ "action": "<ns>*", "resource": "*", "effect": "allow" }`); it never disables an already-enabled server.
 
 ```bash
 # Enable one or more packs at build time

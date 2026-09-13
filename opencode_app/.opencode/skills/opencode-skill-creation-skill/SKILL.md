@@ -280,7 +280,7 @@ grep -q "^description:" "skills/<skill-name>/SKILL.md" || echo "Warning: Missing
 
 ### Configuring Skill Permissions
 
-Skills can be controlled via permissions in agent configurations. Use `permission.skill` in agent frontmatter or config.json:
+Skills can be controlled via permissions in agent configurations: frontmatter (legacy `permission.skill` map spelling — opencode v2 auto-translates) or the v2 `permissions` array in config.json:
 
 **For custom agents (markdown frontmatter)**:
 ```yaml
@@ -295,17 +295,15 @@ permission:
 ---
 ```
 
-**For built-in agents (config.json)**:
+**For built-in agents (config.json)** — v2 `permissions` array (last matching rule wins; deny rules first, allows after):
 ```json
 {
-  "agent": {
+  "agents": {
     "plan": {
-      "permission": {
-        "skill": {
-          "*": "allow",
-          "internal-*": "deny"
-        }
-      }
+      "permissions": [
+        { "action": "skill", "resource": "*", "effect": "allow" },
+        { "action": "skill", "resource": "internal-*", "effect": "deny" }
+      ]
     }
   }
 }
@@ -316,7 +314,7 @@ Permission behaviors:
 - `deny`: Skill hidden from agent, access rejected
 - `ask`: User prompted for approval before loading
 
-Note: The legacy `tools: skill: false` approach is deprecated. Use `permission.skill` instead.
+Note: The legacy `tools: skill: false` approach is deprecated. Use skill rules (`action:"skill"`) in the `permissions` array (config) or agent frontmatter instead — frontmatter still uses the legacy `permission.skill` map spelling, which opencode v2 auto-translates.
 
 ## Common Issues
 
@@ -397,7 +395,7 @@ edit filePath="PLAN.md" oldString="old text" newString="new text"
 
 ## Configuring Agent Access to Skills
 
-When creating skills, consider how agents will access them. Use `permission.skill` in agent configurations:
+When creating skills, consider how agents will access them. Use skill rules (`action:"skill"`) in the `permissions` array (config.json) or agent frontmatter:
 
 **Pattern-based Permissions**:
 

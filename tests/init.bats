@@ -89,10 +89,21 @@ teardown() { rm -rf "$TMP_PROJ"; }
   grep -q "^model:" "$TMP_PROJ/.opencode/agents/code-review-subagent.md"
 }
 
-@test "generated opencode.json has scoped permission.task with *:deny FIRST + build/plan/explore/general" {
+@test "generated opencode.json is v2-shaped: skill deny-all first + scoped subagent permissions + builtins" {
   $INIT --project "$TMP_PROJ" --preset review --yes >/dev/null 2>&1
-  # *:deny must be present
-  python3 -c "import json; d=json.load(open('$TMP_PROJ/.opencode/opencode.json')); t=d['agent']['build']['permission']['task']; assert t.get('*')=='deny', 'task * not deny'; assert list(t.keys())[0]=='*', '* must be first'; assert set(['build','plan','explore','general']).issubset(d['agent']), 'missing builtin agent blocks'; print('ok')"
+  python3 -c "
+import json
+d=json.load(open('$TMP_PROJ/.opencode/opencode.json'))
+# top-level permissions: skill deny-all must be the FIRST rule (v2 last-match-wins)
+p=d['permissions']
+assert p[0]=={'action':'skill','resource':'*','effect':'deny'}, 'skill *:deny must be first, got '+json.dumps(p[0])
+assert any(r.get('resource')=='reviewer-baseline-skill' and r.get('effect')=='allow' for r in p), 'review preset must allow reviewer-baseline-skill'
+# scoped subagent permissions: deny-all FIRST, then per-agent allows
+sub=[r for r in d['agents']['build']['permissions'] if r['action']=='subagent']
+assert sub[0]=={'action':'subagent','resource':'*','effect':'deny'}, 'subagent *:deny must be first'
+assert any(r['resource']=='code-review-subagent' and r['effect']=='allow' for r in sub), 'missing code-review-subagent subagent allow'
+assert set(['build','plan','explore','general']).issubset(d['agents']), 'missing builtin agent blocks'
+print('ok')"
 }
 
 @test "--dry-run writes nothing into the project" {
@@ -134,4 +145,40 @@ teardown() { rm -rf "$TMP_PROJ"; }
   # This machine has a global deploy (51 agents). The summary (stderr) must mention it.
   run bash -c "$INIT --project '$TMP_PROJ' --preset core --dry-run 2>&1 >/dev/null"
   echo "$output" | grep -qi "GLOBAL DEPLOY DETECTED"
+}
+
+@test "--permit seeds deny-all-first build subagent rules incl. explore/general (v2)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME"
+  $INIT add code-review-subagent --permit --yes >/dev/null 2>&1
+  local cfg="$HOME/.config/opencode/config.json"
+  [ -f "$cfg" ]
+  jq_get "json.dumps(d['agents']['build']['permissions'][0])" < "$cfg" > "$TMP_PROJ/first.json"
+  grep -q '"action": "subagent"' "$TMP_PROJ/first.json"
+  grep -q '"resource": "\*"' "$TMP_PROJ/first.json"
+  grep -q '"effect": "deny"' "$TMP_PROJ/first.json"
+  jq_get "any(r['resource'] == 'explore' and r['effect'] == 'allow' for r in d['agents']['build']['permissions'])" < "$cfg" | grep -q True
+  jq_get "any(r['resource'] == 'general' and r['effect'] == 'allow' for r in d['agents']['build']['permissions'])" < "$cfg" | grep -q True
+  jq_get "any(r['resource'] == 'code-review-subagent' and r['effect'] == 'allow' for r in d['agents']['build']['permissions'])" < "$cfg" | grep -q True
+}
+
+@test "--permit does not inject explore/general into existing v2 permissions arrays" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME/.config/opencode"
+  cat > "$HOME/.config/opencode/config.json" <<'EOC'
+{
+  "permissions": [],
+  "agents": {
+    "build": {
+      "permissions": [
+        { "action": "subagent", "resource": "*", "effect": "allow" }
+      ]
+    }
+  }
+}
+EOC
+  $INIT add code-review-subagent --permit --yes >/dev/null 2>&1
+  local cfg="$HOME/.config/opencode/config.json"
+  jq_get "len([r for r in d['agents']['build']['permissions'] if r['resource'] == 'explore'])" < "$cfg" | grep -q '^0$'
+  jq_get "len([r for r in d['agents']['build']['permissions'] if r['resource'] == 'code-review-subagent'])" < "$cfg" | grep -q '^1$'
 }

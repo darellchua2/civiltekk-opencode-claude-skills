@@ -591,37 +591,39 @@ In this configurator the 4 servers are **not shipped in the base config** — en
 ```json
 {
   "mcp": {
-    "autodesk-revit": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/revit/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+    "servers": {
+      "autodesk-revit": {
+        "type": "remote",
+        "url": "https://mcp.autodesk.com/revit/v1",
+        "headers": {
+          "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+        },
+        "disabled": true
       },
-      "enabled": false
-    },
-    "autodesk-model-data": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/model-data/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      "autodesk-model-data": {
+        "type": "remote",
+        "url": "https://mcp.autodesk.com/model-data/v1",
+        "headers": {
+          "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+        },
+        "disabled": true
       },
-      "enabled": false
-    },
-    "autodesk-fusion": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/fusion/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+      "autodesk-fusion": {
+        "type": "remote",
+        "url": "https://mcp.autodesk.com/fusion/v1",
+        "headers": {
+          "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+        },
+        "disabled": true
       },
-      "enabled": false
-    },
-    "autodesk-help": {
-      "type": "remote",
-      "url": "https://mcp.autodesk.com/help/v1",
-      "headers": {
-        "Authorization": "Bearer {env:AUTODESK_API_KEY}"
-      },
-      "enabled": false
+      "autodesk-help": {
+        "type": "remote",
+        "url": "https://mcp.autodesk.com/help/v1",
+        "headers": {
+          "Authorization": "Bearer {env:AUTODESK_API_KEY}"
+        },
+        "disabled": true
+      }
     }
   }
 }

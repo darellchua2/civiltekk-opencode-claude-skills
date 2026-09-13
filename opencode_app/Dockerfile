@@ -66,9 +66,9 @@ RUN node /app/deploy/resolve-models.mjs \
         --state /tmp/.resolved-models.json \
     && rm -f /tmp/.resolved-models.json
 
-# Provider packs (#268): flip mcp.<server>.enabled + set root permission
-# named packs (comma-separated, e.g. --build-arg OPENCODE_PACKS=autodesk);
-# the permission allow pattern is "<ns>*": "allow" at the config root.
+# Provider packs (#268): set mcp.servers.<server>.disabled:false + append
+# permissions-array allow rules ({action:"<ns>*",resource:"*",effect:"allow"});
+# named packs (comma-separated, e.g. --build-arg OPENCODE_PACKS=autodesk).
 # Runs AFTER resolve-models so it merges into the resolved /app/opencode.json.
 # Empty OPENCODE_PACKS is a true no-op (merge-packs.mjs exits 0, writes nothing).
 RUN if [ -n "$OPENCODE_PACKS" ]; then \
@@ -83,19 +83,26 @@ RUN if [ -n "$OPENCODE_PACKS" ]; then \
 # Inside the container, 127.0.0.1 is the container itself. Local LLM services
 # live in sibling compose containers, so rewrite provider baseURLs to use Docker
 # service names. Host-based deploys (setup.sh) keep 127.0.0.1 in the source file.
+# NOTE: targets the v2 config shape (providers.<name>.settings.baseURL) —
+# requires a v2 opencode binary; OPENCODE_VERSION above still pins v1 until a
+# v2 npm release ships (tracked as the Docker follow-up on ticket #374).
 RUN python3 - <<'PYEOF'
 import json
 path = "/app/opencode.json"
 with open(path) as f:
     cfg = json.load(f)
-providers = cfg.get("provider", {})
+providers = cfg.get("providers", {})
+patched = []
 if "local-llm" in providers:
-    providers["local-llm"]["options"]["baseURL"] = "http://llm-server:8080/v1"
+    providers["local-llm"].setdefault("settings", {})["baseURL"] = "http://llm-server:8080/v1"
+    patched.append("local-llm")
 if "vllm" in providers:
-    providers["vllm"]["options"]["baseURL"] = "http://vllm-server:8000/v1"
+    providers["vllm"].setdefault("settings", {})["baseURL"] = "http://vllm-server:8000/v1"
+    patched.append("vllm")
 with open(path, "w") as f:
     json.dump(cfg, f, indent=2)
-print("Patched local-llm/vllm baseURLs for Docker networking")
+if patched:
+    print("Patched baseURLs for Docker networking:", ", ".join(patched))
 PYEOF
 
 RUN chmod +x /app/docker-entrypoint.sh \

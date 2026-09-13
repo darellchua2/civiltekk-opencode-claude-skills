@@ -13,7 +13,7 @@ category: Framework-Specific
 ## What this skill does
 
 - Documents the `next-devtools-mcp` server and its 6 tools
-- Provides `opencode.json` configuration (both `mcp` and `permission` blocks)
+- Provides `opencode.json` configuration (the `mcp.servers` entry and `permissions` rule)
 - Prescribes workflows for error diagnosis, route analysis, page debugging, server action debugging, and project audits
 - Covers common MCP connection issues and fallback strategies
 
@@ -25,8 +25,8 @@ category: Framework-Specific
 | ------------------------------------------------------- | ------------------------------------------ |
 | Next.js 16+ (for built-in `/_next/mcp` endpoint)          | Project dependency                         |
 | Running Next.js dev server (`npm run dev`)                | Required for live features                 |
-| `next-devtools-mcp` server in `opencode.json` `mcp` block     | Required for MCP tool access               |
-| root `permission` pattern `"next-devtools*": "allow"` in `opencode.json` | **Currently default `deny`** — user must opt in |
+| `next-devtools` server in `opencode.json` `mcp.servers` block     | Required for MCP tool access               |
+| `permissions` rule `{ "action": "next-devtools*", "resource": "*", "effect": "allow" }` | **No rule by default** — user must opt in |
 
 If any requirement is unmet, MCP tools will return connection errors. Fall back to file-based inspection (`glob`/`grep`/`read`) and `webfetch` to Next.js docs.
 
@@ -38,22 +38,24 @@ Add the `next-devtools` MCP server to your project `opencode.json`:
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "next-devtools": {
-      "type": "local",
-      "command": ["npx", "-y", "next-devtools-mcp@latest"],
-      "enabled": true
+    "servers": {
+      "next-devtools": {
+        "type": "local",
+        "command": ["npx", "-y", "next-devtools-mcp@latest"],
+        "disabled": false
+      }
     }
   },
-  "permission": {
-    "next-devtools*": "allow"
-  }
+  "permissions": [
+    { "action": "next-devtools*", "resource": "*", "effect": "allow" }
+  ]
 }
 ```
 
 **Notes:**
 - OpenCode uses `opencode.json` with the `mcp` key, NOT `.mcp.json` with `mcpServers`.
 - Command is array format `["npx", "-y", "pkg"]`, not separate `command` + `args` fields.
-- Both `mcp.next-devtools.enabled: true` AND the root-level `permission` pattern `"next-devtools*": "allow"` are required.
+- Both `mcp.servers.next-devtools.disabled: false` AND the `permissions` rule `{ "action": "next-devtools*", "resource": "*", "effect": "allow" }` are required.
 - MCP endpoint URL (when dev server runs): `http://localhost:3000/_next/mcp`
 
 ## Available MCP Tools
@@ -122,7 +124,7 @@ Looks up a Server Action by ID to find source file and function name. Use for: d
 
 ### MCP Server Not Connecting
 Symptoms: Tools return connection errors.
-Solutions: (1) Ensure dev server running (`npm run dev`); (2) Verify `mcp.next-devtools.enabled: true`; (3) Verify root `permission` pattern `"next-devtools*": "allow"`; (4) Confirm Next.js 16+; (5) Confirm `next-devtools-mcp@latest`.
+Solutions: (1) Ensure dev server running (`npm run dev`); (2) Verify `mcp.servers.next-devtools.disabled: false`; (3) Verify the `permissions` rule `{ "action": "next-devtools*", "resource": "*", "effect": "allow" }`; (4) Confirm Next.js 16+; (5) Confirm `next-devtools-mcp@latest`.
 
 ### No Errors Returned
 Symptoms: `get_errors` returns empty but errors exist.

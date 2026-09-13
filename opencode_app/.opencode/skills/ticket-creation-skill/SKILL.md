@@ -55,7 +55,7 @@ The `atlassian` MCP server is **disabled by default**. Before any JIRA step, che
 
 - **Present** → proceed normally.
 - **Absent** → do NOT attempt or hallucinate `atlassian_*` calls. Options, in order:
-  1. Interactive: offer per-project enable via `opencode-repo-setup-skill` (writes `"mcp":{"atlassian":{"enabled":true}}` into the project `opencode.json`; effective next session — this session must degrade).
+  1. Interactive: offer per-project enable via `opencode-repo-setup-skill` (writes `{"mcp":{"servers":{"atlassian":{"disabled":false}}}}` into the project `opencode.json`; effective next session — this session must degrade).
   2. REST fallback: API token + `curl -u email:token` against `https://<site>.atlassian.net` (discover cloudId: `curl https://<site>.atlassian.net/_edge/tenant_info`).
   3. Degrade gracefully: run the GitHub-only flow, report JIRA steps as skipped.
 - Headless/CI: skip option 1; use option 2 if credentials exist, else option 3.
