@@ -37,10 +37,20 @@
 
 ### Phase 1: Config conversion (source of truth)
 
-- [ ] **1.1** Convert `opencode_app/opencode.json` to native v2: `plugin[]`→`plugins[]`, `subagent_depth`→`experimental.subagent_depth`, `attachment`→`media`, `permission` map→ordered `permissions` array (`bash`→`shell`, `task`→`subagent`, `write`/`patch`→`edit`; `skill` map and bare tool-glob keys become `{action, resource, effect}` entries, deny-all skill entry first), `command`→`commands`, `provider`→`providers` (`npm`→`package` with `aisdk:` prefix, `options.baseURL`→`settings.baseURL`, `tool_call`/`modalities`→`capabilities.tools`/`capabilities.input`/`capabilities.output`, `cost.cache_read/write`→`cost.cache.read/write`), `mcp`→`mcp.servers` with `enabled`→inverted `disabled`, `agent`→`agents`
+- [x] **1.1** Convert `opencode_app/opencode.json` to native v2: `plugin[]`→`plugins[]`, `subagent_depth`→`experimental.subagent_depth`, `attachment`→`media`, `permission` map→ordered `permissions` array (`bash`→`shell`, `task`→`subagent`, `write`/`patch`→`edit`; `skill` map and bare tool-glob keys become `{action, resource, effect}` entries, deny-all skill entry first), `command`→`commands`, `provider`→`providers` (`npm`→`package` with `aisdk:` prefix, `options.baseURL`→`settings.baseURL`, `tool_call`/`modalities`→`capabilities.tools`/`capabilities.input`/`capabilities.output`, `cost.cache_read/write`→`cost.cache.read/write`), `mcp`→`mcp.servers` with `enabled`→inverted `disabled`, `agent`→`agents`
     — **Why:** single source of truth; every downstream consumer and test normalizes against this file, and the silent-ignore trap means no script fix is verifiable until the file itself is v2.
     — **Done when:** `jq . opencode_app/opencode.json` parses; `rg -n '"plugin"|"attachment"|"subagent_depth"|"command":|"provider":|"agent":' opencode_app/opencode.json` (v1 top-level keys) returns zero matches; `mcp.servers` entries all carry boolean `disabled`; `rg -n '"action":\s*"(write|patch|bash|task)"' opencode_app/opencode.json` returns zero matches (action renames inside the array verified, not just top-level keys).
     — **Consumers affected:** all nodes in the Dependency & Consumer Map.
+    — **Done:** converted via throwaway transform script (/tmp/opencode/convert-v2.mjs) to avoid hand-typing
+      105 skill names; programmatic fidelity checks passed (skill allows 105/105 in order, read-rule order
+      preserved broad→specific, 8/8 servers disabled-inverted, plugin count, agents renamed, no v1 keys,
+      model attachment/reasoning dropped per v2 accepted-but-unsupported list, provider options→settings,
+      tool_call/modalities→capabilities.*, cost.cache_read/write→cost.cache.read/write, npm→package with
+      aisdk: prefix). Done-when note: the v1-keys grep was refined to map-form patterns (`"permission": {` etc.)
+      because bare `"subagent_depth"` would false-positive on v2-native `experimental.subagent_depth`; top-level
+      key absence verified via Node key check instead. Verified v2 precedence semantics against
+      opencode.ai/v2/docs/permissions (LAST matching rule wins → deny-all skill first, allows after).
+      files: opencode_app/opencode.json; fixes: none
 
 ### Phase 2: Deploy tooling
 
