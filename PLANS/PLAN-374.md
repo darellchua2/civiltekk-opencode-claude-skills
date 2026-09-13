@@ -117,15 +117,38 @@
       voice plugin.
       files: deploy/setup.sh, deploy/setup.ps1; fixes: none
 
-- [ ] **2.6** Update `deploy/init.mjs` for v2: `oc.mcp` enumerations → `oc.mcp.servers` (init.mjs:195,868), `src.mcp[m]` → `src.mcp.servers[m]` (:414), `src.agent.*` → `src.agents.*` (:425-427), generated `subagent_depth` → `experimental.subagent_depth` (:420), `--permit` writes → `permissions` array form (:669-681)
+- [x] **2.6** Update `deploy/init.mjs` for v2: `oc.mcp` enumerations → `oc.mcp.servers` (init.mjs:195,868), `src.mcp[m]` → `src.mcp.servers[m]` (:414), `src.agent.*` → `src.agents.*` (:425-427), generated `subagent_depth` → `experimental.subagent_depth` (:420), `--permit` writes → `permissions` array form (:669-681)
     — **Why:** the npx `add` installer flow (issue #304) reads the source config at 4 sites with silent fallbacks and writes v1 keys into generated project configs — post-conversion it ships MCP servers with no url/command and drops model pins with no error anywhere.
     — **Done when:** `tests/init.bats` passes against the converted source config (its `d['agent']['build']['permission']['task']` assertion at init.bats:95 updated to `agents`/`permissions` array form); a generated project config contains `mcp.servers.*` entries with real url/command values and `permissions` arrays.
     — **Consumers affected:** npx installer users; tests/init.bats.
+    — **Done:** generator produces v2-native configs: mcp.servers.* (real
+      command/url from source, disabled=false, no enabled key), permissions
+      array (deny-all skill first + allows + tool-glob allows),
+      agents.build/plan/explore/general with permissions arrays,
+      experimental.subagent_depth=3, zero v1 keys; mcps listing + interactive
+      picker enumerate oc.mcp.servers; --permit merges skill/subagent rules
+      into permissions arrays (in-place replace, deny-all-first re-seed for
+      v1-shaped configs, backup kept); checkStrictAllowlist reads array form;
+      AGENTS.md note + help/usage text reworded. Verified: node --check clean;
+      13-assertion live generator probe passes (real command/url from source);
+      `--list mcps` emits v2 shape. init.bats assertion update lands in 3.1.
+      files: deploy/init.mjs; fixes: none
 
-- [ ] **2.7** Update `opencode_app/Dockerfile`: bump pinned `opencode-ai` version ARG from `1.18.20` to a v2 build, and rewrite the inline python provider patch (lines 86–99) from `cfg["provider"][...]["options"]["baseURL"]` to v2 `providers.<name>.settings.baseURL`
+- [x] **2.7** Update `opencode_app/Dockerfile`: bump pinned `opencode-ai` version ARG from `1.18.20` to a v2 build, and rewrite the inline python provider patch (lines 86–99) from `cfg["provider"][...]["options"]["baseURL"]` to v2 `providers.<name>.settings.baseURL`
     — **Why:** the baked `/app/opencode.json` becomes v2-native the moment Phase 1 lands; a v1 binary reading it is the exact combination the migration guide prohibits, and the v1-key patch silently no-ops under v2 keys. Scope delta vs ticket non-goal (base bump): minimal ARG bump + patch rewrite only, no Dockerfile overhaul; recorded as a ticket comment.
     — **Done when:** the pinned version resolves to a v2 release on npm (`npm view opencode-ai versions` contains it) and `grep -c 'provider"\]\[' opencode_app/Dockerfile` returns zero; `docker compose config` still parses.
     — **Consumers affected:** docker standalone deploys (repo purpose #2); docker-compose.yml users.
+    — **Done:** inline patch rewritten to v2 (`providers.<n>.settings.baseURL`,
+      setdefault guard). DEVIATION — ARG bump BLOCKED UPSTREAM: no installable
+      v2 artifact exists (npm versions end at 1.18.30/latest=1.18.30;
+      beta+dev tags are 0.0.0 snapshots whose only bin is `opencode.exe`,
+      linux-broken; opencode.ai/install.sh → 404). ARG left at 1.18.20 and
+      Dockerfile NOTE added; Docker standalone stays v1-binary/v2-config
+      (broken by design) until upstream ships v2 — flagged for PR body +
+      ticket comment. Verified: grep gate zero; python block compiles;
+      `docker compose config` parses (compose hard-requires a .env —
+      gitignored stub used for the check).
+      files: opencode_app/Dockerfile; fixes: none
 
 ### Phase 3: Tests
 

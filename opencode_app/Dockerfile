@@ -83,16 +83,19 @@ RUN if [ -n "$OPENCODE_PACKS" ]; then \
 # Inside the container, 127.0.0.1 is the container itself. Local LLM services
 # live in sibling compose containers, so rewrite provider baseURLs to use Docker
 # service names. Host-based deploys (setup.sh) keep 127.0.0.1 in the source file.
+# NOTE: targets the v2 config shape (providers.<name>.settings.baseURL) —
+# requires a v2 opencode binary; OPENCODE_VERSION above still pins v1 until a
+# v2 npm release ships (tracked as the Docker follow-up on ticket #374).
 RUN python3 - <<'PYEOF'
 import json
 path = "/app/opencode.json"
 with open(path) as f:
     cfg = json.load(f)
-providers = cfg.get("provider", {})
+providers = cfg.get("providers", {})
 if "local-llm" in providers:
-    providers["local-llm"]["options"]["baseURL"] = "http://llm-server:8080/v1"
+    providers["local-llm"].setdefault("settings", {})["baseURL"] = "http://llm-server:8080/v1"
 if "vllm" in providers:
-    providers["vllm"]["options"]["baseURL"] = "http://vllm-server:8000/v1"
+    providers["vllm"].setdefault("settings", {})["baseURL"] = "http://vllm-server:8000/v1"
 with open(path, "w") as f:
     json.dump(cfg, f, indent=2)
 print("Patched local-llm/vllm baseURLs for Docker networking")
