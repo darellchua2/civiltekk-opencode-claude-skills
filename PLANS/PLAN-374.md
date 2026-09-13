@@ -6,16 +6,16 @@
 
 ## Acceptance Criteria
 
-- [ ] `opencode_app/opencode.json` uses native v2 shape only (`plugins`, `media`, `permissions` array, `commands`, `providers` with `package`/`settings`/`capabilities.*`, `mcp.servers` with inverted `disabled`, `agents`, `experimental.subagent_depth`)
-- [ ] `deploy/resolve-models.mjs` reads/writes `agents.explore.model` / `agents.general.model`
-- [ ] `deploy/apply-skill-profile.mjs` emits `permissions` array entries for skill gating
-- [ ] `deploy/merge-packs.mjs` targets `mcp.servers.*.disabled` (inverted), `plugins`, `permissions`
-- [ ] `deploy/setup.sh` + `deploy/setup.ps1` carry no v1-only key references
-- [ ] `AGENTS.md` frontmatter contract tables use v2 key names
-- [ ] All 6 affected `.bats` test files updated to v2 fixture shapes; full suite green
-- [ ] `node deploy/build-registry.mjs` runs clean; regenerated `deploy/registry.json` committed
-- [ ] Deploy dry-run stages a config containing zero v1-only keys
-- [ ] `MIGRATION.md` / `README.md` config-shape references updated
+- [x] `opencode_app/opencode.json` uses native v2 shape only (`plugins`, `media`, `permissions` array, `commands`, `providers` with `package`/`settings`/`capabilities.*`, `mcp.servers` with inverted `disabled`, `agents`, `experimental.subagent_depth`)
+- [x] `deploy/resolve-models.mjs` reads/writes `agents.explore.model` / `agents.general.model`
+- [x] `deploy/apply-skill-profile.mjs` emits `permissions` array entries for skill gating
+- [x] `deploy/merge-packs.mjs` targets `mcp.servers.*.disabled` (inverted), `plugins`, `permissions`
+- [x] `deploy/setup.sh` + `deploy/setup.ps1` carry no v1-only key references
+- [x] `AGENTS.md` frontmatter contract tables use v2 key names
+- [x] All 6 affected `.bats` test files updated to v2 fixture shapes; full suite green
+- [x] `node deploy/build-registry.mjs` runs clean; regenerated `deploy/registry.json` committed
+- [x] Deploy dry-run stages a config containing zero v1-only keys
+- [x] `MIGRATION.md` / `README.md` config-shape references updated
 
 ## Dependency & Consumer Map
 
