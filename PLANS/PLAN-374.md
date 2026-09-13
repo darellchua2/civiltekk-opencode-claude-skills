@@ -56,7 +56,7 @@
 
 - [ ] **2.3** Convert `deploy/packs/*.json` data files to v2 shapes (mcp entries → `servers`-nested `disabled`, permission maps → `permissions` arrays, `tui.plugin` tuples → v2 plugin objects) AND update `deploy/merge-packs.mjs` to read those pack shapes and write `mcp.servers` with inverted `disabled` flags, `plugins[]`, and `permissions` array
     — **Why:** pack merging is the most complex consumer; the inversion is a logic flip, and packs carrying v1 shapes would either double-translate or fail silently. Repo-owned pack data converts alongside the merger (single format, no runtime translation ambiguity).
-    — **Done when:** `node deploy/merge-packs.mjs --config <v2 fixture> --tui-config <tui.json> --packs-dir deploy/packs --packs markitdown` flips `mcp.servers.markitdown.disabled` to `false`, applies the pack's `permissions` entries, leaves other servers untouched, and leaks no `tui` key; same probe repeated for `--packs voice` covers the `plugins[]` path.
+    — **Done when:** `node deploy/merge-packs.mjs --config <v2 fixture> --client-config <tui.json or cli.json per step 2.4> --packs-dir deploy/packs --packs markitdown` flips `mcp.servers.markitdown.disabled` to `false`, applies the pack's `permissions` entries, leaves other servers untouched, and leaks no `tui` key; same probe repeated for `--packs voice` covers the `plugins[]` path.
     — **Consumers affected:** setup.sh `--enable-pack`; tests/test_voice_pack.bats, tests/test_pack_permissions.bats, tests/test_docling_skill.bats.
 
 - [ ] **2.4** Decide and implement the voice-pack client-config target: v2 replaces layered `tui.json` with global `cli.json` (first v2 start one-time-migrates existing tui.json; post-migration tui.json writes are ignored) — verify the cli.json schema at https://opencode.ai/v2/docs/cli/config and point `merge-packs.mjs` plugin merging at `cli.json` `plugins` object form (`{"package": ..., "options": ...}`)
@@ -105,8 +105,8 @@
 
 - [ ] **4.4** Update v1-shape snippets and comments in deploy-adjacent docs and metadata: `deploy/.AGENTS.md` (ships to users' `~/.config/opencode/AGENTS.md` with `mcp.atlassian.enabled`, `permission.task`, `permission.skill` map snippets — lines 17/29/41), `deploy/dependency-map.json` header comment ("MUST match `mcp.<key>`"), `deploy/skill-profiles.json` header comment ("full = permission.skill"), `deploy/build-registry.mjs` header comment (line 13)
     — **Why:** `deploy/.AGENTS.md` teaches every deployed user v1 syntax; stale invariants in data-file comments mislead future maintainers even though the data itself is shape-agnostic.
-    — **Done when:** `rg -n 'permission\.skill|permission\.task|"mcp":\s*\{|"enabled":' deploy/.AGENTS.md` returns only v2-form matches; the three header comments reference `mcp.servers`/`permissions` array semantics.
-    — **Consumers affected:** deployed users (via setup.sh copy), maintainers.
+    — **Done when:** `rg -n 'permission\.skill|permission\.task|"mcp":\s*\{|"enabled":' deploy/.AGENTS.md` returns only v2-form matches; the three header comments reference `mcp.servers`/`permissions` array semantics; `LEARNINGS/decisions/skill-permission-allowlist.md` and `LEARNINGS/solutions/plugin-needs-command-block.md` updated to reference the v2 mechanisms (living-doc bump).
+    — **Consumers affected:** deployed users (via setup.sh copy), maintainers, future sessions relying on LEARNINGS accuracy.
 
 ### Phase 5: Validation gate
 
