@@ -89,10 +89,21 @@ teardown() { rm -rf "$TMP_PROJ"; }
   grep -q "^model:" "$TMP_PROJ/.opencode/agents/code-review-subagent.md"
 }
 
-@test "generated opencode.json has scoped permission.task with *:deny FIRST + build/plan/explore/general" {
+@test "generated opencode.json is v2-shaped: skill deny-all first + scoped subagent permissions + builtins" {
   $INIT --project "$TMP_PROJ" --preset review --yes >/dev/null 2>&1
-  # *:deny must be present
-  python3 -c "import json; d=json.load(open('$TMP_PROJ/.opencode/opencode.json')); t=d['agent']['build']['permission']['task']; assert t.get('*')=='deny', 'task * not deny'; assert list(t.keys())[0]=='*', '* must be first'; assert set(['build','plan','explore','general']).issubset(d['agent']), 'missing builtin agent blocks'; print('ok')"
+  python3 -c "
+import json
+d=json.load(open('$TMP_PROJ/.opencode/opencode.json'))
+# top-level permissions: skill deny-all must be the FIRST rule (v2 last-match-wins)
+p=d['permissions']
+assert p[0]=={'action':'skill','resource':'*','effect':'deny'}, 'skill *:deny must be first, got '+json.dumps(p[0])
+assert any(r.get('resource')=='reviewer-baseline-skill' and r.get('effect')=='allow' for r in p), 'review preset must allow reviewer-baseline-skill'
+# scoped subagent permissions: deny-all FIRST, then per-agent allows
+sub=[r for r in d['agents']['build']['permissions'] if r['action']=='subagent']
+assert sub[0]=={'action':'subagent','resource':'*','effect':'deny'}, 'subagent *:deny must be first'
+assert any(r['resource']=='code-review-subagent' and r['effect']=='allow' for r in sub), 'missing code-review-subagent subagent allow'
+assert set(['build','plan','explore','general']).issubset(d['agents']), 'missing builtin agent blocks'
+print('ok')"
 }
 
 @test "--dry-run writes nothing into the project" {

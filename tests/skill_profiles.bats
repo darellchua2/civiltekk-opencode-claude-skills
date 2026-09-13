@@ -1,11 +1,12 @@
 #!/usr/bin/env bats
-# GIT-333: skill-profile mechanism coverage.
+# GIT-333: skill-profile mechanism coverage (v2 shapes, PLAN-374).
 #   1. every lean key in deploy/skill-profiles.json matches a real skill dir
-#   2. lean ⊆ shipped allowlist in opencode_app/opencode.json (typo guard)
-#   3. lean count == 45
+#   2. lean ⊆ shipped skill allows in opencode_app/opencode.json (typo guard)
+#   3. lean count == 46
 #   4. apply-skill-profile.mjs lean rewrites a scratch deployed config to
-#      exactly 45 allows + "*": "deny"; full leaves the shipped block verbatim.
-# Note: these tests intentionally do NOT assert the shipped allowlist size
+#      exactly 46 allow rules + a skill deny-all-first; full leaves the
+#      shipped permissions array verbatim. Non-skill rules are never touched.
+# Note: these tests intentionally do NOT assert the shipped skill-allow count
 # (count-drift tests own disk counts; allowlist size is profile-dependent).
 
 setup() {
@@ -22,9 +23,9 @@ lean_keys() {
     node -e "console.log(require('${PROJECT_ROOT}/deploy/skill-profiles.json').lean.join('\n'))"
 }
 
-@test "skill-profiles: lean has exactly 45 keys" {
+@test "skill-profiles: lean has exactly 46 keys" {
     count=$(lean_keys | wc -l)
-    [ "$count" -eq 45 ]
+    [ "$count" -eq 46 ]
 }
 
 @test "skill-profiles: every lean key matches a skill dir on disk" {
@@ -34,18 +35,19 @@ lean_keys() {
     [ -z "$bad" ] || { echo "not on disk: $bad"; return 1; }
 }
 
-@test "skill-profiles: lean is a subset of the shipped allowlist" {
+@test "skill-profiles: lean is a subset of the shipped skill allows" {
     bad=$(node -e "
 const p=require('${PROJECT_ROOT}/deploy/skill-profiles.json');
 const c=require('${PROJECT_ROOT}/opencode_app/opencode.json');
-const a=Object.keys(c.permission.skill).filter(k=>k!=='*');
-console.log(p.lean.filter(k=>!a.includes(k)).join(' '));")
-    [ -z "$bad" ] || { echo "not in shipped allowlist: $bad"; return 1; }
+const allow=new Set(c.permissions.filter(r=>r.action==='skill'&&r.effect==='allow'&&r.resource!=='*').map(r=>r.resource));
+console.log(p.lean.filter(k=>!allow.has(k)).join(' '));")
+    [ -z "$bad" ] || { echo "not in shipped skill allows: $bad"; return 1; }
 }
 
-@test "apply-skill-profile: lean rewrites scratch deployed config to 45 allows + * deny" {
+@test "apply-skill-profile: lean rewrites scratch config to 46 allows + deny-all-first" {
     scratch="${TEST_HOME}/opencode.json"
     cp "${PROJECT_ROOT}/opencode_app/opencode.json" "$scratch"
+    non_skill_before=$(node -e "const c=require('$scratch');console.log(c.permissions.filter(r=>r.action!=='skill').length)")
     run node "${PROJECT_ROOT}/deploy/apply-skill-profile.mjs" \
         --config "$scratch" \
         --profiles "${PROJECT_ROOT}/deploy/skill-profiles.json" \
@@ -53,23 +55,25 @@ console.log(p.lean.filter(k=>!a.includes(k)).join(' '));")
     [ "$status" -eq 0 ]
     out=$(node -e "
 const c=require('${scratch}');
-const k=Object.keys(c.permission.skill);
-const allows=k.filter(x=>x!=='*');
-console.log(allows.length, c.permission.skill['*']==='deny' ? 'deny-ok' : 'no-deny');")
+const rules=c.permissions.filter(r=>r.action==='skill');
+const allows=rules.filter(r=>r.resource!=='*');
+const first=rules[0]||{};
+const nonSkill=c.permissions.filter(r=>r.action!=='skill').length;
+console.log(allows.length, first.resource==='*'&&first.effect==='deny'?'deny-ok':'no-deny', nonSkill===${non_skill_before}?'non-skill-ok':'non-skill-lost');")
     echo "result: $out"
-    [ "$out" = "45 deny-ok" ]
+    [ "$out" = "46 deny-ok non-skill-ok" ]
 }
 
 @test "apply-skill-profile: full is a verified no-op on a fresh copy" {
     scratch="${TEST_HOME}/opencode.json"
     cp "${PROJECT_ROOT}/opencode_app/opencode.json" "$scratch"
-    before=$(node -e "const c=require('${scratch}');console.log(JSON.stringify(c.permission.skill))")
+    before=$(node -e "const c=require('${scratch}');console.log(JSON.stringify(c.permissions))")
     run node "${PROJECT_ROOT}/deploy/apply-skill-profile.mjs" \
         --config "$scratch" \
         --profiles "${PROJECT_ROOT}/deploy/skill-profiles.json" \
         --profile full
     [ "$status" -eq 0 ]
-    after=$(node -e "const c=require('${scratch}');console.log(JSON.stringify(c.permission.skill))")
+    after=$(node -e "const c=require('${scratch}');console.log(JSON.stringify(c.permissions))")
     [ "$before" = "$after" ]
 }
 

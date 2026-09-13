@@ -270,9 +270,12 @@ async function main() {
         const { plugins, ...cliRest } = cli;
         deepMerge(clientConfig, cliRest);
         if (Array.isArray(plugins)) {
-          if (!Array.isArray(clientConfig.plugins)) clientConfig.plugins = [];
+          // v2 cli.json uses `plugins`; legacy tui.json uses `plugin` (tuples) —
+          // write to whichever key the target config format reads.
+          const key = legacy ? "plugin" : "plugins";
+          if (!Array.isArray(clientConfig[key])) clientConfig[key] = [];
           const incoming = legacy ? plugins.map(pluginToTuple) : plugins;
-          mergePluginList(clientConfig.plugins, incoming);
+          mergePluginList(clientConfig[key], incoming);
         }
       }
       clientChanged = JSON.stringify(clientConfig) !== clientBefore;

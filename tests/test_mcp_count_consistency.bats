@@ -28,7 +28,7 @@ CONFIG="opencode_app/opencode.json"
 # Compute the actual count from the source of truth.
 # Uses python3 (already a setup.sh dependency for codegraph init).
 actual_mcp_count() {
-  python3 -c "import json; print(len(json.load(open('${CONFIG}'))['mcp']))"
+  python3 -c "import json; print(len(json.load(open('${CONFIG}'))['mcp']['servers']))"
 }
 
 @test "mcp_count_opencode_json_is_consistent_across_docs" {
@@ -47,25 +47,25 @@ actual_mcp_count() {
 }
 
 @test "mcp_count_markitdown_present" {
-  # Phase 2 of PLAN-GIT-262 — markitdown must be registered
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'markitdown' in d['mcp'], 'markitdown missing'; assert d['mcp']['markitdown']['enabled'] is False, 'markitdown must be opt-in'"
+  # Phase 2 of PLAN-GIT-262 — markitdown must be registered (v2: disabled flag)
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'markitdown' in d['mcp']['servers'], 'markitdown missing'; assert d['mcp']['servers']['markitdown']['disabled'] is True, 'markitdown must be opt-in'"
 }
 
 @test "mcp_count_atlassian_is_opt_in" {
   # PLAN-GIT-333 Phase 6 — atlassian must be per-project opt-in
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['mcp']['atlassian']['enabled'] is False, 'atlassian must be opt-in'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['mcp']['servers']['atlassian']['disabled'] is True, 'atlassian must be opt-in'"
 }
 
 @test "mcp_count_zai_zread_and_vision_removed" {
   # zai-zread removed (GIT-332); zai-vision-mcp removed (GIT-364 — native
   # multimodal vision tier + inline agent fallback recipes are the only paths)
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'zai-zread' not in d['mcp'], 'zai-zread must be removed'; assert 'zai-vision-mcp' not in d['mcp'], 'zai-vision-mcp must be removed (GIT-364)'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'zai-zread' not in d['mcp']['servers'], 'zai-zread must be removed'; assert 'zai-vision-mcp' not in d['mcp']['servers'], 'zai-vision-mcp must be removed (GIT-364)'"
 }
 
 @test "mcp_count_mermaid_removed_web_search_present" {
   # GIT-336 — zai-web-search re-added (enabled) as deliberate reversal of 161c21d
   # ("no consumers" falsified by issue #336 demand; no websearch plugin supports Z.AI).
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'mermaid' not in d['mcp'], 'mermaid MCP must be removed (inline blocks + mmdc)'; assert d['mcp']['zai-web-search']['enabled'] is True, 'zai-web-search must be present and enabled (GIT-336)'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'mermaid' not in d['mcp']['servers'], 'mermaid MCP must be removed (inline blocks + mmdc)'; assert d['mcp']['servers']['zai-web-search']['disabled'] is False, 'zai-web-search must be present and enabled (GIT-336)'"
 }
 
 @test "mcp_count_autodesk_not_shipped" {
@@ -73,7 +73,7 @@ actual_mcp_count() {
   # carries full definitions); they must NOT appear in the base config.
   python3 -c "
 import json
-d = json.load(open('${CONFIG}'))['mcp']
+d = json.load(open('${CONFIG}'))['mcp']['servers']
 for k in ('autodesk-revit','autodesk-model-data','autodesk-fusion','autodesk-help'):
     assert k not in d, f'{k} must be pack-only'
 "
@@ -83,7 +83,7 @@ for k in ('autodesk-revit','autodesk-model-data','autodesk-fusion','autodesk-hel
   # Three auto-start servers: codegraph, zai-web-reader, zai-web-search (GIT-336).
   # atlassian is opt-in (Phase 6); zai-vision-mcp removed (GIT-364);
   # zai-zread / mermaid remain removed.
-  auto_count=$(python3 -c "import json; d=json.load(open('${CONFIG}')); print(sum(1 for v in d['mcp'].values() if v.get('enabled')))")
-  echo "Auto-start (enabled) MCP count: ${auto_count}" >&3
+  auto_count=$(python3 -c "import json; d=json.load(open('${CONFIG}')); print(sum(1 for v in d['mcp']['servers'].values() if v.get('disabled') is False))")
+  echo "Auto-start (disabled: false) MCP count: ${auto_count}" >&3
   [ "$auto_count" = "3" ]
 }

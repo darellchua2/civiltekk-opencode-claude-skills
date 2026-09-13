@@ -152,10 +152,23 @@
 
 ### Phase 3: Tests
 
-- [ ] **3.1** Update the 6 `.bats` files (`test_voice_pack`, `test_pack_permissions`, `test_mcp_count_consistency`, `skill_profiles`, `init`, `test_docling_skill`) to v2 fixture shapes: `mcp.servers.*.disabled`, `permissions` arrays, `plugins[]`, `agents`; `init.bats` updates are contingent on step 2.6 (init.mjs) landing first
+- [x] **3.1** Update the 6 `.bats` files (`test_voice_pack`, `test_pack_permissions`, `test_mcp_count_consistency`, `skill_profiles`, `init`, `test_docling_skill`) to v2 fixture shapes: `mcp.servers.*.disabled`, `permissions` arrays, `plugins[]`, `agents`; `init.bats` updates are contingent on step 2.6 (init.mjs) landing first
     — **Why:** the suite is the CI gate proving the tooling flips are correct; stale fixtures would fail regardless of tooling correctness (or worse, pass against v1 leftovers).
     — **Done when:** full bats suite exits 0 from the repo root.
     — **Consumers affected:** CI; future contributors.
+    — **Done:** all 6 files updated to v2 shapes (pack shape/merge tests, mcp-count
+      disabled-flag assertions incl. auto-start=3 via `disabled:false` count,
+      skill_profiles 45→46 allows + deny-all-first + non-skill preservation,
+      init.bats generated-config assertions per 2.6 generator, docling pack/config
+      v2 shapes). BUG FOUND + FIXED: merge-packs.mjs legacy `--tui-config` path
+      wrote a `plugins` key instead of v1 `plugin` (v1 tui clients would never
+      see merged plugins) — now keys by target format; new legacy-fallback test
+      covers it. Also: setup.sh assertion --tui-config→--client-config (+ absence
+      gate); bats-core submodule initialized in worktree (d9faff0, no tracked
+      change). Full suite: 330 ok, exit 0. files: tests/{test_voice_pack,
+      test_pack_permissions,test_mcp_count_consistency,skill_profiles,init,
+      test_docling_skill}.bats, deploy/merge-packs.mjs;
+      fixes: legacy plugin-key bug (fix-on-fail attempt 1).
 
 ### Phase 4: Docs + registry
 
