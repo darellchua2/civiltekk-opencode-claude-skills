@@ -54,30 +54,68 @@
 
 ### Phase 2: Deploy tooling
 
-- [ ] **2.1** Update `deploy/resolve-models.mjs` model-pin patching from `configObj.agent.{explore,general}.model` to `configObj.agents.{explore,general}.model` (lines ~288–301, incl. diagnostics labels)
+- [x] **2.1** Update `deploy/resolve-models.mjs` model-pin patching from `configObj.agent.{explore,general}.model` to `configObj.agents.{explore,general}.model` (lines ~288–301, incl. diagnostics labels)
     — **Why:** it writes the built-in explore/general pins; against a v2 file its v1 writes are silently ignored, leaving wrong tier models deployed with no error.
     — **Done when:** `node deploy/resolve-models.mjs --models-only` against the converted config emits diagnostics naming `agents.explore`/`agents.general` and stages a config with `agents.explore.model` set from `deploy/models.default.json`.
     — **Consumers affected:** setup.sh model-resolution step; deployed explore/general built-ins.
+    — **Done:** config patch block (resolve-models.mjs:288-301) rewritten agent.*→agents.*; verified live via
+      the same invocation setup.sh --models-only uses: resolver staged preview config with
+      agents.explore.model=zai-coding-plan/glm-5.3-flash + agents.general.model=zai-coding-plan/glm-5.3,
+      "(config patched)" emitted. Note: `--models-only` is a setup.sh flag (line 340), not a resolver flag —
+      done-when executed through the resolver's real CLI surface instead.
+      files: deploy/resolve-models.mjs; fixes: none
 
-- [ ] **2.2** Update `deploy/apply-skill-profile.mjs` to read/write `permissions` array entries with `action: "skill"` (lean profile = keep allow-listed entries + the `{"*": "deny"}` catch-all; full = no-op)
+- [x] **2.2** Update `deploy/apply-skill-profile.mjs` to read/write `permissions` array entries with `action: "skill"` (lean profile = keep allow-listed entries + the `{"*": "deny"}` catch-all; full = no-op)
     — **Why:** the lean profile currently rewrites the `permission.skill` object map; against a v2 `permissions` array it would drop the map entirely or corrupt gating.
     — **Done when:** applying the lean profile to the converted config yields a `permissions` array containing `{action:"skill", resource:"*", effect:"deny"}` plus one allow entry per lean-listed skill, and idempotent on re-run.
     — **Consumers affected:** setup.sh skill-profile step; users of `deploy/skill-profiles.json`.
+    — **Done:** full rewrite — reads/writes only `action:"skill"` rules in the `permissions` array, all other
+      permission entries pass through untouched; rebuilt as deny-all-first + 46 sorted allows (v2
+      last-match-wins). Verified: lean apply yields 47 skill rules (1 deny + 46 allow), 11 non-skill entries
+      preserved (4 read + 7 tool globs), re-run idempotent (real before/after JSON compare).
+      files: deploy/apply-skill-profile.mjs; fixes: none
 
-- [ ] **2.3** Convert `deploy/packs/*.json` data files to v2 shapes (mcp entries → `servers`-nested `disabled`, permission maps → `permissions` arrays, `tui.plugin` tuples → v2 plugin objects) AND update `deploy/merge-packs.mjs` to read those pack shapes and write `mcp.servers` with inverted `disabled` flags, `plugins[]`, and `permissions` array
+- [x] **2.3** Convert `deploy/packs/*.json` data files to v2 shapes (mcp entries → `servers`-nested `disabled`, permission maps → `permissions` arrays, `tui.plugin` tuples → v2 plugin objects) AND update `deploy/merge-packs.mjs` to read those pack shapes and write `mcp.servers` with inverted `disabled` flags, `plugins[]`, and `permissions` array
     — **Why:** pack merging is the most complex consumer; the inversion is a logic flip, and packs carrying v1 shapes would either double-translate or fail silently. Repo-owned pack data converts alongside the merger (single format, no runtime translation ambiguity).
     — **Done when:** `node deploy/merge-packs.mjs --config <v2 fixture> --client-config <tui.json or cli.json per step 2.4> --packs-dir deploy/packs --packs markitdown` flips `mcp.servers.markitdown.disabled` to `false`, applies the pack's `permissions` entries, leaves other servers untouched, and leaks no `tui` key; same probe repeated for `--packs voice` covers the `plugins[]` path.
     — **Consumers affected:** setup.sh `--enable-pack`; tests/test_voice_pack.bats, tests/test_pack_permissions.bats, tests/test_docling_skill.bats.
+    — **Done:** all 6 packs converted (mcp.servers nested disabled:false, permissions rule arrays, voice cli
+      partial with {package,options} plugins); merge-packs.mjs rewritten — pack permissions APPEND with
+      in-place replace on same action+resource (markitdown allow flips the shipped deny mid-array, preserving
+      rule order like the v1 scalar deep-merge did), no wholesale array clobber. Probes passed: markitdown →
+      servers.markitdown.disabled=false, docling untouched (disabled:true), no tui leak, 117 rules stable;
+      voice → cli.json plugins object-form + keybinds merged; config+cli both idempotent on re-run.
+      files: deploy/merge-packs.mjs, deploy/packs/pack-*.json (6); fixes: none (markitdown/nextjs pack writes
+      initially landed mis-nested/mis-pathed during authoring; caught by post-write structural pass, rewritten)
 
-- [ ] **2.4** Decide and implement the voice-pack client-config target: v2 replaces layered `tui.json` with global `cli.json` (first v2 start one-time-migrates existing tui.json; post-migration tui.json writes are ignored) — verify the cli.json schema at https://opencode.ai/v2/docs/cli/config and point `merge-packs.mjs` plugin merging at `cli.json` `plugins` object form (`{"package": ..., "options": ...}`)
+- [x] **2.4** Decide and implement the voice-pack client-config target: v2 replaces layered `tui.json` with global `cli.json` (first v2 start one-time-migrates existing tui.json; post-migration tui.json writes are ignored) — verify the cli.json schema at https://opencode.ai/v2/docs/cli/config and point `merge-packs.mjs` plugin merging at `cli.json` `plugins` object form (`{"package": ..., "options": ...}`)
     — **Why:** writing plugin tuples to tui.json after a v2 client has created cli.json silently stops affecting the client — same silent-ignore class one layer removed.
     — **Done when:** merge-packs writes `plugins` entries to the configured client-config path in v2 object form; fallback write to `tui.json` only when explicitly requested via flag for v1-compat deploys; behavior documented in `--help` output.
     — **Consumers affected:** pack-voice users; tests/test_voice_pack.bats.
+    — **Done:** cli.json schema verified (opencode.ai/v2/docs/cli/config: top-level keybinds, plugins array of
+      strings or {package,options}; $schema https://opencode.ai/v2/cli.json). merge-packs: --client-config is
+      the v2 primary (object-form plugins, merge by package name); --tui-config kept as explicit v1-compat
+      fallback converting plugin objects → [name, options] tuples on write (verified: tuple output, tui.json
+      $schema). Neither flag + cli pack → warning + skip (Docker path). Documented in file header.
+      files: deploy/merge-packs.mjs, deploy/packs/pack-voice.json; fixes: none
 
-- [ ] **2.5** Update `deploy/setup.sh` and `deploy/setup.ps1` v1-key references: `plugin[]` mentions (setup.sh ~line 3517), permission/skill echoes, help text and count listings tied to config shape
+- [x] **2.5** Update `deploy/setup.sh` and `deploy/setup.ps1` v1-key references: `plugin[]` mentions (setup.sh ~line 3517), permission/skill echoes, help text and count listings tied to config shape
     — **Why:** setup scripts both document and invoke the tools updated in 2.1–2.3; stale echoes would instruct users with v1 syntax.
     — **Done when:** `rg -n 'permission\.skill|plugin\[\]|"mcp"\.' deploy/setup.sh deploy/setup.ps1` returns zero matches; `./deploy/setup.sh --dry-run` completes and stages a preview config with zero v1-only keys.
     — **Consumers affected:** end-user deploys; docs consistency tests.
+    — **Done:** setup.sh: pack help (`mcp.servers.<server>.disabled` +
+      permissions-array wording), voice help → cli.json, skill-profile help +
+      comments → "skill rules (action:\"skill\") in the permissions array",
+      `plugin[]`→`plugins[]`, run_pack_merger now passes
+      `--client-config ${CONFIG_DIR}/cli.json` (was --tui-config), dry-run
+      stages cli.json; setup.ps1 mirrored ($targetCli, all comments/echoes).
+      Gate: grep zero matches; bash -n / node --check clean;
+      `./deploy/setup.sh --dry-run -y --enable-pack markitdown,voice
+      --skill-profile lean` completed — preview opencode.json fully v2
+      (58-rule permissions array, mcp.servers x8, agents x4, providers v2,
+      markitdown.disabled=false, docling untouched) + cli.json object-form
+      voice plugin.
+      files: deploy/setup.sh, deploy/setup.ps1; fixes: none
 
 - [ ] **2.6** Update `deploy/init.mjs` for v2: `oc.mcp` enumerations → `oc.mcp.servers` (init.mjs:195,868), `src.mcp[m]` → `src.mcp.servers[m]` (:414), `src.agent.*` → `src.agents.*` (:425-427), generated `subagent_depth` → `experimental.subagent_depth` (:420), `--permit` writes → `permissions` array form (:669-681)
     — **Why:** the npx `add` installer flow (issue #304) reads the source config at 4 sites with silent fallbacks and writes v1 keys into generated project configs — post-conversion it ships MCP servers with no url/command and drops model pins with no error anywhere.

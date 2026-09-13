@@ -285,20 +285,20 @@ async function main() {
       // Snapshot raw source-config pins BEFORE patching, for the exposed-model guard.
       sourceConfigPins = {
         "source opencode.json model": configObj.model,
-        "source opencode.json agent.explore": configObj.agent && configObj.agent.explore && configObj.agent.explore.model,
-        "source opencode.json agent.general": configObj.agent && configObj.agent.general && configObj.agent.general.model,
+        "source opencode.json agents.explore": configObj.agents && configObj.agents.explore && configObj.agents.explore.model,
+        "source opencode.json agents.general": configObj.agents && configObj.agents.general && configObj.agents.general.model,
       };
       if (primary) configObj.model = primary;
       // ponytail: clear stale explicit primary (e.g. removed models.json override)
       else delete configObj.model;
-      configObj.agent = configObj.agent || {};
+      configObj.agents = configObj.agents || {};
       if (exploreModel) {
-        configObj.agent.explore = configObj.agent.explore || {};
-        configObj.agent.explore.model = exploreModel;
+        configObj.agents.explore = configObj.agents.explore || {};
+        configObj.agents.explore.model = exploreModel;
       }
       if (generalModel) {
-        configObj.agent.general = configObj.agent.general || {};
-        configObj.agent.general.model = generalModel;
+        configObj.agents.general = configObj.agents.general || {};
+        configObj.agents.general.model = generalModel;
       }
       configPatched = true;
     }
