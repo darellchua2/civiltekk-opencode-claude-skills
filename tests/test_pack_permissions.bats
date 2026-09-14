@@ -174,7 +174,7 @@ EOF
   # migration note.
   local hits
   hits="$(grep -rnE 'permission\.tool|tools\."|tools\["|"tools"[[:space:]]*:|`tools` block|`tools` map|tools\.<ns>|`tools\.\*`' \
-    --include='*.md' opencode_app/.opencode MIGRATION.md README.md deploy/.AGENTS.md 2>/dev/null \
+    --include='*.md' skills agents MIGRATION.md README.md deploy/.AGENTS.md 2>/dev/null \
     | grep -v 'skills/markitdown-mcp-skill/SKILL.md' || true)"
   hits+="
 $(grep -nE 'permission\.tool|tools\."|tools\["|"tools"[[:space:]]*:|`tools` block|`tools` map|tools\.<ns>|`tools\.\*`' \

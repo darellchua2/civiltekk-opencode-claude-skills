@@ -5,8 +5,8 @@
 # no stale hardcoded agent-count literals remain in setup scripts.
 # Peer to test_markitdown_skill.bats skill-count coverage (PLAN-GIT-264).
 
-SKILLS_DIR="opencode_app/.opencode/skills"
-AGENTS_DIR="opencode_app/.opencode/agents"
+SKILLS_DIR="skills"
+AGENTS_DIR="agents"
 
 # =============================================================================
 # Agent count — dynamic function vs disk

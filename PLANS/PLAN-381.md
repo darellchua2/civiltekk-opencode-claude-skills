@@ -112,14 +112,16 @@
     — **Done:** four COPYs added (lines 53-56) before resolve-models RUN with explanatory comment; in-container paths unchanged; docker build gate deferred to 7.2f; files: opencode_app/Dockerfile; fixes: none
 
 ### Phase 5: Tests + registry regen (first full gate)
-- [ ] **5.1** Update the 9 bats files carrying deep refs (`tests/init.bats`, `skill_profiles.bats`, `test_autoresearch_protocol.bats`, `test_autoresearch_skills.bats`, `test_count_drift.bats`, `test_default_behavior.bats`, `test_docling_skill.bats`, `test_markitdown_skill.bats`, `test_pack_permissions.bats`) to the new layout. `test_mcp_count_consistency.bats` has only `opencode_app/opencode.json` refs — no edit needed.
+- [x] **5.1** Update the 9 bats files carrying deep refs (`tests/init.bats`, `skill_profiles.bats`, `test_autoresearch_protocol.bats`, `test_autoresearch_skills.bats`, `test_count_drift.bats`, `test_default_behavior.bats`, `test_docling_skill.bats`, `test_markitdown_skill.bats`, `test_pack_permissions.bats`) to the new layout. `test_mcp_count_consistency.bats` has only `opencode_app/opencode.json` refs — no edit needed.
     — **Why:** Tests encode the old layout as truth; they must encode the new one.
     — **Done when:** `grep -rnE 'opencode_app[/\\]\.opencode' tests/` returns nothing; `bats tests/` green.
+    — **Done:** 9 suites sed-rewritten + pack-permissions dir-arg re-pointed (skills agents); 0 deep refs; FULL GATE GREEN 14/14 suites; files: tests/{skill_profiles,test_default_behavior,test_markitdown_skill,test_count_drift,init,test_pack_permissions,test_autoresearch_skills,test_docling_skill,test_autoresearch_protocol}.bats; fixes: none
     — **Consumers affected:** CI.
-- [ ] **5.2** Regenerate registry: `node deploy/build-registry.mjs` → counts exactly 149 skills / 34 agents; commit regenerated `deploy/registry.json`
+- [x] **5.2** Regenerate registry: `node deploy/build-registry.mjs` → counts exactly 149 skills / 34 agents; commit regenerated `deploy/registry.json`
     — **Why:** Registry carries counts + metadata consumed by installer and setup; regen proves the rewire end-to-end.
     — **Done when:** `node -e "const r=require('./deploy/registry.json'); console.log(Object.keys(r.skills).length, Object.keys(r.agents).length)"` prints `149 34` (adapt to actual shape).
     — **Consumers affected:** init.mjs --list/add, setup.sh counts.
+    — **Done:** regen executed in Phase 2 commit (7a0130c): counts 34/149, committed diff timestamp-only; drift guard green at Phase 4 check; `--list` gates: 149 skills / 34 agents; files: deploy/registry.json (Phase 2); fixes: none
 
 ### Phase 6: Content self-references
 - [ ] **6.1** Update in-content path references: `agents/opencode-tooling-subagent.md` + 3 SKILL.md files (`agent-introspection-debugging-skill`, `context-budget-skill`, `documentation-consistency-skill`) — replace `opencode_app/.opencode/…` mentions with new root paths. ALSO fix `skills/markitdown-mcp-skill/SKILL.md` (~lines 20/235): relative links `../../mcp-servers/markitdown-local-mcp/…` resolve one level wrong after the move → rewrite as `../../opencode_app/mcp-servers/…`. (`opencode-repo-setup-skill` has no deep refs — no edit.)

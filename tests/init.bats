@@ -25,8 +25,8 @@ teardown() { rm -rf "$TMP_PROJ"; }
   skills=$(jq_get "len(d['skills'])" < "$REG")
   echo "agents=$agents skills=$skills" >&3
   # Count-agnostic: registry must match disk (excludes _archived). BT-157.
-  disk_agents=$(find "${REPO}/opencode_app/.opencode/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
-  disk_skills=$(find "${REPO}/opencode_app/.opencode/skills" -name 'SKILL.md' -not -path '*/_archived/*' 2>/dev/null | wc -l | tr -d ' ')
+  disk_agents=$(find "${REPO}/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+  disk_skills=$(find "${REPO}/skills" -name 'SKILL.md' -not -path '*/_archived/*' 2>/dev/null | wc -l | tr -d ' ')
   [ "$agents" = "$disk_agents" ]
   [ "$skills" = "$disk_skills" ]
 }
