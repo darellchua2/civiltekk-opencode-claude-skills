@@ -4,24 +4,36 @@ services:
       context: .
       dockerfile: opencode_app/Dockerfile
       args:
-        OPENCODE_VERSION: ${OPENCODE_VERSION:-1.18.11}
+        # v2 binary via the scoped @opencode/cli package (v1-only opencode-ai
+        # silently ignored the v2 plugins key — #387).
+        OPENCODE_VERSION: ${OPENCODE_VERSION:-2.0.3}
     container_name: opencode
     env_file: .env
     ports:
       - "${OPENCODE_PORT:-4097}:4096"
     volumes:
       - opencode-data:/home/opencode/.local/share/opencode
+      # Goal plugin state (#387): survives container recreation.
+      - goal-state:/home/opencode/.local/share/opencode-goal-plugin
       - ${WORKSPACE_DIR:-~/Projects}:/workspace
       - ~/.ssh:/tmp/ssh-host:ro
       - npm-cache:/home/opencode/.npm
       - pip-cache:/home/opencode/.cache/pip
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4096/api/health"]
+      # Liveness + goal-plugin presence (#387). v2 mandates HTTP auth on every
+      # route, so authenticate with the password materialized by the entrypoint
+      # (set OPENCODE_SERVER_PASSWORD in .env to choose your own; otherwise it
+      # is generated and printed once in `docker logs opencode`). Absence of
+      # goal commands marks the container unhealthy — inertness is loud.
+      test: ["CMD-SHELL", "curl -sf -u \"opencode:$(cat /home/opencode/.local/share/opencode/server-password 2>/dev/null)\" http://localhost:4096/api/command | grep -q goal || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 20s
+      # Generous start period: the goal plugin npm-fetches asynchronously and
+      # /api/command serves 200 before registration completes (observed ~30-60s
+      # cold; failures during start_period don't count toward unhealthy).
+      start_period: 60s
 
   llm-server:
     profiles: ["llm"]
@@ -96,6 +108,7 @@ services:
 
 volumes:
   opencode-data:
+  goal-state:
   npm-cache:
   pip-cache:
   docling-cache:
