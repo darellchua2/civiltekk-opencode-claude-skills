@@ -7,7 +7,7 @@
 ## Acceptance Criteria
 
 - [x] `MIGRATION.md` gains a "Context pruning (DCP) → v2 checkpoint compaction" section containing: workflow comparison table (v1 per-request pruning vs v2 episodic checkpoints), why v2 changed (4 reasons), native knob mapping with ALL FOUR rows (compaction.auto/keep.tokens/buffer; tool_output caps + 2000-char retained-tail cap; fixed overhead → skill/MCP allowlists; v1 `experimental.compaction.autocontinue` → native pending-step rebuild), token-reduction levers ranked, and the cache-invalidation note explicitly labeled as inference
-- [ ] `agents/opencode-v2-migration-subagent.md` (source of truth; NOT the `opencode_app/.opencode/agents` symlink bridge) plugin-triage one-liner (line ~168) expanded to point at the MIGRATION.md section
+- [x] `agents/opencode-v2-migration-subagent.md` (source of truth; NOT the `opencode_app/.opencode/agents` symlink bridge) plugin-triage one-liner (line ~168) expanded to point at the MIGRATION.md section
 - [x] Sources cited: opencode.ai/v2/docs/compaction, /v2/docs/config, /v2/docs/build/plugins/migrate-v1, /v2/docs/migrate-v1
 - [x] Verification guidance included: `opencode stats` + `OPENCODE_DISABLE_AUTOCOMPACT`
 - [ ] No config/skill/agent/MCP count changes (docs-only); `node deploy/build-registry.mjs --check` passes (proves frontmatter untouched)
@@ -33,10 +33,11 @@ No code, config, frontmatter, or registry surfaces touched. Docs-only diff.
 
 ### Phase 2: Migration-subagent pointer
 
-- [ ] **2.1** In `agents/opencode-v2-migration-subagent.md`, expand the plugin-triage line "Known: context-pruning plugins → v2 checkpoint compaction" (~line 168) to append a pointer: native checkpoint compaction replaces them (`compaction.keep.tokens`; no `prune`/`tail_turns` in v2) — full reasoning in MIGRATION.md § Context pruning. Body-only edit; frontmatter untouched. Do NOT edit through the `opencode_app/.opencode/agents` symlink — same inode, but the canonical path keeps diffs clean.
+- [x] **2.1** In `agents/opencode-v2-migration-subagent.md`, expand the plugin-triage line "Known: context-pruning plugins → v2 checkpoint compaction" (~line 168) to append a pointer: native checkpoint compaction replaces them (`compaction.keep.tokens`; no `prune`/`tail_turns` in v2) — full reasoning in MIGRATION.md § Context pruning. Body-only edit; frontmatter untouched. Do NOT edit through the `opencode_app/.opencode/agents` symlink — same inode, but the canonical path keeps diffs clean.
     — **Why:** The subagent is the runtime knowledge base for v1→v2 triage; without the pointer it keeps giving the one-liner with no depth or source.
     — **Done when:** `git diff` shows the hunk starts below the closing frontmatter delimiter (body-only) and `node deploy/build-registry.mjs --check` exits 0.
     — **Consumers affected:** opencode-v2-migration-subagent runtime behavior; registry check pipeline.
+    — **Done:** Expanded triage entry with native knobs + MIGRATION.md section pointer; edited via canonical root path (not symlink bridge); files: agents/opencode-v2-migration-subagent.md; fixes: none
 
 ### Phase 3: Verification
 
