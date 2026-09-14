@@ -282,6 +282,11 @@
         },
         {
             "action": "skill",
+            "resource": "opencode-v2-migration-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
             "resource": "agent-introspection-debugging-skill",
             "effect": "allow"
         },
