@@ -1,0 +1,8 @@
+{
+  "$comment": "Non-frontmatter dependency edges for installer/init.mjs. The PRIMARY dependency source is agent frontmatter permissions rules (action:\"skill\" allows = requiresSkills, action:\"subagent\" allows = delegatesTo). This map covers only the skill->MCP edge that frontmatter cannot express: when a skill is installed, the listed MCP server(s) should also be enabled. Values MUST match mcp.servers.<key> in opencode_app/opencode.json.",
+  "impliesMcp": {
+    "nextjs-devtools-mcp-skill": ["next-devtools"],
+    "markitdown-mcp-skill": ["markitdown"],
+    "docling-mcp-skill": ["docling"]
+  }
+}

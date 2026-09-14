@@ -1,5 +1,5 @@
 {
-  "$comment": "Preset 'core' for deploy/init.mjs (--preset core). Derived by /tmp/gen-presets.mjs from deploy/registry.json; edit via the generator, not by hand.",
+  "$comment": "Preset 'core' for installer/init.mjs (--preset core). Derived by /tmp/gen-presets.mjs from installer/registry.json; edit via the generator, not by hand.",
   "name": "core",
   "description": "Minimal baseline: codebase explorer + commit formatting + codegraph MCP. The starting point for any project.",
   "agents": [

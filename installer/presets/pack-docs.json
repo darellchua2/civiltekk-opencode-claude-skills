@@ -1,5 +1,5 @@
 {
-  "$comment": "Preset 'docs' for deploy/init.mjs (--preset docs). Derived by /tmp/gen-presets.mjs from deploy/registry.json; edit via the generator, not by hand.",
+  "$comment": "Preset 'docs' for installer/init.mjs (--preset docs). Derived by /tmp/gen-presets.mjs from installer/registry.json; edit via the generator, not by hand.",
   "name": "docs",
   "description": "Document generation: docs/coverage + Word/PowerPoint/Excel specialists + the BRD/SRS/Vision/TDD document ladder.",
   "agents": [

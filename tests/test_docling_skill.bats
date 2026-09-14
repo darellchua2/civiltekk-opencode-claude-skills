@@ -134,7 +134,7 @@ assert len(rules)==1 and rules[0]['effect']=='allow', 'deny rule must flip in pl
 # =============================================================================
 
 @test "dependency_map_has_docling_edge" {
-  python3 -c "import json; d=json.load(open('deploy/dependency-map.json')); assert 'docling-mcp-skill' in d['impliesMcp']; assert d['impliesMcp']['docling-mcp-skill'] == ['docling']"
+  python3 -c "import json; d=json.load(open('installer/dependency-map.json')); assert 'docling-mcp-skill' in d['impliesMcp']; assert d['impliesMcp']['docling-mcp-skill'] == ['docling']"
 }
 
 # =============================================================================

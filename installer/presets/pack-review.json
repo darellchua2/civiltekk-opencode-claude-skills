@@ -1,5 +1,5 @@
 {
-  "$comment": "Preset 'review' for deploy/init.mjs (--preset review). Derived by /tmp/gen-presets.mjs from deploy/registry.json; edit via the generator, not by hand.",
+  "$comment": "Preset 'review' for installer/init.mjs (--preset review). Derived by /tmp/gen-presets.mjs from installer/registry.json; edit via the generator, not by hand.",
   "name": "review",
   "description": "Code quality gates: comprehensive + architecture + multi-language reviewer, backed by the 8 Code Quality skills.",
   "agents": [

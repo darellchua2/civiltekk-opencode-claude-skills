@@ -19,6 +19,11 @@ opencode-config-template/
 ├── deploy/                      # User-space deployment files
 │   ├── .AGENTS.md               # User-space subagent routing (deployed)
 │   ├── setup.sh / setup.ps1     # User-space deployment scripts
+│   └── packs/ + merge-packs / apply-skill-profile / skill-profiles / tui
+├── installer/                   # npx installer (self-contained CLI flow)
+│   ├── init.mjs                 # `npx … add <name>` entry (bin: opencode-skill)
+│   ├── registry.json            # Catalog registry (build-registry.mjs output)
+│   └── agent-tiers.json + model/provider maps, presets/, resolver
 ├── opencode_app/                # Docker standalone mode
 │   ├── Dockerfile               # Container image (COPYs root content into /app/.opencode/)
 │   ├── docker-entrypoint.sh     # API key injection + opencode serve
@@ -81,7 +86,7 @@ Two setup scripts are provided for different platforms:
 
 Agent models are **tier-based and provider-agnostic**. Source agent files contain
 no hardcoded model — instead each agent is categorized into a tier
-(`reasoning` / `fast` / `docs` / `vision`) in `deploy/agent-tiers.json`, and the
+(`reasoning` / `fast` / `docs` / `vision`) in `installer/agent-tiers.json`, and the
 concrete model is resolved at deploy time. Swap providers without editing agent
 files:
 
@@ -97,7 +102,7 @@ Override files (precedence highest-first; see `MIGRATION.md`):
 | `~/.config/opencode/agent-overrides.json` | per-agent pin, global |
 | `<project>/.opencode/models.json` | tier map, project-local |
 | `~/.config/opencode/models.json` | tier map, global (written by `--provider`) |
-| `deploy/models.default.json` | Z.AI defaults |
+| `installer/models.default.json` | Z.AI defaults |
 
 > **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` + `zai-media-subagent` run on
 > `zai-coding-plan/glm-5.3-flash` (native multimodal — image/video/pdf input, 1M ctx), natively
@@ -558,7 +563,7 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 This repository implements **skill modularization** with 149 skills organized across 24 categories. <!-- count: hand-maintained — sync on skill add (BT-157) --> Skills are designed with clear separation of concerns and explicit dependencies.
 
-> **Registry-derived (PLAN-GIT-286):** every skill + agent now carries a `category:` frontmatter field, which `deploy/build-registry.mjs` reads to emit `deploy/registry.json` — the single source of truth consumed by the `opencode-init` project-scoped installer and (regenerable into) this category table. To refresh after editing frontmatter: `node deploy/build-registry.mjs` (CI fails on drift via `--check`).
+> **Registry-derived (PLAN-GIT-286):** every skill + agent now carries a `category:` frontmatter field, which `installer/build-registry.mjs` reads to emit `installer/registry.json` — the single source of truth consumed by the `opencode-init` project-scoped installer and (regenerable into) this category table. To refresh after editing frontmatter: `node installer/build-registry.mjs` (CI fails on drift via `--check`).
 
 > **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **125**; later **126** after `plan-automation-loop-skill` was added (Git/Workflow — `/run-plan` full-automation loop). Subsequent additions brought the total to **130**, including `zai-image-generation-skill` (Media Generation — Z.AI GLM-Image text-to-image, saves a PNG file). Post-#333: +1 `opencode-repo-setup-skill` (OpenCode Meta — per-repo MCP/project-config setup frontend) → **131**. Post-GIT-333: −1 `codegraph-setup-skill` (merged into `opencode-repo-setup-skill` §Step 4) → **130**. Post-GIT-338: −4 per-language linter skills (`python-ruff-linter`, `javascript-eslint-linter`, `java-linter`, `csharp-linter` merged into `language-linting-skill`) → **127**. Post-GIT-341: +6 vendored verbatim (pstack `unslop`/`technical-writing`/`blast-radius` @60c641e; ponytail `audit`/`review`/`debt` satellites v4.8.4) → **133**. Post-GIT-351: +1 `worktree-pipeline-skill` (Git/Workflow — `/run-worktree-pipeline` tracker-to-merged-PR pipeline via git worktrees) → **134**. Post-GIT-357: +3 media skills (`zai-video-skill`, `zai-asr-skill`, `zai-ocr-skill` — Media Generation, consumer-scoped to `zai-media-subagent`) → **137**. Post-skill-stack-simplification: +3 (`wayfinder-skill` vendored+adapted from mattpocock/skills MIT; `language-review-checklists-skill` extracted from language-reviewer; `reviewer-baseline-skill` shared reviewer boilerplate) and `ticket-plan-workflow-skill` renamed → `ticket-creation-skill` (creation-only; PLAN authoring absorbed into `worktree-pipeline-skill` §PLAN Authoring; new `/create-ticket` command) → **148**. Post-GIT-364: −1 `zai-vision-analysis-skill` (removed; native multimodal vision agents + their inline direct-API fallback recipe are the only path) → **147**. Post-#370: +1 `email-drafter-skill` (Communication — new category; business-email drafting) → **148**. Post-v2-audit: +1 `opencode-v2-migration-skill` (OpenCode Meta — v1→v2 detect/triage frontend; pairs with `opencode-v2-migration-subagent`, 34th agent, `reasoning` tier) → **149**.
 

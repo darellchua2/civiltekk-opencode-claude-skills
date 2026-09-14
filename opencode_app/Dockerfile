@@ -46,7 +46,9 @@ RUN pip install --no-cache-dir \
 
 RUN useradd -m -d /home/opencode -s /bin/bash opencode
 
-# v2.0: build context is repo root. Copy app + content + the model-resolver assets (deploy/).
+# v2.0: build context is repo root. Copy app + content + the installer assets
+# (installer/: model resolver + tier registry) and the deploy tooling (deploy/:
+# merge-packs + packs).
 ARG OPENCODE_PROVIDER=""
 ARG OPENCODE_PACKS=""
 COPY opencode_app/ /app/
@@ -57,19 +59,20 @@ COPY skills/ /app/.opencode/skills/
 COPY agents/ /app/.opencode/agents/
 COPY plugins/ /app/.opencode/plugins/
 COPY plugins/vibeguard.config.json /app/.opencode/vibeguard.config.json
+COPY installer/ /app/installer/
 COPY deploy/ /app/deploy/
 
 # Bake resolved models into the image at build time (default z.ai unless
 # OPENCODE_PROVIDER build-arg swaps the provider preset). --inject-primary is
 # Docker-only: the default primary is baked in so the web endpoint has a model
 # to serve with. Local (setup.sh) deploys omit it so the user picks at runtime.
-RUN node /app/deploy/resolve-models.mjs \
+RUN node /app/installer/resolve-models.mjs \
         --agents-src /app/.opencode/agents \
         --agents-dest /app/.opencode/agents \
-        --tiers /app/deploy/agent-tiers.json \
-        --default-map /app/deploy/models.default.json \
-        --provider-models /app/deploy/provider-models.json \
-        --presets /app/deploy/provider-presets.json \
+        --tiers /app/installer/agent-tiers.json \
+        --default-map /app/installer/models.default.json \
+        --provider-models /app/installer/provider-models.json \
+        --presets /app/installer/provider-presets.json \
         --inject-primary \
         $([ -n "$OPENCODE_PROVIDER" ] && echo "--provider $OPENCODE_PROVIDER") \
         --config-dest /app/opencode.json \

@@ -49,7 +49,7 @@ Prompt the user for the following information:
 - **Mode**: `primary` or `subagent`
 
 **Configuration Options**:
-- **Model**: Provider/model-id — primary agents use `zai-coding-plan/glm-5.3` (1M context); subagents tier by purpose (see `deploy/agent-tiers.json`): `glm-5.3` (reasoning/review/refactor), `glm-5.3-flash` (explore/low-impact and docs/lint), `zai-coding-plan/glm-5.3-flash` (vision — native multimodal, image/video/pdf input; `image-analyzer-subagent`/`error-resolver-subagent` run here and see images directly, no vision MCP server needed; for text-only sessions they embed an inline direct-API fallback recipe calling `glm-5v-turbo` — a different model). Never default a subagent to the `primary` tier.
+- **Model**: Provider/model-id — primary agents use `zai-coding-plan/glm-5.3` (1M context); subagents tier by purpose (see `installer/agent-tiers.json`): `glm-5.3` (reasoning/review/refactor), `glm-5.3-flash` (explore/low-impact and docs/lint), `zai-coding-plan/glm-5.3-flash` (vision — native multimodal, image/video/pdf input; `image-analyzer-subagent`/`error-resolver-subagent` run here and see images directly, no vision MCP server needed; for text-only sessions they embed an inline direct-API fallback recipe calling `glm-5v-turbo` — a different model). Never default a subagent to the `primary` tier.
 - **Temperature**: 0.0-1.0 (default: 0.7)
 - **Steps**: Max agentic iterations (default: 5)
 - **Hidden**: Hide from @ autocomplete (default: false, subagents only)
