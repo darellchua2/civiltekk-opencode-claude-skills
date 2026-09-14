@@ -16,7 +16,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 function usage() {
   console.log(`Usage: node apply-skill-profile.mjs --config <path> --profiles <path> [--profile lean|full]
 
-  --config    Path to the DEPLOYED config.json to patch in place.
+  --config    Path to the DEPLOYED opencode.json to patch in place.
   --profiles  Path to deploy/skill-profiles.json (lean key list).
   --profile   Profile to apply. Default: lean. "full" is a verified no-op:
               the config keeps the shipped allowlist verbatim.

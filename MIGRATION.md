@@ -52,7 +52,7 @@ migration, and how to revert.
 - **4 tiers**: `reasoning`, `fast`, `docs`, `vision`. Each agent is categorized
   in `deploy/agent-tiers.json`.
 - **Resolver** (`deploy/resolve-models.mjs`): injects concrete `model:` into the
-  *deployed* agent files at deploy time + patches `config.json`.
+  *deployed* agent files at deploy time + patches `opencode.json`.
 - **Override files** (resolution precedence, highest first):
   1. `<project>/.opencode/agent-overrides.json` (per-agent, project-local)
   2. `~/.config/opencode/agent-overrides.json` (per-agent, global)

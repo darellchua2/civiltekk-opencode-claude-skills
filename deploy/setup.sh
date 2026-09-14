@@ -34,7 +34,7 @@
 #
 # OPTIONS:
 #   -h, --help          Show detailed help with all options and examples
-#   -q, --quick         Quick setup: copy config.json + AGENTS.md + skills/ folder
+#   -q, --quick         Quick setup: copy opencode.json + AGENTS.md + skills/ folder
 #   -s, --skills-only   Skills-only: deploy skills/ folder (validates opencode-ai installed)
 #   -d, --dry-run       Preview all actions without making changes
 #   -y, --yes           Auto-accept all prompts (non-interactive mode)
@@ -80,7 +80,9 @@ fi
 # This is a configuration template repository (no package.json required)
 LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
-CONFIG_FILE="${CONFIG_DIR}/config.json"
+# OpenCode v2 only discovers opencode.json / opencode.jsonc — never config.json.
+CONFIG_FILE="${CONFIG_DIR}/opencode.json"
+LEGACY_CONFIG_FILE="${CONFIG_DIR}/config.json"
 SKILLS_DIR="${CONFIG_DIR}/skills"
 AGENTS_SRC_DIR="${REPO_DIR}/opencode_app/.opencode/agents"
 AGENTS_DEST_DIR="${CONFIG_DIR}/agents"
@@ -511,12 +513,12 @@ USAGE:
                           3. nvm installation/update
                           4. Node.js v24 installation
                           5. opencode-ai installation
-                          6. config.json deployment
+                          6. opencode.json deployment
                           7. skills/ deployment
                           8. Environment variable persistence
 
   --quick                 Copy config files only                Already have
-                          1. config.json → ~/.config/opencode/  dependencies installed
+                          1. opencode.json → ~/.config/opencode/  dependencies installed
                           2. AGENTS.md → ~/.config/opencode/
                           3. skills/* → ~/.config/opencode/skills/
                           (Skips all dependency checks)
@@ -756,7 +758,7 @@ $(print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills")
                             FILE LOCATIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  Configuration:        ~/.config/opencode/config.json
+  Configuration:        ~/.config/opencode/opencode.json
   Agents config:        ~/.config/opencode/AGENTS.md
   Skills directory:     ~/.config/opencode/skills/
   Learnings directory:  ~/.config/opencode/learnings/
@@ -1446,16 +1448,22 @@ extract_backup_archive() {
 
 # Restore files from a backup directory into $CONFIG_DIR.
 # Handles both backup layouts:
-#   - flat files (config.json, AGENTS.md) + subdirs (skills/, skills-backup/, agents-backup/)
-#   - update backups (config.json, AGENTS.md, skills/, agents/)
+#   - flat files (opencode.json, AGENTS.md) + subdirs (skills/, skills-backup/, agents-backup/)
+#   - update backups (opencode.json, AGENTS.md, skills/, agents/)
+# Pre-v2.1 backups stored the config as config.json — restored under the new
+# name, since OpenCode v2 only discovers opencode.json(c).
 restore_from_dir() {
     local src_dir="$1"
 
-    # Restore config.json
-    if [ -f "${src_dir}/config.json" ]; then
+    # Restore opencode.json
+    if [ -f "${src_dir}/opencode.json" ]; then
         mkdir -p "$CONFIG_DIR"
-        cp -f "${src_dir}/config.json" "${CONFIG_DIR}/config.json"
-        log_info "Restored: config.json"
+        cp -f "${src_dir}/opencode.json" "${CONFIG_DIR}/opencode.json"
+        log_info "Restored: opencode.json"
+    elif [ -f "${src_dir}/config.json" ]; then
+        mkdir -p "$CONFIG_DIR"
+        cp -f "${src_dir}/config.json" "${CONFIG_DIR}/opencode.json"
+        log_info "Restored: opencode.json (from legacy config.json backup)"
     fi
 
     # Restore AGENTS.md
@@ -1487,14 +1495,14 @@ restore_from_dir() {
         log_info "Restored: agents/ (from agents-backup/)"
     fi
 
-    # Restore any other top-level files (*.json, *.md) that aren't config.json/AGENTS.md
+    # Restore any other top-level files (*.json, *.md) that aren't opencode.json/AGENTS.md
     for f in "${src_dir}"/*; do
         [ -e "$f" ] || continue
         local fname
         fname=$(basename "$f")
         # Skip already-handled and known subdirs
         case "$fname" in
-            config.json|AGENTS.md|skills|skills-backup|agents|agents-backup) continue ;;
+            config.json|opencode.json|AGENTS.md|skills|skills-backup|agents|agents-backup) continue ;;
         esac
         # Only restore regular files (skip shell configs etc. — those go to $HOME)
         if [ -f "$f" ]; then
@@ -1519,7 +1527,7 @@ create_pre_rollback_backup() {
     log_info "Creating pre-rollback safety backup..."
 
     if [ -f "$CONFIG_FILE" ]; then
-        cp -f "$CONFIG_FILE" "${pre_dir}/config.json"
+        cp -f "$CONFIG_FILE" "${pre_dir}/opencode.json"
     fi
     if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
         cp -f "${CONFIG_DIR}/AGENTS.md" "${pre_dir}/AGENTS.md"
@@ -2433,13 +2441,25 @@ setup_config() {
         log_warn ".AGENTS.md not found in ${SCRIPT_DIR}"
     fi
 
-    # Check if config.json already exists
+    # Migrate legacy deploy: setup.sh used to deploy the config as config.json,
+    # which OpenCode v2 never reads (it only discovers opencode.json(c)). Adopt
+    # the legacy file as the live config so the preservation logic below applies
+    # to it; if both exist, park the stale legacy copy instead of deleting it.
+    if [ ! -f "$CONFIG_FILE" ] && [ -f "$LEGACY_CONFIG_FILE" ]; then
+        mv "$LEGACY_CONFIG_FILE" "$CONFIG_FILE"
+        log_info "Migrated legacy config.json -> opencode.json (OpenCode v2 only reads opencode.json|opencode.jsonc)"
+    elif [ -f "$CONFIG_FILE" ] && [ -f "$LEGACY_CONFIG_FILE" ]; then
+        mv "$LEGACY_CONFIG_FILE" "${LEGACY_CONFIG_FILE}.legacy-ignored"
+        log_warn "Stale legacy config.json found (ignored by OpenCode v2); renamed to config.json.legacy-ignored"
+    fi
+
+    # Check if the config already exists
     if [ -f "$CONFIG_FILE" ]; then
         echo ""
-        log_warn "config.json already exists at ${CONFIG_FILE}"
+        log_warn "opencode.json already exists at ${CONFIG_FILE}"
 
         if ! prompt_yes_no "Do you want to overwrite it?" "n"; then
-            log_info "Skipping config.json copy. Existing configuration preserved."
+            log_info "Skipping config copy. Existing configuration preserved."
             SKIP_CONFIG_COPY=true
             return 0
         fi
@@ -2448,14 +2468,14 @@ setup_config() {
         create_backup "$CONFIG_FILE"
     else
         # Config doesn't exist, prompt to copy
-        if ! prompt_yes_no "Copy config.json to ${CONFIG_DIR}/?" "y"; then
-            log_info "Skipping config.json copy"
+        if ! prompt_yes_no "Copy opencode.json to ${CONFIG_DIR}/?" "y"; then
+            log_info "Skipping config copy"
             SKIP_CONFIG_COPY=true
             return 0
         fi
     fi
 
-    # Copy config.json from the single source of truth (opencode_app/opencode.json).
+    # Copy the config from the single source of truth (opencode_app/opencode.json).
     # Historically this copied deploy/config.json, but maintaining a duplicate
     # caused drift (see PLAN-BT-74 Phase 12.2). The resolver (run later in
     # deploy_agents) patches this file in-place for explore/general models (and
@@ -2464,7 +2484,7 @@ setup_config() {
     if [ "$SKIP_CONFIG_COPY" != true ]; then
         if [ -f "$SOURCE_CONFIG" ]; then
             run_cmd cp "$SOURCE_CONFIG" "$CONFIG_FILE"
-            log_success "config.json copied successfully (from ${SOURCE_CONFIG})"
+            log_success "opencode.json copied successfully (from ${SOURCE_CONFIG})"
 
             # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
             # Best-effort — non-fatal on offline/pip-missing.
@@ -2504,7 +2524,7 @@ setup_config() {
               echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools|voice>"
             echo ""
         else
-            log_error "config.json source not found: ${SOURCE_CONFIG}"
+            log_error "opencode.json source not found: ${SOURCE_CONFIG}"
             return 1
         fi
     fi
@@ -3269,7 +3289,7 @@ setup_vllm() {
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Run the model resolver: injects concrete models into deployed agent .md files
-# and patches config.json (explore + general always; primary only if
+# and patches opencode.json (explore + general always; primary only if
 # --provider/--mix chosen — local deploys omit a baked-in primary). Honors
 # global/project overrides + provider preset. Preserve-edits via sidecar unless
 # --force.
@@ -3486,7 +3506,7 @@ run_migration() {
         if [ -d "$AGENTS_DEST_DIR" ] && [ "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
             log_info "[DRY-RUN] Would back up agents -> ${BACKUP_DIR}/agents-backup"
         fi
-        [ -f "$CONFIG_FILE" ] && log_info "[DRY-RUN] Would back up config.json"
+        [ -f "$CONFIG_FILE" ] && log_info "[DRY-RUN] Would back up opencode.json"
     else
         if [ -d "$AGENTS_DEST_DIR" ] && [ "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
             mkdir -p "$BACKUP_DIR"
@@ -3920,7 +3940,7 @@ create_backup_before_update() {
 
     # Backup config
     if [ -f "$CONFIG_FILE" ]; then
-        cp "$CONFIG_FILE" "${backup_dir}/config.json"
+        cp "$CONFIG_FILE" "${backup_dir}/opencode.json"
         log_info "Backed up: ${CONFIG_FILE}"
     fi
 
@@ -4138,14 +4158,14 @@ print_summary() {
         echo "✗ opencode-ai: Not installed"
     fi
 
-    # config.json status
+    # opencode.json status
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ config.json: Copied to ${CONFIG_DIR}/"
+        echo "✓ opencode.json: Copied to ${CONFIG_DIR}/"
         primary_model=$(node -pe "JSON.parse(require('fs').readFileSync('${REPO_DIR}/deploy/models.default.json','utf8')).primary" 2>/dev/null || echo "zai-coding-plan/glm-5.3")
         echo "    - Model: ${primary_model}"
         echo "    - Default agent: build"
     else
-        echo "✗ config.json: Not copied"
+        echo "✗ opencode.json: Not copied"
     fi
 
     # Agents configured
@@ -4459,7 +4479,7 @@ main() {
         case "$setup_option" in
             1)
                 echo ""
-                log_info "Quick Setup: Copy config.json and skills only"
+                log_info "Quick Setup: Copy opencode.json and skills only"
                 QUICK_SETUP=true
                 ;;
             2)
@@ -4519,7 +4539,7 @@ main() {
         setup_opencode || true
     else
         if [ "$QUICK_SETUP" = true ]; then
-            log_info "Running quick setup: config.json and skills deployment only"
+            log_info "Running quick setup: opencode.json and skills deployment only"
         fi
     fi
 

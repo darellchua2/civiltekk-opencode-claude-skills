@@ -94,7 +94,9 @@ if (Test-Path $VersionFile) {
 }
 
 $ConfigDir = Join-Path $HOME ".config\opencode"
-$ConfigFile = Join-Path $ConfigDir "config.json"
+# OpenCode v2 only discovers opencode.json / opencode.jsonc — never config.json.
+$ConfigFile = Join-Path $ConfigDir "opencode.json"
+$LegacyConfigFile = Join-Path $ConfigDir "config.json"
 $SkillsDir = Join-Path $ConfigDir "skills"
 $AgentsSrcDir = Join-Path $RepoDir "opencode_app\.opencode\agents"
 $AgentsDestDir = Join-Path $ConfigDir "agents"
@@ -578,10 +580,13 @@ function Restore-FromDir {
         New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null
     }
 
-    # config.json
-    if (Test-Path (Join-Path $SrcDir "config.json")) {
+    # opencode.json (pre-v2.1 backups stored it as config.json)
+    if (Test-Path (Join-Path $SrcDir "opencode.json")) {
+        Copy-Item (Join-Path $SrcDir "opencode.json") $ConfigFile -Force
+        Write-LogInfo "Restored: opencode.json"
+    } elseif (Test-Path (Join-Path $SrcDir "config.json")) {
         Copy-Item (Join-Path $SrcDir "config.json") $ConfigFile -Force
-        Write-LogInfo "Restored: config.json"
+        Write-LogInfo "Restored: opencode.json (from legacy config.json backup)"
     }
 
     # AGENTS.md
@@ -615,7 +620,7 @@ function Restore-FromDir {
 
     # Other top-level *.json / *.md files
     Get-ChildItem $SrcDir -File -ErrorAction SilentlyContinue | Where-Object {
-        $_.Name -notin @("config.json", "AGENTS.md") -and ($_.Extension -in ".json", ".md")
+        $_.Name -notin @("config.json", "opencode.json", "AGENTS.md") -and ($_.Extension -in ".json", ".md")
     } | ForEach-Object {
         Copy-Item $_.FullName (Join-Path $ConfigDir $_.Name) -Force
         Write-LogInfo "Restored: $($_.Name)"
@@ -635,7 +640,7 @@ function New-PreRollbackBackup {
     }
 
     if (Test-Path $ConfigFile) {
-        Copy-Item $ConfigFile (Join-Path $preDir "config.json") -Force
+        Copy-Item $ConfigFile (Join-Path $preDir "opencode.json") -Force
     }
     $agentsMd = Join-Path $ConfigDir "AGENTS.md"
     if (Test-Path $agentsMd) {
@@ -842,12 +847,12 @@ USAGE:
                            2. Z.AI API key setup
                            3. Node.js check/install
                            4. opencode-ai installation
-                           5. config.json deployment
+                           5. opencode.json deployment
                            6. skills/ deployment
                            7. Environment variable persistence
 
   -Quick                  Copy config files only                Already have
-                           1. config.json -> ~/.config/opencode/  dependencies
+                           1. opencode.json -> ~/.config/opencode/  dependencies
                            2. AGENTS.md -> ~/.config/opencode/
                            3. skills/* -> ~/.config/opencode/skills/
 
@@ -1702,12 +1707,23 @@ function Set-Configuration {
         Write-LogWarn ".AGENTS.md not found in $ScriptDir"
     }
 
+    # Migrate legacy deploy: setup.ps1 used to deploy the config as config.json,
+    # which OpenCode v2 never reads (it only discovers opencode.json(c)). Adopt
+    # the legacy file as the live config; if both exist, park the stale copy.
+    if ((-not (Test-Path $ConfigFile)) -and (Test-Path $LegacyConfigFile)) {
+        Move-Item $LegacyConfigFile $ConfigFile -Force
+        Write-LogInfo "Migrated legacy config.json -> opencode.json (OpenCode v2 only reads opencode.json|opencode.jsonc)"
+    } elseif ((Test-Path $ConfigFile) -and (Test-Path $LegacyConfigFile)) {
+        Move-Item $LegacyConfigFile "$LegacyConfigFile.legacy-ignored" -Force
+        Write-LogWarn "Stale legacy config.json renamed to config.json.legacy-ignored (ignored by OpenCode v2)"
+    }
+
     if (Test-Path $ConfigFile) {
         Write-Host ""
-        Write-LogWarn "config.json already exists at $ConfigFile"
+        Write-LogWarn "opencode.json already exists at $ConfigFile"
 
         if (-not (Read-YesNo "Do you want to overwrite it?" $false)) {
-            Write-LogInfo "Skipping config.json copy. Existing configuration preserved."
+            Write-LogInfo "Skipping config copy. Existing configuration preserved."
             $script:SkipConfigCopy = $true
             Deploy-Skills
             return
@@ -1715,9 +1731,9 @@ function Set-Configuration {
 
         New-FileBackup $ConfigFile
     } else {
-        $msg = "Copy config.json to $($ConfigDir)?"
+        $msg = "Copy opencode.json to $($ConfigDir)?"
         if (-not (Read-YesNo $msg $true)) {
-            Write-LogInfo "Skipping config.json copy"
+            Write-LogInfo "Skipping config copy"
             $script:SkipConfigCopy = $true
             Deploy-Skills
             return
@@ -1725,7 +1741,7 @@ function Set-Configuration {
     }
 
     if (-not $script:SkipConfigCopy) {
-        # Copy config.json from the single source of truth (opencode_app/opencode.json).
+        # Copy the config from the single source of truth (opencode_app/opencode.json).
         # Historically this copied deploy/config.json, but maintaining a duplicate
         # caused drift (see PLAN-BT-74 Phase 12.2). The resolver (run later in
         # Deploy-Agents) patches this file in-place for explore/general models (and
@@ -1734,7 +1750,7 @@ function Set-Configuration {
         $configSrc = $SourceConfig
         if (Test-Path $configSrc) {
             if (-not $DryRun) { Copy-Item $configSrc $ConfigFile -Force }
-            Write-LogSuccess "config.json copied successfully (from $SourceConfig)"
+            Write-LogSuccess "opencode.json copied successfully (from $SourceConfig)"
 
             # Deploy vibeguard secret-masking config (PLAN-GIT-315).
             $vgSrc = Join-Path $RepoDir "opencode_app\.opencode\vibeguard.config.json"
@@ -1769,7 +1785,7 @@ function Set-Configuration {
             }
             Write-Host ""
         } else {
-            Write-LogError "config.json source not found: $SourceConfig"
+            Write-LogError "opencode.json source not found: $SourceConfig"
         }
     }
 
@@ -1843,7 +1859,7 @@ function Deploy-Skills {
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Run the model resolver: injects concrete models into deployed agent .md files
-# and patches config.json (explore + general always; primary only if a
+# and patches opencode.json (explore + general always; primary only if a
 # provider/mix chosen — local deploys omit a baked-in primary). Sets $LASTEXITCODE.
 function Invoke-Resolver {
     if (-not (Test-Path $ResolverScript)) {
@@ -2066,7 +2082,7 @@ function Invoke-Migration {
         if ((Test-Path $AgentsDestDir) -and @(Get-ChildItem $AgentsDestDir -Filter "*.md" -ErrorAction SilentlyContinue).Count -gt 0) {
             Write-LogInfo "[DRY-RUN] Would back up agents -> $BackupDir/agents-backup"
         }
-        if (Test-Path $ConfigFile) { Write-LogInfo "[DRY-RUN] Would back up config.json" }
+        if (Test-Path $ConfigFile) { Write-LogInfo "[DRY-RUN] Would back up opencode.json" }
     } else {
         if ((Test-Path $AgentsDestDir) -and @(Get-ChildItem $AgentsDestDir -Filter "*.md" -ErrorAction SilentlyContinue).Count -gt 0) {
             if (-not (Test-Path $BackupDir)) { New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null }
@@ -2606,7 +2622,7 @@ function Invoke-AutoUpdate {
         $backupDir = Join-Path $HOME ".opencode-update-backup-$(Get-Date -Format 'yyyyMMdd_HHmmss')"
         if (-not $DryRun) {
             New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
-            if (Test-Path $ConfigFile) { Copy-Item $ConfigFile (Join-Path $backupDir "config.json") }
+            if (Test-Path $ConfigFile) { Copy-Item $ConfigFile (Join-Path $backupDir "opencode.json") }
             $agentsDest = Join-Path $ConfigDir "AGENTS.md"
             if (Test-Path $agentsDest) { Copy-Item $agentsDest (Join-Path $backupDir "AGENTS.md") }
             if (Test-Path $SkillsDir) { Copy-Item $SkillsDir (Join-Path $backupDir "skills") -Recurse }
@@ -2695,9 +2711,9 @@ function Show-Summary {
     }
 
     if (Test-Path $ConfigFile) {
-        Write-Host "  [OK] config.json: Copied to $ConfigDir\" -ForegroundColor Green
+        Write-Host "  [OK] opencode.json: Copied to $ConfigDir\" -ForegroundColor Green
     } else {
-        Write-Host "  [X] config.json: Not copied"
+        Write-Host "  [X] opencode.json: Not copied"
     }
 
     if (Test-Path (Join-Path $ConfigDir "AGENTS.md")) {
@@ -2937,7 +2953,7 @@ function Main {
         switch ($option) {
             "1" {
                 Write-Host ""
-                Write-LogInfo "Quick Setup: Copy config.json and skills only"
+                Write-LogInfo "Quick Setup: Copy opencode.json and skills only"
                 $script:Quick = $true
             }
             "2" {
@@ -2988,7 +3004,7 @@ function Main {
         Set-NodeJS
         Set-OpenCode
     } else {
-        Write-LogInfo "Running quick setup: config.json and skills deployment only"
+        Write-LogInfo "Running quick setup: opencode.json and skills deployment only"
     }
 
     Set-ModelProvider

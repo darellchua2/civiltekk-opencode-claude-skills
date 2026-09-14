@@ -13,7 +13,6 @@ A multi-mode OpenCode configurator repository:
 ```
 opencode-config-template/
 ├── deploy/                      # User-space deployment files
-│   ├── config.json              # User-space config (agents, MCP servers, providers)
 │   ├── .AGENTS.md               # User-space subagent routing (deployed)
 │   ├── setup.sh / setup.ps1     # User-space deployment scripts
 ├── opencode_app/                # Docker standalone mode
@@ -203,7 +202,7 @@ npx github:darellchua2/opencode-config-template add tdd-subagent --no-deps
 # C. Strict-allowlist detected (setup.sh was run) — warns about hidden items
 npx github:darellchua2/opencode-config-template add my-custom-skill
 
-# D. --permit — backup config.json + merge permission entries only
+# D. --permit — backup opencode.json + merge permission entries only
 npx github:darellchua2/opencode-config-template add my-custom-skill --permit
 
 # E. Skill needs an MCP — prints snippet, never auto-merges
@@ -353,7 +352,7 @@ To enable one **for a single project**, add a `.opencode/opencode.json` in the r
 { "mcp": { "servers": { "atlassian": { "disabled": false } } } }
 ```
 
-To enable one **globally**, set `"disabled": false` under `mcp.servers` in `config.json`, or use a provider pack below. The `opencode-repo-setup-skill` automates per-project enablement interactively.
+To enable one **globally**, set `"disabled": false` under `mcp.servers` in `~/.config/opencode/opencode.json`, or use a provider pack below. The `opencode-repo-setup-skill` automates per-project enablement interactively.
 
 #### Provider Packs — deploy-time MCP toggle (#268)
 
@@ -595,7 +594,7 @@ This repository implements **skill modularization** with 148 skills organized ac
 
 ### Agents
 
-33 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
+33 agent `.md` files (plus 4 config-builtin agents defined directly in `opencode.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 
@@ -745,7 +744,7 @@ Skills follow a modular architecture:
 The setup scripts automatically:
 - Copies `deploy/.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
 - Copies `opencode_app/.opencode/skills/` folder to `~/.config/opencode/skills/`
-- Copies `opencode_app/opencode.json` to `~/.config/opencode/config.json` (single source of truth — model resolver patches primary/explore/general in-place during deploy)
+- Copies `opencode_app/opencode.json` to `~/.config/opencode/opencode.json` (single source of truth — model resolver patches primary/explore/general in-place during deploy; OpenCode v2 only reads `opencode.json`/`opencode.jsonc`, never `config.json`)
 - Backs up existing files before overwriting
 
 ### Environment Variable Persistence

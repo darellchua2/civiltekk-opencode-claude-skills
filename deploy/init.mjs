@@ -53,7 +53,10 @@ const BUILTINS = new Set(["explore", "general", "scout", "build", "plan", "compa
 const USER_OC = join(os.homedir(), ".config/opencode");
 const USER_AGENTS = join(USER_OC, "agents");
 const USER_SKILLS = join(USER_OC, "skills");
-const USER_CONFIG = join(USER_OC, "config.json");
+const USER_CONFIG = join(USER_OC, "opencode.json");
+// Legacy deploys (pre-v2.1 of this repo) wrote the global config as
+// config.json, which OpenCode v2 never reads — adopt it when needed.
+const LEGACY_USER_CONFIG = join(USER_OC, "config.json");
 const USER_MANIFEST = join(USER_OC, ".skill-manifest.json");
 const USER_CLAUDE_SKILLS = join(os.homedir(), ".claude/skills");
 
@@ -627,7 +630,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
 
 async function checkStrictAllowlist(sel, opts) {
   if (opts.permit) return; // --permit handles it — skip the warning
-  const config = await readJsonMaybe(USER_CONFIG);
+  const config = (await readJsonMaybe(USER_CONFIG)) ?? (await readJsonMaybe(LEGACY_USER_CONFIG));
   if (!config) return;
   // skills live in the permissions array ({action:"skill"} rules)
   const perms = Array.isArray(config.permissions) ? config.permissions : [];
@@ -636,7 +639,7 @@ async function checkStrictAllowlist(sel, opts) {
     const hidden = sel.skills.filter((name) => !perms.some((r) => r && r.action === "skill" && r.resource === name && r.effect === "allow"));
     if (hidden.length) {
       console.error(`\n⚠  STRICT ALLOWLIST DETECTED — ${hidden.length} skill(s) installed but HIDDEN.`);
-      console.error(`   Add to config.json permissions array, or re-run with --permit:`);
+      console.error(`   Add to opencode.json permissions array, or re-run with --permit:`);
       for (const name of hidden) console.error(`     { "action": "skill", "resource": "${name}", "effect": "allow" }`);
     }
   }
@@ -660,7 +663,7 @@ async function warnMCPs(sel, depMap) {
   }
   if (!needed.size) return;
   const oc = await readJsonMaybe(SOURCE_OC);
-  console.error(`\n⚠  MCP REQUIREMENT — ${needed.size} MCP server(s) needed. Paste into config.json, or re-run with --project:`);
+  console.error(`\n⚠  MCP REQUIREMENT — ${needed.size} MCP server(s) needed. Paste into opencode.json, or re-run with --project:`);
   for (const m of needed) {
     const def = oc?.mcp?.servers?.[m];
     const snippet = def ? { ...def, disabled: false } : { disabled: false };
@@ -669,11 +672,17 @@ async function warnMCPs(sel, depMap) {
 }
 
 async function permitMerge(sel) {
+  // Adopt a legacy config.json (pre-v2.1 deploy) as the live opencode.json so
+  // its mcp servers / plugins / permissions survive the merge.
+  if (!existsSync(USER_CONFIG) && existsSync(LEGACY_USER_CONFIG)) {
+    await copyFile(LEGACY_USER_CONFIG, USER_CONFIG);
+    console.log("  adopted legacy config.json as opencode.json");
+  }
   const config = (await readJsonMaybe(USER_CONFIG)) || {};
   if (existsSync(USER_CONFIG)) {
     const ts = new Date().toISOString().replace(/[:.]/g, "-");
     await copyFile(USER_CONFIG, `${USER_CONFIG}.bak-${ts}`);
-    console.log(`  backup: config.json.bak-${ts}`);
+    console.log(`  backup: opencode.json.bak-${ts}`);
   }
   // skills → permissions array ({action:"skill"} rules; last-match-wins:
   // replaces an existing same-resource rule in place, else appends)
@@ -933,7 +942,7 @@ USAGE
 
 SCOPE
   User scope (default for 'add'): drops files into ~/.config/opencode/{agents,skills}/.
-  opencode auto-discovers them — no config.json touch unless --permit.
+  opencode auto-discovers them — no opencode.json touch unless --permit.
   Project scope (--project): writes .opencode/{agents,skills}/ + opencode.json + models.json + AGENTS.md.
 
 FLAGS
@@ -948,14 +957,14 @@ FLAGS
   --dry-run            preview the install manifest, write nothing
   --force              overwrite conflicting files opencode-init didn't write
   --prune              remove opencode-init-owned entries absent from the new set
-  --permit             (user scope) backup config.json + merge permissions-array rules (skill allows + build's subagent rules)
+  --permit             (user scope) backup opencode.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
   --format <f>         (add) target format: opencode (default), claude, or both
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and
   <project>/.opencode. User-scope 'add' is a pure file-drop (auto-discovered);
-  --permit backs up config.json then merges permissions-array rules: skill-allow entries plus agents.build subagent rules (deny-all-first seed incl. explore/general when absent or v1-shaped).
+  --permit backs up opencode.json then merges permissions-array rules: skill-allow entries plus agents.build subagent rules (deny-all-first seed incl. explore/general when absent or v1-shaped).
 `);
 }
 

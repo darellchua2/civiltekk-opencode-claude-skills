@@ -26,7 +26,7 @@
 //     [--project-map <./.opencode/models.json>] \
 //     [--overrides <~/.config/opencode/agent-overrides.json>] \
 //     [--project-overrides <./.opencode/agent-overrides.json>] \
-//     [--config-src <opencode.json>] [--config-dest <deployed config.json>] \
+//     [--config-src <opencode.json>] [--config-dest <deployed opencode.json>] \
 //     [--state <.resolved-models.json sidecar>] \
 //     [--provider <name> --presets <provider-presets.json>] \
 //     [--inject-primary] [--force] [--dry-run] [--preview-dir <path>] [--provider-models <file>] [--verbose] [--json]
@@ -457,7 +457,7 @@ async function main() {
     }
   }
 
-  // config.json: apply writes real config-dest; preview writes opencode.json into the preview dir.
+  // opencode.json: apply writes real config-dest; preview writes opencode.json into the preview dir.
   if (configPatched && configObj && doWrite) {
     const cfgOut = (O.dryRun && O.previewDir) ? join(outDir, "opencode.json") : O.configDest;
     await mkdir(dirname(cfgOut), { recursive: true });
