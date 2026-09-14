@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.0.1](https://github.com/darellchua2/opencode-config-template/compare/v6.0.0...v6.0.1) (2026-09-14)
+
+### Bug Fixes
+
+* **review:** scaffold tree, anchored tarball gate, drop dead dockerignore ([6e5fff0](https://github.com/darellchua2/opencode-config-template/commit/6e5fff0cd20779ee76c742d90812e85c050af71f))
+* **tests:** restore pinned bats-core submodule pointer ([9ac1901](https://github.com/darellchua2/opencode-config-template/commit/9ac19010b0f97a0d3ec8fd8d317bba2eb5df73e1))
+
+### Code Refactoring
+
+* **deploy:** implement Phase 2 — rewire code paths to root content ([7a0130c](https://github.com/darellchua2/opencode-config-template/commit/7a0130ceaa1bbfa07e2a54cc9cfaadbe588e6f69))
+* **deploy:** implement Phase 3 — rewire setup scripts to root content ([33883d5](https://github.com/darellchua2/opencode-config-template/commit/33883d52385ef63dc9bd687268e33773d9c9a0fc))
+* **repo:** implement Phase 1 — move content to root + bridge ([54a65bf](https://github.com/darellchua2/opencode-config-template/commit/54a65bf30d5f24330b31c3b4aceb1d0b82823ec7))
+
+### Documentation
+
+* **content:** implement Phase 6 — self-references on new layout ([c733638](https://github.com/darellchua2/opencode-config-template/commit/c73363828168bc6b0332a54fded68c17240d7c91))
+* **learnings:** capture path-move CI-gate anchoring + vibeguard search-path pattern ([8689972](https://github.com/darellchua2/opencode-config-template/commit/8689972e77e4a2158c402a851cc074962cc9f9af)), closes [#381](https://github.com/darellchua2/opencode-config-template/issues/381)
+* **plan:** add PLAN-381.md for [#381](https://github.com/darellchua2/opencode-config-template/issues/381) ([4a5f9f2](https://github.com/darellchua2/opencode-config-template/commit/4a5f9f29e13147a68ccb5402ea2ed22c92707940))
+* **plan:** apply review findings to PLAN-381 ([d1a8458](https://github.com/darellchua2/opencode-config-template/commit/d1a8458e14a79da0fbc99fe965368a8b953280b0))
+* **repo:** implement Phase 7 — docs on new layout, all final gates green ([52caa8c](https://github.com/darellchua2/opencode-config-template/commit/52caa8c21712d0a0e1a4d9dd8108b7d4cbaf75c6))
+
 ## [6.0.0](https://github.com/darellchua2/opencode-config-template/compare/v5.18.2...v6.0.0) (2026-09-14)
 
 ### ⚠ BREAKING CHANGES
