@@ -33,7 +33,7 @@ setup() {
     CONFIG_DIR="${TEST_HOME}/.config/opencode"
     SKILLS_DIR="${CONFIG_DIR}/skills"
     AGENTS_DEST_DIR="${CONFIG_DIR}/agents"
-    CONFIG_FILE="${CONFIG_DIR}/config.json"
+    CONFIG_FILE="${CONFIG_DIR}/opencode.json"
     mkdir -p "$CONFIG_DIR" "$SKILLS_DIR" "$AGENTS_DEST_DIR"
     echo '{"test": true}' > "$CONFIG_FILE"
     echo "# AGENTS" > "${CONFIG_DIR}/AGENTS.md"
@@ -56,7 +56,7 @@ teardown() {
     fi
     BACKUP_DIR="${TEST_HOME}/.opencode-backup-20260719_010000"
     mkdir -p "$BACKUP_DIR"
-    echo "config" > "${BACKUP_DIR}/config.json"
+    echo "config" > "${BACKUP_DIR}/opencode.json"
     echo "agents" > "${BACKUP_DIR}/AGENTS.md"
 
     ZIP_BACKUP=true
@@ -69,7 +69,7 @@ teardown() {
     # Simulate zip absence by temporarily masking command_exists
     BACKUP_DIR="${TEST_HOME}/.opencode-backup-20260719_020000"
     mkdir -p "$BACKUP_DIR"
-    echo "config" > "${BACKUP_DIR}/config.json"
+    echo "config" > "${BACKUP_DIR}/opencode.json"
 
     ZIP_BACKUP=true
     DRY_RUN=false
@@ -90,7 +90,7 @@ teardown() {
     fi
     BACKUP_DIR="${TEST_HOME}/.opencode-backup-20260719_030000"
     mkdir -p "$BACKUP_DIR"
-    echo "config" > "${BACKUP_DIR}/config.json"
+    echo "config" > "${BACKUP_DIR}/opencode.json"
 
     ZIP_BACKUP=false
     DRY_RUN=false
@@ -104,7 +104,7 @@ teardown() {
     fi
     BACKUP_DIR="${TEST_HOME}/.opencode-backup-20260719_040000"
     mkdir -p "$BACKUP_DIR"
-    echo "config" > "${BACKUP_DIR}/config.json"
+    echo "config" > "${BACKUP_DIR}/opencode.json"
 
     ZIP_BACKUP=true
     DRY_RUN=true
@@ -265,18 +265,31 @@ teardown() {
 # restore_from_dir
 ################################################################################
 
-@test "restore_from_dir restores config.json and AGENTS.md" {
+@test "restore_from_dir restores opencode.json and AGENTS.md" {
     # Set up a source backup dir
     local src="${TEST_HOME}/restore-src"
     mkdir -p "$src"
-    echo '{"restored": true}' > "${src}/config.json"
+    echo '{"restored": true}' > "${src}/opencode.json"
     echo "# RESTORED" > "${src}/AGENTS.md"
 
     restore_from_dir "$src"
 
-    [ -f "${CONFIG_DIR}/config.json" ]
-    grep -q '"restored": true' "${CONFIG_DIR}/config.json"
+    [ -f "${CONFIG_DIR}/opencode.json" ]
+    grep -q '"restored": true' "${CONFIG_DIR}/opencode.json"
     grep -q "RESTORED" "${CONFIG_DIR}/AGENTS.md"
+}
+
+@test "restore_from_dir maps legacy config.json backups to opencode.json" {
+    # Pre-v2.1 backups stored the config as config.json; restore must land it
+    # on the name OpenCode v2 actually reads.
+    local src="${TEST_HOME}/restore-legacy-src"
+    mkdir -p "$src"
+    echo '{"legacy": true}' > "${src}/config.json"
+
+    restore_from_dir "$src"
+
+    [ -f "${CONFIG_DIR}/opencode.json" ]
+    grep -q '"legacy": true' "${CONFIG_DIR}/opencode.json"
 }
 
 @test "restore_from_dir restores skills/ from skills-backup/ when present" {
@@ -329,14 +342,14 @@ teardown() {
 @test "rollback --dry-run --yes does NOT modify CONFIG_DIR" {
     # Capture state
     local config_before
-    config_before=$(cat "${CONFIG_DIR}/config.json" 2>/dev/null)
+    config_before=$(cat "${CONFIG_DIR}/opencode.json" 2>/dev/null)
     local agents_before
     agents_before=$(cat "${CONFIG_DIR}/AGENTS.md" 2>/dev/null)
 
     # Set up a backup to roll back to (with different content)
     local b1="${TEST_HOME}/.opencode-backup-20260710_010000"
     mkdir -p "$b1"
-    echo '{"different": true}' > "${b1}/config.json"
+    echo '{"different": true}' > "${b1}/opencode.json"
     echo "# DIFFERENT" > "${b1}/AGENTS.md"
 
     ROLLBACK_TARGET="20260710_010000"
@@ -347,7 +360,7 @@ teardown() {
     echo "$output" | grep -q "DRY-RUN"
 
     # State must be unchanged
-    [ "$(cat "${CONFIG_DIR}/config.json")" = "$config_before" ]
+    [ "$(cat "${CONFIG_DIR}/opencode.json")" = "$config_before" ]
     [ "$(cat "${CONFIG_DIR}/AGENTS.md")" = "$agents_before" ]
 
     # And no pre-rollback backup should exist (dry-run shouldn't create one)
@@ -360,7 +373,7 @@ teardown() {
     # Backup with different content
     local b1="${TEST_HOME}/.opencode-backup-20260710_010000"
     mkdir -p "$b1"
-    echo '{"restored": true}' > "${b1}/config.json"
+    echo '{"restored": true}' > "${b1}/opencode.json"
     echo "# RESTORED" > "${b1}/AGENTS.md"
 
     ROLLBACK_TARGET="latest"
@@ -369,8 +382,8 @@ teardown() {
     run rollback
     [ "$status" -eq 0 ]
 
-    # config.json should be the restored one
-    grep -q '"restored": true' "${CONFIG_DIR}/config.json"
+    # opencode.json should be the restored one
+    grep -q '"restored": true' "${CONFIG_DIR}/opencode.json"
     grep -q "RESTORED" "${CONFIG_DIR}/AGENTS.md"
 
     # A pre-rollback backup must exist
