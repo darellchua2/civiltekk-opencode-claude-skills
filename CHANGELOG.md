@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.18.0](https://github.com/darellchua2/opencode-config-template/compare/v5.17.0...v5.18.0) (2026-09-14)
+
+### Features
+
+* **plugins:** port local plugins to v2 API, prune v1-only npm pins ([e918ece](https://github.com/darellchua2/opencode-config-template/commit/e918ece40b28568542e78005e0a9a63aafa7d27d))
+* **skills:** add opencode-v2-migration skill + subagent (149th skill, 34th agent) ([33fc115](https://github.com/darellchua2/opencode-config-template/commit/33fc115fd64a94819070a86c60f4c5a56e0079db))
+
+### Bug Fixes
+
+* **deploy:** write global config to opencode.json, not config.json ([a21504e](https://github.com/darellchua2/opencode-config-template/commit/a21504e9dfae6d036e243848eecd54bf721058cf))
+* **docker:** healthcheck against V2 /api/health endpoint ([d5aa298](https://github.com/darellchua2/opencode-config-template/commit/d5aa298c9f45edb98d851ed3f66f7b93f27c24ff))
+* **skills,deploy:** finish plugin-drop reference cleanup; harden markitdown install check ([158e316](https://github.com/darellchua2/opencode-config-template/commit/158e3164366783a21ad85fda7559ef5c1f746838))
+* **skills:** repoint plugin-dependent references after v2 plugin cleanup ([a385f0d](https://github.com/darellchua2/opencode-config-template/commit/a385f0d68b7daa76deb3c0b748918f28991919f5))
+
+### Documentation
+
+* mark V1-plugin features inert on OpenCode v2, fix v2 doc links ([a875e7c](https://github.com/darellchua2/opencode-config-template/commit/a875e7cde0a6278dfbab043a227b954d45bb6842))
+
 ## [5.17.0](https://github.com/darellchua2/opencode-config-template/compare/v5.16.0...v5.17.0) (2026-09-13)
 
 ### Features
