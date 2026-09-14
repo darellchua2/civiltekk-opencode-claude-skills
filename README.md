@@ -488,7 +488,7 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 
 ## Secret Masking (vibeguard)
 
-> **OpenCode v2 status:** `opencode-vibeguard@0.1.0` is a V1-API plugin and **currently fails to load on v2** (V1 plugin implementations do not run in V2 — see the [migration guide](https://opencode.ai/v2/docs/migrate-v1/#plugins)). Masking is therefore **inactive** until a V2 port ships; the `permissions` deny rules for `*.env` reads remain active and are the primary defense. This section documents the intended V1 behavior.
+> **OpenCode v2 status:** shipped as a local V2 port (`opencode_app/.opencode/plugins/vibeguard.ts` — engine ported from `opencode-vibeguard@0.1.0`, MIT; see `plugins/ATTRIBUTION.md`). Masking is **active** on v2; the npm pin was removed from the `plugins` array (double-registration guard). Verify with `OPENCODE_VIBEGUARD_DEBUG=1 opencode`. The `permissions` deny rules for `*.env` remain the second layer.
 
 Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic — the LLM provider never sees plaintext secret values, but tools (bash, write, etc.) receive real values at execution time. It is the **universal masking layer** covering all agents (primary + subagents), regardless of individual `read` deny rules in their `permissions` arrays.
 
@@ -693,7 +693,7 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 
 ### Ponytail (scoped wrapper plugin)
 
-> **OpenCode v2 status:** local plugins are still discovered from `.opencode/plugins/`, but V1-API plugin code does not execute on v2 — `ponytail-scoped.ts` currently fails to load (needs a port to the [V2 plugin API](https://opencode.ai/v2/docs/build/plugins/migrate-v1/)). The `/ponytail` commands and injection behavior below are V1-era until ported.
+> **OpenCode v2 status:** ported to the V2 plugin API (`session.hook("context")` injection, `command.transform` for the `/ponytail*` commands) — active on v2. Env-var controls are unchanged.
 
 [Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder (YAGNI → reuse → stdlib → native → installed dep → one-liner → minimum-that-works). This repo ships a **scoped wrapper plugin** (`opencode_app/.opencode/plugins/ponytail-scoped.ts`) instead of the stock npm adapter — it adds agent-type-aware scoping the upstream OpenCode adapter lacks:
 
@@ -711,7 +711,7 @@ Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See 
 
 ### Learnings Auto-Inject (local plugin)
 
-> **OpenCode v2 status:** this V1-API plugin currently fails to load on v2 — the LEARNINGS manifest is **not auto-injected**; agents must `glob`+`read` `LEARNINGS/` manually (the documented fallback) until it is ported.
+> **OpenCode v2 status:** ported to the V2 plugin API — the LEARNINGS manifest is auto-injected on v2.
 
 `opencode_app/.opencode/plugins/learnings-autoinject.ts` closes the gap documented in `continuous-learning-skill`: *"OpenCode does NOT auto-scan LEARNINGS/ directories."* The `opencode-superlocalmemory` plugin auto-injects its **vector store**, but the git-committed `LEARNINGS/*.md` markdown files were never surfaced automatically — agents had to manually `glob`+`read`. This plugin injects a **compact manifest** (titles + paths + one-line summaries, ~200-400 tokens) into the system prompt at session start; the model `read()`s full bodies on demand.
 

@@ -61,14 +61,13 @@ Source: LEARNINGS/ (2 project). Refresh: /learnings-refresh
 | Hook | Role |
 |------|------|
 | `config` | Register slash commands |
-| `chat.message` | Cache `sessionID → agent` |
-| `experimental.chat.system.transform` | Core: append manifest (idempotent, off-set-gated) |
-| `command.execute.before` | Persist per-session toggles |
+| `session.hook("context")` | Core: append manifest (idempotent, off-set-gated; event carries `agent` + `sessionID` directly) |
+| `command.transform` | Register `/learnings*` commands; persist per-session toggles inside `execute()` |
 
 ## Compatibility
 
 - No `opencode.json` change — local plugins are glob-discovered.
-- No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `experimental.chat.system.transform` vs `tui.prompt.append`).
+- No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; v2 hook: `session.hook("context")` vs the memory plugin's own injection).
 - Requires `LEARNINGS/` to exist in the project root; absent → skips silently.
 
 See `research/ponytail-load-fix.md` for why this file is `.ts` (not `.mjs`).

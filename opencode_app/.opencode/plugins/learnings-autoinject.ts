@@ -1,37 +1,29 @@
-// learnings-autoinject.ts — OpenCode plugin that auto-injects a compact manifest
-// of a project's LEARNINGS/*.md files into the system prompt at session start.
+// learnings-autoinject.ts — OpenCode v2 plugin that auto-injects a compact
+// manifest of a project's LEARNINGS/*.md files into the system prompt.
 //
 // Closes the gap documented in continuous-learning-skill/SKILL.md:
 //   "OpenCode does NOT auto-scan LEARNINGS/ directories."
-// The superlocalmemory plugin auto-injects its vector store (tui.prompt.append),
-// but the git-committed LEARNINGS/*.md markdown files are never surfaced
-// automatically — agents must manually glob+read. This plugin automates the
-// *discovery* step by injecting a titles+paths manifest into the system prompt
-// so the model knows what's available without spending a tool call.
+// Injects only the titles+paths index (~200-400 tokens); the model `read()`s
+// full bodies on demand.
 //
-// Architecture mirrors ponytail-scoped.ts byte-for-byte (same 4 hooks, same
-// toggle pattern, same env-var + slash-command controls). The model still
-// `read()`s full file bodies on demand — we inject only the index.
+// ── v2 port notes ─────────────────────────────────────────────────────────────
+// V1 hooks → v2 API:
+//   config                                   → ctx.command.transform (editor.add)
+//   "chat.message" (agent cache)             → NOT NEEDED: the v2 "context"
+//                                             hook event carries `agent` directly
+//   "experimental.chat.system.transform"     → ctx.session.hook("context") +
+//                                             event.system.push({type:"text",...})
+//   "command.execute.before" (toggle state)  → handled inside the command
+//                                             execute() implementations
+// Plain default export `{ id, setup }` (validated loader shape) — no runtime
+// dependency on @opencode/plugin. Local plugins under plugins/*.ts are
+// glob-discovered by OpenCode v2, same as v1.
 //
-// ── Why .ts (NOT .mjs) ───────────────────────────────────────────────────────
-// OpenCode's local-plugin discovery (packages/opencode/src/config/plugin.ts,
-// verified identical at git tag v1.18.11) globs `{plugin,plugins}/*.{ts,js}`.
-// `.mjs` is NOT matched. `.ts` is robust: Bun always treats it as ESM. See
-// research/ponytail-load-fix.md.
-//
-// ── Valid hooks (all first-class in the Hooks interface @ v1.18.11) ──────────
-//   - config(input)                              — register slash commands
-//   - "chat.message"(input)                      — cache sessionID → agent
-//   - "experimental.chat.system.transform"(input, output) — CORE: append manifest
-//   - "command.execute.before"(input)            — persist /learnings-* toggles
-//
-// ── Env vars ─────────────────────────────────────────────────────────────────
+// ── Env vars ───────────────────────────────────────────────────────────────────
 //   LEARNINGS_AUTOINJECT_DEFAULT  — on|off  (default: on)   global default state
 //   LEARNINGS_AUTOINJECT_USER     — on|off  (default: off)  also scan user-level dir
 //   LEARNINGS_AUTOINJECT_OFF      — regex of agent names to EXCLUDE (default: read-only/research agents)
 //   LEARNINGS_AUTOINJECT_MAX      — number  (default: 30)   cap files in manifest
-//
-// No opencode.json change required — local plugins are glob-discovered.
 
 import fs from 'fs';
 import path from 'path';
@@ -53,9 +45,8 @@ const MAX_FILES = (() => {
   return Number.isFinite(n) && n > 0 ? Math.min(n, 100) : 30;
 })();
 
-// Reuse ponytail's off-set verbatim — read-only/research/non-coding agents that
-// do not act on LEARNINGS. Keeping the two regexes in sync is intentional; if
-// ponytail's set changes, mirror it here.
+// Read-only/research/non-coding agents that do not act on LEARNINGS.
+// Kept in sync with ponytail-scoped's off-set by convention.
 const DEFAULT_OFF_PATTERN =
   '^(explore|general|autoresearch-research-subagent|explorer-subagent|' +
   'requirements-specialist-subagent|discovery-specialist-subagent|' +
@@ -84,9 +75,8 @@ const MARKER = 'LEARNINGS AUTOINJECT';
 
 // ── Per-session state ───────────────────────────────────────────────────────────
 
-const sessionAgent = new Map();       // sessionID → agent (populated by chat.message)
-const sessionEnabled = new Map();     // sessionID → boolean (overridden via /learnings-on|off)
-const sessionManifest = new Map();    // sessionID → string (cached manifest; rebuilt on /learnings-refresh)
+const sessionEnabled = new Map();   // sessionID → boolean (overridden via /learnings-on|off)
+const sessionManifest = new Map();  // sessionID → string | null (cached; rebuilt on /learnings-refresh)
 
 function isOn(sessionID: string): boolean {
   if (sessionID && sessionEnabled.has(sessionID)) return sessionEnabled.get(sessionID);
@@ -180,7 +170,7 @@ function buildSection(rootDir: string, rootLabel: string): { lines: string[]; to
   return { lines, total: files.length };
 }
 
-function buildManifest(sessionID: string, directory: string): string | null {
+function buildManifest(directory: string): string | null {
   const projectSection = buildSection(path.join(directory, LEARNINGS_DIR), 'project');
   let userSection: { lines: string[]; total: number } | null = null;
   if (USER_LEVEL_ENABLED) {
@@ -204,128 +194,83 @@ function buildManifest(sessionID: string, directory: string): string | null {
   return out.join('\n');
 }
 
-// ── Command definitions ─────────────────────────────────────────────────────────
+// ── v2 plugin ───────────────────────────────────────────────────────────────────
 
-const COMMANDS = {
-  learnings: {
-    description: 'Learnings-autoinject: report on/off state and file count for this session.',
-    template:
-      'Report the learnings-autoinject state for this session in one line (on or off, and how many ' +
-      'LEARNINGS files are indexed). Do not output code.',
-    agent: 'build',
-  },
-  'learnings-on': {
-    description: 'Learnings-autoinject: enable manifest injection for this session.',
-    template: 'LEARNINGS auto-inject is now ON for this session. Confirm in one line. Do not output code.',
-    agent: 'build',
-  },
-  'learnings-off': {
-    description: 'Learnings-autoinject: disable manifest injection for this session.',
-    template: 'LEARNINGS auto-inject is now OFF for this session. Confirm in one line. Do not output code.',
-    agent: 'build',
-  },
-  'learnings-refresh': {
-    description: 'Learnings-autoinject: re-scan LEARNINGS/ and rebuild the manifest on the next turn.',
-    template: 'LEARNINGS manifest cache invalidated — it will be rebuilt on the next turn. Confirm in one line. Do not output code.',
-    agent: 'build',
-  },
-};
+export default {
+  id: 'learnings-autoinject',
 
-// ── Plugin ──────────────────────────────────────────────────────────────────────
-//
-// NAMED export (documented pattern; loader iterates Object.values(mod)).
-// Destructures { client, directory } — directory is the project root used to
-// locate <cwd>/LEARNINGS/.
+  async setup(ctx: any) {
+    const cwd: string = ctx?.location?.directory || process.cwd();
 
-export const LearningsAutoinject = async ({ client, directory }: any = {}) => {
-  const cwd: string = directory || process.cwd();
+    // /learnings, /learnings-on, /learnings-off, /learnings-refresh.
+    // v2 commands own their execution; toggles mutate session state here,
+    // then submit the same confirmation template the v1 commands used.
+    const confirm = (text: string) => async ({ sessionID, prompt, delivery }: any) => {
+      await ctx.session.prompt({ ...prompt, sessionID, text, delivery });
+    };
 
-  const log = (level: string, message: string) => {
-    try {
-      client && client.app && client.app.log({ body: { service: 'learnings-autoinject', level, message } });
-    } catch (_) {}
-  };
+    await ctx.command.transform((editor: any) => {
+      editor.add({
+        name: 'learnings',
+        description: 'Learnings-autoinject: report on/off state and file count for this session.',
+        execute: confirm(
+          'Report the learnings-autoinject state for this session in one line (on or off, and how many ' +
+          'LEARNINGS files are indexed). Do not output code.',
+        ),
+      });
+      editor.add({
+        name: 'learnings-on',
+        description: 'Learnings-autoinject: enable manifest injection for this session.',
+        execute: async (inv: any) => {
+          if (inv?.sessionID) sessionEnabled.set(inv.sessionID, true);
+          await confirm('LEARNINGS auto-inject is now ON for this session. Confirm in one line. Do not output code.')(inv);
+        },
+      });
+      editor.add({
+        name: 'learnings-off',
+        description: 'Learnings-autoinject: disable manifest injection for this session.',
+        execute: async (inv: any) => {
+          if (inv?.sessionID) sessionEnabled.set(inv.sessionID, false);
+          await confirm('LEARNINGS auto-inject is now OFF for this session. Confirm in one line. Do not output code.')(inv);
+        },
+      });
+      editor.add({
+        name: 'learnings-refresh',
+        description: 'Learnings-autoinject: re-scan LEARNINGS/ and rebuild the manifest on the next turn.',
+        execute: async (inv: any) => {
+          if (inv?.sessionID) sessionManifest.delete(inv.sessionID);
+          await confirm('LEARNINGS manifest cache invalidated — it will be rebuilt on the next turn. Confirm in one line. Do not output code.')(inv);
+        },
+      });
+    });
 
-  log('info', 'learnings-autoinject loaded — default: ' + (DEFAULT_ENABLED ? 'on' : 'off'));
-
-  return {
-    // Register the 4 commands (non-destructive merge).
-    config: async (config: any) => {
-      if (!config.command) config.command = {};
-      for (const [name, def] of Object.entries(COMMANDS)) {
-        if (!config.command[name]) config.command[name] = def;
-      }
-    },
-
-    // Cache sessionID → agent so the transform hook can scope by agent type.
-    'chat.message': async (input: any) => {
-      if (input && input.sessionID && input.agent) {
-        sessionAgent.set(input.sessionID, input.agent);
-      }
-    },
-
-    // Core: append the cached manifest to the system prompt, gated by toggle + off-set + idempotency.
-    'experimental.chat.system.transform': async (input: any, output: any) => {
-      if (!output || !Array.isArray(output.system)) return;
-
-      const sessionID = input && input.sessionID;
+    // Core: append the cached manifest to the system prompt, gated by toggle +
+    // off-set + idempotency. The v2 event carries agent + sessionID directly.
+    await ctx.session.hook('context', (event: any) => {
+      const sessionID = event?.sessionID;
       if (sessionID && !isOn(sessionID)) return;
 
-      let agent = sessionID ? sessionAgent.get(sessionID) : undefined;
-      if (!agent && sessionID && client && client.session && client.session.get) {
-        try {
-          const res = await client.session.get({ path: { id: sessionID } });
-          const data = res && res.data;
-          agent = (data && (data.agent || data.agentID || data.agentId)) || undefined;
-          if (agent) sessionAgent.set(sessionID, agent);
-        } catch (_) {}
-      }
+      const agent = event?.agent;
+      if (isInOffSet(agent)) return;
 
-      if (isInOffSet(agent)) {
-        log('debug', 'learnings skipped: agent in off-set (' + (agent || '?') + ')');
-        return;
-      }
+      const system = event?.system;
+      if (!Array.isArray(system)) return;
 
       // Idempotency: skip if already injected this turn.
-      for (const entry of output.system) {
-        if (typeof entry === 'string' && entry.includes(MARKER)) return;
+      for (const part of system) {
+        if (part && typeof part === 'object' && typeof part.text === 'string' && part.text.includes(MARKER)) return;
       }
 
-      // Cache the manifest per session (rebuilt on /learnings-refresh).
       let manifest = sessionID ? sessionManifest.get(sessionID) : undefined;
       if (manifest === undefined) {
-        manifest = buildManifest(sessionID || '', cwd);
+        manifest = buildManifest(cwd);
         if (sessionID) sessionManifest.set(sessionID, manifest); // may be null (no LEARNINGS dir)
       }
       if (!manifest) return; // no LEARNINGS/ → skip silently
 
-      if (output.system.length > 0) {
-        output.system[output.system.length - 1] =
-          String(output.system[output.system.length - 1]) + '\n\n' + manifest;
-      } else {
-        output.system.push(manifest);
-      }
-    },
+      system.push({ type: 'text', text: manifest });
+    });
 
-    // Persist /learnings-on|off|refresh per session.
-    'command.execute.before': async (input: any) => {
-      if (!input) return;
-      const cmd = input.command || '';
-      const sessionID = input.sessionID;
-      if (!sessionID) return;
-
-      if (cmd === 'learnings-on') {
-        sessionEnabled.set(sessionID, true);
-        log('info', 'learnings ON (session ' + sessionID + ')');
-      } else if (cmd === 'learnings-off') {
-        sessionEnabled.set(sessionID, false);
-        log('info', 'learnings OFF (session ' + sessionID + ')');
-      } else if (cmd === 'learnings-refresh') {
-        sessionManifest.delete(sessionID);
-        log('info', 'learnings manifest invalidated (session ' + sessionID + ')');
-      }
-    },
-  };
+    return undefined;
+  },
 };
-
-export default LearningsAutoinject;

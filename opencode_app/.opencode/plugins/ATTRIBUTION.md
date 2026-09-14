@@ -1,5 +1,25 @@
 # Attributions
 
+## vibeguard (`opencode-vibeguard`)
+
+`plugins/vibeguard.ts` is a single-file OpenCode **v2** port of
+[opencode-vibeguard](https://github.com/inkdust2021/opencode-vibeguard) v0.1.0 by inkdust2021.
+
+- **Upstream:** https://github.com/inkdust2021/opencode-vibeguard (npm: `opencode-vibeguard@0.1.0`)
+- **License:** MIT (see full text below)
+- **What was ported:** the redaction engine, pattern set (incl. builtins), placeholder
+  session (HMAC-SHA256 `__VG_<CATEGORY>_<hash12>__` placeholders, TTL + eviction),
+  deep object walk, and restore logic — essentially verbatim from upstream
+  `src/{config,engine,session,deep,restore,patterns}.js`.
+- **What changed:** the plugin entrypoint was rewritten for the v2 plugin API
+  (`ctx.session.hook("context"|"generate")` for outbound masking,
+  `ctx.tool.hook("execute.before")` for tool-input restore). Config discovery,
+  placeholder format, and fail-open-when-disabled semantics are unchanged, so
+  existing `vibeguard.config.json` files work as-is.
+- **Why a local port:** V1 plugin implementations do not run on OpenCode v2 and
+  upstream has no v2 release. The npm pin was removed from the `plugins` array
+  (double-registration guard) in favor of this vendored port.
+
 ## ponytail (`@dietrichgebert/ponytail`)
 
 This directory (`plugins/ponytail/`) contains code vendored and adapted from the

@@ -15,7 +15,7 @@ Multi-mode OpenCode configurator:
 
 ## Secret Masking
 
-Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic via regex patterns (`opencode_app/.opencode/vibeguard.config.json`). **OpenCode v2 status: the plugin is V1-API and currently fails to load — masking is inactive; the `permissions` deny rules for `*.env` are the active defense until a V2 port ships.** Behavioral rules: `deploy/.AGENTS.md` §Secret Hygiene. Verification + per-project overlay: `security-audit-skill` (also documents residual risks: `/share` plaintext, no fail-closed, plaintext session DB).
+Vibeguard masks `.env` secrets in provider-bound traffic via regex patterns (`opencode_app/.opencode/vibeguard.config.json`). **OpenCode v2: shipped as a local v2 port (`plugins/vibeguard.ts`, npm pin removed) — masking is active; the `permissions` deny rules for `*.env` are the second layer.** Behavioral rules: `deploy/.AGENTS.md` §Secret Hygiene. Verification + per-project overlay: `security-audit-skill` (also documents residual risks: `/share` plaintext, no fail-closed, plaintext session DB).
 
 ## Dependency Management
 
@@ -91,7 +91,7 @@ All subagents return (additive signal fields allowed beyond, never replacing):
 
 ## Project Learnings
 
-`LEARNINGS/` is a template in this repo; in target projects, check it before reviewing/planning. Primary storage: `memory` tool (searchable); secondary: `LEARNINGS/*.md`. The manifest is auto-injected per session by the local plugin (V1-API — **currently inert on OpenCode v2**; `glob`+`read` is the working fallback) — see user-level Memory Hygiene.
+`LEARNINGS/` is a template in this repo; in target projects, check it before reviewing/planning. Primary storage: `memory` tool (searchable, V1-plugin — inert on v2 until a compatible release); secondary: `LEARNINGS/*.md`. The manifest is auto-injected per session by the local plugin (ported to the v2 plugin API — active) — see user-level Memory Hygiene.
 
 ## Extract-then-Delegate
 
