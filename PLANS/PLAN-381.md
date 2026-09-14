@@ -39,18 +39,21 @@
 > Phase ordering note: Phases 1–4 are one logical rewire split for reviewability; bats runs red between them **by design**. The full test gate runs in Phase 5 and Phase 7. Do not block Phases 1–4 on bats.
 
 ### Phase 1: Move content + local runtime bridge
-- [ ] **1.1** `git mv opencode_app/.opencode/skills skills && git mv opencode_app/.opencode/agents agents && git mv opencode_app/.opencode/plugins plugins && git mv opencode_app/.opencode/vibeguard.config.json plugins/vibeguard.config.json`
+- [x] **1.1** `git mv opencode_app/.opencode/skills skills && git mv opencode_app/.opencode/agents agents && git mv opencode_app/.opencode/plugins plugins && git mv opencode_app/.opencode/vibeguard.config.json plugins/vibeguard.config.json`
     — **Why:** The move is the ticket's core; everything else re-points at it. History-preserving `git mv` keeps blame.
     — **Done when:** `git status --porcelain` shows only R (rename) entries for the four moves; `ls skills | wc -l` = 151, `ls agents/*.md | wc -l` = 34.
     — **Consumers affected:** all rows of the map above (re-pointed in Phases 2–4).
-- [ ] **1.2** Create tracked symlinks for local runtime: `opencode_app/.opencode/agents → ../../agents`, `…/skills → ../../skills`, `…/plugins → ../../plugins`, `…/vibeguard.config.json → ../../plugins/vibeguard.config.json`
+    — **Done:** 771 rename entries (content + plugins tree), 151/34 counts verified; files: skills/, agents/, plugins/, plugins/vibeguard.config.json; fixes: none
+- [x] **1.2** Create tracked symlinks for local runtime: `opencode_app/.opencode/agents → ../../agents`, `…/skills → ../../skills`, `…/plugins → ../../plugins`, `…/vibeguard.config.json → ../../plugins/vibeguard.config.json`
     — **Why:** `restart-opencode-pm2.sh` serves with `--cwd opencode_app`; OpenCode auto-discovers `.opencode/{agents,skills,plugins}` from cwd. Without the bridge, the local server loses all content while the Docker path (explicit COPY) is unaffected.
     — **Done when:** `ls -l opencode_app/.opencode/` shows the four symlinks; `test -f opencode_app/.opencode/agents/tdd-subagent.md` (via symlink) succeeds.
     — **Consumers affected:** restart-opencode-pm2.sh (local pm2 serve); none in CI/Docker (excluded from context in 1.3). On Windows clones without symlink support these materialize as text files — cosmetic only, nothing in setup.ps1 consumes them; documented in 7.1.
-- [ ] **1.3** Root `.dockerignore`: replace `opencode_app/.opencode/skills/_archived/` with `skills/_archived/` AND add `opencode_app/.opencode/agents`, `opencode_app/.opencode/skills`, `opencode_app/.opencode/plugins`, `opencode_app/.opencode/vibeguard.config.json`
+    — **Done:** four relative symlinks created + staged (old vibeguard path records as typechange T, expected); files: opencode_app/.opencode/{agents,skills,plugins,vibeguard.config.json}; fixes: none
+- [x] **1.3** Root `.dockerignore`: replace `opencode_app/.opencode/skills/_archived/` with `skills/_archived/` AND add `opencode_app/.opencode/agents`, `opencode_app/.opencode/skills`, `opencode_app/.opencode/plugins`, `opencode_app/.opencode/vibeguard.config.json`
     — **Why:** Context is repo root; `_archived` must stay out of images as before, and the bridge symlinks must never enter the build context (they dangle inside a container).
     — **Done when:** `grep -n '_archived\|opencode_app/.opencode' .dockerignore` shows exactly the five new-form entries; `git check-ignore` style sanity via `tar` is deferred to the Phase 4 docker build.
     — **Consumers affected:** docker compose build.
+    — **Done:** five entries in place + sanctioned-marker comment explaining why the bridge is excluded; files: .dockerignore; fixes: none
 
 ### Phase 2: Rewire installer/deploy code
 - [ ] **2.1** `deploy/source.mjs` lines 21–22: `skillDir`/`agentDir` → `join(root, "skills")` / `join(root, "agents")`
