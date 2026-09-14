@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.18.1](https://github.com/darellchua2/opencode-config-template/compare/v5.18.0...v5.18.1) (2026-09-14)
+
+### Bug Fixes
+
+* **repo-setup:** write full MCP entries, not disabled-only stubs ([234e813](https://github.com/darellchua2/opencode-config-template/commit/234e813152e6211d519297cea6b9a23ba8b2eb60))
+
+### Documentation
+
+* **migration:** record v2 MCP stub-replacement and cli.json TUI-plugin traps ([e4240bc](https://github.com/darellchua2/opencode-config-template/commit/e4240bccd71431e64a97a0a7474d29570d294f9b))
+
 ## [5.18.0](https://github.com/darellchua2/opencode-config-template/compare/v5.17.0...v5.18.0) (2026-09-14)
 
 ### Features
