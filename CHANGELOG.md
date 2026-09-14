@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.18.2](https://github.com/darellchua2/opencode-config-template/compare/v5.18.1...v5.18.2) (2026-09-14)
+
+### Bug Fixes
+
+* **docling:** default transport to stdio and survive PEP 668 pip ([021c37a](https://github.com/darellchua2/opencode-config-template/commit/021c37a79bd2b58d0e2231a195056aff985489a1))
+
 ## [5.18.1](https://github.com/darellchua2/opencode-config-template/compare/v5.18.0...v5.18.1) (2026-09-14)
 
 ### Bug Fixes
