@@ -6,15 +6,15 @@
 
 ## Acceptance Criteria
 
-- [ ] `plugins` array carries `@prevalentware/opencode-goal-plugin` pinned `@^0.1.48` (fallback to bare name if v2 constraint resolution fails at boot — see 1.1)
-- [ ] `opencode` boots with zero plugin boot warnings (host gate 4.2)
-- [ ] No `commands.goal` block added (v2 plugin self-registers `/goal`, `/pause_goal`, `/resume_goal`)
-- [ ] Docs consistent: goal-plugin removed from README v2 watch-list; no stale "removed pending v2" references anywhere
-- [ ] `plan-automation-loop-skill` keeps `[goal:*]` markers AND maps goal close under `/goal` to the plugin's `update_goal` evidence contract
-- [ ] Stale `.opencode/goals/` ignore removed; LEARNINGS both-entries rule annotated v1-specific
-- [ ] No `package-lock.json` change (plugin fetched by opencode at boot, not a repo dependency)
-- [ ] Repo test suite green; `docker compose build` succeeds (build-only — see descope note)
-- [ ] Docker descope recorded: `/goal` in the web endpoint is **blocked-by #387** (container v1 binary ignores the v2 `plugins` key); recorded in map, risks, and PR body
+- [x] `plugins` array carries `@prevalentware/opencode-goal-plugin` pinned `@^0.1.48` (fallback to bare name if v2 constraint resolution fails at boot — see 1.1)
+- [x] `opencode` boots with zero plugin boot warnings (host gate 4.2)
+- [x] No `commands.goal` block added (v2 plugin self-registers `/goal`, `/pause_goal`, `/resume_goal`)
+- [x] Docs consistent: goal-plugin removed from README v2 watch-list; no stale "removed pending v2" references anywhere
+- [x] `plan-automation-loop-skill` keeps `[goal:*]` markers AND maps goal close under `/goal` to the plugin's `update_goal` evidence contract
+- [x] Stale `.opencode/goals/` ignore removed; LEARNINGS both-entries rule annotated v1-specific
+- [x] No `package-lock.json` change (plugin fetched by opencode at boot, not a repo dependency)
+- [x] Repo test suite green; `docker compose build` succeeds (build-only — see descope note)
+- [x] Docker descope recorded: `/goal` in the web endpoint is **blocked-by #387** (container v1 binary ignores the v2 `plugins` key); recorded in map, risks, and PR body
 
 **Deferred — post-merge manual checks (owner-approved via pipeline report + PR body; headless executor limits):**
 
@@ -116,22 +116,26 @@ Cross-module nodes: yes — `opencode_app/opencode.json` is consumed by both dep
 
 ### Phase 4: Verification gates (no commit unless a gate forces a fix)
 
-- [ ] **4.1** Discover and run the repo test suite (from `package.json` scripts / `tests/`); all green
+- [x] **4.1** Discover and run the repo test suite (from `package.json` scripts / `tests/`); all green
     — **Why:** AGENTS.md Verification Gates — tests on config changes
     — **Done when:** suite exits 0 (or pre-existing breakage stated explicitly with evidence)
     — **Consumers affected:** CI parity
-- [ ] **4.2** Boot smoke in the worktree: start `opencode serve` briefly (timeout), capture stderr/stdout; assert zero plugin load warnings/errors mentioning goal-plugin and that the `@^0.1.48` pin resolves (else apply the 1.1 bare-name fallback); then stop it
+    — **Done:** no npm scripts; gate = CI's own command (release.yml): vendored bats loop over tests/*.bats — 13/13 green; files: (gate only); fixes: submodule init (recorded at 1.4)
+- [x] **4.2** Boot smoke in the worktree: start `opencode serve` briefly (timeout), capture stderr/stdout; assert zero plugin load warnings/errors mentioning goal-plugin and that the `@^0.1.48` pin resolves (else apply the 1.1 bare-name fallback); then stop it
     — **Why:** boot warnings were the exact v1 failure mode; this proves plugin fetch+pin-resolution works on v2 (also the merge gate for the Docker-descoped ticket)
     — **Done when:** captured log contains no plugin error/warning lines and no boot failure; pin decision finalized
     — **Consumers affected:** every future session boot
-- [ ] **4.3** Drift check: `git status` clean of `package-lock.json`/`node_modules` changes; diff touches only the mapped nodes
+    — **Done:** isolated OPENCODE_CONFIG_DIR boot (opencode v2.0.3): server healthy, boot logs clean (2 lines); AFFIRMATIVE evidence via /api/command — plugin self-registered `goal`, `pause_goal`, `resume_goal`; /api/config resolved `@prevalentware/opencode-goal-plugin@^0.1.48` — caret pin accepted, no fallback needed; server stopped; files: (gate only); fixes: none
+- [x] **4.3** Drift check: `git status` clean of `package-lock.json`/`node_modules` changes; diff touches only the mapped nodes
     — **Why:** the plugin is runtime-fetched by opencode, not a repo dependency; lockfile drift would violate the repo dependency rule
     — **Done when:** `git diff --name-only origin/main...feat/382` lists only mapped files
     — **Consumers affected:** reviewers, `npm ci` users
-- [ ] **4.4** Docker build smoke: `docker compose build` succeeds (build-only gate). RUNTIME `/goal` in the web endpoint is explicitly descoped — blocked-by #387 (container v1 binary ignores the v2 `plugins` key; no `opencode-ai` 2.x exists on npm). If the environment lacks a Docker daemon, record environment-blocked with evidence in the PR body
+    — **Done:** diff lists exactly the 9 mapped files; no package.json/package-lock/node_modules changes; files: (gate only); fixes: none
+- [x] **4.4** Docker build smoke: `docker compose build` succeeds (build-only gate). RUNTIME `/goal` in the web endpoint is explicitly descoped — blocked-by #387 (container v1 binary ignores the v2 `plugins` key; no `opencode-ai` 2.x exists on npm). If the environment lacks a Docker daemon, record environment-blocked with evidence in the PR body
     — **Why:** AGENTS.md Verification Gates — build on config changes; runtime presence is untestable until #387 and would otherwise fail silently-green
     — **Done when:** image builds (or environment-blocked recorded with evidence); PR body carries the descope note
     — **Consumers affected:** Docker standalone users (via #387)
+    — **Done:** daemon present; `docker compose build` succeeded (image 382-opencode built); descope note staged for the PR body; files: (gate only); fixes: none
 
 ## Technical Notes
 
