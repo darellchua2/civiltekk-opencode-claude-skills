@@ -42,22 +42,26 @@ Cross-module nodes: yes — `opencode_app/opencode.json` is consumed by both dep
 
 ### Phase 1: Config restore + README watch-list (commit: `feat(plugins): re-add goal mode via @prevalentware/opencode-goal-plugin (v2)`)
 
-- [ ] **1.1** Set `plugins` array (opencode_app/opencode.json:599) to `["@prevalentware/opencode-goal-plugin@^0.1.48"]`, no options object. If gate 4.2 shows the v2 array cannot resolve the `@^` constraint, fall back to the bare name AND record the audited version (`0.1.48`, published 2026-09-07, verified via `npm view`) in the README re-add note (1.3)
+- [x] **1.1** Set `plugins` array (opencode_app/opencode.json:599) to `["@prevalentware/opencode-goal-plugin@^0.1.48"]`, no options object. If gate 4.2 shows the v2 array cannot resolve the `@^` constraint, fall back to the bare name AND record the audited version (`0.1.48`, published 2026-09-07, verified via `npm view`) in the README re-add note (1.3)
     — **Why:** restores goal mode with a reproducible, reviewed version floor; corrected rationale — the v1 breakage (`5f95d9c`) was v1-only plugin versions under a v2 runtime plus pins that never floated to v2 releases, NOT pinning itself; a caret pin to the v2-native line upgrades deliberately within `0.1.x` while boots stay reproducible (repo convention: committed lockfile). Defaults need no options: `restricted_agents: ["plan"]`, `allow_goal_execution_from_plan: false`
     — **Done when:** `jq -r '.plugins[]' opencode_app/opencode.json` prints the pinned entry (or the documented bare-name fallback with the README audit line present)
     — **Consumers affected:** deploy/setup.sh + setup.ps1 copies, Dockerfile bake (inert until #387), every opencode session boot
-- [ ] **1.2** Update `/run-plan` description (opencode_app/opencode.json:612): drop "the /goal runtime-guarded path returns when the goal plugin ships a v2 release"; state `/goal` as the available runtime-guarded path
+    — **Done:** plugins array set to the caret-pinned entry; files: opencode_app/opencode.json; fixes: none (boot resolution check deferred to gate 4.2 per plan)
+- [x] **1.2** Update `/run-plan` description (opencode_app/opencode.json:612): drop "the /goal runtime-guarded path returns when the goal plugin ships a v2 release"; state `/goal` as the available runtime-guarded path
     — **Why:** the caveat is now false; command descriptions are read by users choosing between `/run-plan` and `/goal`
     — **Done when:** `rg "ships a v2 release" opencode_app/opencode.json` returns nothing and the description mentions the runtime-guarded `/goal` path
     — **Consumers affected:** `/run-plan` and `/goal` invokers (primary sessions)
-- [ ] **1.3** README.md:475 — remove `opencode-goal-plugin` from the v2 watch-list; record the re-add (scoped name, pin form chosen in 1.1, v2-native since 0.1.30, audited version, re-added 2026-09)
+    — **Done:** description now points long hands-off runs at the runtime-guarded /goal path with the plugin name; files: opencode_app/opencode.json; fixes: none
+- [x] **1.3** README.md:475 — remove `opencode-goal-plugin` from the v2 watch-list; record the re-add (scoped name, pin form chosen in 1.1, v2-native since 0.1.30, audited version, re-added 2026-09)
     — **Why:** the watch-list claim is now false; it exists precisely to track this re-add
     — **Done when:** watch-list names only the 3 remaining plugins and a status note records the re-add + audited version (mandatory in the bare-name fallback)
     — **Consumers affected:** repo docs readers, future plugin audits
-- [ ] **1.4** Gate: `jq . opencode_app/opencode.json` parses, no `//` comments, `git status` shows only intended files; commit + push phase
+    — **Done:** watch-list reduced to the 3 remaining plugins; re-add note records scoped name, caret pin, v2-native-since-0.1.30, audited 0.1.48 (2026-09-07), and the #387 Docker caveat; files: README.md; fixes: none
+- [x] **1.4** Gate: `jq . opencode_app/opencode.json` parses, no `//` comments, `git status` shows only intended files; commit + push phase
     — **Why:** malformed opencode.json is a known CI breaker (LEARNINGS jsonc anti-pattern); commit-per-phase keeps the change revertible
     — **Done when:** gate passes, phase commit pushed to `feat/382`
     — **Consumers affected:** CI, reviewers
+    — **Done:** jq parse OK, plugins entry verified, no // comments, status shows only README.md + opencode.json, bats 13/13 green; files: (gate only); fixes: worktree bats submodule tests/lib/bats-core was uninitialized — `git submodule update --init` (environmental, not a code fix)
 
 ### Phase 2: Skill repoint (commit: `docs(skills): repoint goal references to the v2 goal plugin`)
 

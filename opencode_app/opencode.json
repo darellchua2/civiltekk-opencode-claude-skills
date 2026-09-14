@@ -596,7 +596,9 @@
             "effect": "deny"
         }
     ],
-    "plugins": [],
+    "plugins": [
+        "@prevalentware/opencode-goal-plugin@^0.1.48"
+    ],
     "instructions": [
         "AGENTS.md"
     ],
@@ -609,7 +611,7 @@
     },
     "commands": {
         "run-plan": {
-            "description": "Fully-automated plan execution loop — implement PLAN*.md phase-by-phase (lint+build+test+e2e gate, then commit + push per phase). Deliberate trigger; soft guardrails (the /goal runtime-guarded path returns when the goal plugin ships a v2 release).",
+            "description": "Fully-automated plan execution loop — implement PLAN*.md phase-by-phase (lint+build+test+e2e gate, then commit + push per phase). Deliberate trigger; soft guardrails — for long hands-off runs prefer the runtime-guarded /goal path (@prevalentware/opencode-goal-plugin).",
             "template": "Load the skill `plan-automation-loop-skill` and run it to fully implement the plan file given as the argument: $ARGUMENTS",
             "agent": "build"
         },
