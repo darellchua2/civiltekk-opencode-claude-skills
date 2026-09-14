@@ -15,7 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = dirname(__dirname);
 const REGISTRY = join(REPO, "deploy/registry.json");
 const OUT_DIR = join(REPO, "docs");
-const GH_BASE = "https://github.com/darellchua2/opencode-config-template/blob/main/opencode_app/.opencode";
+const GH_BASE = "https://github.com/darellchua2/opencode-config-template/blob/main";
 
 function esc(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

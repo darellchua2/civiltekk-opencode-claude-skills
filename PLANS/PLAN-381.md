@@ -56,26 +56,31 @@
     — **Done:** five entries in place + sanctioned-marker comment explaining why the bridge is excluded; files: .dockerignore; fixes: none
 
 ### Phase 2: Rewire installer/deploy code
-- [ ] **2.1** `deploy/source.mjs` lines 21–22: `skillDir`/`agentDir` → `join(root, "skills")` / `join(root, "agents")`
+- [x] **2.1** `deploy/source.mjs` lines 21–22: `skillDir`/`agentDir` → `join(root, "skills")` / `join(root, "agents")`
     — **Why:** Designed single seam; init.mjs inherits the fix through its import.
     — **Done when:** `grep -n 'opencode_app' deploy/source.mjs` returns nothing; `node deploy/source.mjs` self-check passes (prints the skill/agent counts — this is also a ticket AC).
     — **Consumers affected:** init.mjs (`add`/`--list` flows).
-- [ ] **2.2** `deploy/build-registry.mjs` lines 40–41: `AGENTS_DIR`/`SKILLS_DIR` → repo-root `agents`/`skills`
+    — **Done:** seam lines 21–22 + header comment re-pointed; self-check prints skills=149, agents=34; files: deploy/source.mjs; fixes: none
+- [x] **2.2** `deploy/build-registry.mjs` lines 40–41: `AGENTS_DIR`/`SKILLS_DIR` → repo-root `agents`/`skills`
     — **Why:** Registry generation reads the source dirs; wrong path = empty registry = broken installer + setup counts.
     — **Done when:** `node deploy/build-registry.mjs` exits 0 (defer count check to 5.2).
     — **Consumers affected:** registry.json → init.mjs, setup.sh/ps1 counts, build-site.mjs.
-- [ ] **2.3** `deploy/init.mjs` lines 42–43: `AGENTS_SRC`/`SKILLS_SRC` → root `agents`/`skills` (line 51 `SOURCE_OC` stays as `opencode_app/opencode.json`)
+    — **Done:** regen exits 0 with agents=34, skills=149; committed registry diff is timestamp-only (content identical); files: deploy/build-registry.mjs, deploy/registry.json; fixes: none
+- [x] **2.3** `deploy/init.mjs` lines 42–43: `AGENTS_SRC`/`SKILLS_SRC` → root `agents`/`skills` (line 51 `SOURCE_OC` stays as `opencode_app/opencode.json`)
     — **Why:** Direct path constants used by user-scope copy and remove flows.
     — **Done when:** `grep -n 'opencode_app/.opencode' deploy/init.mjs` returns nothing; `SOURCE_OC` still resolves.
     — **Consumers affected:** public npx command, setup.sh symlink (opencode-init).
-- [ ] **2.4** `deploy/build-site.mjs` line 18: `GH_BASE` → `https://github.com/darellchua2/opencode-config-template/blob/main` and downstream path joins updated to `skills/<name>/SKILL.md` / `agents/<stem>.md`
+    — **Done:** both constants re-pointed, `SOURCE_OC` untouched at line 51, separator-agnostic grep clean; files: deploy/init.mjs; fixes: none
+- [x] **2.4** `deploy/build-site.mjs` line 18: `GH_BASE` → `https://github.com/darellchua2/opencode-config-template/blob/main` and downstream path joins updated to `skills/<name>/SKILL.md` / `agents/<stem>.md`
     — **Why:** Site source links point into the tree; stale base = 404 links.
     — **Done when:** `node deploy/build-site.mjs` (real build — its outputs `docs/index.html`/`docs/registry.json` are git-ignored, so side effects are safe) then `grep -c '/blob/main/skills/' docs/index.html` returns > 0.
     — **Consumers affected:** generated site output.
-- [ ] **2.5** `deploy/apply-skill-profile.mjs` line 11 comment: update path mention (comment-only, no behavior)
+    — **Done:** base shortened (existing `/agents/…` `/skills/…` joins now resolve under root), build emits 34+149, grep hits = 149; files: deploy/build-site.mjs; fixes: none
+- [x] **2.5** `deploy/apply-skill-profile.mjs` line 11 comment: update path mention (comment-only, no behavior)
     — **Why:** Comments that lie are worse than none; zero runtime risk.
     — **Done when:** `grep -n 'opencode_app/.opencode' deploy/apply-skill-profile.mjs` returns nothing.
     — **Consumers affected:** none.
+    — **Done:** verified no deep refs exist in this file (its only mention is `opencode_app/opencode.json`, which stays) — no edit required; files: none; fixes: none
 
 ### Phase 3: Rewire deploy scripts
 - [ ] **3.1** `deploy/setup.sh`: update the 19 deep `opencode_app/.opencode` refs to the new layout (path vars, copy loops, counts/drift checks, help text). MUST STAY untouched: line ~118 (`SOURCE_CONFIG` = `opencode_app/opencode.json`), line ~2608 (mcp-servers launcher path), comments ~2478/~3581 — they reference `opencode_app/opencode.json` / `mcp-servers/`, not the moved content.
