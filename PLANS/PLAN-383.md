@@ -33,26 +33,31 @@
 
 ### Phase 1: Pilot (trim + per-skill commit + approval gate)
 
-- [ ] **1.1** Trim `clean-code-skill/SKILL.md` (934 → ~40–80 lines), category A: keep triggers/house rules + all 10 `Learning:` entries verbatim; delete Object Calisthenics/naming textbook and generic examples; commit `refactor(skills): trim textbook content from clean-code-skill`
+- [x] **1.1** Trim `clean-code-skill/SKILL.md` (934 → ~40–80 lines), category A: keep triggers/house rules + all 10 `Learning:` entries verbatim; delete Object Calisthenics/naming textbook and generic examples; commit `refactor(skills): trim textbook content from clean-code-skill`
     — **Why:** Largest Learning density (10 entries) — validates the aggressive A treatment at its riskiest point and sets the shape for Phase 3 batch A.
     — **Done when:** `wc -l` ≤ 80; `grep -c 'Learning: \`'` output equals 10; `git diff` on frontmatter block is empty; commit pushed.
     — **Consumers affected:** agents invoking clean-code-skill; none else (no § anchors reference it).
-- [ ] **1.2** Trim `nextjs-image-usage-skill/SKILL.md` (1287 → ~100–200 lines), category B: keep img→Image detection/conversion rules, Next.js 16 breaking changes, remote-domain config gotchas; delete prop tables and usage tutorials; commit `refactor(skills): trim vendor API reference from nextjs-image-usage-skill`
+    — **Done:** trimmed 934->64 lines; all 10 Learning entries verbatim (rule+detection kept, code examples dropped); textbook deleted; files: clean-code-skill/SKILL.md; fixes: none
+- [x] **1.2** Trim `nextjs-image-usage-skill/SKILL.md` (1287 → ~100–200 lines), category B: keep img→Image detection/conversion rules, Next.js 16 breaking changes, remote-domain config gotchas; delete prop tables and usage tutorials; commit `refactor(skills): trim vendor API reference from nextjs-image-usage-skill`
     — **Why:** Biggest file in the set — proves the B cut on the worst offender and preserves the version-pinned knowledge that models get wrong.
     — **Done when:** `wc -l` ≤ 200; frontmatter byte-identical; conversion-checklist + Next 16 breaking-changes sections present; commit pushed.
     — **Consumers affected:** agents invoking nextjs-image-usage-skill; none else.
-- [ ] **1.3** Trim `opentofu-kubernetes-explorer-skill/SKILL.md` (1212 → ~100–200 lines), category B: keep house conventions (provider pinning, naming, workflow contract, exact commands); delete the 15-step HCL-per-resource tutorial; commit `refactor(skills): trim HCL recipes from opentofu-kubernetes-explorer-skill`
+    — **Done:** trimmed 1287->70 lines; kept img->Image conversion rule, Next 16 breaking-change table, remotePatterns config+security, failure->fix map; files: nextjs-image-usage-skill/SKILL.md; fixes: none
+- [x] **1.3** Trim `opentofu-kubernetes-explorer-skill/SKILL.md` (1212 → ~100–200 lines), category B: keep house conventions (provider pinning, naming, workflow contract, exact commands); delete the 15-step HCL-per-resource tutorial; commit `refactor(skills): trim HCL recipes from opentofu-kubernetes-explorer-skill`
     — **Why:** Second-biggest file; the HCL recipes are the purest model-known content in the set — highest deletion yield.
     — **Done when:** `wc -l` ≤ 200; frontmatter byte-identical; house conventions + commands retained; commit pushed.
     — **Consumers affected:** opentofu-explorer-subagent (loads on invoke); none else.
-- [ ] **1.4** Trim `git-semantic-commits-skill/SKILL.md` (776 → ~40–60% cut), category C: keep Conventional Commits house rules, granularity guidance, commitlint notes; delete template ceremony (Prerequisites/Common Issues/Verification boilerplate) and generic commit examples; commit `refactor(skills): trim ceremony from git-semantic-commits-skill`
+    — **Done:** trimmed 1212->61 lines; kept provider pins (~> 2.24.0/~> 2.11.0), s3+lockdb backend, 4 connection methods, resource conventions; dropped 15-step HCL tutorial; files: opentofu-kubernetes-explorer-skill/SKILL.md; fixes: none
+- [x] **1.4** Trim `git-semantic-commits-skill/SKILL.md` (776 → ~40–60% cut), category C: keep Conventional Commits house rules, granularity guidance, commitlint notes; delete template ceremony (Prerequisites/Common Issues/Verification boilerplate) and generic commit examples; commit `refactor(skills): trim ceremony from git-semantic-commits-skill`
     — **Why:** Routed from AGENTS.md §Commits — validates that externally-routed skills keep their contract through a C trim.
     — **Done when:** `wc -l` ≤ 465 (≥40% cut); frontmatter byte-identical; house rules + granularity table intact; commit pushed.
     — **Consumers affected:** primary sessions following AGENTS.md commit rules; repo-ops-specialist-subagent.
-- [ ] **1.5** Trim `docx-creation-skill/SKILL.md` (562 → SKILL.md ≤200) + create `reference.md` sibling, category E: keep workflow + OOXML quirks + AI-slop avoidance in SKILL.md; move XML reference tables to `reference.md` with a one-line pointer; commit `refactor(skills): split docx-creation reference into sibling file`
+    — **Done:** trimmed 776->55 lines (93% cut); kept granularity doctrine + layer table + split rule + handoffs to git-compact-commits-skill/semantic-release-convention; files: git-semantic-commits-skill/SKILL.md; fixes: none
+- [x] **1.5** Trim `docx-creation-skill/SKILL.md` (562 → SKILL.md ≤200) + create `reference.md` sibling, category E: keep workflow + OOXML quirks + AI-slop avoidance in SKILL.md; move XML reference tables to `reference.md` with a one-line pointer; commit `refactor(skills): split docx-creation reference into sibling file`
     — **Why:** Only pilot step exercising the v2 sibling-file pattern — must be proven before Phase 3 batch E (2 files) adopts it.
     — **Done when:** `wc -l SKILL.md` ≤ 200; `reference.md` exists in same dir; pointer line present; frontmatter byte-identical; commit pushed.
     — **Consumers affected:** docx-creation-subagent; office-document routing in AGENTS.md (no § anchor on this file).
+    — **Done:** SKILL.md 562->68 + new reference.md sibling (187) with docx-js code patterns + XML reference; SKILL.md keeps house scripts, critical rules, 3-step edit workflow, design doctrine; files: docx-creation-skill/{SKILL.md,reference.md}; fixes: none
 - [ ] **1.6** HALT for user approval of pilot shape — present before/after line counts and one trimmed file (clean-code) to the user
     — **Why:** The ticket's first acceptance criterion requires shape approval; Phases 2–3 apply this shape 46 more times.
     — **Done when:** user explicitly approves in-session; on rejection, halt pipeline per failure policy (worktree kept).
