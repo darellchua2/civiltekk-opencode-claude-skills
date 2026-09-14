@@ -47,7 +47,7 @@
     — **Consumers affected:** opentofu-explorer-subagent (loads on invoke); none else.
 - [ ] **1.4** Trim `git-semantic-commits-skill/SKILL.md` (776 → ~40–60% cut), category C: keep Conventional Commits house rules, granularity guidance, commitlint notes; delete template ceremony (Prerequisites/Common Issues/Verification boilerplate) and generic commit examples; commit `refactor(skills): trim ceremony from git-semantic-commits-skill`
     — **Why:** Routed from AGENTS.md §Commits — validates that externally-routed skills keep their contract through a C trim.
-    — **Done when:** `wc -l` ≤ 470 (≥40% cut); frontmatter byte-identical; house rules + granularity table intact; commit pushed.
+    — **Done when:** `wc -l` ≤ 465 (≥40% cut); frontmatter byte-identical; house rules + granularity table intact; commit pushed.
     — **Consumers affected:** primary sessions following AGENTS.md commit rules; repo-ops-specialist-subagent.
 - [ ] **1.5** Trim `docx-creation-skill/SKILL.md` (562 → SKILL.md ≤200) + create `reference.md` sibling, category E: keep workflow + OOXML quirks + AI-slop avoidance in SKILL.md; move XML reference tables to `reference.md` with a one-line pointer; commit `refactor(skills): split docx-creation reference into sibling file`
     — **Why:** Only pilot step exercising the v2 sibling-file pattern — must be proven before Phase 3 batch E (2 files) adopts it.
@@ -64,14 +64,20 @@
     — **Why:** The template is the regrowth engine — every new skill inherits its padding unless this changes first.
     — **Done when:** mandate text absent (`grep -c "More detail is better"` = 0); lean-standard section present; frontmatter byte-identical; commit pushed.
     — **Consumers affected:** all future skill authoring; opencode-skills-maintainer-skill audits.
-- [ ] **2.2** Update `opencode-skills-maintainer-skill/SKILL.md`: add bloat check enforcing lean standard (flag SKILL.md >300 lines unless category E with sibling reference); commit `refactor(skills): add lean-standard bloat check to skills maintainer`
+- [ ] **2.2** Update `opencode-skills-maintainer-skill/SKILL.md`: add a category-aware bloat check enforcing the lean standard — flag SKILL.md >300 lines for category A/B/E (E exempt when a `reference.md` sibling exists); for category C (house workflows, legitimately 400–600 lines post-trim), record the post-trim baseline in the maintainer and flag regrowth beyond it; commit `refactor(skills): add lean-standard bloat check to skills maintainer`
     — **Why:** Audits must enforce the new standard or drift back goes undetected.
     — **Done when:** bloat-check rule present with the >300-line threshold + E exception; commit pushed.
     — **Consumers affected:** on-demand skill audits.
 
 ### Phase 3: Bulk trim (44 files; category batches; one commit per batch)
 
-Per-file protocol (every file): read full file → `grep -rn '<skill-name>\|§'` across repo AGENTS.md chain (`AGENTS.md`, `opencode_app/AGENTS.md`, `deploy/.AGENTS.md`, `~/.config/opencode/AGENTS.md`) → protect referenced sections → keep triggers/house conventions/version-pinned facts/`Learning:` entries → delete model-known content + ceremony → verify frontmatter byte-identical.
+Phase 3 preamble — per-file protocol (applies to every file below):
+
+1. Read the full file.
+2. `grep -rn '<skill-name>\|§'` across the AGENTS.md chain (`AGENTS.md`, `opencode_app/AGENTS.md`, `deploy/.AGENTS.md`, `~/.config/opencode/AGENTS.md`) → protect referenced sections.
+3. Snapshot `Learning:` entries verbatim: `grep 'Learning: \`' <file>` → `/tmp/opencode/learnings-<skill>.txt`.
+4. Keep triggers/house conventions/version-pinned facts/`Learning:` entries; delete model-known content + ceremony; verify frontmatter byte-identical.
+5. Per batch, before its commit: re-run the §-resolution grep for every in-batch skill with an external anchor, and `diff` each Learning snapshot against the post-trim file — both must be clean.
 
 - [ ] **3.1** Batch A — textbook, → ~40–80 lines each (10 files): `typescript-dry-principle`, `design-patterns` (5 Learnings), `authentication-authorization`, `code-smells`, `object-design` (2 Learnings), `performance-optimization`, `clean-architecture` (2 Learnings), `complexity-management`, `monorepo-management`, `solid-principles`; commit `refactor(skills): trim textbook content from 10 category-A skills`
     — **Why:** Biggest cuts, lowest risk — pure model-knowledge deletion with Learning preservation as the only care point.
@@ -92,9 +98,9 @@ Per-file protocol (every file): read full file → `grep -rn '<skill-name>\|§'`
 
 ### Phase 4: Verification & invariants
 
-- [ ] **4.1** Invariant checks: `node deploy/build-registry.mjs` → `git diff --stat deploy/registry.json` must be empty; `grep -rn '§' AGENTS.md opencode_app/AGENTS.md deploy/.AGENTS.md` — every referenced anchor still resolves in its target skill; `grep -o 'Learning: \`' opencode_app/.opencode/skills/*/SKILL.md | wc -l` = 22; `git diff origin/main --stat -- 'opencode_app/.opencode/skills/gsap-*' 'opencode_app/.opencode/skills/ponytail*'` empty; registry count still 149
+- [ ] **4.1** Invariant checks: `node deploy/build-registry.mjs --check` → expect exit 0 (the builder always rewrites `generatedAt` in write mode, so a plain diff can never be empty — `--check` normalizes it); `grep -rn '§' AGENTS.md opencode_app/AGENTS.md deploy/.AGENTS.md` — every referenced anchor still resolves in its target skill; `diff` every `/tmp/opencode/learnings-<skill>.txt` snapshot against the post-trim file (verbatim, not just count); total still 22; `git diff origin/main --stat -- 'opencode_app/.opencode/skills/gsap-*' 'opencode_app/.opencode/skills/ponytail*'` empty; registry count still 149. **On any violation: `git revert` the offending batch commit, re-trim, re-verify — never fix-forward past a broken invariant.**
     — **Why:** These are the ticket's hard invariants — any violation means a trim broke routing, memory, or the vendored pin.
-    — **Done when:** all five checks pass with the stated expected values.
+    — **Done when:** all checks pass with the stated expected values.
     — **Consumers affected:** installer (registry), AGENTS.md routing, vendored-skill pin policy.
 - [ ] **4.2** Gates: lint + test suite from `package.json` (discover scripts at execution; repo is Node — run whatever `npm run` exposes for lint/test; build only if deps/config/entry-points changed — they did not)
     — **Why:** Repo verification-gate policy: lint + typecheck always, tests on content-adjacent changes.
@@ -111,7 +117,7 @@ Per-file protocol (every file): read full file → `grep -rn '<skill-name>\|§'`
 - **Frontmatter is frozen byte-for-byte** in every trim (name, description, license, compatibility, category, metadata). This keeps routing behavior and `registry.json` identical.
 - **Category targets**: A → 40–80 lines; B → 100–200; C → 40–60% reduction; E → SKILL.md ≤200 + `reference.md` sibling with one-line pointer.
 - **Protected content (never delete)**: `Learning:` entries (22 total: clean-code 10, design-patterns 5, python-backend 3, clean-architecture 2, object-design 2); externally-referenced § section anchors; trigger phrases in descriptions; return contracts; version-pinned breaking-change lists; house paths/commands.
-- **Per-file § anchor check** precedes every trim (protocol in 3.0 preamble).
+- **Per-file § anchor check** precedes every trim (protocol in the Phase 3 preamble).
 - **Commits**: Conventional Commits, one per pilot skill, one per category batch, one per Phase 2 file. No style-only mixing.
 - **Model-knowledge rule** (the standard being installed): a skill encodes what is house-specific — triggers, conventions, version-pinned facts, workflow contracts — and never re-teaches what the model already knows.
 
