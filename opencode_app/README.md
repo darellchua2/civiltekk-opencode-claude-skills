@@ -20,15 +20,24 @@ opencode_app/
 ├── docker-entrypoint.sh   # Injects API keys, starts opencode serve
 ├── opencode.json          # Container-specific config (providers, agents)
 ├── AGENTS.md              # Agent instructions for container mode
-├── .dockerignore          # Excludes _archived, .env, node_modules
-└── .opencode/
-    ├── agents/            # 33 agent .md files (single source of truth)
-    └── skills/            # 149 skill directories + _common/ shared + _archived/ legacy
+├── .dockerignore          # Inert (build context is the repo root; see /.dockerignore)
+└── .opencode/             # Symlink bridge → root skills/, agents/, plugins/
+    ├── agents → ../../agents
+    ├── skills → ../../skills
+    ├── plugins → ../../plugins
+    └── vibeguard.config.json → ../../plugins/vibeguard.config.json
 ```
+
+Content (149 skill directories, 34 agents, plugins) lives at the **repo root** and is COPY'd
+into `/app/.opencode/` at build time. The symlinks above exist only for
+local non-Docker serving (`restart-opencode-pm2.sh` runs `opencode serve`
+with `--cwd opencode_app`); the root `.dockerignore` keeps them out of the
+build context. On Windows clones without symlink support they materialize
+as text files — cosmetic only, nothing consumes them there.
 
 ## How It Works
 
-1. **Build**: `docker compose build` uses the **repo root** as build context (the Dockerfile lives in `opencode_app/`). It copies `opencode_app/` → `/app/` and `deploy/` → `/app/deploy/` (model-resolver assets). Agent models are **resolved at build time** from the tier registry (`deploy/agent-tiers.json` + `deploy/models.default.json`) — Z.AI by default. Swap provider at build: `docker compose build --build-arg OPENCODE_PROVIDER=anthropic`. See root `MIGRATION.md`.
+1. **Build**: `docker compose build` uses the **repo root** as build context (the Dockerfile lives in `opencode_app/`). It copies `opencode_app/` → `/app/`, the root `skills/`/`agents/`/`plugins/` → `/app/.opencode/`, and `deploy/` → `/app/deploy/` (model-resolver assets). Agent models are **resolved at build time** from the tier registry (`deploy/agent-tiers.json` + `deploy/models.default.json`) — Z.AI by default. Swap provider at build: `docker compose build --build-arg OPENCODE_PROVIDER=anthropic`. See root `MIGRATION.md`.
 2. **Runtime**: `docker-entrypoint.sh` reads API keys from environment variables, writes them to `auth.json`, then runs `opencode serve --port 4096 --hostname 0.0.0.0`.
 3. **Access**: Port 4096 inside the container maps to 4097 on the host (configurable via `OPENCODE_PORT` in `.env`).
 
@@ -188,7 +197,7 @@ OpenCode supports subagent-to-subagent delegation via the Task tool, controlled 
 
 ## Ponytail Plugin (scoped wrapper)
 
-[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder. This container ships a **scoped wrapper plugin** (`opencode_app/.opencode/plugins/ponytail-scoped.ts`) — not the stock npm adapter — because the stock adapter injects into ALL agents unconditionally and its `PONYTAIL_SUBAGENT_MATCHER` is non-functional on OpenCode. The wrapper scopes injection by agent type.
+[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder. This container ships a **scoped wrapper plugin** (`plugins/ponytail-scoped.ts`) — not the stock npm adapter — because the stock adapter injects into ALL agents unconditionally and its `PONYTAIL_SUBAGENT_MATCHER` is non-functional on OpenCode. The wrapper scopes injection by agent type.
 
 ### Commands
 
@@ -225,11 +234,11 @@ Override by setting `PONYTAIL_SUBAGENT_OFF` to a custom regex.
 2. `experimental.chat.system.transform` hook resolves the agent (cache, or `client.session.get()` fallback), checks the off-set regex, resolves the mode, and appends the mode-filtered ruleset to the system prompt — once per turn (idempotent).
 3. `command.execute.before` hook persists `/ponytail <level>` switches per session.
 
-The vendored ruleset + adapted instruction builder live in `opencode_app/.opencode/plugins/ponytail/`. MIT attribution: `opencode_app/.opencode/plugins/ATTRIBUTION.md`. The stock `@dietrichgebert/ponytail` npm package is deliberately NOT in `opencode.json` `plugin` array (double-injection guard).
+The vendored ruleset + adapted instruction builder live in `plugins/ponytail/`. MIT attribution: `plugins/ATTRIBUTION.md`. The stock `@dietrichgebert/ponytail` npm package is deliberately NOT in `opencode.json` `plugin` array (double-injection guard).
 
 ## Learnings Auto-Inject Plugin
 
-`opencode_app/.opencode/plugins/learnings-autoinject.ts` auto-injects a **compact manifest** of a project's `LEARNINGS/*.md` files into the system prompt at session start, so the model knows what learned knowledge exists without a `glob`+`read` round-trip. It injects only titles + paths + a one-line summary (~200-400 tokens); the model `read()`s full file bodies on demand. This closes the gap documented in `continuous-learning-skill` (*"OpenCode does NOT auto-scan LEARNINGS/ directories"*). Architecture mirrors `ponytail-scoped.ts` (same 4 hooks, same toggle pattern, same off-set).
+`plugins/learnings-autoinject.ts` auto-injects a **compact manifest** of a project's `LEARNINGS/*.md` files into the system prompt at session start, so the model knows what learned knowledge exists without a `glob`+`read` round-trip. It injects only titles + paths + a one-line summary (~200-400 tokens); the model `read()`s full file bodies on demand. This closes the gap documented in `continuous-learning-skill` (*"OpenCode does NOT auto-scan LEARNINGS/ directories"*). Architecture mirrors `ponytail-scoped.ts` (same 4 hooks, same toggle pattern, same off-set).
 
 ### Commands
 
@@ -255,7 +264,7 @@ The vendored ruleset + adapted instruction builder live in `opencode_app/.openco
 2. `experimental.chat.system.transform` hook resolves the agent, checks the toggle + off-set, and appends the cached manifest to the system prompt — once per turn (idempotent). The manifest is globbed once per session and cached (rebuilt on `/learnings-refresh`).
 3. `command.execute.before` hook persists `/learnings-on|off|refresh` per session.
 
-No `opencode.json` change required — local plugins are glob-discovered. `opencode-superlocalmemory` (removed pending a v2 release) was a separate vector store — no conflict. Reference: `opencode_app/.opencode/plugins/learnings-autoinject.README.md`.
+No `opencode.json` change required — local plugins are glob-discovered. `opencode-superlocalmemory` (removed pending a v2 release) was a separate vector store — no conflict. Reference: `plugins/learnings-autoinject.README.md`.
 
 ## Scheduler Plugin (cron jobs)
 

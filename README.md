@@ -12,18 +12,19 @@ A multi-mode OpenCode configurator repository:
 
 ```
 opencode-config-template/
+├── skills/                      # 149 skill directories (source of truth)
+├── agents/                      # 34 subagent .md files (source of truth)
+├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings)
+│   └── vibeguard.config.json    # Secret-masking regex patterns
 ├── deploy/                      # User-space deployment files
 │   ├── .AGENTS.md               # User-space subagent routing (deployed)
 │   ├── setup.sh / setup.ps1     # User-space deployment scripts
 ├── opencode_app/                # Docker standalone mode
-│   ├── Dockerfile               # Container image
+│   ├── Dockerfile               # Container image (COPYs root content into /app/.opencode/)
 │   ├── docker-entrypoint.sh     # API key injection + opencode serve
 │   ├── opencode.json            # Container-specific config
 │   ├── AGENTS.md                # Container-specific instructions
-│   ├── .dockerignore
-│   ├── .opencode/
-│   │       ├── agents/              # 33 subagent .md files
-│   │       └── skills/              # 149 skill directories
+│   ├── .opencode/               # Symlink bridge → root content (local serve only)
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
 ├── .env.example                 # Environment variable template
@@ -488,7 +489,7 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 
 ## Secret Masking (vibeguard)
 
-> **OpenCode v2 status:** shipped as a local V2 port (`opencode_app/.opencode/plugins/vibeguard.ts` — engine ported from `opencode-vibeguard@0.1.0`, MIT; see `plugins/ATTRIBUTION.md`). Masking is **active** on v2; the npm pin was removed from the `plugins` array (double-registration guard). Verify with `OPENCODE_VIBEGUARD_DEBUG=1 opencode`. The `permissions` deny rules for `*.env` remain the second layer.
+> **OpenCode v2 status:** shipped as a local V2 port (`plugins/vibeguard.ts` — engine ported from `opencode-vibeguard@0.1.0`, MIT; see `plugins/ATTRIBUTION.md`). Masking is **active** on v2; the npm pin was removed from the `plugins` array (double-registration guard). Verify with `OPENCODE_VIBEGUARD_DEBUG=1 opencode`. The `permissions` deny rules for `*.env` remain the second layer.
 
 Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic — the LLM provider never sees plaintext secret values, but tools (bash, write, etc.) receive real values at execution time. It is the **universal masking layer** covering all agents (primary + subagents), regardless of individual `read` deny rules in their `permissions` arrays.
 
@@ -683,7 +684,7 @@ The repository ships an **autoresearch iteration protocol** — a 5-stage loop (
 | Shell helper (after `setup.sh`) | `ar-enable` / `ar-disable` |
 | Per-invocation | Set the env var inline before invoking the skill |
 
-When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,"score":N}` (no LLM self-judgment), append to `<skill>-results.tsv` audit trails, and auto-revert failed experiments via Git-as-memory. See `opencode_app/.opencode/skills/autoresearch-core-skill/references/iteration-safety.md` for safety blocks and prompt-injection boundaries.
+When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,"score":N}` (no LLM self-judgment), append to `<skill>-results.tsv` audit trails, and auto-revert failed experiments via Git-as-memory. See `skills/autoresearch-core-skill/references/iteration-safety.md` for safety blocks and prompt-injection boundaries.
 
 **Retrofitted skills (29 total):**
 - **Tier 1 (full loop, 7)**: verification-loop, tdd-workflow, eval-harness, continuous-learning, deprecated-code-cleanup, linting-workflow, coverage-readme-workflow
@@ -696,7 +697,7 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 
 > **OpenCode v2 status:** ported to the V2 plugin API (`session.hook("context")` injection, `command.transform` for the `/ponytail*` commands) — active on v2. Env-var controls are unchanged.
 
-[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder (YAGNI → reuse → stdlib → native → installed dep → one-liner → minimum-that-works). This repo ships a **scoped wrapper plugin** (`opencode_app/.opencode/plugins/ponytail-scoped.ts`) instead of the stock npm adapter — it adds agent-type-aware scoping the upstream OpenCode adapter lacks:
+[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder (YAGNI → reuse → stdlib → native → installed dep → one-liner → minimum-that-works). This repo ships a **scoped wrapper plugin** (`plugins/ponytail-scoped.ts`) instead of the stock npm adapter — it adds agent-type-aware scoping the upstream OpenCode adapter lacks:
 
 - **Read-only/research agents skip injection** (`explore`, `general`, `autoresearch-research-subagent`, `explorer-subagent`, `requirements-specialist-subagent`, `discovery-specialist-subagent`, `technical-design-specialist-subagent`) — they aren't pushed toward minimal code.
 - **Per-agent mode overrides** via `PONYTAIL_AGENT_MODE_MAP` (JSON).
@@ -708,13 +709,13 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 | `PONYTAIL_SUBAGENT_OFF` | (7 read-only agents) | Regex of agent names to exclude from injection |
 | `PONYTAIL_AGENT_MODE_MAP` | unset | JSON per-agent overrides, e.g. `{"build":"full","code-review-subagent":"lite"}` |
 
-Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See `opencode_app/README.md` § Ponytail Plugin and `opencode_app/.opencode/plugins/ATTRIBUTION.md` for the MIT attribution.
+Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See `opencode_app/README.md` § Ponytail Plugin and `plugins/ATTRIBUTION.md` for the MIT attribution.
 
 ### Learnings Auto-Inject (local plugin)
 
 > **OpenCode v2 status:** ported to the V2 plugin API — the LEARNINGS manifest is auto-injected on v2.
 
-`opencode_app/.opencode/plugins/learnings-autoinject.ts` closes the gap documented in `continuous-learning-skill`: *"OpenCode does NOT auto-scan LEARNINGS/ directories."* The `opencode-superlocalmemory` plugin auto-injects its **vector store**, but the git-committed `LEARNINGS/*.md` markdown files were never surfaced automatically — agents had to manually `glob`+`read`. This plugin injects a **compact manifest** (titles + paths + one-line summaries, ~200-400 tokens) into the system prompt at session start; the model `read()`s full bodies on demand.
+`plugins/learnings-autoinject.ts` closes the gap documented in `continuous-learning-skill`: *"OpenCode does NOT auto-scan LEARNINGS/ directories."* The `opencode-superlocalmemory` plugin auto-injects its **vector store**, but the git-committed `LEARNINGS/*.md` markdown files were never surfaced automatically — agents had to manually `glob`+`read`. This plugin injects a **compact manifest** (titles + paths + one-line summaries, ~200-400 tokens) into the system prompt at session start; the model `read()`s full bodies on demand.
 
 - **Same architecture as ponytail-scoped** — 4 hooks (`config`, `chat.message`, `experimental.chat.system.transform`, `command.execute.before`), same toggle pattern.
 - **Same off-set** — read-only/research agents skip injection (reuses ponytail's regex).
@@ -727,7 +728,7 @@ Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See 
 | `LEARNINGS_AUTOINJECT_OFF` | (read-only agents) | Regex of agent names to exclude |
 | `LEARNINGS_AUTOINJECT_MAX` | `30` | Cap on files in the manifest |
 
-Toggle per session: `/learnings`, `/learnings-on`, `/learnings-off`, `/learnings-refresh`. See `opencode_app/.opencode/plugins/learnings-autoinject.README.md`.
+Toggle per session: `/learnings`, `/learnings-on`, `/learnings-off`, `/learnings-refresh`. See `plugins/learnings-autoinject.README.md`.
 
 ### Skill Architecture
 
@@ -754,7 +755,7 @@ Skills follow a modular architecture:
 
 The setup scripts automatically:
 - Copies `deploy/.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
-- Copies `opencode_app/.opencode/skills/` folder to `~/.config/opencode/skills/`
+- Copies `skills/` folder to `~/.config/opencode/skills/`
 - Copies `opencode_app/opencode.json` to `~/.config/opencode/opencode.json` (single source of truth — model resolver patches primary/explore/general in-place during deploy; OpenCode v2 only reads `opencode.json`/`opencode.jsonc`, never `config.json`)
 - Backs up existing files before overwriting
 

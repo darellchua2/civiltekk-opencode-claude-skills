@@ -6,13 +6,13 @@
 
 ## Acceptance Criteria
 
-- [ ] `bats tests/` green (the 9 suites carrying deep path refs updated)
-- [ ] `node deploy/init.mjs --list skills | jq 'length'` = 149; `--list agents | jq 'length'` = 34 (output is pretty-printed JSON — `wc -l` cannot work)
-- [ ] `node deploy/source.mjs` self-check passes (prints skill/agent counts — doubles as the 149/34 verification)
-- [ ] Registry regenerated via `node deploy/build-registry.mjs`; counts unchanged (149 skills / 34 agents; raw dirs = 151 incl. `_archived`/`_common`)
-- [ ] `docker build` succeeds (or unavailability recorded in PR body)
-- [ ] Grep gate, **separator-agnostic** (setup.ps1 spells paths with backslashes): `grep -rnE 'opencode_app[/\\]\.opencode' deploy/ tests/ .releaserc.json .github/workflows/release.yml README.md AGENTS.md opencode_app/ restart-opencode-pm2.sh | grep -v 'sanctioned: symlink bridge'` returns nothing (the marker exempts docs lines explaining the bridge; the four tracked symlinks under `opencode_app/.opencode/` are themselves sanctioned)
-- [ ] Public command shape unchanged: `node deploy/init.mjs add tdd-subagent --dry-run` resolves from new source paths
+- [x] `bats tests/` green (the 9 suites carrying deep path refs updated)
+- [x] `node deploy/init.mjs --list skills | jq 'length'` = 149; `--list agents | jq 'length'` = 34 (output is pretty-printed JSON — `wc -l` cannot work)
+- [x] `node deploy/source.mjs` self-check passes (prints skill/agent counts — doubles as the 149/34 verification)
+- [x] Registry regenerated via `node deploy/build-registry.mjs`; counts unchanged (149 skills / 34 agents; raw dirs = 151 incl. `_archived`/`_common`)
+- [x] `docker build` succeeds (or unavailability recorded in PR body)
+- [x] Grep gate, **separator-agnostic** (setup.ps1 spells paths with backslashes): `grep -rnE 'opencode_app[/\\]\.opencode' deploy/ tests/ .releaserc.json .github/workflows/release.yml README.md AGENTS.md opencode_app/ restart-opencode-pm2.sh | grep -v 'sanctioned: symlink bridge'` returns nothing (the marker exempts docs lines explaining the bridge; the four tracked symlinks under `opencode_app/.opencode/` are themselves sanctioned)
+- [x] Public command shape unchanged: `node deploy/init.mjs add tdd-subagent --dry-run` resolves from new source paths
 
 ## Dependency & Consumer Map
 
@@ -131,14 +131,16 @@
     — **Done:** opencode-tooling (4 bare-dir phrasings hand-edited + 4 path rows sed), 3 SKILL.md sed-rewritten, markitdown relative links re-pointed via ../../opencode_app/mcp-servers/; deep-ref grep CLEAN, link audit ALL_RESOLVE, registry drift still clean; files: agents/opencode-tooling-subagent.md, skills/{agent-introspection-debugging,context-budget,documentation-consistency,markitdown-mcp}-skill/SKILL.md; fixes: reworded a bridge note to avoid re-introducing the literal path (gate hygiene)
 
 ### Phase 7: Docs + final verification gates
-- [ ] **7.1** Docs: README structure tree + install/npx sections; root `AGENTS.md` (§Source of Truth → root `skills/`+`agents/`, §Subagent Locations row → `agents/*.md`, §Secret Masking vibeguard path → `plugins/vibeguard.config.json`); `opencode_app/AGENTS.md` (~lines 22/26 describe content as "symlinked … at build time" — rewrite for the explicit COPY flow, and describe the 1.2 bridge under the `<!-- sanctioned: symlink bridge -->` marker); `opencode_app/README.md` (Docker content sourcing note; note `opencode_app/.dockerignore` is inert since context=root; note Windows symlink materialization); `THIRD_PARTY_LICENSES.md` line 203 gsap paths
+- [x] **7.1** Docs: README structure tree + install/npx sections; root `AGENTS.md` (§Source of Truth → root `skills/`+`agents/`, §Subagent Locations row → `agents/*.md`, §Secret Masking vibeguard path → `plugins/vibeguard.config.json`); `opencode_app/AGENTS.md` (~lines 22/26 describe content as "symlinked … at build time" — rewrite for the explicit COPY flow, and describe the 1.2 bridge under the `<!-- sanctioned: symlink bridge -->` marker); `opencode_app/README.md` (Docker content sourcing note; note `opencode_app/.dockerignore` is inert since context=root; note Windows symlink materialization); `THIRD_PARTY_LICENSES.md` line 203 gsap paths
     — **Why:** Docs are the map for every future contributor; the sync rules in AGENTS.md require doc updates with structural change. The bridge must be documented under the sanctioned marker or the AC gate forces it to stay undocumented.
     — **Done when:** `grep -rnE 'opencode_app[/\\]\.opencode' README.md AGENTS.md opencode_app/AGENTS.md opencode_app/README.md THIRD_PARTY_LICENSES.md | grep -v 'sanctioned: symlink bridge'` returns nothing; README tree shows `skills/ agents/ plugins/` at root.
     — **Consumers affected:** humans, opencode-tooling-subagent doc-sync flows.
-- [ ] **7.2** Final gates: (a) `bats tests/` green; (b) `node deploy/init.mjs --list skills | jq 'length'` = 149 and `--list agents | jq 'length'` = 34; (b2) `node deploy/source.mjs` self-check passes with matching counts; (c) `node deploy/init.mjs add tdd-subagent --dry-run` succeeds; (d) separator-agnostic grep gate from Acceptance Criteria returns clean; (e) `npm pack --dry-run` output contains both `skills/` and `agents/`; (f) `docker build` succeeds (unavailability recorded in PR body, same convention as 4.1)
+    — **Done:** README tree rewritten (root skills/agents/plugins, 34-agent count fix, bridge line), root AGENTS.md §Source of Truth/§Secret Masking/§Subagent-Locations, opencode_app/AGENTS.md COPY+bridge prose, opencode_app/README.md structure + build note + inert-dockerignore + Windows note, THIRD_PARTY gsap path; gate grep clean under marker exemption; files: README.md, AGENTS.md, opencode_app/AGENTS.md, opencode_app/README.md, THIRD_PARTY_LICENSES.md; fixes: restore "149 skill directories" phrase in opencode_app/README.md after test 8 caught its removal (fix-on-fail attempt 1)
+- [x] **7.2** Final gates: (a) `bats tests/` green; (b) `node deploy/init.mjs --list skills | jq 'length'` = 149 and `--list agents | jq 'length'` = 34; (b2) `node deploy/source.mjs` self-check passes with matching counts; (c) `node deploy/init.mjs add tdd-subagent --dry-run` succeeds; (d) separator-agnostic grep gate from Acceptance Criteria returns clean; (e) `npm pack --dry-run` output contains both `skills/` and `agents/`; (f) `docker build` succeeds (unavailability recorded in PR body, same convention as 4.1)
     — **Why:** These are the ticket's acceptance criteria, executed in measurable form.
     — **Done when:** All sub-gates pass (or docker-unavailability + pwsh-gap recorded in PR body); results recorded in the PR body.
     — **Consumers affected:** release, Docker, installer users.
+    — **Done:** (a) bats 14/14 · (b) --list 149/34 via jq · (b2) source.mjs self-check 149/34 · (c) add tdd-subagent --dry-run OK · (d) separator-agnostic grep gate clean (marker exemption exercised) · (e) npm pack contains skills/ + agents/ · (f) docker build BUILD_OK, image verified: 34 agents, 150 skill dirs (_archived excluded), vibeguard.config.json real file, bridge symlinks absent; files: PLANS/PLAN-381.md only; fixes: none this step (see 7.1 for the test-8 doc-count fix)
 
 ## Technical Notes
 

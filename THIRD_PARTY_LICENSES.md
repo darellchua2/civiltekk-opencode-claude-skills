@@ -200,7 +200,7 @@ SOFTWARE.
 
 ### What we vendor
 
-- **`opencode_app/.opencode/skills/gsap-*/SKILL.md`** — the eight official GSAP
+- **`skills/gsap-*/SKILL.md`** — the eight official GSAP
   skills (`gsap-core`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-plugins`,
   `gsap-utils`, `gsap-react`, `gsap-performance`, `gsap-frameworks`) copied
   verbatim from upstream `skills/`, plus two frontmatter keys added locally
