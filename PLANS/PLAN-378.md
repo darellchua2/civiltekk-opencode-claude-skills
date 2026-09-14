@@ -87,17 +87,17 @@ From ticket #378, re-validated against `origin/main` @ `ece1032` (line drift fro
 
 ### Phase 3: Dockerfile + CI/release
 
-- [ ] **3.1** `opencode_app/Dockerfile`: add `COPY installer/ /app/installer/` after :57; `RUN node /app/installer/resolve-models.mjs` (:63); repoint `--tiers/--default-map/--provider-models/--presets` args (:66-69) to `/app/installer/…`; update comment :46. `merge-packs` (:82-84) stays on `/app/deploy/`.
+- [x] **3.1** `opencode_app/Dockerfile`: add `COPY installer/ /app/installer/` after :57; `RUN node /app/installer/resolve-models.mjs` (:63); repoint `--tiers/--default-map/--provider-models/--presets` args (:66-69) to `/app/installer/…`; update comment :46. `merge-packs` (:82-84) stays on `/app/deploy/`.
     — **Why:** Docker build resolves models from tier metadata (now installer/); merge-packs + packs stay deploy-local — the COPY split makes the one-way dependency visible in the image.
     — **Done when:** `grep -n 'installer' opencode_app/Dockerfile` shows COPY + 5 rewritten refs; `grep -n '/app/deploy/' opencode_app/Dockerfile` shows only merge-packs lines.
     — **Consumers affected:** `docker compose build` (textual gate only — no docker on runner).
 
-- [ ] **3.2** `.github/workflows/release.yml`: `node installer/build-registry.mjs --check` (:50); `node --check installer/init.mjs installer/source.mjs installer/build-site.mjs` (:55); `node installer/build-site.mjs` (:151); echo text :49; extend tarball guard :60 with `echo "$tarball" | grep -q " installer/"`
+- [x] **3.2** `.github/workflows/release.yml`: `node installer/build-registry.mjs --check` (:50); `node --check installer/init.mjs installer/source.mjs installer/build-site.mjs` (:55); `node installer/build-site.mjs` (:151); echo text :49; extend tarball guard :60 with `echo "$tarball" | grep -q " installer/"`
     — **Why:** CI must gate the new paths and the tarball guard is the only automated check that the npx flow's bin dir ships.
     — **Done when:** `grep -nE 'deploy/(init\.mjs|source\.mjs|build-registry|build-site|registry)' .github/workflows/release.yml` = 0; guard line includes `installer/`.
     — **Consumers affected:** every CI run, release pipeline.
 
-- [ ] **3.3** `.releaserc.json` git assets (:130-132): `deploy/{init,source,build-site}.mjs` → `installer/…` (`deploy/setup.sh`/`ps1` stay)
+- [x] **3.3** `.releaserc.json` git assets (:130-132): `deploy/{init,source,build-site}.mjs` → `installer/…` (`deploy/setup.sh`/`ps1` stay)
     — **Why:** semantic-release commits build artifacts back; pointing at moved paths would silently stop committing the installer sources.
     — **Done when:** assets array lists `installer/init.mjs`, `installer/source.mjs`, `installer/build-site.mjs`.
     — **Consumers affected:** release commits (chore(release) SHA).

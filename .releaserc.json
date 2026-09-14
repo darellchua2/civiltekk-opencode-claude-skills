@@ -127,9 +127,9 @@
           "package.json",
           "deploy/setup.sh",
           "deploy/setup.ps1",
-          "deploy/init.mjs",
-          "deploy/source.mjs",
-          "deploy/build-site.mjs",
+          "installer/init.mjs",
+          "installer/source.mjs",
+          "installer/build-site.mjs",
           "opencode_app/opencode.json",
           "agents/**/*",
           "skills/**/*"
