@@ -804,7 +804,9 @@
             "docling": {
                 "type": "local",
                 "command": [
-                    "docling-mcp-server"
+                    "docling-mcp-server",
+                    "--transport",
+                    "stdio"
                 ],
                 "environment": {
                     "DOCLING_CONVERSION_MODE": "local"

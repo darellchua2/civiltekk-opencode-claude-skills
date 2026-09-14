@@ -151,6 +151,9 @@ EOF
   grep -q -- '--break-system-packages' "$SETUP"
   grep -q 'externally-managed-environment' "$SETUP_PS1"
   grep -q -- '--break-system-packages' "$SETUP_PS1"
+  # docling-mcp installs from PyPI too — its installer needs the same retry
+  sed -n '/^install_docling()/,/^}/p' "$SETUP" | grep -q -- '--break-system-packages'
+  sed -n '/^function Install-Docling/,/^}/p' "$SETUP_PS1" | grep -q -- '--break-system-packages'
 }
 
 @test "setup_ps1_hook_resets_lastexitcode_for_caller" {

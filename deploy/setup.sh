@@ -2676,12 +2676,20 @@ install_docling() {
         return 0
     fi
 
+    # PEP 668 (externally-managed-environment, Debian 12+/Ubuntu 23.04+)
+    # blocks plain `pip install --user` — retry once with
+    # --break-system-packages; --user keeps it isolated to ~/.local.
     log_info "pip install --user docling-mcp[local]"
-    if python3 -m pip install --user --no-warn-script-location "docling-mcp[local]" >/dev/null 2>&1; then
+    local pip_err
+    pip_err="$(mktemp)"
+    if python3 -m pip install --user --no-warn-script-location "docling-mcp[local]" >/dev/null 2>"$pip_err" \
+        || { grep -q "externally-managed-environment" "$pip_err" \
+            && python3 -m pip install --user --break-system-packages --no-warn-script-location "docling-mcp[local]" >/dev/null 2>>"$pip_err"; }; then
+        rm -f "$pip_err"
         log_success "docling-mcp installed"
         log_info "NOTE: first 'docling convert' will download ~hundreds of MB of models from huggingface.co (cached thereafter)."
     else
-        log_warn "pip install failed for docling-mcp (offline or OOM?). The pack is opt-in — OpenCode will work without it. Re-run setup when online to enable."
+        log_warn "pip install failed for docling-mcp (offline, OOM, or PEP 668?). The pack is opt-in — OpenCode will work without it. Re-run setup when online to enable."
     fi
 }
 
