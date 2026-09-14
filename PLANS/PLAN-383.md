@@ -97,10 +97,11 @@ Phase 3 preamble — per-file protocol (applies to every file below):
     — **Why:** These encode house process — the trim removes template ceremony, never workflow logic or return contracts.
     — **Done when:** each file ≥40% smaller; api-design retains `§Authoring Quality Gate` heading; every skill's workflow steps + return contracts intact; commit pushed.
     — **Consumers affected:** every AGENTS.md-routed workflow that references these skills (security-audit, plan-*, git-*, documentation-sync).
-- [ ] **3.4** Batch E — office/media, SKILL.md ≤200 + `reference.md` sibling (2 files): `pdf-specialist-skill`, `pptx-generate-slide-skill`; commit `refactor(skills): split office reference material into sibling files`
+- [x] **3.4** Batch E — office/media, SKILL.md ≤200 + `reference.md` sibling (2 files): `pdf-specialist-skill`, `pptx-generate-slide-skill`; commit `refactor(skills): split office reference material into sibling files`
     — **Why:** Same sibling-file pattern proven by pilot 1.5; dense format reference moves out of SKILL.md.
     — **Done when:** SKILL.md ≤200 lines each; `reference.md` siblings exist with pointer lines; commit pushed.
     — **Consumers affected:** pdf-specialist routing (AGENTS.md tier 4), pptx pipeline subagents.
+    — **Done:** pdf-specialist 732->94 + reference.md (173); pptx-generate-slide 579->146 + reference.md (195); frontmatter frozen; done pre-merge, relocated to skills/ by the #384 merge commit a3d2acc.
 
 ### Phase 4: Verification & invariants
 
@@ -119,7 +120,7 @@ Phase 3 preamble — per-file protocol (applies to every file below):
 
 ## Technical Notes
 
-- **Source of truth**: `opencode_app/.opencode/skills/` only — never edit deployed `~/.config/opencode/` copies.
+- **Source of truth**: root `skills/` only (moved from `opencode_app/.opencode/skills/` by #384 mid-flight; merged into this branch at a3d2acc; `opencode_app/.opencode/` is now a symlink bridge — never edit through it) — never edit deployed `~/.config/opencode/` copies.
 - **Frontmatter is frozen byte-for-byte** in every trim (name, description, license, compatibility, category, metadata). This keeps routing behavior and `registry.json` identical.
 - **Category targets**: A → 40–80 lines; B → 100–200; C → 40–60% reduction; E → SKILL.md ≤200 + `reference.md` sibling with one-line pointer.
 - **Protected content (never delete)**: `Learning:` entries (22 total: clean-code 10, design-patterns 5, python-backend 3, clean-architecture 2, object-design 2); externally-referenced § section anchors; trigger phrases in descriptions; return contracts; version-pinned breaking-change lists; house paths/commands.
