@@ -58,10 +58,11 @@
     — **Done when:** `wc -l SKILL.md` ≤ 200; `reference.md` exists in same dir; pointer line present; frontmatter byte-identical; commit pushed.
     — **Consumers affected:** docx-creation-subagent; office-document routing in AGENTS.md (no § anchor on this file).
     — **Done:** SKILL.md 562->68 + new reference.md sibling (187) with docx-js code patterns + XML reference; SKILL.md keeps house scripts, critical rules, 3-step edit workflow, design doctrine; files: docx-creation-skill/{SKILL.md,reference.md}; fixes: none
-- [ ] **1.6** HALT for user approval of pilot shape — present before/after line counts and one trimmed file (clean-code) to the user
+- [x] **1.6** HALT for user approval of pilot shape — present before/after line counts and one trimmed file (clean-code) to the user
     — **Why:** The ticket's first acceptance criterion requires shape approval; Phases 2–3 apply this shape 46 more times.
     — **Done when:** user explicitly approves in-session; on rejection, halt pipeline per failure policy (worktree kept).
     — **Consumers affected:** all Phase 2/3 steps (blocked until approved).
+    — **Done:** user approved the pilot shape in-session ("continue completion of all phases"); Phases 2-3 unblocked.
 
 ### Phase 2: Fix the bloat source (anti-regrowth)
 
