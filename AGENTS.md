@@ -91,7 +91,7 @@ All subagents return (additive signal fields allowed beyond, never replacing):
 
 ## Project Learnings
 
-`LEARNINGS/` is a template in this repo; in target projects, check it before reviewing/planning. Primary storage: `memory` tool (searchable, V1-plugin — inert on v2 until a compatible release); secondary: `LEARNINGS/*.md`. The manifest is auto-injected per session by the local plugin (ported to the v2 plugin API — active) — see user-level Memory Hygiene.
+`LEARNINGS/` is a template in this repo; in target projects, check it before reviewing/planning. Storage: `LEARNINGS/*.md` (the `memory` tool's plugin has no v2 release — pin removed; watch for a v2-compatible `opencode-superlocalmemory`). The manifest is auto-injected per session by the local plugin (ported to the v2 plugin API — active) — see user-level Memory Hygiene.
 
 ## Extract-then-Delegate
 

@@ -591,12 +591,7 @@
             "effect": "deny"
         }
     ],
-    "plugins": [
-        "opencode-superlocalmemory@0.1.2",
-        "opencode-goal-plugin@0.8.1",
-        "@nick-vi/opencode-type-inject@1.5.2",
-        "opencode-scheduler@1.3.0"
-    ],
+    "plugins": [],
     "instructions": [
         "AGENTS.md"
     ],

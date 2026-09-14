@@ -478,7 +478,7 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 | `LEARNINGS/` in target projects | Curated, git-committed | Detailed patterns, ADRs, team conventions |
 | `~/.config/opencode/learnings/` | User-level, cross-project | Personal preferences and patterns |
 
-> **OpenCode v2 status:** the `memory` tool is provided by `opencode-superlocalmemory`, a V1-API plugin that currently fails to load on v2 (see [Plugins](#plugins) notes). Until a V2-compatible release exists, `LEARNINGS/*.md` + `AGENTS.md` discovery is the working memory layer; treat the `memory` tool row as V1-only.
+> **OpenCode v2 status:** the `memory` tool was provided by `opencode-superlocalmemory`, a V1-API plugin with no v2 release — **removed from the config** (it only produced boot warnings). `LEARNINGS/*.md` + auto-inject + `AGENTS.md` discovery is the memory layer. Watch-list to re-add when v2-compatible: `opencode-superlocalmemory`, `opencode-goal-plugin`, `@nick-vi/opencode-type-inject`, `opencode-scheduler` (check with `npm view <pkg> version` and the plugin's v2 compatibility notes).
 
 **How it works:**
 - `deploy/setup.sh` / `deploy/setup.ps1` creates `~/.config/opencode/learnings/` with 5 subfolders at user level
@@ -717,7 +717,7 @@ Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See 
 
 - **Same architecture as ponytail-scoped** — 4 hooks (`config`, `chat.message`, `experimental.chat.system.transform`, `command.execute.before`), same toggle pattern.
 - **Same off-set** — read-only/research agents skip injection (reuses ponytail's regex).
-- **No `opencode.json` change** — local plugins are glob-discovered. No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `system.transform` vs `tui.prompt.append`).
+- **No `opencode.json` change** — local plugins are glob-discovered. `opencode-superlocalmemory` (removed pending a v2 release) injected a vector store via a different hook; no conflict — markdown manifest vs vectors.
 
 | Env var | Default | Purpose |
 |---------|---------|---------|
