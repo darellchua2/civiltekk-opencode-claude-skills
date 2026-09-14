@@ -20,7 +20,6 @@ opencode_app/
 ├── docker-entrypoint.sh   # Injects API keys, starts opencode serve
 ├── opencode.json          # Container-specific config (providers, agents)
 ├── AGENTS.md              # Agent instructions for container mode
-├── .dockerignore          # Inert (build context is the repo root; see /.dockerignore)
 └── .opencode/             # Symlink bridge → root skills/, agents/, plugins/
     ├── agents → ../../agents
     ├── skills → ../../skills
@@ -108,7 +107,7 @@ User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README
 
 - Container runs as non-root `opencode` user
 - No secrets baked into the image — API keys injected at runtime via entrypoint
-- `.dockerignore` excludes `.env`, `_archived/`, and dev files
+- The root `.dockerignore` (build context is the repo root) excludes `.env`, `_archived/`, the symlink bridge, and dev files
 - Health check: `GET /api/health` every 30s (V2 endpoint; `/global/health` was V1-only and now returns the web-app shell)
 
 ### Secret Masking (vibeguard)

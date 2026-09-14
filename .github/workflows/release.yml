@@ -57,7 +57,7 @@ jobs:
           jq . package.json
           echo "Checking npx tarball includes source tree..."
           tarball="$(npm pack --dry-run 2>&1)"
-          echo "$tarball" | grep -q "skills/" && echo "$tarball" | grep -q "agents/" \
+          echo "$tarball" | grep -q " skills/" && echo "$tarball" | grep -q " agents/" \
             && echo "source tree in tarball ✓" \
             || { echo "FAIL: skills/ or agents/ missing from tarball"; exit 1; }
 

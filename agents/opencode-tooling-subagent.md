@@ -236,14 +236,13 @@ When a user wants to create their own OpenCode configurator repo (to manage and 
     ├── AGENTS.md               # Repo-level instructions
     ├── LICENSE
     ├── README.md               # Auto-generated with skill/agent counts and tables
-    ├── opencode_app/           # Docker standalone mode + single source of truth
+    ├── opencode_app/           # Docker standalone mode
     │   ├── Dockerfile
-    │   ├── opencode.json
-    │   ├── .opencode/
-    │   │   ├── agents/         # Global subagents (deployed to user space)
-    │   │   │   └── opencode-tooling-subagent.md
-    │   │   └── skills/         # Skills (deployed to user space)
-    │   │       └── <example-skill>/SKILL.md
+    │   └── opencode.json
+    ├── skills/                 # Skills (single source of truth, deployed to user space)
+    │   └── <example-skill>/SKILL.md
+    ├── agents/                 # Global subagents (single source of truth, deployed to user space)
+    │   └── opencode-tooling-subagent.md
     └── .opencode/
         └── agents/             # Project-level subagents (NOT deployed)
     ```
