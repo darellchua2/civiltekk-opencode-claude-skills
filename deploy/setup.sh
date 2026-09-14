@@ -3005,8 +3005,8 @@ run_resolver() {
     # Deploy-time exposed-model guard (#281): fail-fast if a tier/source pin
     # references a model its provider doesn't serve. Guarded by file presence so
     # older deploys without provider-models.json are unaffected.
-    if [ -f "${DEPLOY_DIR}/provider-models.json" ]; then
-        extra_args="$extra_args --provider-models ${DEPLOY_DIR}/provider-models.json"
+    if [ -f "${INSTALLER_DIR}/provider-models.json" ]; then
+        extra_args="$extra_args --provider-models ${INSTALLER_DIR}/provider-models.json"
     fi
 
     local project_map_arg=""

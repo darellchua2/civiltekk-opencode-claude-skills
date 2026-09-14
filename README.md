@@ -19,6 +19,7 @@ opencode-config-template/
 ├── deploy/                      # User-space deployment files
 │   ├── .AGENTS.md               # User-space subagent routing (deployed)
 │   ├── setup.sh / setup.ps1     # User-space deployment scripts
+│   └── packs/ + merge-packs / apply-skill-profile / skill-profiles / tui
 ├── installer/                   # npx installer (self-contained CLI flow)
 │   ├── init.mjs                 # `npx … add <name>` entry (bin: opencode-skill)
 │   ├── registry.json            # Catalog registry (build-registry.mjs output)
