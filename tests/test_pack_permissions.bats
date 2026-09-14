@@ -4,15 +4,13 @@
 # All MCP packs must flip server state via `mcp.servers.<name>.disabled: false`
 # and permissions via `permissions` array rules ({action, resource, effect}),
 # never the v1 `enabled` flag, the v1 root `permission` map, the deprecated
-# top-level `tools` map, or the inert nested `permission.tool` key. Peer to
-# tests/test_voice_pack.bats (cli-only pack — intentionally NOT covered here).
+# top-level `tools` map, or the inert nested `permission.tool` key.
 
 MERGE_SCRIPT="deploy/merge-packs.mjs"
 SETUP="deploy/setup.sh"
 SETUP_PS1="deploy/setup.ps1"
 
-# pack-name:server-keys pairs (explicit enumeration — no dir glob: voice is
-# tui-only and legitimately carries no permission key)
+# pack-name:server-keys pairs (explicit enumeration — no dir glob)
 PACK_SERVERS="markitdown:markitdown docling:docling chrome-devtools:chrome-devtools nextjs:next-devtools autodesk:autodesk-revit,autodesk-model-data,autodesk-fusion,autodesk-help"
 
 # =============================================================================

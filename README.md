@@ -366,12 +366,6 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 | `nextjs` | next-devtools | A running Next.js dev server |
 | `chrome-devtools` | chrome-devtools | Chrome stable installed locally (privacy-hardened: telemetry + CrUX OFF by default) |
 
-**Plugin packs** merge plugin entries into `~/.config/opencode/cli.json` instead of flipping MCP servers. Currently one:
-
-| Pack | Plugin installed | Requires |
-|------|------------------|----------|
-| `voice` | [@renjfk/opencode-voice](https://github.com/renjfk/opencode-voice) — local speech-to-text (`ctrl+r` to record, `leader+r` to submit; `/stt-mic` picks the mic) into cli.json; also clobbers `session_rename` so `ctrl+r` works | sox + whisper.cpp (`setup.sh` auto-detects GPU vs CPU: brew+Metal on macOS; on Linux — CUDA build when `nvidia-smi` + `nvcc` are present, ROCm/HIP build when `rocminfo` is present, Vulkan build when `vulkaninfo` + `glslc` are present, CPU otherwise, with an optional ROCm install assist for AMD GPUs; NPU/iGPU paths — AMD Ryzen AI 300/400 auto-builds whisper.cpp with VitisAI NPU offload when `xrt-smi` sees the NPU (needs XRT + FlexML runtimes; `.rai` encoder cache fetched alongside the model), Intel GPU/NPU builds with OpenVINO when `/opt/intel/openvino*` + the NPU/iGPU are present (encoder runs on the Arc iGPU — NPU device is broken on Linux, whisper.cpp#2929; Vulkan remains the light cross-vendor fallback); server alternatives wired via the plugin's `sttEndpoint`: [Lemonade Server](https://lemonade-server.ai) (AMD NPU) or [OpenVINO Model Server](https://docs.openvino.ai/2025/model-server/ovms_demos_audio.html)) and suggests a matching model (large-v3-turbo on modern GPUs/Metal/AMD ROCm/Vulkan, medium on older GPUs, small on CPU-only); normalization LLM defaults to local Ollama — edit `endpoint`/`model` in the deployed cli.json for any OpenAI-compatible API; optional Piper TTS for spoken responses. macOS/Linux only |
-
 The cli.json `plugins` array merges **by package name** — re-runs replace in place and never touch your other plugins. On Docker, the cli.json merge is skipped with a warning (containers have no microphone).
 
 ```bash

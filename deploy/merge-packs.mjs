@@ -4,8 +4,7 @@
 // Provider-pack merger. Deep-merges one or more pack partials
 // (deploy/packs/pack-<name>.json) into a target opencode.json (v2 shape),
 // flipping `mcp.servers.<server>.disabled` (packs carry `disabled: false`),
-// appending `permissions` array rules, and routing client-plugin partials to
-// the v2 global client config (cli.json).
+// appending `permissions` array rules.
 //
 // Companion to deploy/resolve-models.mjs. Zero external dependencies — Node
 // built-ins only (fs, path). Mirrors resolve-models.mjs conventions:
@@ -23,17 +22,6 @@
 //     (idempotent re-runs).
 //   - Deep-merge: last-wins on scalars; objects merged recursively; arrays
 //     left untouched (except permissions, handled explicitly above).
-//   - A pack's optional `cli` key (plugin packs, e.g. pack-voice.json) is
-//     stripped from the opencode.json merge and merged into the SEPARATE
-//     client config via --client-config (v2 cli.json): `plugins` entries merge
-//     BY PACKAGE NAME in v2 object form ({package, options}) — idempotent
-//     re-runs replace in place, other plugins are preserved.
-//   - --tui-config is the explicit v1-compat fallback: writes the same `cli`
-//     partial to a legacy tui.json, converting plugin objects to v1
-//     [name, options] tuples. Only for deploys still running a v1 client.
-//   - Neither client-config flag set while a pack carries `cli` => warning +
-//     skip (Docker build path: containers have no microphone, client config is
-//     host-side). Never fatal.
 //   - Empty/whitespace --packs => true no-op (exit 0, no read, no write).
 //     This is the Docker `ARG OPENCODE_PACKS=""` default path. Implemented
 //     via split(",").map(trim).filter(Boolean) so "" never becomes [""].
@@ -49,8 +37,6 @@
 //     --config <opencode.json> \
 //     --packs-dir <deploy/packs> \
 //     --packs autodesk \
-//     [--client-config <cli.json>] \
-//     [--tui-config <tui.json>] (legacy) \
 //     [--dry-run] [--verbose]
 //
 // Exit codes: 0 success/no-op, 1 bad args / unknown pack / parse error / IO.
@@ -65,8 +51,6 @@ const camel = (s) => s.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 function parseArgsCamel(argv) {
   const out = {
     config: null,
-    clientConfig: null,
-    tuiConfig: null,
     packsDir: null,
     packs: "",
     dryRun: false,
@@ -124,33 +108,6 @@ function deepMerge(dst, src) {
     }
   }
   return dst;
-}
-
-// Plugin identity: v2 object form uses `package`; legacy tuple form uses [0].
-function pluginName(entry) {
-  if (Array.isArray(entry)) return typeof entry[0] === "string" ? entry[0] : null;
-  if (entry && typeof entry === "object" && typeof entry.package === "string") return entry.package;
-  return typeof entry === "string" ? entry : null;
-}
-
-// Merge plugin lists BY PACKAGE NAME. Existing same-name entry is replaced in
-// place; new entries are appended. Idempotent.
-function mergePluginList(dstArr, srcArr) {
-  for (const entry of srcArr) {
-    const name = pluginName(entry);
-    const idx = name ? dstArr.findIndex((e) => pluginName(e) === name) : -1;
-    if (idx >= 0) dstArr[idx] = entry;
-    else dstArr.push(entry);
-  }
-  return dstArr;
-}
-
-// v2 plugin object -> legacy tui.json tuple (only used by --tui-config).
-function pluginToTuple(entry) {
-  if (entry && !Array.isArray(entry) && typeof entry.package === "string") {
-    return [entry.package, entry.options ?? {}];
-  }
-  return entry;
 }
 
 function log(...a)   { console.log(...a); }
@@ -212,10 +169,8 @@ async function main() {
     permissions: config.permissions || [],
   });
 
-  // load + merge each requested pack in order. `cli` keys are plugin-pack
-  // partials — strip them so they never leak into opencode.json (handled below).
+  // load + merge each requested pack in order.
   verbose(`Merging ${requested.length} pack(s) into ${O.config}:`);
-  const merged = [];
   for (const name of requested) {
     const file = join(O.packsDir, `pack-${name}.json`);
     verbose(`  - ${name} (${file})`);
@@ -224,7 +179,7 @@ async function main() {
       die(`Pack ${name} is not a JSON object: ${file}`);
     }
     // $comment is pack metadata — never merge it into the deployed config
-    const { cli, mcp, permissions, $comment, ...restPack } = pack;
+    const { mcp, permissions, $comment, ...restPack } = pack;
     if (Object.keys(restPack).length > 0) deepMerge(config, restPack);
     if (mcp && typeof mcp === "object") {
       // v2 pack fragments are { servers: { name: {...} } }; merge into config.mcp.
@@ -241,54 +196,8 @@ async function main() {
         else config.permissions.push(rule);
       }
     }
-    merged.push({ name, cli });
   }
 
-  // Plugin packs: merge `cli` partials into the separate client config. The
-  // plugins list merges by package name (idempotent, preserves the user's
-  // plugins). Missing both flags is a warning, not an error: the Docker build
-  // path has no host client config (no microphone in containers).
-  let clientChanged = false;
-  let clientTarget = null;
-  const cliPacks = merged.filter(({ cli }) => cli && typeof cli === "object");
-  if (cliPacks.length > 0) {
-    if (!O.clientConfig && !O.tuiConfig) {
-      log(
-        "warning: pack(s) carry a 'cli' key but neither --client-config nor --tui-config was set — " +
-          "skipping plugin merge (client config is host-side; not applicable in Docker)."
-      );
-    } else {
-      const legacy = !O.clientConfig && !!O.tuiConfig;
-      clientTarget = legacy ? O.tuiConfig : O.clientConfig;
-      const clientConfig =
-        (await readJsonMaybe(clientTarget)) ||
-        (legacy
-          ? { $schema: "https://opencode.ai/tui.json" }
-          : { $schema: "https://opencode.ai/v2/cli.json" });
-      const clientBefore = JSON.stringify(clientConfig);
-      for (const { name, cli } of cliPacks) {
-        verbose(`  - ${name} cli -> ${clientTarget}${legacy ? " (legacy tui.json)" : ""}`);
-        const { plugins, ...cliRest } = cli;
-        deepMerge(clientConfig, cliRest);
-        if (Array.isArray(plugins)) {
-          // v2 cli.json uses `plugins`; legacy tui.json uses `plugin` (tuples) —
-          // write to whichever key the target config format reads.
-          const key = legacy ? "plugin" : "plugins";
-          if (!Array.isArray(clientConfig[key])) clientConfig[key] = [];
-          const incoming = legacy ? plugins.map(pluginToTuple) : plugins;
-          mergePluginList(clientConfig[key], incoming);
-        }
-      }
-      clientChanged = JSON.stringify(clientConfig) !== clientBefore;
-      if (!O.dryRun) {
-        await writeFile(
-          clientTarget,
-          JSON.stringify(clientConfig, null, 2) + "\n",
-          "utf8"
-        );
-      }
-    }
-  }
 
   const after = JSON.stringify({
     mcp: config.mcp || {},
@@ -308,14 +217,6 @@ async function main() {
       }
     }
     log(`  servers that would be enabled: ${enabling.join(", ")}`);
-    if (cliPacks.length > 0) {
-      const plugins = cliPacks.flatMap(({ cli }) =>
-        (cli.plugins || []).map((p) => pluginName(p))
-      );
-      log(
-        `  plugins that would be ${clientTarget ? "merged into " + clientTarget : "SKIPPED (no client-config flag)"}: ${plugins.join(", ")}`
-      );
-    }
     return;
   }
 
@@ -324,13 +225,6 @@ async function main() {
   log(`Merged ${requested.length} pack(s) into ${O.config}:`);
   log(`  packs: ${requested.join(", ")}`);
   log(`  changed: ${before === after ? "nothing (already merged)" : "yes"}`);
-  if (cliPacks.length > 0 && clientTarget) {
-    const plugins = cliPacks.flatMap(({ cli }) =>
-      (cli.plugins || []).map((p) => pluginName(p))
-    );
-    log(`  client plugins merged into ${clientTarget}: ${plugins.join(", ")}`);
-    log(`  client config changed: ${clientChanged ? "yes" : "no (already merged)"}`);
-  }
 }
 
 main().catch((e) => die(e.message || String(e)));

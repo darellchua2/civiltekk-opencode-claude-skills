@@ -583,10 +583,6 @@ USAGE:
                           packs: autodesk, markitdown, nextjs, docling, chrome-devtools
                           (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
-                          Plugin pack: voice — installs @renjfk/opencode-voice into
-                          the v2 client config cli.json (local speech-to-text via
-                          whisper.cpp + sox; also
-                          installs host prereqs; macOS/Linux only).
 
   SKILL PROFILE (deploy-time primary visibility):
     --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
@@ -627,7 +623,6 @@ USAGE:
     ./setup.sh --enable-pack autodesk             # Enable all 4 Autodesk MCP servers
     ./setup.sh --enable-pack autodesk,markitdown   # Enable multiple packs
     ./setup.sh --quick --enable-pack markitdown   # Combine with other modes
-    ./setup.sh --enable-pack voice                 # Plugin pack: local speech-to-text (whisper.cpp)
 
   Model resolution + skill profile:
     ./setup.sh --provider anthropic -y            # Deploy with Anthropic models
@@ -890,7 +885,7 @@ parse_arguments() {
                 # Accept any value including "" (empty = no-op, handled by
                 # merge-packs.mjs). Only error if no following token at all.
                 if [ $# -lt 2 ]; then
-                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,docling,chrome-devtools,voice)"
+                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,docling,chrome-devtools)"
                     exit 1
                 fi
                 ENABLE_PACK="$2"
@@ -2494,11 +2489,6 @@ setup_config() {
             # Heavy (~3-4 GB) — only runs when explicitly opted in.
             install_docling
 
-            # Voice plugin pack (issue #356): interactive opt-in + host prereqs
-            # (sox, whisper-cli, whisper model). cli.json merge happens later
-            # in run_pack_merger. Best-effort — non-fatal.
-            install_voice
-
             # Deploy vibeguard secret-masking config (PLAN-GIT-315).
             local vg_src="${REPO_DIR}/opencode_app/.opencode/vibeguard.config.json"
             if [ -f "$vg_src" ]; then
@@ -2521,7 +2511,7 @@ setup_config() {
              echo "    Auto-start: codegraph, web-reader, web-search"
               echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
               echo "    Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
-              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools|voice>"
+              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools>"
             echo ""
         else
             log_error "opencode.json source not found: ${SOURCE_CONFIG}"
@@ -2691,312 +2681,6 @@ install_docling() {
     else
         log_warn "pip install failed for docling-mcp (offline, OOM, or PEP 668?). The pack is opt-in — OpenCode will work without it. Re-run setup when online to enable."
     fi
-}
-
-# Best-effort ROCm install assist for Ubuntu/Debian (opt-in from install_voice).
-# Picks the latest amdgpu-install .deb from AMD's repo index (no pinned version
-# to rot), installs the HIP libraries whisper.cpp builds against, then re-runs
-# detection on the next setup run. Never fatal — prints the manual path on failure.
-install_rocm_linux() {
-    if [ ! -r /etc/os-release ] || ! command_exists apt-get; then
-        log_warn "ROCm auto-install supports Ubuntu/Debian only — follow https://rocm.docs.amd.com for your distro."
-        return 0
-    fi
-    . /etc/os-release
-    local codename="${VERSION_CODENAME:-}"
-    case "$codename" in
-        focal|jammy|noble) ;;
-        *)
-            log_warn "Unsupported distro codename '${codename}' for the AMD apt repo — follow https://rocm.docs.amd.com."
-            return 0
-            ;;
-    esac
-    local base_url="https://repo.radeon.com/amdgpu-install/latest/ubuntu/${codename}/"
-    local deb_name
-    deb_name="$(curl -fsSL "$base_url" | grep -oE 'amdgpu-install[^"]*\.deb' | head -1)"
-    if [ -z "$deb_name" ]; then
-        log_warn "Could not read AMD repo index — follow https://rocm.docs.amd.com (Quick start: install amdgpu-install, then 'sudo apt install rocm-hip-libraries rocminfo')."
-        return 0
-    fi
-    if curl -fL -o "/tmp/${deb_name}" "${base_url}${deb_name}" \
-        && sudo apt-get install -y "/tmp/${deb_name}" \
-        && sudo apt-get update \
-        && sudo apt-get install -y rocm-hip-libraries rocminfo; then
-        sudo usermod -aG video,render "$USER" 2>/dev/null || true
-        log_success "ROCm HIP libraries installed — log out/in (group change) and re-run setup for the HIP whisper build."
-    else
-        log_warn "ROCm install failed — follow https://rocm.docs.amd.com, or 'sudo apt install vulkan-tools libvulkan-dev glslc' for the light Vulkan path, then re-run setup."
-    fi
-}
-
-# Voice plugin pack (--enable-pack voice, issue #356): host prereqs for
-# @renjfk/opencode-voice — local speech-to-text via whisper.cpp + sox.
-# The cli.json plugin entry itself is merged by run_pack_merger (pack-voice.json
-# "tui" key). Mirrors install_docling: opt-in, best-effort, never fatal.
-# Prereq install is macOS/Linux only (plugin documents no Windows build).
-# Interactive note: when the pack was NOT passed via --enable-pack, offer it
-# once here (prompt_yes_no auto-answers "n" under -y, printing the how-to).
-install_voice() {
-    if ! echo "$ENABLE_PACK" | grep -qw "voice"; then
-        # Skills-only mode never reaches run_pack_merger (cli merge) — don't
-        # offer an enable that wouldn't take effect there.
-        if [ "$SKILLS_ONLY" = true ]; then
-            return 0
-        fi
-        if prompt_yes_no "Enable the voice plugin (local speech-to-text via whisper.cpp)?" "n"; then
-            ENABLE_PACK="${ENABLE_PACK:+${ENABLE_PACK},}voice"
-            log_info "Voice pack enabled: ${ENABLE_PACK}"
-        else
-            log_info "Voice plugin skipped. Enable later with: ./setup.sh --enable-pack voice"
-            return 0
-        fi
-    fi
-
-    echo ""
-    log_info "Voice plugin: checking speech-to-text prereqs (@renjfk/opencode-voice)..."
-
-    local os
-    os="$(uname -s)"
-
-    # sox — microphone capture
-    if command_exists sox; then
-        log_success "sox found"
-    elif [ "$os" = "Darwin" ]; then
-        log_info "Installing sox via Homebrew..."
-        if brew install sox >/dev/null 2>&1; then
-            log_success "sox installed"
-        else
-            log_warn "brew install sox failed — install it manually and re-run setup."
-        fi
-    else
-        if prompt_yes_no "Install sox + PulseAudio tools for microphone capture? (apt, needs sudo)" "y"; then
-            log_info "Installing sox via apt..."
-            if sudo apt-get update -qq && sudo apt-get install -y sox libsox-fmt-pulse pulseaudio-utils; then
-                log_success "sox installed"
-            else
-                log_warn "apt install failed — install manually: sudo apt install sox libsox-fmt-pulse pulseaudio-utils"
-            fi
-        else
-            log_warn "sox not found (required for microphone capture). Install with:"
-            echo "    sudo apt install sox libsox-fmt-pulse pulseaudio-utils"
-        fi
-    fi
-
-    # Linux mic readiness (capture goes through PulseAudio/PipeWire; empty
-    # recordings almost always mean no default source or a muted one).
-    if [ "$os" != "Darwin" ] && command_exists pactl; then
-        local mic_src
-        mic_src="$(pactl get-default-source 2>/dev/null || true)"
-        if [ -z "$mic_src" ]; then
-            log_warn "No default PulseAudio source — pick one with /stt-mic in opencode, or:"
-            echo "    pactl list short sources            # available inputs"
-            echo "    pactl set-default-source <name>     # set your mic"
-        elif pactl get-source-mute "$mic_src" 2>/dev/null | grep -q "Mute: yes"; then
-            log_warn "Mic '${mic_src}' is muted — fix: pactl set-source-mute @DEFAULT_SOURCE@ 0"
-        else
-            log_success "Mic ready (PulseAudio source: ${mic_src})"
-            if [ "$(pactl list short sources 2>/dev/null | grep -c 'input')" -gt 1 ]; then
-                log_info "Multiple inputs found — if a recording comes back empty, run /stt-mic in opencode to switch sources (webcam mics can be silent while onboard ones work)."
-            fi
-        fi
-    fi
-
-    # GPU auto-detect (always, even when whisper-cli is already installed —
-    # the result also picks the suggested whisper model below).
-    # Priority: Metal > NVIDIA CUDA > AMD ROCm > AMD NPU > Intel OpenVINO > Vulkan > CPU.
-    # CUDA arch comes from the GPU itself (compute_cap) — no table to rot.
-    # AMD: ROCm/HIP when the (heavy) toolkit is installed, else Vulkan —
-    # the light path (libvulkan + glslc, also works for Intel GPUs).
-    local cmake_flags="-DCMAKE_BUILD_TYPE=Release -DWHISPER_BUILD_TESTS=OFF"
-    local build_kind="CPU"
-    local gpu_backend=""   # metal | cuda | rocm | vitisai | openvino | vulkan
-    local cuda_arch=""
-    if [ "$os" = "Darwin" ]; then
-        build_kind="Metal"
-        gpu_backend="metal"
-    elif command_exists nvidia-smi && command_exists nvcc; then
-            local compute_cap
-            compute_cap="$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader 2>/dev/null | head -1 | tr -d ' .')"
-            if [ -n "$compute_cap" ]; then
-                cmake_flags="-DCMAKE_BUILD_TYPE=Release -DGGML_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=${compute_cap} -DWHISPER_BUILD_TESTS=OFF"
-                build_kind="CUDA (arch ${compute_cap})"
-                gpu_backend="cuda"
-                cuda_arch="${compute_cap}"
-                log_info "NVIDIA GPU + CUDA toolkit detected — will build whisper.cpp with CUDA."
-            fi
-        elif command_exists nvidia-smi; then
-            log_warn "NVIDIA GPU detected but nvcc (CUDA toolkit) not found — building CPU-only. Install CUDA for ~100x faster transcription, then re-run setup."
-        elif command_exists rocminfo || command_exists hipcc; then
-            local gfx
-            gfx="$(rocminfo 2>/dev/null | grep -o 'gfx[0-9a-z]*' | head -1)"
-            if [ -n "$gfx" ]; then
-                cmake_flags="-DCMAKE_BUILD_TYPE=Release -DGGML_HIP=ON -DGPU_TARGETS=${gfx} -DWHISPER_BUILD_TESTS=OFF"
-                build_kind="ROCm/HIP (${gfx})"
-                gpu_backend="rocm"
-                log_info "AMD GPU + ROCm detected — will build whisper.cpp with HIP (${gfx})."
-            fi
-        elif command_exists xrt-smi && xrt-smi examine 2>/dev/null | grep -qiE 'ryzen|npu'; then
-            # AMD Ryzen AI NPU via VitisAI (upstream whisper.cpp, Linux: Ubuntu 24.04).
-            # Needs XRT (kernel driver, xrt-smi) + FlexML runtime (flexmlrt) sourced;
-            # the .rai encoder cache is fetched after the build.
-            cmake_flags="-DCMAKE_BUILD_TYPE=Release -DWHISPER_VITISAI=1 -DWHISPER_BUILD_TESTS=OFF"
-            build_kind="AMD NPU (VitisAI)"
-            gpu_backend="vitisai"
-            log_info "AMD Ryzen AI NPU detected — will build whisper.cpp with VitisAI NPU offload."
-            log_warn "Source the runtimes before building: 'source /opt/xilinx/xrt/setup.sh' and the flexmlrt setup.sh (releases: https://github.com/lemonade-sdk/whisper.cpp-rocm/releases/tag/deps)."
-        elif [ -c /dev/accel/accel0 ] \
-            || { command_exists lspci && lspci -nn 2>/dev/null | grep -qiE 'Intel.*(Graphics|UHD|Iris|NPU|Co-processor)'; }; then
-            # Intel GPU/NPU via the OpenVINO encoder (whisper-cli -oved, default GPU).
-            # NPU device is broken on Linux (ggml-org/whisper.cpp#2929) — target the iGPU.
-            if [ -d /opt/intel/openvino* ] 2>/dev/null || ls /opt/intel/openvino*/setupvars.sh >/dev/null 2>&1; then
-                cmake_flags="-DCMAKE_BUILD_TYPE=Release -DWHISPER_OPENVINO=ON -DWHISPER_BUILD_TESTS=OFF"
-                build_kind="OpenVINO (Intel iGPU)"
-                gpu_backend="openvino"
-                log_info "Intel GPU/NPU + OpenVINO runtime detected — will build whisper.cpp with the OpenVINO encoder."
-                log_warn "The NPU device fails on Linux (whisper.cpp#2929) — pick the encoder device at runtime: '-oved CPU' always works, '-oved GPU' uses the Arc iGPU (faster)."
-            else
-                log_warn "Intel GPU/NPU detected but no OpenVINO runtime in /opt/intel — install it (https://docs.openvino.ai/install, archive), source setupvars.sh, and re-run setup."
-            fi
-        elif command_exists vulkaninfo && command_exists glslc; then
-            cmake_flags="-DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=ON -DWHISPER_BUILD_TESTS=OFF"
-            build_kind="Vulkan"
-            gpu_backend="vulkan"
-            log_info "Vulkan toolchain detected — will build whisper.cpp with Vulkan (AMD/Intel GPUs)."
-        fi
-
-    # whisper-cli — local transcription
-    if command_exists whisper-cli; then
-        log_success "whisper-cli found (build mode: ${build_kind})"
-    elif [ "$os" = "Darwin" ]; then
-        log_info "Installing whisper-cpp via Homebrew (Metal enabled on Apple Silicon)..."
-        if brew install whisper-cpp >/dev/null 2>&1; then
-            log_success "whisper-cli installed"
-        else
-            log_warn "brew install whisper-cpp failed — install it manually and re-run setup."
-        fi
-    else
-        # whisper-cli is not packaged for Linux — offer the source build
-        # (~2-5 min; needs git, cmake, build-essential; sudo for the symlink).
-        log_warn "whisper-cli not found (not packaged for Linux — build from source, ~2-5 min)."
-
-        # Build prerequisites — cmake is not preinstalled on many Ubuntu images.
-        if ! command_exists cmake || ! command_exists git; then
-            if prompt_yes_no "Install whisper.cpp build prerequisites (build-essential, cmake) via apt?" "y"; then
-                if sudo apt-get update -qq && sudo apt-get install -y build-essential cmake; then
-                    log_success "Build prerequisites installed"
-                else
-                    log_warn "apt install failed — install manually: sudo apt install build-essential cmake"
-                fi
-            fi
-        fi
-        if [ "$gpu_backend" = "cuda" ] && ! command_exists nvcc; then
-            log_warn "CUDA build needs nvcc — install with: sudo apt install nvidia-cuda-toolkit (~2-3 GB), or re-run and pick a CPU build."
-        fi
-        if [ -z "$gpu_backend" ] && command_exists lspci \
-            && lspci -nn 2>/dev/null | grep -qiE 'radeon|\bAMD\b|\bATI\b'; then
-            log_warn "AMD GPU detected but no usable GPU toolkit found — building CPU-only."
-            echo "    Lightest fix (Vulkan, a few MB): sudo apt install vulkan-tools libvulkan-dev glslc"
-            echo "    Full ROCm toolkit (HIP build, multi-GB): https://rocm.docs.amd.com — then re-run setup."
-            echo "    NPU note: whisper.cpp ships NPU paths — AMD Ryzen AI 300/400 via VitisAI (auto-selected when xrt-smi + NPU are present; needs XRT + FlexML runtimes), Intel Core Ultra via OpenVINO on the Arc iGPU (NPU device broken on Linux, whisper.cpp#2929)."
-            echo "      No-build alternatives (plugin sttEndpoint): Lemonade Server (AMD NPU, https://lemonade-server.ai) or OpenVINO Model Server (https://docs.openvino.ai/2025/model-server/ovms_demos_audio.html) — both serve OpenAI-compatible /audio/transcriptions."
-            if prompt_yes_no "Install the ROCm stack now? (multi-GB download, Ubuntu/Debian via AMD apt repo)" "n"; then
-                install_rocm_linux
-            fi
-        fi
-        log_info "whisper.cpp build mode: ${build_kind}"
-
-        if prompt_yes_no "Build whisper.cpp from source now? (needs git, cmake, build-essential, sudo for symlink)" "n"; then
-            git clone https://github.com/ggml-org/whisper.cpp ~/opt/whisper.cpp 2>/dev/null || true
-            if cmake -B ~/opt/whisper.cpp/build -S ~/opt/whisper.cpp \
-                    $cmake_flags \
-                && cmake --build ~/opt/whisper.cpp/build -j --target whisper-cli \
-                && sudo ln -sf ~/opt/whisper.cpp/build/bin/whisper-cli /usr/local/bin/whisper-cli; then
-                log_success "whisper-cli built and linked"
-            else
-                log_warn "whisper.cpp build failed — build manually (see README, Voice plugin pack)."
-            fi
-        else
-            echo "    Build later:"
-            echo "      git clone https://github.com/ggml-org/whisper.cpp ~/opt/whisper.cpp"
-            echo "      cmake -B ~/opt/whisper.cpp/build -S ~/opt/whisper.cpp $cmake_flags"
-            echo "      cmake --build ~/opt/whisper.cpp/build -j --target whisper-cli"
-            echo "      sudo ln -sf ~/opt/whisper.cpp/build/bin/whisper-cli /usr/local/bin/whisper-cli"
-        fi
-    fi
-
-    # Whisper model — recommend a build-backend + model-size combination from
-    # the detected profile (encode speed is the constraint, not accuracy):
-    #   Metal / modern CUDA (arch >= 80)  -> large-v3-turbo q5_0, real-time
-    #   older CUDA (arch < 80)            -> medium q5_0, balanced
-    #   AMD ROCm / Vulkan                 -> large-v3-turbo q5_0, near real-time
-    #   AMD NPU (VitisAI)                 -> base (prebuilt .rai encoder caches)
-    #   Intel OpenVINO (iGPU)             -> medium, balanced
-    #   CPU-only                          -> small q5_1 (large = 15-30 s/clip)
-    local model_dir="${HOME}/.local/share/whisper-cpp"
-    local recommended_model="ggml-small-q5_1"
-    local recommend_reason="CPU-only build: large models take ~15-30 s per 4 s clip — small stays usable"
-    if [ "$os" = "Darwin" ]; then
-        recommended_model="ggml-large-v3-turbo-q5_0"
-        recommend_reason="Metal on Apple Silicon transcribes large-v3-turbo in ~sub-second"
-    elif [ -n "$cuda_arch" ]; then
-        if [ "$cuda_arch" -ge 80 ] 2>/dev/null; then
-            recommended_model="ggml-large-v3-turbo-q5_0"
-            recommend_reason="GPU encode ~100-300 ms per 4 s clip — large-v3-turbo is real-time"
-        else
-            recommended_model="ggml-medium-q5_0"
-            recommend_reason="older GPU (arch ${cuda_arch}): medium balances accuracy and speed"
-        fi
-    elif [ "$gpu_backend" = "rocm" ] || [ "$gpu_backend" = "vulkan" ]; then
-        recommended_model="ggml-large-v3-turbo-q5_0"
-        recommend_reason="AMD GPU encode (${gpu_backend}) handles large-v3-turbo near real-time"
-    elif [ "$gpu_backend" = "vitisai" ]; then
-        recommended_model="ggml-base"
-        recommend_reason="NPU encoder offload via VitisAI — prebuilt .rai caches exist for a limited model set (--list)"
-    elif [ "$gpu_backend" = "openvino" ]; then
-        recommended_model="ggml-medium-q5_0"
-        recommend_reason="Intel iGPU via OpenVINO — medium balances accuracy and speed"
-    fi
-    log_info "Suggested combination: ${build_kind} + ${recommended_model} — ${recommend_reason}"
-    if ls "${model_dir}"/ggml-*.bin >/dev/null 2>&1; then
-        log_success "Whisper model found in ${model_dir} (switch anytime with /stt-model)"
-    elif prompt_yes_no "Download recommended whisper model ${recommended_model}?" "y"; then
-        mkdir -p "$model_dir"
-        if curl -fL -o "${model_dir}/${recommended_model}.bin" \
-            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/${recommended_model}.bin" \
-            && [ -s "${model_dir}/${recommended_model}.bin" ]; then
-            log_success "Whisper model downloaded to ${model_dir}"
-        else
-            rm -f "${model_dir}/${recommended_model}.bin"
-            log_warn "Model download failed — download manually (see README, Voice plugin pack)."
-        fi
-    else
-        echo "    Download later: see README 'Voice plugin pack' section."
-    fi
-    echo "    Other sizes: ggml-base-q5_1 (~60 MB, fastest) | ggml-small-q5_1 (~180 MB) | ggml-medium-q5_0 (~500 MB) | ggml-large-v3-turbo-q5_0 (~550 MB, best) — download any, switch with /stt-model."
-
-    # NPU/OpenVINO encoder extras — both need per-model assets beside the ggml bin.
-    local model_name="${recommended_model#ggml-}"
-    if [ "$gpu_backend" = "vitisai" ] && [ -f "${model_dir}/${recommended_model}.bin" ] && [ -d ~/opt/whisper.cpp ]; then
-        log_info "Fetching VitisAI NPU encoder cache (${model_name})..."
-        (cd ~/opt/whisper.cpp && sh models/download-vitisai-model.sh "$model_name") \
-            || log_warn "VitisAI encoder cache download failed — run 'sh models/download-vitisai-model.sh ${model_name}' in ~/opt/whisper.cpp (list: --list)."
-    elif [ "$gpu_backend" = "openvino" ] && [ -f "${model_dir}/${recommended_model}.bin" ] && [ -d ~/opt/whisper.cpp ] && command_exists python3; then
-        log_info "Converting the whisper encoder to OpenVINO IR (${model_name})..."
-        python3 -m pip install --user -q -r ~/opt/whisper.cpp/models/convert-whisper-to-openvino-requirements.txt 2>/dev/null || true
-        if python3 ~/opt/whisper.cpp/models/convert-whisper-to-openvino.py --output "${model_dir}/${recommended_model}-encoder-openvino"; then
-            log_success "OpenVINO encoder ready — '-oved GPU' runs it on the Intel iGPU, '-oved CPU' (or no flag) stays on CPU"
-        else
-            log_warn "OpenVINO encoder conversion failed — run it manually (see whisper.cpp README, OpenVINO Support)."
-        fi
-    fi
-
-    # Piper TTS is optional (text-to-speech); STT works without it.
-    if ! command_exists piper; then
-        log_info "Optional TTS not installed (piper) — recording/transcription works without it. To also speak responses aloud:"
-        echo "    uv tool install piper-tts   # or: pip install --user piper-tts"
-    fi
-
-    log_success "Voice plugin prereq check complete. In OpenCode: ctrl+r records (leader+r = transcribe+submit); /stt-mic picks the microphone."
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -3376,10 +3060,8 @@ run_pack_merger() {
     fi
 
     local target_config="$CONFIG_FILE"
-    local target_cli="${CONFIG_DIR}/cli.json"
     if [ "$DRY_RUN" = true ]; then
         target_config="${DRY_RUN_PREVIEW_DIR}/opencode.json"
-        target_cli="${DRY_RUN_PREVIEW_DIR}/cli.json"
         if [ ! -f "$target_config" ]; then
             log_error "Dry-run preview config not found: ${target_config}"
             log_error "The resolver must run first to stage the preview. Aborting pack merge."
@@ -3396,7 +3078,6 @@ run_pack_merger() {
     log_info "Applying provider packs: ${ENABLE_PACK}"
     node "$MERGE_PACKS_SCRIPT" \
         --config "$target_config" \
-        --client-config "$target_cli" \
         --packs-dir "$PACKS_DIR" \
         --packs "$ENABLE_PACK"
     local rc=$?
@@ -3407,7 +3088,7 @@ run_pack_merger() {
 
     # Install-on-enable: markitdown's Python launcher is pip-installed, not
     # baked into the target config — without this the enabled server fails to
-    # spawn. Mirrors install_docling/install_voice gating. Skipped in dry-run
+    # spawn. Mirrors install_docling gating. Skipped in dry-run
     # (nothing real is deployed) and when the pack wasn't requested.
     # grep -qw (not anchored) is safe: validate_enable_pack fail-fast restricts
     # --enable-pack to real pack names, so no 'markitdown2' false positives.
