@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// deploy/resolve-models.mjs
+// installer/resolve-models.mjs
 //
 // v2.0 model resolver. Source agent .md files are model-free; each agent's tier
-// lives in deploy/agent-tiers.json. This resolver reads the tier registry, the
+// lives in installer/agent-tiers.json. This resolver reads the tier registry, the
 // default tier->model map, optional user/project tier maps and per-agent
 // overrides, then injects a concrete `model:` into each deployed agent .md
 // frontmatter and patches the deployed opencode.json (explore/general always;
@@ -384,8 +384,8 @@ async function main() {
   if (guardOffenders.length) {
     console.error(`\nerror: ${guardOffenders.length} resolved model(s) pinned to a model its provider does not expose:`);
     for (const o of guardOffenders) console.error(`  - ${o}`);
-    console.error("Fix the tier map (deploy/models.default.json / deploy/provider-presets.json) or the source opencode.json pin,");
-    console.error("or update deploy/provider-models.json. Bypass with --force (not recommended).");
+    console.error("Fix the tier map (installer/models.default.json / installer/provider-presets.json) or the source opencode.json pin,");
+    console.error("or update installer/provider-models.json. Bypass with --force (not recommended).");
     process.exit(1);
   }
 

@@ -1,7 +1,7 @@
-// deploy/tui-primitives.mjs
+// installer/tui-primitives.mjs
 //
 // Zero-dependency interactive terminal UI primitives, EXTRACTED from tui.mjs so
-// other tools (deploy/init.mjs) can import singleSelect/multiSelect/textInput/
+// other tools (installer/init.mjs) can import singleSelect/multiSelect/textInput/
 // confirm + the model flows WITHOUT triggering tui.mjs's top-level dispatch
 // (which calls process.exit on import). tui.mjs now re-imports from here.
 //

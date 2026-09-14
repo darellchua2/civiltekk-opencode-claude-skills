@@ -39,32 +39,32 @@ From ticket #378, re-validated against `origin/main` @ `ece1032` (line drift fro
 
 ### Phase 1: Move + self-contained rewires (npx flow restored)
 
-- [ ] **1.1** `git mv` the 13 paths `deploy/` → `installer/`: `init.mjs`, `tui-primitives.mjs`, `source.mjs`, `build-registry.mjs`, `registry.json`, `dependency-map.json`, `presets/`, `agent-tiers.json`, `models.default.json`, `provider-models.json`, `provider-presets.json`, `resolve-models.mjs`, `build-site.mjs`
+- [x] **1.1** `git mv` the 13 paths `deploy/` → `installer/`: `init.mjs`, `tui-primitives.mjs`, `source.mjs`, `build-registry.mjs`, `registry.json`, `dependency-map.json`, `presets/`, `agent-tiers.json`, `models.default.json`, `provider-models.json`, `provider-presets.json`, `resolve-models.mjs`, `build-site.mjs`
     — **Why:** Physical split precedes every rewire; `git mv` preserves history.
     — **Done when:** `ls installer/` shows all 13; `git status` lists only renames (R100).
     — **Consumers affected:** all rows of the map (broken until 1.2–1.6 restore them).
 
-- [ ] **1.2** `installer/init.mjs`: replace `const DEPLOY = join(REPO, "deploy")` with an installer-dir constant (`const INSTALLER = __dirname;`) and rename all `DEPLOY` uses inside the file; update header comments (`deploy/init.mjs` → `installer/init.mjs`); `SOURCE_OC` unchanged
+- [x] **1.2** `installer/init.mjs`: replace `const DEPLOY = join(REPO, "deploy")` with an installer-dir constant (`const INSTALLER = __dirname;`) and rename all `DEPLOY` uses inside the file; update header comments (`deploy/init.mjs` → `installer/init.mjs`); `SOURCE_OC` unchanged
     — **Why:** init.mjs joins registry/presets/depmap/tiers/models/resolver to `DEPLOY` (7 constants at :44-50) — all co-move, so the dir constant flips to the file's own directory; `REPO = dirname(__dirname)` stays valid (installer/.. = repo root).
     — **Done when:** `grep -c 'join(REPO, "deploy")' installer/init.mjs` = 0; `node --check installer/init.mjs` passes.
     — **Consumers affected:** `--list/--expand/--describe/resolver` flows, bin entry (1.4).
 
-- [ ] **1.3** Fix intra-installer path joins + stale self-references: `build-registry.mjs` `TIERS_FILE` :42 AND `OUT_FILE` :43 (`join(REPO, "deploy/…")` → `installer/…` — missing :43 would resurrect the old path on regen) + embedded strings :201,:215 + header comments :2-31; `build-site.mjs:16` + comments :2-8; `resolve-models.mjs` comments :5-7 + runtime error strings :387-388; `source.mjs` comments :1,19,64; `tui-primitives.mjs` header comments :1,4; `$comment` fields in co-moved JSON (`presets/pack-*.json` all files, `dependency-map.json:2`); `deploy/merge-packs.mjs:9` comment (file stays, points at moved sibling)
+- [x] **1.3** Fix intra-installer path joins + stale self-references: `build-registry.mjs` `TIERS_FILE` :42 AND `OUT_FILE` :43 (`join(REPO, "deploy/…")` → `installer/…` — missing :43 would resurrect the old path on regen) + embedded strings :201,:215 + header comments :2-31; `build-site.mjs:16` + comments :2-8; `resolve-models.mjs` comments :5-7 + runtime error strings :387-388; `source.mjs` comments :1,19,64; `tui-primitives.mjs` header comments :1,4; `$comment` fields in co-moved JSON (`presets/pack-*.json` all files, `dependency-map.json:2`); `deploy/merge-packs.mjs:9` comment (file stays, points at moved sibling)
     — **Why:** These files compute `REPO = dirname(__dirname)` (still correct post-move) but `build-registry.mjs` hardcodes `deploy/` segments for siblings that co-moved (OUT_FILE is the dangerous one); stale comments/`$comment`s would fail the final sweep (5.4) with no owning step. Enumerated from the 1.3/5.4 grep hit set — review finding (step text must cover its own gate's hits).
     — **Done when:** `node --check` on all installer `.mjs`; `grep -rn 'deploy/' installer/` returns 0 (JSON `$comment`s included).
     — **Consumers affected:** CI drift check, registry regen (1.6), Docker resolver.
 
-- [ ] **1.4** `package.json` bin: `"opencode-skill": "./deploy/init.mjs"` → `"./installer/init.mjs"`; then `npm install` to regenerate `package-lock.json:11` (embeds the bin path) and commit the lockfile — never hand-edit the lockfile
+- [x] **1.4** `package.json` bin: `"opencode-skill": "./deploy/init.mjs"` → `"./installer/init.mjs"`; then `npm install` to regenerate `package-lock.json:11` (embeds the bin path) and commit the lockfile — never hand-edit the lockfile
     — **Why:** Public `npx github:… add <name>` must keep working unchanged — this is the entry the bin resolves after the move; the lockfile mirrors the bin path and `npm ci` hard-fails on drift (repo policy: dependency changes MUST regen the lockfile).
     — **Done when:** `node -e "console.log(require('./package.json').bin)"` prints the installer path; `grep -c 'installer/init.mjs' package-lock.json` ≥ 1; `npm ci --dry-run` (or `npm install --no-audit --no-fund` idempotent run) clean.
     — **Consumers affected:** every npx user (public contract), CI `npm ci` steps.
 
-- [ ] **1.5** `deploy/tui.mjs`: import `./tui-primitives.mjs` → `../installer/tui-primitives.mjs`; update comments :5-6
+- [x] **1.5** `deploy/tui.mjs`: import `./tui-primitives.mjs` → `../installer/tui-primitives.mjs`; update comments :5-6
     — **Why:** tui.mjs stays in deploy/, its only import moved — the single cross-package edge enforcing one-way `deploy/ → installer/`.
     — **Done when:** `node --check deploy/tui.mjs`; `node deploy/tui.mjs` (no args) prints usage, exits non-zero.
     — **Consumers affected:** setup.sh TUI flows (`provider-picker` etc.).
 
-- [ ] **1.6** Regenerate `installer/registry.json` (`node installer/build-registry.mjs`) and commit the `__meta` generator-note drift
+- [x] **1.6** Regenerate `installer/registry.json` (`node installer/build-registry.mjs`) and commit the `__meta` generator-note drift
     — **Why:** registry embeds `deploy/build-registry.mjs` in its generator note; regen keeps `--check` green in CI.
     — **Done when:** `node installer/build-registry.mjs --check` exits 0; `git diff` shows only the `__meta` line.
     — **Consumers affected:** CI drift gate, README category table provenance.

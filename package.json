@@ -5,7 +5,7 @@
   "description": "opencode skill/agent registry + CLI installer",
   "type": "module",
   "bin": {
-    "opencode-skill": "./deploy/init.mjs"
+    "opencode-skill": "./installer/init.mjs"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^7.0.0",

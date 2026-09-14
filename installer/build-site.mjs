@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// deploy/build-site.mjs
+// installer/build-site.mjs
 //
-// Reads deploy/registry.json → emits docs/index.html (browsable catalog with
+// Reads installer/registry.json → emits docs/index.html (browsable catalog with
 // category filter + search) + docs/registry.json (static JSON API). Output
 // to /docs for GitHub Pages. Zero-dep, mirrors build-registry.mjs ethos.
 //
-// Usage: node deploy/build-site.mjs
+// Usage: node installer/build-site.mjs
 
 import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = dirname(__dirname);
-const REGISTRY = join(REPO, "deploy/registry.json");
+const REGISTRY = join(REPO, "installer/registry.json");
 const OUT_DIR = join(REPO, "docs");
 const GH_BASE = "https://github.com/darellchua2/opencode-config-template/blob/main";
 

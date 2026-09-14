@@ -1,5 +1,5 @@
 {
-  "$comment": "Preset 'devops' for deploy/init.mjs (--preset devops). Derived by /tmp/gen-presets.mjs from deploy/registry.json; edit via the generator, not by hand.",
+  "$comment": "Preset 'devops' for installer/init.mjs (--preset devops). Derived by /tmp/gen-presets.mjs from installer/registry.json; edit via the generator, not by hand.",
   "name": "devops",
   "description": "Git/infra/release: repo-ops + OpenTofu explorer + versioning/release/docker/monorepo/JIRA integration.",
   "agents": [
