@@ -557,8 +557,8 @@ All 5 phases complete. Acceptance criteria: 6/6 satisfied. ✅
 - `linting-workflow-skill` / `linting-subagent` — lint discovery + fixes
 - `error-resolver-workflow-skill` — diagnose gate failures
 - `responsive-audit-subagent` — cross-breakpoint UI verification (loads `playwright-responsive-audit-skill`; PTY-driven loop)
-- `/run-plan` command — the deliberate entry point that loads this skill (defined in `opencode.json`
-  `command.run-plan`; keeps `/goal` generic)
+- `/run-plan` command — the primary entry point that loads this skill (defined in `opencode.json`
+  `commands.run-plan`)
 
 ## Iteration Protocol (opt-in)
 

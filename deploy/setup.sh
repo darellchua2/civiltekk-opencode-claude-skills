@@ -2594,9 +2594,12 @@ install_local_mcp_launchers() {
     echo ""
     log_info "Installing local MCP launchers..."
 
-    # Idempotency: skip the network round-trip when already installed
-    # (mirrors install_docling/install_voice best-effort style).
-    if python3 -m pip show markitdown-local-mcp >/dev/null 2>&1; then
+    # Idempotency: skip the network round-trip when already installed AND
+    # importable — `pip show` alone hides broken installs (e.g. the mcp SDK
+    # dependency missing), which surfaces later as "MCP error -32000:
+    # Connection closed" when the launcher crashes on import.
+    if python3 -m pip show markitdown-local-mcp >/dev/null 2>&1 \
+        && python3 -c "from markitdown_local_mcp.__main__ import main" >/dev/null 2>&1; then
         log_success "markitdown-local-mcp already installed — skipping pip install"
         return 0
     fi

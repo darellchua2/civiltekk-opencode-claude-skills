@@ -2119,14 +2119,19 @@ function Invoke-Migration {
 function Install-LocalMcpLaunchers {
     $launcherDir = Join-Path $AppDir "mcp-servers\markitdown-local-mcp"
 
-    # Idempotency: skip the network round-trip when already installed
-    # (mirrors setup.sh install_local_mcp_launchers). Single python probe —
+    # Idempotency: skip the network round-trip when already installed AND
+    # importable — `pip show` alone hides broken installs (missing mcp SDK
+    # dep), which surfaces later as "MCP error -32000: Connection closed".
+    # (Mirrors setup.sh install_local_mcp_launchers.) Single python probe —
     # reused for the install below.
     $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
     if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
     if ($pythonCmd) {
         & $pythonCmd.Name -m pip show markitdown-local-mcp *> $null
-        if ($LASTEXITCODE -eq 0) {
+        $pipOk = $LASTEXITCODE -eq 0
+        & $pythonCmd.Name -c "from markitdown_local_mcp.__main__ import main" *> $null
+        $importOk = $LASTEXITCODE -eq 0
+        if ($pipOk -and $importOk) {
             Write-LogSuccess "markitdown-local-mcp already installed - skipping pip install"
             $global:LASTEXITCODE = 0
             return

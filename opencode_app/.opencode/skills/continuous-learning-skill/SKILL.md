@@ -175,8 +175,7 @@ User-level (created by setup.sh/setup.ps1, personal, cross-project):
   ├── solutions/
   └── conventions/
 
-Searchable memory (primary, always available):
-  memory tool — mode: add/search, scope: project/user
+Searchable memory (manifest auto-injected at session start; recall = glob+read on LEARNINGS/)
 ```
 
 ### Auto-Provisioning
@@ -214,9 +213,9 @@ The `LEARNINGS/` directory does NOT need to exist before this skill runs. When w
 <!-- No entries yet -->
 ```
 
-**Important**: OpenCode does NOT auto-scan `LEARNINGS/` directories. Agents discover learnings through:
+**Important**: the auto-inject plugin surfaces a LEARNINGS manifest at session start (title + path per file). Agents discover learnings through:
 1. AGENTS.md instructions (auto-loaded at session start) — tells agents where to look
-2. `memory` tool search — primary retrieval mechanism
+2. The injected manifest — primary retrieval pointer
 3. Explicit `glob`/`read` tool calls — for detailed markdown review
 
 ## Core Workflow
@@ -263,21 +262,17 @@ Classify extracted knowledge into categories:
 
 | Category | Folder | Examples | Default Storage |
 |----------|--------|----------|----------------|
-| **Pattern** | `patterns/` | "Repository pattern for data access", "Error boundary in React" | memory + markdown |
-| **Decision** | `decisions/` | "Chose SQLite over PostgreSQL for local-first" | memory + markdown |
-| **Solution** | `solutions/` | "Fix race condition with mutex" | memory only |
-| **Convention** | `conventions/` | "Use kebab-case for file names" | memory + markdown |
-| **Anti-pattern** | `anti-patterns/` | "Avoid mutable global state in tests" | memory only |
+| **Pattern** | `patterns/` | "Repository pattern for data access", "Error boundary in React" | long-form entry |
+| **Decision** | `decisions/` | "Chose SQLite over PostgreSQL for local-first" | long-form entry |
+| **Solution** | `solutions/` | "Fix race condition with mutex" | short-form entry |
+| **Convention** | `conventions/` | "Use kebab-case for file names" | long-form entry |
+| **Anti-pattern** | `anti-patterns/` | "Avoid mutable global state in tests" | short-form entry |
 
-### Step 4: Write to Memory Tool (ALWAYS)
+### Step 4: Write the Learning File (ALWAYS)
 
-Every learning goes to memory tool first:
+Every learning is written to `LEARNINGS/<category>/<slug>.md` (the single store — the former `memory` tool has no v2 plugin):
 
-```
-memory(mode: "add", content: "<structured instinct>", scope: "project"|"user", type: "learned-pattern"|"decision"|"preference")
-```
-
-Format for memory content:
+Format for the entry body:
 ```
 [Category]: [Title]
 Scope: [project|global]
@@ -376,11 +371,11 @@ When invoked by review agents (architecture-review, code-review), follow this be
 3. **Record anti-patterns**: If the review finds code that should be avoided, save it
 4. **Note good patterns**: If the review finds exemplary code, flag it for replication
 5. **Track confidence**: Each observation increases confidence; corrections decrease it
-6. **Write to both stores**: memory tool (always) + markdown (if warranted by complexity)
+6. **Write the learning file**: `LEARNINGS/<category>/<slug>.md` — one entry per instinct; short-form for quick capture, long-form for detailed analysis
 
 ## Learning Formats
 
-### Short-Form Instinct (Quick Capture — memory tool only)
+### Short-Form Instinct (Quick Capture — single LEARNINGS entry)
 
 ```
 Decision: Use path aliases for imports
@@ -392,7 +387,7 @@ Why: Avoids ../../../ relative paths, cleaner imports
 Evidence: Applied successfully in current project
 ```
 
-### Long-Form (Detailed Analysis — memory tool + markdown file)
+### Long-Form (Detailed Analysis — LEARNINGS entry with full structure)
 
 ```markdown
 ## Pattern: Event-Driven Module Communication
@@ -519,7 +514,7 @@ The skill will:
 The skill will:
 1. Review the findings from the code review
 2. Extract instincts with confidence based on occurrence count
-3. Save anti-patterns to memory + markdown
+3. Save anti-patterns to LEARNINGS entries
 4. Save good patterns for replication
 5. Suggest evolution if 3+ instincts cluster in same domain
 
