@@ -16,7 +16,7 @@ docker compose up -d
 
 ```
 opencode_app/
-├── Dockerfile             # Multi-stage: node:24 + opencode-ai + python3
+├── Dockerfile             # Multi-stage: node:24 + @opencode/cli (v2) + python3
 ├── docker-entrypoint.sh   # Injects API keys, starts opencode serve
 ├── opencode.json          # Container-specific config (providers, agents)
 ├── AGENTS.md              # Agent instructions for container mode

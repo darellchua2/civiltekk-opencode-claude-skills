@@ -59,7 +59,7 @@
 - **File**: `solutions/docker-v1-binary-ignores-v2-plugins-key.md`
 - **Confidence**: 0.9
 - **Scope**: project
-- **Summary**: The container's v1 opencode binary ignores the v2-native plugins key with NO warning — v2 plugin additions need a runtime-presence assertion or an explicit Docker descope (#387); build green ≠ plugin loaded
+- **Summary**: The container's v1 opencode binary ignores the v2-native plugins key with NO warning — v2 plugin additions need a runtime-presence assertion or an explicit Docker descope (#387); build green ≠ plugin loaded. RESOLVED by #387: @opencode/cli v2 binary + authenticated healthcheck asserting goal presence
 - **Date**: 2026-09-14
 
 ### Doc claims about runtime enforcement must match plugin defaults
