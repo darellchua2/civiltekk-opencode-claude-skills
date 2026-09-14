@@ -65,22 +65,26 @@ Cross-module nodes: yes — `opencode_app/opencode.json` is consumed by both dep
 
 ### Phase 2: Skill repoint (commit: `docs(skills): repoint goal references to the v2 goal plugin`)
 
-- [ ] **2.1** plan-automation-loop-skill/SKILL.md — rewrite the three "removed pending v2" spots (lines ~42–43, ~60–61, ~409) to state the plugin is re-added as `@prevalentware/opencode-goal-plugin` (v2); keep `[goal:*]` markers as the inter-skill protocol; add one line mapping goal close under `/goal` to the plugin's `update_goal` tool (evidence contract)
+- [x] **2.1** plan-automation-loop-skill/SKILL.md — rewrite the three "removed pending v2" spots (lines ~42–43, ~60–61, ~409) to state the plugin is re-added as `@prevalentware/opencode-goal-plugin` (v2); keep `[goal:*]` markers as the inter-skill protocol; add one line mapping goal close under `/goal` to the plugin's `update_goal` tool (evidence contract)
     — **Why:** the skill currently tells future runs the plugin is absent — actively misleading once it ships again
     — **Done when:** `rg "no OpenCode v2 release|removed pending a v2|re-added after a v2 port" opencode_app/.opencode/skills/plan-automation-loop-skill/SKILL.md` returns nothing; `rg "update_goal"` finds the mapping line; `[goal:evidence|complete|blocked]` marker definitions still present
     — **Consumers affected:** `/run-plan` flows, worktree-pipeline Step 8 executor, primary sessions loading the skill
-- [ ] **2.2** worktree-pipeline-skill/SKILL.md (~line 255) — verify the `[goal:blocked]` halt-trigger wording does not reference v1-plugin mechanics; adjust only if it does
+    — **Done:** four spots repointed (the three planned + the "runtime-enforced guardrails unavailable" note at ~430, same class); markers retained as inter-skill protocol; update_goal mapping added at lines ~42–45, ~59–63, ~408–411; files: opencode_app/.opencode/skills/plan-automation-loop-skill/SKILL.md; fixes: none
+- [x] **2.2** worktree-pipeline-skill/SKILL.md (~line 255) — verify the `[goal:blocked]` halt-trigger wording does not reference v1-plugin mechanics; adjust only if it does
     — **Why:** markers are retained as executor terminal output; only v1-plugin-specific wording would be wrong
     — **Done when:** halt-trigger section describes `[goal:blocked]` as the executor's terminal marker with no plugin-mechanics claims
     — **Consumers affected:** `/run-worktree-pipeline` consumers
-- [ ] **2.3** Sweep `AGENTS.md`, `deploy/.AGENTS.md`, `opencode_app/README.md` with `rg -in "goal"`; update any note still claiming goal mode is removed/awaited (ticket's narrower `goal-plugin` grep already returns empty — wording moved)
+    — **Done:** verified — wording is "the executor's `[goal:blocked]` terminal marker (Step 8)", no plugin-mechanics claims; no change required; files: none; fixes: none
+- [x] **2.3** Sweep `AGENTS.md`, `deploy/.AGENTS.md`, `opencode_app/README.md` with `rg -in "goal"`; update any note still claiming goal mode is removed/awaited (ticket's narrower `goal-plugin` grep already returns empty — wording moved)
     — **Why:** completes the inversion of removal commit `5f95d9c`'s doc sweep across all surfaces it touched
     — **Done when:** no repo doc claims the goal plugin is removed or on a watch-list
     — **Consumers affected:** doc readers
-- [ ] **2.4** Gate: the 2.1/2.3 rg checks re-run clean; commit + push phase
+    — **Done:** sweep returned zero stale references (only non-goals/irrelevant matches) — later commits had already reworded these surfaces; files: none; fixes: none
+- [x] **2.4** Gate: the 2.1/2.3 rg checks re-run clean; commit + push phase
     — **Why:** text changes drift; the rg patterns are the objective tripwire
     — **Done when:** gates pass, phase commit pushed
     — **Consumers affected:** CI, reviewers
+    — **Done:** stale-phrase rg empty, update_goal present (3), markers retained (goal:evidence ×2), bats 13/13 green; files: (gate only); fixes: none
 
 ### Phase 3: Hygiene (commit: `chore(hygiene): drop stale v1 goal ignore + annotate LEARNINGS for v2 plugin`)
 

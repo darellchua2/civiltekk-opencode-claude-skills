@@ -39,9 +39,10 @@ Use this skill when:
 - The user types **`/run-plan PLAN-*.md`** (the **primary** path — plain command, soft
   guardrails: phase/fix budgets, halt rules, idempotent resume; use for both short and long runs).
 - The user says "fully implement the plan", "run the plan to completion", "automation loop".
-  (Historically `/goal` wrapped this skill with plugin-enforced runtime guardrails — the
-  goal plugin has no OpenCode v2 release and was removed; `/run-plan` is the path until it
-  returns.)
+  (For long hands-off runs, `/goal` wraps this skill with plugin-enforced runtime guardrails —
+  the goal plugin is back as `@prevalentware/opencode-goal-plugin` (OpenCode v2-native since
+  0.1.30); in that mode the skill MUST emit `[goal:*]` markers and close the goal via the
+  plugin's `update_goal` tool.)
 
 **Trigger phrases:**
 
@@ -57,9 +58,10 @@ Use this skill when:
 - No PLAN file exists → author one first via `worktree-pipeline-skill` §PLAN Authoring (or run `/run-worktree-pipeline` end-to-end).
 
 > **`/run-plan` (primary).** It loads this skill directly; the soft budgets and HALT rules below
-> are the guardrails. If the goal plugin is re-added after a v2 port ships, `/goal` + skill
-> becomes the runtime-guarded path again — in that mode the skill MUST emit `[goal:*]` markers
-> (see Guardrails) so the plugin honors the terminal state.
+> are the guardrails. `/goal` + skill is the runtime-guarded path again (plugin re-added as
+> `@prevalentware/opencode-goal-plugin`, v2) — in that mode the skill MUST emit `[goal:*]` markers
+> (see Guardrails) for pipeline halt detection AND close the goal via the plugin's `update_goal`
+> tool (`complete` requires every requirement mapped to evidence).
 
 ## Prerequisites
 
@@ -405,10 +407,10 @@ the runtime. Track each counter across the whole invocation.
 
 **Completion markers (structured terminal state):**
 
-Always end the run with exactly one terminal block. Nothing currently honors these markers at
-runtime (the goal plugin is removed pending a v2 port) — they are structured text that make the
-terminal state unambiguous to the reader, and they remain the required contract if the plugin
-returns:
+Always end the run with exactly one terminal block. These markers are the inter-skill terminal
+protocol (e.g. `worktree-pipeline-skill` halts on `[goal:blocked]`). When the run was started
+via `/goal`, ALSO close the goal through the plugin's `update_goal` tool (`complete` with
+evidence, or `unmet` with a concrete blocker):
 
 ```text
 # success — all phases done + acceptance criteria met
@@ -427,11 +429,11 @@ Rules:
 - Markers go on their own final line(s) of the assistant response. `[plan:*]` aliases are
   acceptable when no plugin is present.
 
-> **Runtime-enforced guardrails are currently unavailable.** The soft budgets above are obeyed by
-> the agent, not enforced by the runtime — the goal plugin that provided turn/token/duration
-> limits, idle auto-resume, and evidence-gated completion has no v2 release (pin removed). For
-> hands-off long runs, babysit `/run-plan` or watch its per-phase status blocks; re-add the
-> plugin when a v2-compatible version ships.
+> **Runtime-enforced guardrails are available via `/goal`.** The soft budgets above are obeyed by
+> the agent; the re-added goal plugin (`@prevalentware/opencode-goal-plugin`) enforces
+> turn/token/duration limits, idle auto-resume, and evidence-gated completion when the run is
+> driven through `/goal`. Note the Docker endpoint stays plugin-inert until the v2 binary bump
+> (#387).
 
 ## Reporting format
 
