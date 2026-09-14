@@ -41,8 +41,26 @@
 - **File**: `solutions/plugin-needs-command-block.md`
 - **Confidence**: 0.9
 - **Scope**: project
-- **Summary**: opencode-goal-plugin requires BOTH plugin array entry AND command.goal config block — removing either breaks /goal
+- **Summary**: v1-only rule (SUPERSEDED for v2, #382): v1 opencode-goal-plugin needed BOTH plugin array entry AND command.goal block; the v2 rescoped @prevalentware/opencode-goal-plugin self-registers /goal, /pause_goal, /resume_goal — no commands block on v2
 - **Date**: 2026-07-26
+
+### Re-adopt goal mode as @prevalentware/opencode-goal-plugin (v2), caret-pinned
+
+- **Category**: decision
+- **File**: `decisions/goal-plugin-v2-readoption.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: plugins: ["@prevalentware/opencode-goal-plugin@^0.1.48"] — caret pin (v1 breakage was v1-only versions under v2 runtime, not pinning), no options (secure defaults), no commands.goal block; wejick/opencode-goal rejected; Docker inert until #387
+- **Date**: 2026-09-14
+
+### Docker v1 binary silently ignores the v2 `plugins` key
+
+- **Category**: solution
+- **File**: `solutions/docker-v1-binary-ignores-v2-plugins-key.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: The container's v1 opencode binary ignores the v2-native plugins key with NO warning — v2 plugin additions need a runtime-presence assertion or an explicit Docker descope (#387); build green ≠ plugin loaded
+- **Date**: 2026-09-14
 
 ### Redocly `operation-description` is OFF by default in `recommended`
 

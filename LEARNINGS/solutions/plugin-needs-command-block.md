@@ -1,5 +1,12 @@
 ## Solution: opencode plugins need BOTH plugin array entry AND command config block
 
+> **SUPERSEDED for OpenCode v2 (2026-09-14, #382):** the both-entries rule is **v1-specific**.
+> The rescoped v2 package `@prevalentware/opencode-goal-plugin` (v2-native since 0.1.30)
+> self-registers `/goal`, `/pause_goal`, `/resume_goal` (`register_command: true` default) —
+> on v2 do NOT add a `commands.goal` block: the `plugins` array entry alone is correct, and a
+> manual block risks a duplicate-command conflict. The rule below applies to v1
+> `opencode-goal-plugin` only.
+
 **Context**: When a plugin's slash command (e.g., `/goal`) stops working after config changes.
 **Pattern**: Plugins like `opencode-goal-plugin` require TWO config entries (v2 key names):
 1. `"plugins": ["opencode-goal-plugin"]` — loads the plugin code (hooks, tools, state management)

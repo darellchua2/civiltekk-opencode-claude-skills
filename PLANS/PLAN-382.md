@@ -88,26 +88,31 @@ Cross-module nodes: yes — `opencode_app/opencode.json` is consumed by both dep
 
 ### Phase 3: Hygiene (commit: `chore(hygiene): drop stale v1 goal ignore + annotate LEARNINGS for v2 plugin`)
 
-- [ ] **3.1** Remove `.opencode/goals/` entry + its comment line from `.gitignore` (lines ~31–32)
+- [x] **3.1** Remove `.opencode/goals/` entry + its comment line from `.gitignore` (lines ~31–32)
     — **Why:** dead v1 state path; the v2 plugin stores state host-side at `~/.local/share/opencode-goal-plugin/goals.json`
     — **Done when:** `rg "opencode/goals" .gitignore` returns nothing
     — **Consumers affected:** none (dead path)
-- [ ] **3.2** Annotate `LEARNINGS/solutions/plugin-needs-command-block.md` + its `_index.md` summary: the both-entries rule (plugin array + `command.goal` block) is v1-specific; the v2 scoped package self-registers `/goal`, `/pause_goal`, `/resume_goal`
+    — **Done:** comment + entry removed; files: .gitignore; fixes: none
+- [x] **3.2** Annotate `LEARNINGS/solutions/plugin-needs-command-block.md` + its `_index.md` summary: the both-entries rule (plugin array + `command.goal` block) is v1-specific; the v2 scoped package self-registers `/goal`, `/pause_goal`, `/resume_goal`
     — **Why:** unannotated, a future session would re-add a `command.goal` block and risk a duplicate-command conflict
     — **Done when:** both files carry the v2 annotation
     — **Consumers affected:** future sessions via auto-inject manifest
-- [ ] **3.3** Add `LEARNINGS/decisions/goal-plugin-v2-readoption.md` + `_index.md` entry, following the structure of `LEARNINGS/decisions/skill-permission-allowlist.md` (header, Context, Decision, Consequences): scoped name, caret-pin rationale (corrected — see 1.1) with bare-name fallback, self-registering commands, wejick/opencode-goal rejected, Docker descope to #387
+    — **Done:** SUPERSEDED-for-v2 block added under the solution title; _index summary rewritten to carry the v2 rule; files: LEARNINGS/solutions/plugin-needs-command-block.md, LEARNINGS/_index.md; fixes: none
+- [x] **3.3** Add `LEARNINGS/decisions/goal-plugin-v2-readoption.md` + `_index.md` entry, following the structure of `LEARNINGS/decisions/skill-permission-allowlist.md` (header, Context, Decision, Consequences): scoped name, caret-pin rationale (corrected — see 1.1) with bare-name fallback, self-registering commands, wejick/opencode-goal rejected, Docker descope to #387
     — **Why:** Memory Hygiene requires decision capture for non-trivial architecture decisions
     — **Done when:** file exists, indexed, sections match the reference file's structure
     — **Consumers affected:** future sessions via auto-inject manifest
-- [ ] **3.4** Add `LEARNINGS/solutions/docker-v1-binary-ignores-v2-plugins-key.md` + `_index.md` entry (surfaced by architecture review): v2 `plugins` array is inert on the Docker path until the binary bump; plugin additions need a runtime-presence gate or explicit descope
+    — **Done:** decision doc written with Context/Pattern/Rationale/Alternatives/Trade-offs/Confidence/Scope/Date/References mirroring the reference file; indexed; files: LEARNINGS/decisions/goal-plugin-v2-readoption.md, LEARNINGS/_index.md; fixes: none
+- [x] **3.4** Add `LEARNINGS/solutions/docker-v1-binary-ignores-v2-plugins-key.md` + `_index.md` entry (surfaced by architecture review): v2 `plugins` array is inert on the Docker path until the binary bump; plugin additions need a runtime-presence gate or explicit descope
     — **Why:** reusable trap — ANY future v2 npm plugin addition hits the same silent inertness; evidence Dockerfile:7,86-88, docker-compose.yml:8, #387
     — **Done when:** file exists, indexed
     — **Consumers affected:** future sessions adding plugins via auto-inject manifest
-- [ ] **3.5** Gate: `rg` checks pass; commit + push phase
+    — **Done:** solution doc written (Context/Pattern/Rationale/Evidence/Diagnostic steps/Trade-offs) + indexed; files: LEARNINGS/solutions/docker-v1-binary-ignores-v2-plugins-key.md, LEARNINGS/_index.md; fixes: none
+- [x] **3.5** Gate: `rg` checks pass; commit + push phase
     — **Why:** same tripwire discipline
     — **Done when:** phase commit pushed
     — **Consumers affected:** CI, reviewers
+    — **Done:** gitignore rg clean, SUPERSEDED annotation present, both new LEARNINGS files exist + indexed, bats 13/13 green, status shows only intended files; files: (gate only); fixes: none
 
 ### Phase 4: Verification gates (no commit unless a gate forces a fix)
 
