@@ -61,7 +61,7 @@ Check the agent/skill file structure:
 ## Configuration Checklist
 
 ### Agent (.md file in agents/)
-- [ ] File exists at `opencode_app/.opencode/agents/<name>.md`
+- [ ] File exists at `agents/<name>.md`
 - [ ] YAML frontmatter has `description` field (required)
 - [ ] `description` is under 50 words (loaded into Task tool context)
 - [ ] `mode` field is set (usually `subagent`)
@@ -72,7 +72,7 @@ Check the agent/skill file structure:
 - [ ] File is valid markdown after frontmatter
 
 ### Skill (SKILL.md in skills/<name>/)
-- [ ] Directory exists at `opencode_app/.opencode/skills/<name>/`
+- [ ] Directory exists at `skills/<name>/`
 - [ ] SKILL.md file exists inside the directory
 - [ ] YAML frontmatter has `name` field matching directory name exactly
 - [ ] YAML frontmatter has `description` field (under 200 chars)

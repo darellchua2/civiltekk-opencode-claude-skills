@@ -43,10 +43,17 @@ RUN pip install --no-cache-dir \
 
 RUN useradd -m -d /home/opencode -s /bin/bash opencode
 
-# v2.0: build context is repo root. Copy app + the model-resolver assets (deploy/).
+# v2.0: build context is repo root. Copy app + content + the model-resolver assets (deploy/).
 ARG OPENCODE_PROVIDER=""
 ARG OPENCODE_PACKS=""
 COPY opencode_app/ /app/
+# Content lives at the repo root (skills/, agents/, plugins/) and lands in the
+# runtime-discovery location /app/.opencode/. The root .dockerignore keeps
+# skills/_archived/ and the local symlink bridge out of this context.
+COPY skills/ /app/.opencode/skills/
+COPY agents/ /app/.opencode/agents/
+COPY plugins/ /app/.opencode/plugins/
+COPY plugins/vibeguard.config.json /app/.opencode/vibeguard.config.json
 COPY deploy/ /app/deploy/
 
 # Bake resolved models into the image at build time (default z.ai unless

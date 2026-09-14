@@ -35,4 +35,14 @@ tests/
 __pycache__/
 
 # Archived skills (keep image small)
-opencode_app/.opencode/skills/_archived/
+skills/_archived/
+
+# Local-runtime symlink bridge (opencode_app/.opencode/* -> repo root content).
+# <!-- sanctioned: symlink bridge -->
+# Never let the bridge enter the Docker context: COPY follows in-context
+# symlinks and would re-smuggle the full tree (incl. _archived/) into the
+# image under a prefix the ignore rules above cannot match.
+opencode_app/.opencode/agents
+opencode_app/.opencode/skills
+opencode_app/.opencode/plugins
+opencode_app/.opencode/vibeguard.config.json

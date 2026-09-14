@@ -1,0 +1,24 @@
+{
+  "enabled": true,
+  "debug": false,
+  "placeholder_prefix": "__VG_",
+  "session": {
+    "ttl": "1h",
+    "max_mappings": 100000
+  },
+  "patterns": {
+    "regex": [
+      { "pattern": "sk-[A-Za-z0-9]{48}", "category": "OPENAI_KEY" },
+      { "pattern": "AKIA[0-9A-Z]{16}", "category": "AWS_ACCESS_KEY" },
+      { "pattern": "(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]+", "category": "GITHUB_TOKEN" },
+      { "pattern": "AIza[0-9A-Za-z_-]{35}", "category": "GOOGLE_KEY" },
+      { "pattern": "xox[bpoas]-[A-Za-z0-9-]+", "category": "SLACK_TOKEN" },
+      { "pattern": "://[^:\\s]+:[^@\\s/]+@", "category": "DB_CONNECTION_STRING" },
+      { "pattern": "-----BEGIN [A-Z ]*PRIVATE KEY-----", "category": "PRIVATE_KEY" },
+      { "pattern": "\\w*(password|passwd|pwd|secret|token|api[_-]?key|apikey|access[_-]?key|private[_-]?key|credential|connection[_-]?string)\\w*\\s*[:=]\\s*[\"']?[^\"'\\s]+", "flags": "i", "category": "SECRET_ASSIGNMENT" },
+      { "pattern": "eyJ[A-Za-z0-9_-]+\\.eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+", "category": "JWT" }
+    ],
+    "builtin": ["email", "uuid", "ipv4", "mac"],
+    "exclude": ["localhost", "127.0.0.1", "0.0.0.0", "example.com"]
+  }
+}

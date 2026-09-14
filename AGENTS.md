@@ -11,11 +11,11 @@ Multi-mode OpenCode configurator:
 
 ## Source of Truth
 
-`opencode_app/.opencode/` is the **single source** for agents and skills. Never edit deployed `~/.config/opencode/` copies — edit source, then redeploy.
+The root `skills/` and `agents/` dirs are the **single source** for skills and agents. (A symlink bridge under `opencode_app/.opencode/` serves the local pm2 runtime only — sanctioned: symlink bridge.) Never edit deployed `~/.config/opencode/` copies — edit source, then redeploy.
 
 ## Secret Masking
 
-Vibeguard masks `.env` secrets in provider-bound traffic via regex patterns (`opencode_app/.opencode/vibeguard.config.json`). **OpenCode v2: shipped as a local v2 port (`plugins/vibeguard.ts`, npm pin removed) — masking is active; the `permissions` deny rules for `*.env` are the second layer.** Behavioral rules: `deploy/.AGENTS.md` §Secret Hygiene. Verification + per-project overlay: `security-audit-skill` (also documents residual risks: `/share` plaintext, no fail-closed, plaintext session DB).
+Vibeguard masks `.env` secrets in provider-bound traffic via regex patterns (`plugins/vibeguard.config.json`). **OpenCode v2: shipped as a local v2 port (`plugins/vibeguard.ts`, npm pin removed) — masking is active; the `permissions` deny rules for `*.env` are the second layer.** Behavioral rules: `deploy/.AGENTS.md` §Secret Hygiene. Verification + per-project overlay: `security-audit-skill` (also documents residual risks: `/share` plaintext, no fail-closed, plaintext session DB).
 
 ## Dependency Management
 
@@ -25,7 +25,7 @@ Vibeguard masks `.env` secrets in provider-bound traffic via regex patterns (`op
 
 | Location | Scope | Deployed? |
 |----------|-------|-----------|
-| `opencode_app/.opencode/agents/*.md` | Global (all projects) | Yes — copied by `deploy/setup.sh` |
+| `agents/*.md` | Global (all projects) | Yes — copied by `deploy/setup.sh` |
 | `.opencode/agents/*.md` | Project-only | No — stays in repo |
 
 Project-level agents must NOT be counted in setup scripts or README.
