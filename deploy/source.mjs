@@ -1,6 +1,6 @@
 // deploy/source.mjs — source isolation module
 //
-// Single seam for all reads from opencode_app/.opencode/{skills,agents}/.
+// Single seam for all reads from {skills,agents}/ at the repo root.
 // The eventual flip to per-skill HTTP remote fetch changes ONLY this file;
 // every caller keeps calling readSkill("tdd-workflow-skill") regardless
 // of transport.
@@ -18,8 +18,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_SOURCE_ROOT = join(__dirname, ".."); // deploy/.. = repo root
 
-const skillDir = (root) => join(root, "opencode_app/.opencode/skills");
-const agentDir = (root) => join(root, "opencode_app/.opencode/agents");
+const skillDir = (root) => join(root, "skills");
+const agentDir = (root) => join(root, "agents");
 
 function extractFrontmatter(content) {
   const lines = content.split(/\r?\n/);

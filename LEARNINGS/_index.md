@@ -107,6 +107,15 @@
 - **Summary**: Task-delegate allow-list changes sync 4 surfaces (frontmatter, registry regen, README row, agent-body note); delegation step wording must respect the delegate's own permission ceiling (bash:deny → parent owns diff/lint/commit)
 - **Date**: 2026-08-27
 
+### path-move restructure: anchor CI tarball gates, verify search-path consumers
+
+- **Category**: solution
+- **File**: `solutions/path-move-ci-gate-anchoring.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Path moves (#381): anchor CI `npm pack` grep gates to package-root paths (substring matches false-green); config files consumed via search-path chains (vibeguard.ts) need bridge symlink / explicit COPY per runtime
+- **Date**: 2026-09-14
+
 ---
 
 **Storage paths:**

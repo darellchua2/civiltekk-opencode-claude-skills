@@ -17,7 +17,7 @@ category: Configuration
 - Documents privacy guarantees for company-internal document handling
 - Provides fallback strategies when the MCP is unavailable
 
-**Reference:** [markitdown-local-mcp launcher README](../../mcp-servers/markitdown-local-mcp/README.md) · [Upstream microsoft/markitdown](https://github.com/microsoft/markitdown)
+**Reference:** [markitdown-local-mcp launcher README](../../opencode_app/mcp-servers/markitdown-local-mcp/README.md) · [Upstream microsoft/markitdown](https://github.com/microsoft/markitdown)
 
 ## Requirements & Honesty Note
 
@@ -232,7 +232,7 @@ For company-internal docs, option 5 is preferred over option 4 (cheaper, preserv
 
 ## Privacy Guarantees
 
-This MCP is the **privacy-hardened** fork of upstream `markitdown-mcp`, vendored at `opencode_app/mcp-servers/markitdown-local-mcp/`. See [launcher README](../../mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis.
+This MCP is the **privacy-hardened** fork of upstream `markitdown-mcp`, vendored at `opencode_app/mcp-servers/markitdown-local-mcp/`. See [launcher README](../../opencode_app/mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis.
 
 | Guarantee                                                | Mechanism                                                              |
 | -------------------------------------------------------- | ---------------------------------------------------------------------- |

@@ -66,8 +66,8 @@ Skill and agent counts must be identical across all documentation files.
 **Source of truth**: Actual files on disk.
 
 ```bash
-ACTUAL_SKILLS=$(ls -d opencode_app/.opencode/skills/*/ | grep -v _archived | grep -v scripts | wc -l)
-ACTUAL_AGENTS=$(ls opencode_app/.opencode/agents/*.md 2>/dev/null | wc -l)
+ACTUAL_SKILLS=$(ls -d skills/*/ | grep -v _archived | grep -v scripts | wc -l)
+ACTUAL_AGENTS=$(ls agents/*.md 2>/dev/null | wc -l)
 ```
 
 ### Files Checked
@@ -82,7 +82,7 @@ ACTUAL_AGENTS=$(ls opencode_app/.opencode/agents/*.md 2>/dev/null | wc -l)
 ### Validation Commands
 
 ```bash
-ACTUAL=$(ls -d opencode_app/.opencode/skills/*/ | grep -v _archived | grep -v scripts | wc -l)
+ACTUAL=$(ls -d skills/*/ | grep -v _archived | grep -v scripts | wc -l)
 echo "Actual skills on disk: $ACTUAL"
 echo "---"
 echo "setup.sh:    $(grep -oP 'SKILLS \(\K[0-9]+' deploy/setup.sh | head -1)"
@@ -267,7 +267,7 @@ Every skill, agent, and MCP reference in documentation must point to something t
 
 ```bash
 echo "=== Agents on disk but NOT in docs ==="
-for f in opencode_app/.opencode/agents/*.md; do
+for f in agents/*.md; do
   name=$(basename "$f" .md)
   if ! grep -rq "$name" AGENTS.md README.md; then
     echo "  MISSING FROM DOCS: $name"
@@ -275,7 +275,7 @@ for f in opencode_app/.opencode/agents/*.md; do
 done
 
 echo "=== Skills on disk but NOT in setup.sh ==="
-for d in opencode_app/.opencode/skills/*/; do
+for d in skills/*/; do
   name=$(basename "$d")
   [[ "$name" == "_archived" || "$name" == "scripts" ]] && continue
   if ! grep -q "$name" deploy/setup.sh; then
@@ -286,19 +286,19 @@ done
 echo "=== Skills in setup.sh but NOT on disk ==="
 grep -oP '[a-z][a-z0-9-]+' deploy/setup.sh | sort -u | while read name; do
   if [[ "$name" == *"-skill" || "$name" == *"-workflow" || "$name" == *"-creator" ]]; then
-    if [ ! -d "opencode_app/.opencode/skills/$name" ]; then
+    if [ ! -d "skills/$name" ]; then
       echo "  ORPHAN IN SETUP.SH: $name"
     fi
   fi
 done
 
 echo "=== Cross-skill references check ==="
-for d in opencode_app/.opencode/skills/*/SKILL.md; do
+for d in skills/*/SKILL.md; do
   name=$(basename "$(dirname "$d")")
   refs=$(grep -oP '[a-z][a-z0-9-]+-skill' "$d" 2>/dev/null | sort -u)
   for ref in $refs; do
     [[ "$ref" == "$name" ]] && continue
-    if [ ! -d "opencode_app/.opencode/skills/$ref" ]; then
+    if [ ! -d "skills/$ref" ]; then
       echo "  BROKEN REF in $name: $ref"
     fi
   done

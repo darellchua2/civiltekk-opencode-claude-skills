@@ -11,7 +11,7 @@
 # assertion) to satisfy bats' parser while still covering all 30 skills
 # (7 + 8 + 15) × 3 assertions = 90 cases.
 
-SKILLS_DIR="opencode_app/.opencode/skills"
+SKILLS_DIR="skills"
 
 # Helper: extract Iteration Protocol section line range from a file.
 # Outputs: "<start_line> <end_line>" for the section (inclusive of header,

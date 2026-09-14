@@ -40,12 +40,12 @@ Use this skill when:
 
 Scan all component directories and estimate token consumption.
 
-**Agents** (`opencode_app/.opencode/agents/*.md`)
+**Agents** (`agents/*.md`)
 - Count files and estimate tokens per file (`words × 1.3`)
 - Extract `description` frontmatter length
 - Flag: files >200 lines (heavy), description >50 words (bloated frontmatter)
 
-**Skills** (`opencode_app/.opencode/skills/*/SKILL.md`)
+**Skills** (`skills/*/SKILL.md`)
 - Count directories and estimate tokens per SKILL.md (`words × 1.3`)
 - Flag: files >300 lines (heavy)
 - Note: skills are loaded on demand, so only description fields consume always-on context

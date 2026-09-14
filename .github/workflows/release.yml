@@ -56,9 +56,10 @@ jobs:
           echo "Validating package.json..."
           jq . package.json
           echo "Checking npx tarball includes source tree..."
-          npm pack --dry-run 2>&1 | grep -q "opencode_app/.opencode/" \
+          tarball="$(npm pack --dry-run 2>&1)"
+          echo "$tarball" | grep -q " skills/" && echo "$tarball" | grep -q " agents/" \
             && echo "source tree in tarball ✓" \
-            || { echo "FAIL: opencode_app/.opencode/ missing from tarball"; exit 1; }
+            || { echo "FAIL: skills/ or agents/ missing from tarball"; exit 1; }
 
       - name: Run tests
         run: |

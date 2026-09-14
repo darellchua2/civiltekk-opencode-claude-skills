@@ -30,7 +30,7 @@ lean_keys() {
 
 @test "skill-profiles: every lean key matches a skill dir on disk" {
     bad=$(lean_keys | while read -r k; do
-        [ -d "${PROJECT_ROOT}/opencode_app/.opencode/skills/${k}" ] || echo "$k"
+        [ -d "${PROJECT_ROOT}/skills/${k}" ] || echo "$k"
     done)
     [ -z "$bad" ] || { echo "not on disk: $bad"; return 1; }
 }

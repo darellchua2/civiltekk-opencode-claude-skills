@@ -84,11 +84,11 @@ CONFIG_DIR="${HOME}/.config/opencode"
 CONFIG_FILE="${CONFIG_DIR}/opencode.json"
 LEGACY_CONFIG_FILE="${CONFIG_DIR}/config.json"
 SKILLS_DIR="${CONFIG_DIR}/skills"
-AGENTS_SRC_DIR="${REPO_DIR}/opencode_app/.opencode/agents"
+AGENTS_SRC_DIR="${REPO_DIR}/agents"
 AGENTS_DEST_DIR="${CONFIG_DIR}/agents"
 # Repo-owned plugins (auto-loaded by opencode from this dir). Mirrors the
 # agents/skills deploy pattern. Currently: opencode-skill-counter-sync.
-PLUGINS_SRC_DIR="${REPO_DIR}/opencode_app/.opencode/plugins"
+PLUGINS_SRC_DIR="${REPO_DIR}/plugins"
 PLUGINS_DEST_DIR="${CONFIG_DIR}/plugins"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
 LAST_UPDATE_CHECK="${CONFIG_DIR}/.last-update-check"
@@ -664,7 +664,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS ($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents")):
+   AGENTS ($(count_agents "${REPO_DIR}/agents")):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -720,9 +720,9 @@ USAGE:
       not shipped in the base config — added wholesale via
       ./setup.sh --enable-pack autodesk (revit, model-data, fusion, help)
 
-    SKILLS ($(count_skills "${REPO_DIR}/opencode_app/.opencode/skills")):
+    SKILLS ($(count_skills "${REPO_DIR}/skills")):
 
-$(print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills")
+$(print_skill_categories "${REPO_DIR}/skills")
 
      Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
@@ -2490,7 +2490,7 @@ setup_config() {
             install_docling
 
             # Deploy vibeguard secret-masking config (PLAN-GIT-315).
-            local vg_src="${REPO_DIR}/opencode_app/.opencode/vibeguard.config.json"
+            local vg_src="${REPO_DIR}/plugins/vibeguard.config.json"
             if [ -f "$vg_src" ]; then
                 run_cmd cp "$vg_src" "${CONFIG_DIR}/vibeguard.config.json"
                 log_success "vibeguard.config.json deployed (secret masking active)"
@@ -2498,14 +2498,14 @@ setup_config() {
             fi
 
             echo ""
-        echo "✓ Configured $(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") agents:"
+        echo "✓ Configured $(count_agents "${REPO_DIR}/agents") agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - zai-media-subagent - Media production: image/video gen, ASR, OCR (delegated)"
         echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-        echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 6)) more agents"
+        echo "    - ... and $(($(count_agents "${REPO_DIR}/agents") - 6)) more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Auto-start: codegraph, web-reader, web-search"
@@ -2528,7 +2528,7 @@ setup_config() {
     log_info "Created ${SKILLS_DIR} directory"
 
     # Check if skills folder exists in script directory
-    if [ -d "${REPO_DIR}/opencode_app/.opencode/skills" ]; then
+    if [ -d "${REPO_DIR}/skills" ]; then
         # Check if skills directory already has content
         if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
             log_warn "Skills directory already contains files"
@@ -2547,11 +2547,11 @@ setup_config() {
 
         # Copy skills folder (excluding _archived)
         if command -v rsync &> /dev/null; then
-            run_cmd rsync -av --exclude='_archived' "${REPO_DIR}/opencode_app/.opencode/skills/" "${SKILLS_DIR}/"
+            run_cmd rsync -av --exclude='_archived' "${REPO_DIR}/skills/" "${SKILLS_DIR}/"
         else
             # Fallback: copy all except _archived
             mkdir -p "${SKILLS_DIR}"
-            for item in "${REPO_DIR}/opencode_app/.opencode/skills"/*; do
+            for item in "${REPO_DIR}/skills"/*; do
                 item_name=$(basename "$item")
                 if [[ "$item_name" != "_archived" ]]; then
                     cp -r "$item" "${SKILLS_DIR}/"
@@ -2560,7 +2560,7 @@ setup_config() {
         fi
         log_success "Skills copied successfully to ${SKILLS_DIR}"
     else
-        log_warn "skills/ folder not found in ${REPO_DIR}/opencode_app/.opencode/skills"
+        log_warn "skills/ folder not found in ${REPO_DIR}/skills"
     fi
 
     return 0
@@ -3226,7 +3226,7 @@ run_migration() {
 # PLUGIN DEPLOYMENT
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Copy repo-owned plugins (opencode_app/.opencode/plugins/*) into the global
+# Copy repo-owned plugins (plugins/*) into the global
 # plugins dir so opencode auto-loads them. Mirrors the skills deploy pattern.
 # These are NOT npm packages (those live in opencode.json `plugins[]`); they are
 # local TS plugins auto-discovered from ~/.config/opencode/plugins/.
@@ -3862,13 +3862,13 @@ print_summary() {
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured $(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") agents:"
+        echo "✓ Configured $(count_agents "${REPO_DIR}/agents") agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - zai-media-subagent - Media production: image/video gen, ASR, OCR (delegated)"
-        echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 5)) more agents"
+        echo "    - ... and $(($(count_agents "${REPO_DIR}/agents") - 5)) more agents"
     fi
 
     # MCP servers configured
@@ -3947,23 +3947,23 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents ($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents")):"
+    echo "🤖 Agents ($(count_agents "${REPO_DIR}/agents")):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - zai-media-subagent - Media production: image/video gen, ASR, OCR (delegated)"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 6)) more agents"
+    echo "  - ... and $(($(count_agents "${REPO_DIR}/agents") - 6)) more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      echo "                     📦 $(count_skills "${REPO_DIR}/opencode_app/.opencode/skills") Skills Available"
+      echo "                     📦 $(count_skills "${REPO_DIR}/skills") Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
      echo ""
-     print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills"
+     print_skill_categories "${REPO_DIR}/skills"
      echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
