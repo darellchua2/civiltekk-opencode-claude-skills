@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.0.0](https://github.com/darellchua2/opencode-config-template/compare/v6.1.0...v7.0.0) (2026-09-14)
+
+### ⚠ BREAKING CHANGES
+
+* **installer:** split deploy/ into installer/ + deploy/ (#378) (#390)
+
+### Code Refactoring
+
+* **installer:** split deploy/ into installer/ + deploy/ ([#378](https://github.com/darellchua2/opencode-config-template/issues/378)) ([#390](https://github.com/darellchua2/opencode-config-template/issues/390)) ([56df622](https://github.com/darellchua2/opencode-config-template/commit/56df622c2ed3fd8bbfbafa5706c7a02a086d0ef0)), closes [#281](https://github.com/darellchua2/opencode-config-template/issues/281)
+
 ## [6.1.0](https://github.com/darellchua2/opencode-config-template/compare/v6.0.1...v6.1.0) (2026-09-14)
 
 ### Features
