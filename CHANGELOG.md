@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.1.0](https://github.com/darellchua2/opencode-config-template/compare/v6.0.1...v6.1.0) (2026-09-14)
+
+### Features
+
+* **plugins:** re-add goal mode via @prevalentware/opencode-goal-plugin (OpenCode v2) ([#388](https://github.com/darellchua2/opencode-config-template/issues/388)) ([43e3c6c](https://github.com/darellchua2/opencode-config-template/commit/43e3c6cbd386ed9066733e777dea807b36713a9e)), closes [#382](https://github.com/darellchua2/opencode-config-template/issues/382) [#387](https://github.com/darellchua2/opencode-config-template/issues/387) [#382](https://github.com/darellchua2/opencode-config-template/issues/382) [#382](https://github.com/darellchua2/opencode-config-template/issues/382) [#382](https://github.com/darellchua2/opencode-config-template/issues/382)
+
 ## [6.0.1](https://github.com/darellchua2/opencode-config-template/compare/v6.0.0...v6.0.1) (2026-09-14)
 
 ### Bug Fixes
