@@ -98,11 +98,11 @@ $ConfigDir = Join-Path $HOME ".config\opencode"
 $ConfigFile = Join-Path $ConfigDir "opencode.json"
 $LegacyConfigFile = Join-Path $ConfigDir "config.json"
 $SkillsDir = Join-Path $ConfigDir "skills"
-$AgentsSrcDir = Join-Path $RepoDir "opencode_app\.opencode\agents"
+$AgentsSrcDir = Join-Path $RepoDir "agents"
 $AgentsDestDir = Join-Path $ConfigDir "agents"
 # Repo-owned plugins (auto-loaded by opencode from this dir). Mirrors the
 # agents/skills deploy pattern. Currently: opencode-skill-counter-sync.
-$PluginsSrcDir = Join-Path $RepoDir "opencode_app\.opencode\plugins"
+$PluginsSrcDir = Join-Path $RepoDir "plugins"
 $PluginsDestDir = Join-Path $ConfigDir "plugins"
 $BackupDir = Join-Path $HOME ".opencode-backup-$(Get-Date -Format 'yyyyMMdd_HHmmss')"
 $LogFile = Join-Path $HOME ".opencode-setup.log"
@@ -962,7 +962,7 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-    AGENTS ($(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents'))):
+    AGENTS ($(Get-AgentCount (Join-Path $RepoDir 'agents'))):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -999,9 +999,9 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-            SKILLS ($(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills'))):
+            SKILLS ($(Get-SkillCount (Join-Path $RepoDir 'skills'))):
 
-$(Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills'))
+$(Get-SkillCategories (Join-Path $RepoDir 'skills'))
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1753,7 +1753,7 @@ function Set-Configuration {
             Write-LogSuccess "opencode.json copied successfully (from $SourceConfig)"
 
             # Deploy vibeguard secret-masking config (PLAN-GIT-315).
-            $vgSrc = Join-Path $RepoDir "opencode_app\.opencode\vibeguard.config.json"
+            $vgSrc = Join-Path $RepoDir "plugins/vibeguard.config.json"
             if (Test-Path $vgSrc) {
                 $vgDest = Join-Path $ConfigDir "vibeguard.config.json"
                 if (-not $DryRun) { Copy-Item $vgSrc $vgDest -Force }
@@ -1769,7 +1769,7 @@ function Set-Configuration {
             Install-Docling
 
             Write-Host ""
-             Write-Host "Configured $(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents')) agents:" -ForegroundColor Green
+             Write-Host "Configured $(Get-AgentCount (Join-Path $RepoDir 'agents')) agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
@@ -1796,7 +1796,7 @@ function Deploy-Skills {
     Write-Host ""
     Write-LogInfo "Setting up skills directory..."
 
-    $skillsSrc = Join-Path $RepoDir "opencode_app\.opencode\skills"
+    $skillsSrc = Join-Path $RepoDir "skills"
 
     if (-not $DryRun) {
         if (-not (Test-Path $SkillsDir)) {
@@ -2217,7 +2217,7 @@ function Install-Docling {
 # PLUGIN DEPLOYMENT
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Copy repo-owned plugins (opencode_app/.opencode/plugins/*) into the global
+# Copy repo-owned plugins (plugins/*) into the global
 # plugins dir so opencode auto-loads them. Mirrors the skills deploy pattern.
 # These are NOT npm packages (those live in opencode.json plugins[]); they are
 # local TS plugins auto-discovered from ~/.config/opencode/plugins/.
@@ -2780,23 +2780,23 @@ function Show-NextSteps {
     Write-Host "  1. Restart terminal or run: . $PROFILE"
     Write-Host "  2. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents ($(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents'))):"
+    Write-Host "Agents ($(Get-AgentCount (Join-Path $RepoDir 'agents'))):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - zai-media-subagent - Media production: image/video gen, ASR, OCR (delegated)"
     Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    Write-Host "  - ... and $((Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents')) - 6) more agents"
+    Write-Host "  - ... and $((Get-AgentCount (Join-Path $RepoDir 'agents')) - 6) more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     $(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills')) Skills Available" -ForegroundColor White
+      Write-Host "                     $(Get-SkillCount (Join-Path $RepoDir 'skills')) Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
       Write-Host ""
-      Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills')
+      Get-SkillCategories (Join-Path $RepoDir 'skills')
      Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"

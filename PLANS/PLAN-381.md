@@ -83,14 +83,16 @@
     — **Done:** verified no deep refs exist in this file (its only mention is `opencode_app/opencode.json`, which stays) — no edit required; files: none; fixes: none
 
 ### Phase 3: Rewire deploy scripts
-- [ ] **3.1** `deploy/setup.sh`: update the 19 deep `opencode_app/.opencode` refs to the new layout (path vars, copy loops, counts/drift checks, help text). MUST STAY untouched: line ~118 (`SOURCE_CONFIG` = `opencode_app/opencode.json`), line ~2608 (mcp-servers launcher path), comments ~2478/~3581 — they reference `opencode_app/opencode.json` / `mcp-servers/`, not the moved content.
+- [x] **3.1** `deploy/setup.sh`: update the 19 deep `opencode_app/.opencode` refs to the new layout (path vars, copy loops, counts/drift checks, help text). MUST STAY untouched: line ~118 (`SOURCE_CONFIG` = `opencode_app/opencode.json`), line ~2608 (mcp-servers launcher path), comments ~2478/~3581 — they reference `opencode_app/opencode.json` / `mcp-servers/`, not the moved content.
     — **Why:** The user-space deploy is the primary consumer of the content dirs; 4,583 lines means refs hide in heredocs — edit by grep iteration, not by eyeballing. The must-stay list protects the config's single-source seam from over-editing.
     — **Done when:** `grep -nE 'opencode_app[/\\]\.opencode' deploy/setup.sh` returns nothing; the four must-stay refs still present; `bash -n deploy/setup.sh` passes.
     — **Consumers affected:** every user-space deploy; bats count/drift suites.
-- [ ] **3.2** `deploy/setup.ps1`: same for the 13 deep refs — **spelled with backslashes** (`opencode_app\.opencode\…`; grep-verified at lines 101, 105, 965, 1002, 1004, 1756, 1772, 1799, 2783, 2790, 2796, 2799 — recount at edit time). MUST STAY untouched: line ~133 (`opencode_app/opencode.json`) and comments ~1744/~1949.
+    — **Done:** 19 deep refs rewritten via path-specific sed (agents/skills/plugins/vibeguard → root paths); 4 must-stay refs verified intact; `bash -n` green; files: deploy/setup.sh; fixes: none
+- [x] **3.2** `deploy/setup.ps1`: same for the 13 deep refs — **spelled with backslashes** (`opencode_app\.opencode\…`; grep-verified at lines 101, 105, 965, 1002, 1004, 1756, 1772, 1799, 2783, 2790, 2796, 2799 — recount at edit time). MUST STAY untouched: line ~133 (`opencode_app/opencode.json`) and comments ~1744/~1949.
     — **Why:** Mirror must not drift from setup.sh — and backslash spelling is invisible to forward-slash greps, so every gate here is separator-agnostic or Windows deploys rot silently behind a green gate.
     — **Done when:** `grep -nE 'opencode_app[/\\]\.opencode' deploy/setup.ps1` returns nothing; must-stay refs intact; pwsh parse check if pwsh exists (`pwsh -NoProfile -Command "[scriptblock]::Create((Get-Content -Raw deploy/setup.ps1)) | Out-Null"`), else the gap is recorded in the PR body.
     — **Consumers affected:** Windows deploys.
+    — **Done:** 13 refs rewritten (12 backslash + 1 forward-slash comment, separator-aware sed); 3 must-stay refs intact (133/1744/1949); pwsh absent on this runner — parse-check gap recorded for PR body; files: deploy/setup.ps1; fixes: none
 
 ### Phase 4: Release, CI, Docker
 - [ ] **4.1** `.releaserc.json` asset globs: `opencode_app/.opencode/agents/**/*` → `agents/**/*`; `opencode_app/.opencode/skills/**/*` → `skills/**/*` (keep the adjacent `deploy/*.mjs` + `opencode_app/opencode.json` entries)
