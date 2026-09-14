@@ -7,8 +7,8 @@
 # `eval "@test ..."` pattern from older bats versions no longer works.
 # Tests are therefore written as explicit @test blocks.
 
-SKILLS_DIR="opencode_app/.opencode/skills"
-AGENTS_DIR="opencode_app/.opencode/agents"
+SKILLS_DIR="skills"
+AGENTS_DIR="agents"
 
 # =============================================================================
 # New skills — YAML validation for all 4 new skills

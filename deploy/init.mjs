@@ -39,8 +39,8 @@ import { readAgent, readSkill } from "./source.mjs";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = dirname(__dirname); // deploy/.. = repo root
 const DEPLOY = join(REPO, "deploy");
-const AGENTS_SRC = join(REPO, "opencode_app/.opencode/agents");
-const SKILLS_SRC = join(REPO, "opencode_app/.opencode/skills");
+const AGENTS_SRC = join(REPO, "agents");
+const SKILLS_SRC = join(REPO, "skills");
 const REGISTRY_FILE = join(DEPLOY, "registry.json");
 const PRESETS_DIR = join(DEPLOY, "presets");
 const DEPMAP_FILE = join(DEPLOY, "dependency-map.json");

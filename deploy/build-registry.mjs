@@ -37,8 +37,8 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = dirname(__dirname);
-const AGENTS_DIR = join(REPO, "opencode_app/.opencode/agents");
-const SKILLS_DIR = join(REPO, "opencode_app/.opencode/skills");
+const AGENTS_DIR = join(REPO, "agents");
+const SKILLS_DIR = join(REPO, "skills");
 const TIERS_FILE = join(REPO, "deploy/agent-tiers.json");
 const OUT_FILE = join(REPO, "deploy/registry.json");
 

@@ -10,7 +10,7 @@
 # assertion) to satisfy bats' parser while still covering all 30 skills
 # (7 + 8 + 15) × 3 assertions + 1 reference-existence test = 91 cases.
 
-SKILLS_DIR="opencode_app/.opencode/skills"
+SKILLS_DIR="skills"
 CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
 
 # =============================================================================

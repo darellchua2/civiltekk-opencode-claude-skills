@@ -6,8 +6,8 @@
 # routing rule, agent skill grants, and dependency-map.json edge.
 # Peer to tests/test_markitdown_skill.bats.
 
-SKILL_MD="opencode_app/.opencode/skills/docling-mcp-skill/SKILL.md"
-AGENTS_DIR="opencode_app/.opencode/agents"
+SKILL_MD="skills/docling-mcp-skill/SKILL.md"
+AGENTS_DIR="agents"
 CONFIG="opencode_app/opencode.json"
 PACKS_DIR="deploy/packs"
 MERGE_SCRIPT="deploy/merge-packs.mjs"
