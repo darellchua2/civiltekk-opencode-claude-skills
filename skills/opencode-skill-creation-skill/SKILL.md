@@ -132,7 +132,7 @@ category: testing
 - `compatibility` (optional)
 - `metadata` (optional, string-to-string map)
 
-Unknown frontmatter fields are ignored by OpenCode. `category` is installer-registry-only (required by this repo's tooling). After any frontmatter change, run `node deploy/build-registry.mjs` and commit `registry.json`.
+Unknown frontmatter fields are ignored by OpenCode. `category` is installer-registry-only (required by this repo's tooling). After any frontmatter change, run `node installer/build-registry.mjs` and commit `registry.json`.
 
 ### Step 4: Build Skill Content
 

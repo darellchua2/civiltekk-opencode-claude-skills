@@ -50,22 +50,22 @@ migration, and how to revert.
 ### New concepts
 
 - **4 tiers**: `reasoning`, `fast`, `docs`, `vision`. Each agent is categorized
-  in `deploy/agent-tiers.json`.
-- **Resolver** (`deploy/resolve-models.mjs`): injects concrete `model:` into the
+  in `installer/agent-tiers.json`.
+- **Resolver** (`installer/resolve-models.mjs`): injects concrete `model:` into the
   *deployed* agent files at deploy time + patches `opencode.json`.
 - **Override files** (resolution precedence, highest first):
   1. `<project>/.opencode/agent-overrides.json` (per-agent, project-local)
   2. `~/.config/opencode/agent-overrides.json` (per-agent, global)
   3. `<project>/.opencode/models.json` (tier map, project-local)
   4. `~/.config/opencode/models.json` (tier map, global)
-  5. `deploy/models.default.json` (Z.AI defaults)
+  5. `installer/models.default.json` (Z.AI defaults)
 
 > **Default tier models:** `reasoning` → `zai-coding-plan/glm-5.3`. **Image analysis (#283)**
 > is not a vision tier — `image-analyzer-subagent`/`error-resolver-subagent` run on `docs`
 > (`glm-4.7`) and obtain image content via `zai-vision-analysis-skill` (free `glm-4.6v-flash`
 > through a direct Z.AI API call, since models.dev doesn't list it). The `vision` tier
 > (`zai/glm-4.6v`) is opt-in paid only. The resolver also runs an **exposed-model guard** at
-> deploy (`--provider-models deploy/provider-models.json`, aligned to models.dev) that fails
+> deploy (`--provider-models installer/provider-models.json`, aligned to models.dev) that fails
 > fast if a tier/source-config pin references a model its provider doesn't serve.
 
 ---
@@ -250,7 +250,7 @@ Backups are retained per `--keep-backups` (default 5 most recent).
 - **`Node.js is required to resolve agent models`** — install Node.js v20+ first;
   the resolver is a Node script.
 - **An agent got the wrong model** — check its tier in
-  `deploy/agent-tiers.json`, then check `~/.config/opencode/models.json` (tier
+  `installer/agent-tiers.json`, then check `~/.config/opencode/models.json` (tier
   map) and `agent-overrides.json` (per-agent pin). Run `--models-only --dry-run`
   to preview the resolution table.
 - **My custom model disappeared** — it should have been lifted into
@@ -258,5 +258,5 @@ Backups are retained per `--keep-backups` (default 5 most recent).
 
 ---
 
-See `PLANS/PLAN-BT-74.md` for the full design and `deploy/provider-presets.json`
+See `PLANS/PLAN-BT-74.md` for the full design and `installer/provider-presets.json`
 for the available provider model IDs.

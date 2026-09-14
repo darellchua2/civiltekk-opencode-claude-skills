@@ -8,12 +8,12 @@
 
 From ticket #378, re-validated against `origin/main` @ `ece1032` (line drift from ticket noted inline):
 
-- [ ] `bats tests/` green (full suite)
-- [ ] `node installer/init.mjs --list skills` works
-- [ ] `node installer/init.mjs add tdd-subagent --dry-run` resolves paths (local run of the npx flow)
-- [ ] `bash deploy/setup.sh --dry-run` passes; `opencode-init` symlink points at the new path
-- [ ] `npm pack --dry-run` tarball contains `installer/`
-- [ ] Repo-wide sweep: zero references to moved files under old `deploy/` paths (excluding `LEARNINGS/`, `PLANS/` — historical records)
+- [x] `bats tests/` green (full suite)
+- [x] `node installer/init.mjs --list skills` works
+- [x] `node installer/init.mjs add tdd-subagent --dry-run` resolves paths (local run of the npx flow)
+- [x] `bash deploy/setup.sh --dry-run` passes; `opencode-init` symlink points at the new path
+- [x] `npm pack --dry-run` tarball contains `installer/`
+- [x] Repo-wide sweep: zero references to moved files under old `deploy/` paths (excluding `LEARNINGS/`, `PLANS/` — historical records)
 
 **Re-validation deltas** (ticket line refs → actual @ `ece1032`): setup.sh script vars `99-104` → `97-107`; setup.sh `init_src` `4316` → `4005`; setup.ps1 `114-119` → `112-121`, `2230` → `2225`; Dockerfile `56,75` → `46-84` (whole-`deploy/` COPY at 57 + resolver RUN at 63-69; `merge-packs` at 82-84 **stays** on `/app/deploy/`).
 
@@ -115,22 +115,22 @@ From ticket #378, re-validated against `origin/main` @ `ece1032` (line drift fro
 
 ### Phase 5: Docs + final sweep
 
-- [ ] **5.1** `README.md`: tier-file paths (:84, :100), registry provenance note (:561); sweep remaining moving-file refs
+- [x] **5.1** `README.md`: tier-file paths (:84, :100), registry provenance note (:561); sweep remaining moving-file refs
     — **Why:** README documents the file tree users navigate; stale paths break discoverability of the split.
     — **Done when:** `grep -nE 'deploy/(init\.mjs|build-registry|registry\.json|source\.mjs|resolve-models|agent-tiers|models\.default|provider-(models|presets)|tui-primitives|presets/|dependency-map|build-site)' README.md` = 0.
     — **Consumers affected:** humans; doc-consistency skill.
 
-- [ ] **5.2** `AGENTS.md` (:35, :49, :80) and `MIGRATION.md` (:53-68, :253, :261): same path rewires
+- [x] **5.2** `AGENTS.md` (:35, :49, :80) and `MIGRATION.md` (:53-68, :253, :261): same path rewires
     — **Why:** AGENTS.md is the repo's agent-facing source-of-truth (tier table file paths); MIGRATION.md documents the model system layout.
     — **Done when:** same grep = 0 on both files.
     — **Consumers affected:** future agent sessions, users migrating.
 
-- [ ] **5.3** `opencode_app/README.md` (:39 Docker copy description) and `skills/opencode-agent-creation-skill/SKILL.md:52`, `skills/opencode-skill-creation-skill/SKILL.md:135`
+- [x] **5.3** `opencode_app/README.md` (:39 Docker copy description) and `skills/opencode-agent-creation-skill/SKILL.md:52`, `skills/opencode-skill-creation-skill/SKILL.md:135`
     — **Why:** Docker README describes the build context; the two SKILL.md files cite `deploy/agent-tiers.json` and `deploy/build-registry.mjs` as repo layout examples. SKILL.md frontmatter is untouched (body text only — no registry impact).
     — **Done when:** grep = 0 on all three files; `node installer/build-registry.mjs --check` still green (proves no frontmatter drift).
     — **Consumers affected:** Docker users; skill readers.
 
-- [ ] **5.4** Final repo-wide sweep: `grep -rnE 'deploy/(init\.mjs|build-registry|registry\.json|source\.mjs|resolve-models|agent-tiers|models\.default|provider-(models|presets)|tui-primitives|presets/|dependency-map|build-site)' .` excluding `.git/`, `node_modules/`, `LEARNINGS/`, `PLANS/` → 0 hits
+- [x] **5.4** Final repo-wide sweep: `grep -rnE 'deploy/(init\.mjs|build-registry|registry\.json|source\.mjs|resolve-models|agent-tiers|models\.default|provider-(models|presets)|tui-primitives|presets/|dependency-map|build-site)' .` excluding `.git/`, `node_modules/`, `LEARNINGS/`, `PLANS/` → 0 hits
     — **Why:** LEARNINGS/PLANS are historical records of past work (their refs were true at write time); everything else must reflect the new layout.
     — **Done when:** sweep returns 0.
     — **Consumers affected:** none (verification step).
