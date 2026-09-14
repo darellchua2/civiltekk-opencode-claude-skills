@@ -165,7 +165,9 @@ Every V1 plugin fails on v2 with "Plugin must export a default definition
 with an id and an effect or setup function". For each:
 
 1. **Native v2 replacement?** → drop the pin, document the native feature.
-   Known: context-pruning plugins → v2 checkpoint compaction; OAuth-helper
+   Known: context-pruning plugins (e.g. DCP) → v2 checkpoint compaction (see
+   [MIGRATION.md](../MIGRATION.md#context-pruning-dcp--v2-checkpoint-compaction)
+   for workflow comparisons, native config knobs, and token-reduction levers); OAuth-helper
    plugins → `opencode auth login`; PTY/background plugins → v2 background
    shell; resource-guard plugins → `permissions` rules.
 2. **No replacement + still wanted** → port to the v2 API:
