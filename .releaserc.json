@@ -131,8 +131,8 @@
           "deploy/source.mjs",
           "deploy/build-site.mjs",
           "opencode_app/opencode.json",
-          "opencode_app/.opencode/agents/**/*",
-          "opencode_app/.opencode/skills/**/*"
+          "agents/**/*",
+          "skills/**/*"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]"
       }

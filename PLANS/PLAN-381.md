@@ -95,18 +95,21 @@
     — **Done:** 13 refs rewritten (12 backslash + 1 forward-slash comment, separator-aware sed); 3 must-stay refs intact (133/1744/1949); pwsh absent on this runner — parse-check gap recorded for PR body; files: deploy/setup.ps1; fixes: none
 
 ### Phase 4: Release, CI, Docker
-- [ ] **4.1** `.releaserc.json` asset globs: `opencode_app/.opencode/agents/**/*` → `agents/**/*`; `opencode_app/.opencode/skills/**/*` → `skills/**/*` (keep the adjacent `deploy/*.mjs` + `opencode_app/opencode.json` entries)
+- [x] **4.1** `.releaserc.json` asset globs: `opencode_app/.opencode/agents/**/*` → `agents/**/*`; `opencode_app/.opencode/skills/**/*` → `skills/**/*` (keep the adjacent `deploy/*.mjs` + `opencode_app/opencode.json` entries)
     — **Why:** semantic-release silently ships a content-less tarball if this is missed.
     — **Done when:** `grep -nE 'opencode_app[/\\]\.opencode' .releaserc.json` returns nothing; `npx semantic-release --dry-run` verified in CI, or the local `npm pack --dry-run` fallback (7.2e) passes with the outcome recorded in the PR body.
     — **Consumers affected:** every future release artifact.
-- [ ] **4.2** `.github/workflows/release.yml` lines ~59–61: tarball check greps for `skills/` AND `agents/` (replace the single `opencode_app/.opencode/` grep with both, fail message updated); line ~85–86 `opencode_app/opencode.json` refs stay
+    — **Done:** both globs swapped to `agents/**/*` / `skills/**/*`; jq-valid; local `npm pack --dry-run` fallback passes (outcome for PR body); files: .releaserc.json; fixes: none
+- [x] **4.2** `.github/workflows/release.yml` lines ~59–61: tarball check greps for `skills/` AND `agents/` (replace the single `opencode_app/.opencode/` grep with both, fail message updated); line ~85–86 `opencode_app/opencode.json` refs stay
     — **Why:** The CI gate that would have caught a missed 4.1 currently checks the OLD path — it must gate the new layout instead.
     — **Done when:** `grep -n 'opencode_app/.opencode' .github/workflows/release.yml` returns nothing; the check greps both new dirs.
     — **Consumers affected:** release CI.
-- [ ] **4.3** `opencode_app/Dockerfile`: after `COPY opencode_app/ /app/` add `COPY skills/ /app/.opencode/skills/`, `COPY agents/ /app/.opencode/agents/`, `COPY plugins/ /app/.opencode/plugins/`, `COPY plugins/vibeguard.config.json /app/.opencode/vibeguard.config.json` (before the resolve-models RUN; `--agents-src /app/.opencode/agents` etc. unchanged — in-container paths identical)
+    — **Done:** tarball check now greps skills/ AND agents/ (variable-captured output, no pipe-loss); yaml.safe_load OK; files: .github/workflows/release.yml; fixes: none
+- [x] **4.3** `opencode_app/Dockerfile`: after `COPY opencode_app/ /app/` add `COPY skills/ /app/.opencode/skills/`, `COPY agents/ /app/.opencode/agents/`, `COPY plugins/ /app/.opencode/plugins/`, `COPY plugins/vibeguard.config.json /app/.opencode/vibeguard.config.json` (before the resolve-models RUN; `--agents-src /app/.opencode/agents` etc. unchanged — in-container paths identical)
     — **Why:** Image content previously arrived via `COPY opencode_app/`; after the move it must come from root explicitly, before model injection reads it.
     — **Done when:** `grep -n 'COPY' opencode_app/Dockerfile` shows the four new lines ordered before the resolve-models RUN; `docker build` gate in Phase 7.
     — **Consumers affected:** docker compose users; resolve-models stage.
+    — **Done:** four COPYs added (lines 53-56) before resolve-models RUN with explanatory comment; in-container paths unchanged; docker build gate deferred to 7.2f; files: opencode_app/Dockerfile; fixes: none
 
 ### Phase 5: Tests + registry regen (first full gate)
 - [ ] **5.1** Update the 9 bats files carrying deep refs (`tests/init.bats`, `skill_profiles.bats`, `test_autoresearch_protocol.bats`, `test_autoresearch_skills.bats`, `test_count_drift.bats`, `test_default_behavior.bats`, `test_docling_skill.bats`, `test_markitdown_skill.bats`, `test_pack_permissions.bats`) to the new layout. `test_mcp_count_consistency.bats` has only `opencode_app/opencode.json` refs — no edit needed.
