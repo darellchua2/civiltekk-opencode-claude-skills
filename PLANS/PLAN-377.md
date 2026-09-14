@@ -38,16 +38,16 @@ From ticket #377, re-validated against `origin/main` @ `bc1f6d2` (line refs re-a
     — **Done when:** `node --check`; `--format claude` maps to target with warning; `--format claude --target both` dies exit≠0.
     — **Consumers affected:** CLI users; `--project` note text.
 
-- [ ] **1.2** `writeUserScopeInstall`: `const target = opts.target || "opencode"`; validate `["opencode","claude","both"]` → `die(\`invalid target '${target}'. Use: opencode, claude, or both.\`, 2)`; `doOc`/`doClaude` derive from target; dry-run JSON field `format` → `target` (preview output, not a parsed contract — no bats test reads it today).
-    — **Why:** Core flag semantics; value set unchanged so the alias needs no value translation beyond the name.
-    — **Done when:** `--target claude` and `--target opencode` dry-runs print correct `target` + `destination`; `--target bogus` dies exit 2.
+- [ ] **1.2** `writeUserScopeInstall`: `const target = opts.target || "opencode"`; validate `["opencode","claude","both"]` → `die(\`invalid target '${target}'. Use: opencode, claude, or both.\`, 2)`; `doOc`/`doClaude` derive from target; dry-run JSON field `format` → `target` (preview output, not a parsed contract — no bats test reads it today). In the dry-run branch, when `doClaude && sel.agents.length` print the same agent-skip warning to stderr (REQ-1: preview must reflect the skip, not just the real install).
+    — **Why:** Core flag semantics; value set unchanged so the alias needs no value translation beyond the name; a preview that hides the skip lies about what install does.
+    — **Done when:** `--target claude` and `--target opencode` dry-runs print correct `target` + `destination`; `--target bogus` dies exit 2; `add tdd-subagent --target claude --dry-run` shows the skip warning.
     — **Consumers affected:** every `add` invocation (user scope).
 
 ### Phase 2: Claude target installs skills only
 
-- [ ] **2.1** `writeClaudeFormat`: delete the agent loop (:739-745); when `sel.agents.length > 0` print `warning: N agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)`; count = skills only. Keep `stripModelLine` and the remove-side cleanup (:787-789) untouched.
-    — **Why:** Fixes the ticket's named bug — agents written as SKILL.md into `~/.claude/skills/` are silently ignored by Claude Code; the warning makes the skip visible instead of silent.
-    — **Done when:** `add <agent> --target claude` exits 0, prints warning, claude dir has no entries; `--target both` with agent: opencode agent written + same warning.
+- [ ] **2.1** `writeClaudeFormat`: delete the agent loop (:739-745); when `sel.agents.length > 0` print `warning: N agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)` to **stderr** (`console.error`, REQ-2 — the bats case asserts stderr; not `console.log` like the existing :757 count line); count = skills only. Keep `stripModelLine` and the remove-side cleanup (:787-789) untouched.
+    — **Why:** Fixes the ticket's named bug — agents written as SKILL.md into `~/.claude/skills/` are silently ignored by Claude Code; the warning makes the skip visible instead of silent, and stderr keeps it out of the success-path stdout stream.
+    — **Done when:** `add <agent> --target claude` exits 0, prints warning on stderr, claude dir has no entries; `--target both` with agent: opencode agent written + same warning.
     — **Consumers affected:** Claude Code users; `--target both` flows.
 
 - [ ] **2.2** Manifest write: record `sel.agents` in the manifest only when `doOc` (agents were actually installed somewhere); skills always recorded.
@@ -64,9 +64,9 @@ From ticket #377, re-validated against `origin/main` @ `bc1f6d2` (line refs re-a
     — **Done when:** `node installer/init.mjs --help | grep -q -- '--target'` and `--format` still mentioned.
     — **Consumers affected:** humans reading help.
 
-- [ ] **3.2** README §:224-239: retitle to `--target`, commands use `--target claude`/`--target both`, table header "Target", add one line: `--format is a deprecated alias for --target (prints a warning, values unchanged)`.
+- [ ] **3.2** README §:224-239: retitle to `--target`, commands use `--target claude` / `--target both`, table header "Target", swap the `--target both` example to a **skill** name (REQ-3 — an agent example would showcase a warning-producing flow), add one line: `--format is a deprecated alias for --target (prints a warning, values unchanged)`. Also update `AGENTS.md:10` which still names `--format claude|both` as canonical (REQ-4).
     — **Why:** Public docs must match the shipped CLI; the deprecated alias note keeps old links/notes interpretable.
-    — **Done when:** grep shows no `--format` usage examples except the deprecation note; section title says `--target`.
+    — **Done when:** grep shows no `--format` usage examples except the deprecation note; section title says `--target`; AGENTS.md references `--target`.
     — **Consumers affected:** humans; doc-consistency skill sweeps.
 
 ### Phase 4: Bats cases
