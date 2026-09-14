@@ -40,7 +40,7 @@ When any subagent returns `NEEDS_GIT_BRANCH_SETUP: true` in its Return Contract,
 ## Docker-Specific Notes
 
 - Port: 4096 (internal), mapped to 4097 by default
-- Health check: `GET /global/health`
+- Health check: `GET /api/health`
 - Auth keys: Injected from environment variables via entrypoint
 - Data persistence: `/home/opencode/.local/share/opencode` (named volume)
 
