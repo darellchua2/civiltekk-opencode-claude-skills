@@ -65,12 +65,12 @@ This applies to: Step 0 repo-context confirmation, Step 1 scope selection, the "
 
 Before any action, determine the current project type:
 
-1. Check for configurator repo indicators: `deploy/setup.sh` + `opencode_app/.opencode/` at repo root
+1. Check for configurator repo indicators: `deploy/setup.sh` + root-level `skills/` and `agents/` dirs
 2. If detected, use the question tool to confirm: "This appears to be an OpenCode configurator repo. Is that correct?"
 3. The answer changes your workflow:
 
 **Configurator repo** (e.g., `opencode-config-template`):
-- `opencode_app/.opencode/` is the SOURCE of truth (deployed to user space)
+- The root `skills/` + `agents/` dirs are the SOURCE of truth (deployed to user space; a sanctioned symlink bridge keeps the local pm2 server loading them — see opencode_app/AGENTS.md)
 - After any change to skills/agents, MUST run doc sync (deploy/setup.sh, deploy/setup.ps1, README.md, AGENTS.md)
 - Creating a new skill/agent here means it gets deployed to ALL user projects
 
@@ -94,7 +94,7 @@ Before creating any artifact, ask the user via question tool:
 - "User level (global)" — personal, all projects, not shared
 ```
 
-If in a configurator repo and user says "user level", the artifact goes into `opencode_app/.opencode/` (which deploy/setup.sh deploys to `~/.config/opencode/`).
+If in a configurator repo and user says "user level", the artifact goes into the root `skills/`/`agents/` dirs (which deploy/setup.sh deploys to `~/.config/opencode/`).
 
 ## Step 2: Use Skills for Creation
 
@@ -120,8 +120,8 @@ If in a configurator repo and user says "user level", the artifact goes into `op
 
 | Artifact | Location | Deploys To |
 |----------|----------|------------|
-| Skills | `opencode_app/.opencode/skills/<name>/SKILL.md` | `~/.config/opencode/skills/<name>/SKILL.md` |
-| Agents | `opencode_app/.opencode/agents/<name>.md` | `~/.config/opencode/agents/<name>.md` |
+| Skills | `skills/<name>/SKILL.md` | `~/.config/opencode/skills/<name>/SKILL.md` |
+| Agents | `agents/<name>.md` | `~/.config/opencode/agents/<name>.md` |
 | Config | `deploy/config.json` | `~/.config/opencode/config.json` |
 | User Rules | `deploy/.AGENTS.md` | `~/.config/opencode/AGENTS.md` |
 
@@ -252,8 +252,8 @@ When a user wants to create their own OpenCode configurator repo (to manage and 
     - Color-coded output and banners
     - Deployment of `deploy/config.json` → `~/.config/opencode/config.json`
     - Deployment of `deploy/.AGENTS.md` → `~/.config/opencode/AGENTS.md`
-    - Deployment of `opencode_app/.opencode/agents/*.md` → `~/.config/opencode/agents/`
-    - Deployment of `opencode_app/.opencode/skills/*/` → `~/.config/opencode/skills/`
+    - Deployment of `agents/*.md` → `~/.config/opencode/agents/`
+    - Deployment of `skills/*/` → `~/.config/opencode/skills/`
     - Skill/agent count validation
     - Backup of existing config before overwriting
     - Category-grouped skill listing
@@ -283,7 +283,7 @@ When a user wants to create their own OpenCode configurator repo (to manage and 
      - "Push to GitHub?"
      - "Run deploy/setup.sh to deploy?"
 
-**Key principle**: A configurator repo is the SOURCE of truth for a user's global OpenCode config. Everything in `opencode_app/.opencode/` gets deployed to `~/.config/opencode/` via the setup scripts in `deploy/`. This lets users version-control their OpenCode configuration and share it across machines.
+**Key principle**: A configurator repo is the SOURCE of truth for a user's global OpenCode config. Everything in the root `skills/` + `agents/` dirs gets deployed to `~/.config/opencode/` via the setup scripts in `deploy/`. This lets users version-control their OpenCode configuration and share it across machines.
 
 ### Creating Project-Specific Rules (AGENTS.md)
 1. Ask scope → read project context
