@@ -111,15 +111,16 @@ $UpdateLog = Join-Path $ConfigDir "update.log"
 
 # v2.0 model resolution (tier-based, provider-agnostic)
 $DeployDir = Join-Path $RepoDir "deploy"
-$ResolverScript = Join-Path $DeployDir "resolve-models.mjs"
+$InstallDir = Join-Path $RepoDir "installer"
+$ResolverScript = Join-Path $InstallDir "resolve-models.mjs"
 $MergePacksScript = Join-Path $DeployDir "merge-packs.mjs"
 $PacksDir = Join-Path $DeployDir "packs"
 $ApplySkillProfileScript = Join-Path $DeployDir "apply-skill-profile.mjs"
 $SkillProfilesFile = Join-Path $DeployDir "skill-profiles.json"
 $TuiScript = Join-Path $DeployDir "tui.mjs"
-$AgentTiers = Join-Path $DeployDir "agent-tiers.json"
-$ModelsDefaultMap = Join-Path $DeployDir "models.default.json"
-$ProviderPresets = Join-Path $DeployDir "provider-presets.json"
+$AgentTiers = Join-Path $InstallDir "agent-tiers.json"
+$ModelsDefaultMap = Join-Path $InstallDir "models.default.json"
+$ProviderPresets = Join-Path $InstallDir "provider-presets.json"
 # Global user overrides (~/.config/opencode/)
 $UserModelsMap = Join-Path $ConfigDir "models.json"
 $UserOverrides = Join-Path $ConfigDir "agent-overrides.json"
@@ -1880,7 +1881,7 @@ function Invoke-Resolver {
     if ($Provider) { $resolverArgs += @("--provider", $Provider, "--presets", $ProviderPresets) }
     # Deploy-time exposed-model guard (#281): fail-fast if a tier/source pin
     # references a model its provider doesn't serve. Guarded by file presence.
-    $ProviderModelsFile = Join-Path $DeployDir "provider-models.json"
+    $ProviderModelsFile = Join-Path $InstallDir "provider-models.json"
     if (Test-Path $ProviderModelsFile) { $resolverArgs += @("--provider-models", $ProviderModelsFile) }
     if ($DryRun) { $resolverArgs += "--dry-run" }
     & node $ResolverScript @resolverArgs
@@ -2219,10 +2220,10 @@ function Install-Docling {
 
 # Install the opencode-init wrapper shim (project-scoped selective installer CLI).
 # Writes a opencode-init.cmd wrapper into the user bin dir that invokes node on
-# <repo>\deploy\init.mjs. Avoids mklink (needs Developer Mode/admin). Idempotent.
+# <repo>\installer\init.mjs. Avoids mklink (needs Developer Mode/admin). Idempotent.
 # Additive — does not change any other setup.ps1 behavior.
 function Setup-OpencodeInitShim {
-    $initSrc = Join-Path $RepoDir "deploy\init.mjs"
+    $initSrc = Join-Path $RepoDir "installer\init.mjs"
     if (-not (Test-Path $initSrc)) {
         Write-LogWarn "opencode-init source not found at $initSrc; skipping shim"
         return

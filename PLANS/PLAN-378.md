@@ -73,12 +73,12 @@ From ticket #378, re-validated against `origin/main` @ `ece1032` (line drift fro
 
 ### Phase 2: setup.sh + setup.ps1 rewires
 
-- [ ] **2.1** `deploy/setup.sh`: add `INSTALLER_DIR="${REPO_DIR}/installer"` (:97 block); repoint `RESOLVER_SCRIPT` (:99), `AGENT_TIERS` (:105), `MODELS_DEFAULT_MAP` (:106), `PROVIDER_PRESETS` (:107) to `${INSTALLER_DIR}`; `init_src` :4005 → `${REPO_DIR}/installer/init.mjs` (comment :4000); the inline `--status` read of `${REPO_DIR}/deploy/models.default.json` at :3856 → installer path (its `|| echo` fallback silently masks a missing file — grep gate must not be the only net)
+- [x] **2.1** `deploy/setup.sh`: add `INSTALLER_DIR="${REPO_DIR}/installer"` (:97 block); repoint `RESOLVER_SCRIPT` (:99), `AGENT_TIERS` (:105), `MODELS_DEFAULT_MAP` (:106), `PROVIDER_PRESETS` (:107) to `${INSTALLER_DIR}`; `init_src` :4005 → `${REPO_DIR}/installer/init.mjs` (comment :4000); the inline `--status` read of `${REPO_DIR}/deploy/models.default.json` at :3856 → installer path (its `|| echo` fallback silently masks a missing file — grep gate must not be the only net)
     — **Why:** setup.sh consumes the resolver + tier metadata (shared catalog data — lives in installer/ per ticket decision) and symlinks `opencode-init`; `DEPLOY_DIR` stays for merge-packs/packs/apply-skill-profile/skill-profiles/tui which remain local.
     — **Done when:** `bash -n deploy/setup.sh` passes; `grep -nE 'deploy/(init\.mjs|resolve-models|agent-tiers|models\.default|provider-presets)' deploy/setup.sh` = 0 (includes the :3856 inline read).
     — **Consumers affected:** resolver/mix/provider flows, `opencode-init` symlink (AC 4), `--status` output.
 
-- [ ] **2.2** `deploy/setup.ps1` mirror: `$InstallDir = Join-Path $RepoDir "installer"`; repoint `$ResolverScript`, `$AgentTiers`, `$ModelsDefaultMap`, `$ProviderPresets` (:113,119-121) and `$initSrc` :2225 (`deploy\init.mjs` → `installer\init.mjs`); comment :2222
+- [x] **2.2** `deploy/setup.ps1` mirror: `$InstallDir = Join-Path $RepoDir "installer"`; repoint `$ResolverScript`, `$AgentTiers`, `$ModelsDefaultMap`, `$ProviderPresets` (:113,119-121) and `$initSrc` :2225 (`deploy\init.mjs` → `installer\init.mjs`); comment :2222
     — **Why:** Windows mirror must track setup.sh exactly or the flows diverge across platforms.
     — **Done when:** separator-agnostic `grep -nE 'deploy[/\\](init\.mjs|resolve-models\.mjs|agent-tiers\.json|models\.default\.json|provider-presets\.json)' deploy/setup.ps1` = 0 (lesson from #384: match backslash paths).
     — **Consumers affected:** Windows users (unverified runtime — grep only, no pwsh on runner).
