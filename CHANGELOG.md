@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.0.0](https://github.com/darellchua2/opencode-config-template/compare/v5.18.2...v6.0.0) (2026-09-14)
+
+### ⚠ BREAKING CHANGES
+
+* **packs:** drop voice pack — plugin has no v2 implementation
+
+### Features
+
+* **packs:** drop voice pack — plugin has no v2 implementation ([4d0ed8d](https://github.com/darellchua2/opencode-config-template/commit/4d0ed8dfe525dcefa1ebfddab44e1e08be6ee01a))
+
 ## [5.18.2](https://github.com/darellchua2/opencode-config-template/compare/v5.18.1...v5.18.2) (2026-09-14)
 
 ### Bug Fixes
