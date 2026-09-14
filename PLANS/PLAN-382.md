@@ -6,45 +6,53 @@
 
 ## Acceptance Criteria
 
-- [ ] `opencode` boots with zero plugin boot warnings
-- [ ] `plugins` array carries `@prevalentware/opencode-goal-plugin` (bare name, no exact pin)
+- [ ] `plugins` array carries `@prevalentware/opencode-goal-plugin` pinned `@^0.1.48` (fallback to bare name if v2 constraint resolution fails at boot — see 1.1)
+- [ ] `opencode` boots with zero plugin boot warnings (host gate 4.2)
 - [ ] No `commands.goal` block added (v2 plugin self-registers `/goal`, `/pause_goal`, `/resume_goal`)
 - [ ] Docs consistent: goal-plugin removed from README v2 watch-list; no stale "removed pending v2" references anywhere
 - [ ] `plan-automation-loop-skill` keeps `[goal:*]` markers AND maps goal close under `/goal` to the plugin's `update_goal` evidence contract
 - [ ] Stale `.opencode/goals/` ignore removed; LEARNINGS both-entries rule annotated v1-specific
 - [ ] No `package-lock.json` change (plugin fetched by opencode at boot, not a repo dependency)
-- [ ] Docker image builds; repo test suite green
+- [ ] Repo test suite green; `docker compose build` succeeds (build-only — see descope note)
+- [ ] Docker descope recorded: `/goal` in the web endpoint is **blocked-by #387** (container v1 binary ignores the v2 `plugins` key); recorded in map, risks, and PR body
+
+**Deferred — post-merge manual checks (owner-approved via pipeline report + PR body; headless executor limits):**
+
+- Interactive `/goal` functional behaviors: create + auto-continue until `update_goal complete`/`unmet`; `/goal pause`/`resume`/`clear`; interrupt-blocks-goal and auto-resume-on-next-message; `/goal` from the `plan` agent records a paused goal. Best-effort driven check in 4.2b covers the create→complete path when `opencode run` + provider are available.
+- `/run-plan` end-to-end still emitting `[goal:*]` markers (bats suite has no run-plan coverage — text preservation gate 2.4 is the automated proxy).
+- Watch for `budgetLimited`/`usageLimited` pauses on the first long `/goal`-wrapped run (`max_auto_turns: 25` default vs 12-phase plans) and tune `max_auto_turns`/`default_token_budget` on evidence.
 
 ## Dependency & Consumer Map
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `opencode_app/opencode.json` (`plugins`, `commands.run-plan` desc) | — | `deploy/setup.sh` + `setup.ps1` (copy to `~/.config/opencode/`), `Dockerfile` (bakes `/app/opencode.json`), every opencode session boot | med — single-point config, JSON must stay valid |
+| `opencode_app/opencode.json` (`plugins`, `commands.run-plan` desc) | — | `deploy/setup.sh` + `setup.ps1` (copy to `~/.config/opencode/`, copy-only), `deploy/resolve-models.mjs:462-463` + `deploy/merge-packs.mjs:224` (in-image JSON round-trip — verified full-object, preserves key), `Dockerfile` bake (inert on container v1 binary — see risk R1), every host opencode session boot | med — single-point config, JSON must stay valid |
 | `opencode_app/.opencode/skills/plan-automation-loop-skill/SKILL.md` | plugin re-add (1.1) for truthful wording | `/run-plan` command flows, `worktree-pipeline-skill` Step 8, primary sessions loading the skill | low |
 | `opencode_app/.opencode/skills/worktree-pipeline-skill/SKILL.md` | — (verify-only) | `/run-worktree-pipeline` | low |
 | `README.md` (v2 watch-list) | plugin re-add (1.1) | repo docs readers, future plugin audits | low |
 | `AGENTS.md`, `deploy/.AGENTS.md`, `opencode_app/README.md` | — (sweep-only) | doc readers, deploy docs | low |
 | `.gitignore` | — | none (dead v1 state path) | low |
 | `LEARNINGS/solutions/plugin-needs-command-block.md`, `LEARNINGS/_index.md` | plugin re-add (1.1) | future sessions via auto-inject manifest | low |
-| `LEARNINGS/decisions/` (new capture) | plugin re-add (1.1) | future sessions via auto-inject manifest | low |
+| `LEARNINGS/decisions/`, `LEARNINGS/solutions/` (new captures) | plugin re-add (1.1) | future sessions via auto-inject manifest | low |
+| `opencode_app/Dockerfile:7` / `docker-compose.yml:8` (v1 binary pins) | — (NOT changed here) | container runtime — causes R1 inertness; fix tracked in #387 | informational |
 
-Cross-module nodes: yes — `opencode_app/opencode.json` is consumed by both deploy paths and runtime; architecture review applies.
+Cross-module nodes: yes — `opencode_app/opencode.json` is consumed by both deploy paths and runtime; architecture review applied (findings folded in: W1→AC descope + gate 4.4 rewrite, W2→map rows above, W3→step 1.1 pin + rationale fix, N1/N2→risks + deferred list).
 
 ## Implementation Phases
 
 ### Phase 1: Config restore + README watch-list (commit: `feat(plugins): re-add goal mode via @prevalentware/opencode-goal-plugin (v2)`)
 
-- [ ] **1.1** Set `plugins` array (opencode_app/opencode.json:599) to `["@prevalentware/opencode-goal-plugin"]` — bare name, no exact pin, no options object
-    — **Why:** restores goal mode; bare pin because exact pins caused the v1 boot-warning breakage (commit `5f95d9c`), and defaults are already secure (`restricted_agents: ["plan"]`, `allow_goal_execution_from_plan: false`)
-    — **Done when:** `jq '.plugins' opencode_app/opencode.json` prints exactly the one entry with no version suffix
-    — **Consumers affected:** deploy/setup.sh + setup.ps1 copies, Dockerfile bake, every opencode session boot
+- [ ] **1.1** Set `plugins` array (opencode_app/opencode.json:599) to `["@prevalentware/opencode-goal-plugin@^0.1.48"]`, no options object. If gate 4.2 shows the v2 array cannot resolve the `@^` constraint, fall back to the bare name AND record the audited version (`0.1.48`, published 2026-09-07, verified via `npm view`) in the README re-add note (1.3)
+    — **Why:** restores goal mode with a reproducible, reviewed version floor; corrected rationale — the v1 breakage (`5f95d9c`) was v1-only plugin versions under a v2 runtime plus pins that never floated to v2 releases, NOT pinning itself; a caret pin to the v2-native line upgrades deliberately within `0.1.x` while boots stay reproducible (repo convention: committed lockfile). Defaults need no options: `restricted_agents: ["plan"]`, `allow_goal_execution_from_plan: false`
+    — **Done when:** `jq -r '.plugins[]' opencode_app/opencode.json` prints the pinned entry (or the documented bare-name fallback with the README audit line present)
+    — **Consumers affected:** deploy/setup.sh + setup.ps1 copies, Dockerfile bake (inert until #387), every opencode session boot
 - [ ] **1.2** Update `/run-plan` description (opencode_app/opencode.json:612): drop "the /goal runtime-guarded path returns when the goal plugin ships a v2 release"; state `/goal` as the available runtime-guarded path
     — **Why:** the caveat is now false; command descriptions are read by users choosing between `/run-plan` and `/goal`
     — **Done when:** `rg "ships a v2 release" opencode_app/opencode.json` returns nothing and the description mentions the runtime-guarded `/goal` path
     — **Consumers affected:** `/run-plan` and `/goal` invokers (primary sessions)
-- [ ] **1.3** README.md:475 — remove `opencode-goal-plugin` from the v2 watch-list; record the re-add (scoped name, v2-native since 0.1.30, re-added 2026-09)
+- [ ] **1.3** README.md:475 — remove `opencode-goal-plugin` from the v2 watch-list; record the re-add (scoped name, pin form chosen in 1.1, v2-native since 0.1.30, audited version, re-added 2026-09)
     — **Why:** the watch-list claim is now false; it exists precisely to track this re-add
-    — **Done when:** watch-list names only the 3 remaining plugins and a status note records the re-add
+    — **Done when:** watch-list names only the 3 remaining plugins and a status note records the re-add + audited version (mandatory in the bare-name fallback)
     — **Consumers affected:** repo docs readers, future plugin audits
 - [ ] **1.4** Gate: `jq . opencode_app/opencode.json` parses, no `//` comments, `git status` shows only intended files; commit + push phase
     — **Why:** malformed opencode.json is a known CI breaker (LEARNINGS jsonc anti-pattern); commit-per-phase keeps the change revertible
@@ -80,11 +88,15 @@ Cross-module nodes: yes — `opencode_app/opencode.json` is consumed by both dep
     — **Why:** unannotated, a future session would re-add a `command.goal` block and risk a duplicate-command conflict
     — **Done when:** both files carry the v2 annotation
     — **Consumers affected:** future sessions via auto-inject manifest
-- [ ] **3.3** Add `LEARNINGS/decisions/goal-plugin-v2-readoption.md` (scoped name, bare pin rationale, self-registering commands, wejick rejected) + `_index.md` entry, following the existing `decisions/` house format
-    — **Why:** Memory Hygiene requires one decision capture for non-trivial architecture decisions
-    — **Done when:** file exists, indexed, ≤ the house format's length
+- [ ] **3.3** Add `LEARNINGS/decisions/goal-plugin-v2-readoption.md` + `_index.md` entry, following the structure of `LEARNINGS/decisions/skill-permission-allowlist.md` (header, Context, Decision, Consequences): scoped name, caret-pin rationale (corrected — see 1.1) with bare-name fallback, self-registering commands, wejick/opencode-goal rejected, Docker descope to #387
+    — **Why:** Memory Hygiene requires decision capture for non-trivial architecture decisions
+    — **Done when:** file exists, indexed, sections match the reference file's structure
     — **Consumers affected:** future sessions via auto-inject manifest
-- [ ] **3.4** Gate: `rg` checks pass; commit + push phase
+- [ ] **3.4** Add `LEARNINGS/solutions/docker-v1-binary-ignores-v2-plugins-key.md` + `_index.md` entry (surfaced by architecture review): v2 `plugins` array is inert on the Docker path until the binary bump; plugin additions need a runtime-presence gate or explicit descope
+    — **Why:** reusable trap — ANY future v2 npm plugin addition hits the same silent inertness; evidence Dockerfile:7,86-88, docker-compose.yml:8, #387
+    — **Done when:** file exists, indexed
+    — **Consumers affected:** future sessions adding plugins via auto-inject manifest
+- [ ] **3.5** Gate: `rg` checks pass; commit + push phase
     — **Why:** same tripwire discipline
     — **Done when:** phase commit pushed
     — **Consumers affected:** CI, reviewers
@@ -95,32 +107,34 @@ Cross-module nodes: yes — `opencode_app/opencode.json` is consumed by both dep
     — **Why:** AGENTS.md Verification Gates — tests on config changes
     — **Done when:** suite exits 0 (or pre-existing breakage stated explicitly with evidence)
     — **Consumers affected:** CI parity
-- [ ] **4.2** Boot smoke in the worktree: start `opencode serve` briefly (timeout), capture stderr/stdout; assert zero plugin load warnings/errors mentioning goal-plugin; then stop it
-    — **Why:** boot warnings were the exact v1 failure mode; this also proves the plugin fetch+load works on v2
-    — **Done when:** captured log contains no plugin error/warning lines and no boot failure
+- [ ] **4.2** Boot smoke in the worktree: start `opencode serve` briefly (timeout), capture stderr/stdout; assert zero plugin load warnings/errors mentioning goal-plugin and that the `@^0.1.48` pin resolves (else apply the 1.1 bare-name fallback); then stop it
+    — **Why:** boot warnings were the exact v1 failure mode; this proves plugin fetch+pin-resolution works on v2 (also the merge gate for the Docker-descoped ticket)
+    — **Done when:** captured log contains no plugin error/warning lines and no boot failure; pin decision finalized
     — **Consumers affected:** every future session boot
 - [ ] **4.3** Drift check: `git status` clean of `package-lock.json`/`node_modules` changes; diff touches only the mapped nodes
     — **Why:** the plugin is runtime-fetched by opencode, not a repo dependency; lockfile drift would violate the repo dependency rule
     — **Done when:** `git diff --name-only origin/main...feat/382` lists only mapped files
     — **Consumers affected:** reviewers, `npm ci` users
-- [ ] **4.4** Docker build smoke: `docker compose build` succeeds (config-change build gate); if the environment lacks a Docker daemon, record it explicitly as environment-blocked and surface in the PR body
-    — **Why:** AGENTS.md Verification Gates — build on config changes; Dockerfile bakes this opencode.json
-    — **Done when:** image builds (or environment-blocked is recorded with evidence)
-    — **Consumers affected:** Docker standalone users
+- [ ] **4.4** Docker build smoke: `docker compose build` succeeds (build-only gate). RUNTIME `/goal` in the web endpoint is explicitly descoped — blocked-by #387 (container v1 binary ignores the v2 `plugins` key; no `opencode-ai` 2.x exists on npm). If the environment lacks a Docker daemon, record environment-blocked with evidence in the PR body
+    — **Why:** AGENTS.md Verification Gates — build on config changes; runtime presence is untestable until #387 and would otherwise fail silently-green
+    — **Done when:** image builds (or environment-blocked recorded with evidence); PR body carries the descope note
+    — **Consumers affected:** Docker standalone users (via #387)
 
 ## Technical Notes
 
 - v2 contract changes vs v1: rescoped package name; no `commands.goal` block needed; state at `$XDG_DATA_HOME/opencode-goal-plugin/goals.json`; completion is evidence-gated via `update_goal` tools (`complete`+evidence / `unmet`+blocker); safety statuses `budgetLimited`/`usageLimited`/`paused`; Plan-mode safety pins continuation to the `build` agent and records `plan`-agent goals as paused.
-- Functional `/goal` smoke (pause/resume/clear, plan-mode pause) needs an interactive/driven session — document as a post-merge manual check in the PR body; the headless gate is boot-warning-free load (4.2).
+- Commit-grouping deviation (accepted): ticket suggested bundling the `/run-plan` description with the skills commit; PLAN keeps it in Phase 1 because it is an opencode.json edit — one file, one commit, cleaner revert boundary.
 - No manual CHANGELOG edit (release-please); no setup.sh/setup.ps1 count changes (plugins aren't counted).
+- Docker goal-state sits beside the `opencode-data` volume (`docker-compose.yml:14`) — goals vanish on container recreation; folded into #387 (not fixable separately from the binary bump).
 
 ## Dependencies
 
 - Network access for opencode to fetch the npm plugin at boot (gate 4.2).
 - `@prevalentware/opencode-goal-plugin@0.1.48` (or later) on npm — verified published 2026-09-07.
+- Blocked-by (runtime only, not this branch's merge): #387 for Docker-endpoint `/goal`.
 
 ## Risks & Mitigation
 
-- **v2 plugin API churn** (plugin pins its v2 dev contract to a preview) → bare pin floats latest; gate 4.2 boot-warning check is the tripwire.
-- **Docker first-boot plugin fetch requires network** → acceptable for this repo's hosted usage; bake-into-image is a follow-up if offline builds matter.
-- **`max_auto_turns: 25` default may pause long `/goal`-wrapped plan runs** → documented knob (`max_auto_turns`, `default_token_budget`); tune on evidence only.
+- **R1 — Docker v1 binary ignores the v2 `plugins` key** (not a network concern): plugin silently inert in the container; build-only gate would stay green. Mitigation: explicit descope recorded in AC/map/gate 4.4/PR body; runtime fix + loud presence assertion tracked in #387.
+- **R2 — v2 plugin API churn** (plugin pins its v2 dev contract to a preview) → caret pin bounds drift within `0.1.x`; gate 4.2 boot-warning check is the tripwire; deliberate bumps via commit.
+- **R3 — `max_auto_turns: 25` default vs 12-phase `/goal`-wrapped plan runs** → deferred manual check watches for `budgetLimited` on first long run; knobs documented (`max_auto_turns`, `default_token_budget`); tune on evidence only.
