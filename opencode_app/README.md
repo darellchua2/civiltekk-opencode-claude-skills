@@ -104,6 +104,8 @@ User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README
 
 ### Secret Masking (vibeguard)
 
+> **OpenCode v2 status:** vibeguard is a V1-API plugin and currently fails to load in the container as well — masking is **inactive** until a V2 port ships. The `permissions` `read` deny rules remain active.
+
 The image ships with `vibeguard.config.json` baked into `.opencode/` — secret masking is **active by default**. Vibeguard masks secrets in provider-bound traffic (LLM requests) using regex patterns and restores real values at tool-execution time.
 
 **Per-project overlay:** mount a `./vibeguard.config.json` to override the global config (first match wins, no merge — re-include regex patterns if you need both global + project keywords).

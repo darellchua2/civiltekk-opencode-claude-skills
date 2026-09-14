@@ -422,9 +422,11 @@ Key properties:
 
 ## Language Server Protocol (LSP)
 
-OpenCode ships **native LSP support** (~30 built-in language servers) that feeds real-time diagnostics back into the agent loop so the agent can fix type/lint errors as it edits. See the [official LSP docs](https://opencode.ai/docs/lsp/).
+OpenCode v1 ships **native LSP support** (~30 built-in language servers) that feeds real-time diagnostics back into the agent loop so the agent can fix type/lint errors as it edits.
 
-**LSP is deliberately NOT enabled in the distributed config.** This repository is a configuration distributor (Markdown + JSON + shell + one vendored Python MCP server) — there is no application code here for an LSP to diagnose. Forcing LSP on every downstream project would hurt more than help (memory cost, version drift, slower agent workflows). The [official guidance](https://opencode.ai/docs/lsp/#best-practices) is to enable it only when a project benefits from language-server feedback.
+> **OpenCode v2 status:** V2 accepts and preserves `lsp` configuration but **does not run language servers, expose LSP tools, or produce diagnostics** — the block is inert (see [Supported fields without direct native equivalents](https://opencode.ai/v2/docs/migrate-v1/#supported-fields-without-direct-native-equivalents)). Until V2 reintroduces LSP, rely on the project's lint/typecheck/compiler commands — the verification gates in this repo's `AGENTS.md` already work that way.
+
+**LSP is deliberately NOT enabled in the distributed config.** This repository is a configuration distributor (Markdown + JSON + shell + one vendored Python MCP server) — there is no application code here for an LSP to diagnose. Forcing LSP on every downstream project would hurt more than help (memory cost, version drift, slower agent workflows).
 
 ### Enabling LSP in a target project
 
@@ -460,7 +462,7 @@ Or enable selectively with overrides:
 | Svelte/Vue/Astro | respective LS | Elixir | elixir-ls |
 | Terraform | terraform-ls | Prisma | prisma |
 
-Set `OPENCODE_DISABLE_LSP_DOWNLOAD=true` to prevent auto-downloads. See the [full list and config schema](https://opencode.ai/docs/lsp/#configure).
+Set `OPENCODE_DISABLE_LSP_DOWNLOAD=true` to prevent auto-downloads. (Both behaviors are V1-era; V2 performs no LSP downloads or server runs at all.)
 
 ### When to prefer a CLI check instead
 
@@ -476,6 +478,8 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 | `LEARNINGS/` in target projects | Curated, git-committed | Detailed patterns, ADRs, team conventions |
 | `~/.config/opencode/learnings/` | User-level, cross-project | Personal preferences and patterns |
 
+> **OpenCode v2 status:** the `memory` tool is provided by `opencode-superlocalmemory`, a V1-API plugin that currently fails to load on v2 (see [Plugins](#plugins) notes). Until a V2-compatible release exists, `LEARNINGS/*.md` + `AGENTS.md` discovery is the working memory layer; treat the `memory` tool row as V1-only.
+
 **How it works:**
 - `deploy/setup.sh` / `deploy/setup.ps1` creates `~/.config/opencode/learnings/` with 5 subfolders at user level
 - When `continuous-learning` skill runs in a target project, it auto-provisions a `LEARNINGS/` directory in that project root
@@ -483,6 +487,8 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 - Agents discover learnings via AGENTS.md instructions (auto-loaded) + explicit file reads
 
 ## Secret Masking (vibeguard)
+
+> **OpenCode v2 status:** `opencode-vibeguard@0.1.0` is a V1-API plugin and **currently fails to load on v2** (V1 plugin implementations do not run in V2 — see the [migration guide](https://opencode.ai/v2/docs/migrate-v1/#plugins)). Masking is therefore **inactive** until a V2 port ships; the `permissions` deny rules for `*.env` reads remain active and are the primary defense. This section documents the intended V1 behavior.
 
 Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic — the LLM provider never sees plaintext secret values, but tools (bash, write, etc.) receive real values at execution time. It is the **universal masking layer** covering all agents (primary + subagents), regardless of individual `read` deny rules in their `permissions` arrays.
 
@@ -653,7 +659,7 @@ This repository implements **skill modularization** with 148 skills organized ac
 | `2` | primary → subagent → 1 nested | Minimum for autoresearch to delegate research/exploration |
 | `3` (set here) | primary → subagent → nested → one more | Comfortable headroom for autoresearch-code/ml/research loops |
 
-Each extra level multiplies token cost (every nested subagent runs its own full context). Lower it to `2` for tighter runs; raise it only if a deeper chain hits the wall again. See the [Subagent depth docs](https://opencode.ai/docs/config#subagent-depth).
+Each extra level multiplies token cost (every nested subagent runs its own full context). Lower it to `2` for tighter runs; raise it only if a deeper chain hits the wall again. See the [OpenCode v2 config docs](https://opencode.ai/v2/docs/config/).
 
 #### Trigger Phrases
 
@@ -687,6 +693,8 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 
 ### Ponytail (scoped wrapper plugin)
 
+> **OpenCode v2 status:** local plugins are still discovered from `.opencode/plugins/`, but V1-API plugin code does not execute on v2 — `ponytail-scoped.ts` currently fails to load (needs a port to the [V2 plugin API](https://opencode.ai/v2/docs/build/plugins/migrate-v1/)). The `/ponytail` commands and injection behavior below are V1-era until ported.
+
 [Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder (YAGNI → reuse → stdlib → native → installed dep → one-liner → minimum-that-works). This repo ships a **scoped wrapper plugin** (`opencode_app/.opencode/plugins/ponytail-scoped.ts`) instead of the stock npm adapter — it adds agent-type-aware scoping the upstream OpenCode adapter lacks:
 
 - **Read-only/research agents skip injection** (`explore`, `general`, `autoresearch-research-subagent`, `explorer-subagent`, `requirements-specialist-subagent`, `discovery-specialist-subagent`, `technical-design-specialist-subagent`) — they aren't pushed toward minimal code.
@@ -702,6 +710,8 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See `opencode_app/README.md` § Ponytail Plugin and `opencode_app/.opencode/plugins/ATTRIBUTION.md` for the MIT attribution.
 
 ### Learnings Auto-Inject (local plugin)
+
+> **OpenCode v2 status:** this V1-API plugin currently fails to load on v2 — the LEARNINGS manifest is **not auto-injected**; agents must `glob`+`read` `LEARNINGS/` manually (the documented fallback) until it is ported.
 
 `opencode_app/.opencode/plugins/learnings-autoinject.ts` closes the gap documented in `continuous-learning-skill`: *"OpenCode does NOT auto-scan LEARNINGS/ directories."* The `opencode-superlocalmemory` plugin auto-injects its **vector store**, but the git-committed `LEARNINGS/*.md` markdown files were never surfaced automatically — agents had to manually `glob`+`read`. This plugin injects a **compact manifest** (titles + paths + one-line summaries, ~200-400 tokens) into the system prompt at session start; the model `read()`s full bodies on demand.
 
