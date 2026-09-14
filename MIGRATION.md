@@ -204,6 +204,60 @@ Then `./deploy/setup.sh --models-only`.
 
 ---
 
+## Context pruning (DCP) → v2 checkpoint compaction
+
+In OpenCode v1, the Dynamic Context Pruning (DCP) plugin and legacy `compaction.prune` / `tail_turns` configurations mutated chat history continuously to trim token counts. In v2, this pattern is completely replaced by episodic checkpoint-based compaction.
+
+### Workflow comparison
+
+| | v1 DCP / `prune` | v2 checkpoint compaction |
+|---|---|---|
+| **When** | Every model request, continuously | Episodic — preflight check before each model call fires at `estimated tokens >= min(input limit − buffer, context limit − max(output reserve, buffer))`, plus one-shot overflow recovery |
+| **What** | Old tool outputs deleted or abbreviated in place | Older context replaced by structured summary (`## Objective` / `## Next Move`) + newest `keep.tokens` verbatim; retained-tail tool outputs capped at 2,000 characters |
+| **Visible** | Silent mutation | Checkpoint message in transcript; raw session history remains stored |
+| **Info recovery** | None — pruned data permanently lost | Summary carries key decisions and state forward; subsequent compactions incrementally update it |
+
+### Why v2 dropped prune and tail_turns
+
+Per the v2 documentation: *"V2 has no native `tail_turns` or `prune` field; both legacy fields are ignored with a warning... V2 uses `compaction.keep.tokens` and checkpoint-based compaction instead."*
+
+The shift resolves several architectural failure modes:
+1. **Information relocation over deletion:** Pruning silently wipes earlier outputs, forcing models to repeat verified work. Summaries relocate state while discarding verbosity.
+2. **Prompt-cache prefix preservation:** Continuous in-place mutation between turns breaks provider prompt-cache prefixes, incurring full input token pricing on every step. *(Note: Prompt cache invalidation reasoning is an inference from provider caching mechanics rather than an explicit claim in the OpenCode documentation).*
+3. **Tool-pair integrity:** Selectively deleting or truncating tool outputs risks orphaning tool calls, resulting in upstream provider API protocol errors.
+4. **Auditability and composability:** Transcripts retain honest records of what occurred, seamlessly composing with provider-native compaction features (e.g. OpenAI Responses checkpoints).
+
+### Native knob mapping (each DCP responsibility → native setting)
+
+| DCP / v1 Mechanism | OpenCode v2 Native Replacement | Defaults & Notes |
+|---|---|---|
+| History shrinking | `compaction.auto`, `compaction.keep.tokens`, `compaction.buffer` | Enabled by default (`auto: true`); retains latest 15,000 tokens (`keep.tokens: 15000`) with a 20,000 token trigger buffer (`buffer: 20000`). |
+| Oversized tool outputs | Tail truncation + `tool_output.max_lines` / `max_bytes` | Retained-tail tool outputs capped at 2,000 chars during compaction; global limits default to 2,000 lines / 51,200 bytes. |
+| Fixed token overhead | Skill and MCP allowlists | Deployed via `lean` skill profile (#333), saving ~5.4k tokens in initial system context. |
+| Auto-continuation loop | Native checkpoint rebuild | Successful checkpoint automatically rebuilds the pending step without burning additional agent steps. |
+
+### Token-reduction levers (ranked)
+
+1. **Fixed overhead reduction (highest impact):** Adopt the `lean` skill profile and keep unused MCP servers disabled.
+2. **Compaction tuning (moderate impact):** Adjust `compaction.keep.tokens` and `compaction.buffer` in your configuration based on model window size.
+3. **Plugin ports (NOT recommended):** Do not attempt to port DCP as a v2 `session.hook("context")` plugin. V1 plugins do not execute on v2, mid-history mutation breaks prompt caching, and the native checkpoint engine provides superior stability.
+
+### Verification and inspection
+
+- Run `opencode stats` to inspect per-session token usage, token counts, and cost reports.
+- To temporarily disable automatic compaction for debugging:
+  ```bash
+  OPENCODE_DISABLE_AUTOCOMPACT=1 opencode
+  ```
+
+### Sources and reference documentation
+- <https://opencode.ai/v2/docs/compaction>
+- <https://opencode.ai/v2/docs/config>
+- <https://opencode.ai/v2/docs/build/plugins/migrate-v1>
+- <https://opencode.ai/v2/docs/migrate-v1>
+
+---
+
 ## Docker
 
 Models are resolved at **build time**. To build with a non-default provider:
