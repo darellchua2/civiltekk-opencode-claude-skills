@@ -106,7 +106,7 @@ From ticket #378, re-validated against `origin/main` @ `ece1032` (line drift fro
 
 ### Phase 4: Test rewires
 
-- [ ] **4.1** Rewire moved-path refs: `tests/init.bats:8-9` (init.mjs, registry.json), `tests/test_autoresearch_skills.bats:59,76,93` (agent-tiers.json), `tests/test_markitdown_skill.bats:105` (registry.json), `tests/test_docling_skill.bats:137` (dependency-map.json)
+- [x] **4.1** Rewire moved-path refs: `tests/init.bats:8-9` (init.mjs, registry.json), `tests/test_autoresearch_skills.bats:59,76,93` (agent-tiers.json), `tests/test_markitdown_skill.bats:105` (registry.json), `tests/test_docling_skill.bats:137` (dependency-map.json)
     — **Why:** These 4 bats files reference moved files at runtime (13 bats files exist; the rest reference only `deploy/setup.sh`/`ps1` which stay) — review finding: docling's dependency-map read was outside the original enumeration and its grep.
     — **Done when:** the full 5.4 sweep pattern restricted to `tests/` returns 0 (`grep -rnE 'deploy/(init\.mjs|build-registry|registry\.json|source\.mjs|resolve-models|agent-tiers|models\.default|provider-(models|presets)|tui-primitives|presets/|dependency-map|build-site)' tests/`).
     — **Consumers affected:** CI bats suite.

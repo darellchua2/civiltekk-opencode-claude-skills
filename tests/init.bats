@@ -1,12 +1,12 @@
 #!/usr/bin/env bats
 
-# Tests for deploy/init.mjs (opencode-init) — the project-scoped selective installer.
+# Tests for installer/init.mjs (opencode-init) — the project-scoped selective installer.
 # Covers the flag path (primary contract); the interactive TUI is not tested here
 # (needs a real TTY). See PLANS/PLAN-GIT-286 Phase 5.4.
 
 REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
-INIT="node ${REPO}/deploy/init.mjs"
-REG="${REPO}/deploy/registry.json"
+INIT="node ${REPO}/installer/init.mjs"
+REG="${REPO}/installer/registry.json"
 OC="${REPO}/opencode_app/opencode.json"
 
 # JSON helper: extract a value/length via python3 (already a setup.sh dependency).
