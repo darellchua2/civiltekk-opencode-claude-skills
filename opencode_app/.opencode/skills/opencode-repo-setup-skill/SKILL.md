@@ -59,22 +59,26 @@ One multi-select question + one yes/no per extra. Options are built from the det
 
 ## Step 3 — Write (merge-write, delta-only)
 
-Target: `<repo>/opencode.json`. Create if absent; **never clobber existing keys** — deep-merge at the top level manually (read file, add only the `mcp.servers.<server>.disabled:false` entries chosen). Keep the file comment-free JSON.
+Target: `<repo>/opencode.json`. Create if absent; **never clobber existing keys** — deep-merge at the top level manually (read file, add only the chosen `mcp.servers.<server>` entries). Keep the file comment-free JSON.
 
-Typical delta:
+Typical delta (FULL entry — mandatory):
 
 ```json
 {
   "mcp": {
     "servers": {
-      "atlassian": { "disabled": false }
+      "atlassian": {
+        "type": "local",
+        "command": ["npx", "-y", "mcp-remote", "https://mcp.atlassian.com/v1/mcp"],
+        "disabled": false
+      }
     }
   }
 }
 ```
 
 Rules:
-- Only `mcp.servers.<name>.disabled` keys — auth/transport stay as globally configured (Atlassian uses `mcp-remote` OAuth; see caveats)
+- **Full entries only**: v2 replaces `mcp.servers.<name>` **atomically** across config layers — a bare `{"disabled": false}` stub erases the global transport and yields an inert server. Copy `type`/`command`/`environment` from the global `~/.config/opencode/opencode.json` definition and set `disabled: false` (Atlassian OAuth flows via `mcp-remote`; see caveats)
 - If the file exists, preserve every other key verbatim (byte-stable elsewhere; pretty-print 2-space)
 - Never write `disabled: true` to disable something globally enabled — the project layer is for opting IN
 

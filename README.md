@@ -346,10 +346,10 @@ The remaining 5 ship `disabled: true` and are opt-in:
 
 The 4 Autodesk servers are **not shipped in the base config** — the `autodesk` provider pack below adds their full definitions at deploy time (needs `AUTODESK_API_KEY`).
 
-To enable one **for a single project**, add a `.opencode/opencode.json` in the repo (project config merges over the global one — project wins):
+To enable one **for a single project**, add it to `opencode.json` in the repo root as a **full entry** (v2 replaces `mcp.servers.<name>` atomically across config layers — a bare `{"disabled": false}` stub yields an inert server):
 
 ```json
-{ "mcp": { "servers": { "atlassian": { "disabled": false } } } }
+{ "mcp": { "servers": { "atlassian": { "type": "local", "command": ["npx", "-y", "mcp-remote", "https://mcp.atlassian.com/v1/mcp"], "disabled": false } } } }
 ```
 
 To enable one **globally**, set `"disabled": false` under `mcp.servers` in `~/.config/opencode/opencode.json`, or use a provider pack below. The `opencode-repo-setup-skill` automates per-project enablement interactively.
