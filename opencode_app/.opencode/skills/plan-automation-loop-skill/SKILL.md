@@ -430,9 +430,10 @@ Rules:
   acceptable when no plugin is present.
 
 > **Runtime-enforced guardrails are available via `/goal`.** The soft budgets above are obeyed by
-> the agent; the re-added goal plugin (`@prevalentware/opencode-goal-plugin`) enforces
-> turn/token/duration limits, idle auto-resume, and evidence-gated completion when the run is
-> driven through `/goal`. Note the Docker endpoint stays plugin-inert until the v2 binary bump
+> the agent; the re-added goal plugin (`@prevalentware/opencode-goal-plugin`) enforces turn
+> limits, no-progress safeguards, idle auto-resume, and evidence-gated completion when the run is
+> driven through `/goal` (token/duration budgets apply only when configured via plugin options —
+> both default to unset). Note the Docker endpoint stays plugin-inert until the v2 binary bump
 > (#387).
 
 ## Reporting format

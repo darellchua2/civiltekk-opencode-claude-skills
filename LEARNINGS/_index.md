@@ -62,6 +62,15 @@
 - **Summary**: The container's v1 opencode binary ignores the v2-native plugins key with NO warning — v2 plugin additions need a runtime-presence assertion or an explicit Docker descope (#387); build green ≠ plugin loaded
 - **Date**: 2026-09-14
 
+### Doc claims about runtime enforcement must match plugin defaults
+
+- **Category**: convention
+- **File**: `conventions/doc-claims-match-plugin-defaults.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Document only the enforcement a plugin's ACTIVE defaults provide (option-gated features get an inline "only when configured") — #382 review caught "enforces token/duration limits" claimed while both budgets ship unset
+- **Date**: 2026-09-15
+
 ### Redocly `operation-description` is OFF by default in `recommended`
 
 - **Category**: solution
