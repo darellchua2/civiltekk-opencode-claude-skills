@@ -49,7 +49,8 @@ Check each; every hit is a migration item:
 | `permission` map, legacy top-level `tools` (deprecated) | any config JSON | ordered `permissions` array (`bash`→`shell`, `task`→`subagent`, `write`/`patch`→`edit`) |
 | `agent` / `provider` / `command` / `plugin` / `reference` (singular) | config JSON | `agents` / `providers` / `commands` / `plugins` / `references` |
 | `prompt`, `disable`, `variant`, top-level `temperature` | agent entries + `.md` frontmatter | `system`, `disabled`, `model#variant`, `request.body.temperature` (auto-translated — optional) |
-| `mcp` direct server map, `enabled` | config JSON | `mcp.servers` + inverse `disabled` |
+| `mcp` direct server map, `enabled` | config JSON | `mcp.servers` + inverse `disabled`. **Two stub traps:** (1) V1 enable-only stubs (`{"<name>": {"enabled": true}}`, no `type`) are silently **omitted** by v2; (2) project-level "enable the global one" overrides must be **full entries** — v2 replaces `mcp.servers.<name>` atomically, so a bare `{"disabled": false}` stub yields an inert server. Copy the transport (type/command/env) from the global entry and set `disabled: false` |
+| V1 TUI plugin in `cli.json` (`tui:` async-function export) | `~/.config/opencode/cli.json` | v2 CLI plugins need `Plugin.define({id, setup})` via `@opencode/plugin/tui` (or a `./tui` package export) — see the [CLI plugin guide](https://opencode.ai/v2/docs/build/plugins/cli/). Remove V1-only entries (watch-list) until upstream ports |
 | `agent/`, `mode/`, `command/`, `skill/`, `plugin/` dirs | `.opencode/` | `agents/`, `agents/` + `mode: primary`, `commands/`, `skills/`, `plugins/` (old dirs still discovered) |
 | V1 plugin code | `plugins` array entries | **does not run on v2** — port per the [plugin migration guide](https://opencode.ai/v2/docs/build/plugins/migrate-v1/) or drop |
 | `autoupdate`, `small_model`, `enabled_providers` | config JSON | `update`, `agents.title.model`, internal policies (normalized silently) |

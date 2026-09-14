@@ -104,6 +104,24 @@ V1 `mcp.<name>` + `enabled` → `mcp.servers.<name>` + inverse `disabled`;
 scalar `timeout` → `mcp.timeout.{catalog,execution}`; OAuth camelCase →
 snake_case (`client_id`, `client_secret`, `callback_port`, `redirect_uri`).
 
+Stub handling (both verified against v2.0.x):
+- Enable-only stubs without `type` are **omitted** with a normalization
+  diagnostic — they do nothing, silently.
+- `mcp.servers.<name>` entries are replaced **atomically** across config
+  layers: a project entry of `{"disabled": false}` does NOT enable the
+  globally-defined server — it replaces it with an inert one. To enable a
+  global server per-project, write the full entry (type/command/environment
+  copied from the global definition) with `disabled: false`.
+
+### Terminal-client plugins
+
+`cli.json` `plugins` entries load TUI plugins. V1 shape
+(`export default { id, tui: async (api, options) => ... }`) does not run on
+v2 — the CLI expects `Plugin.define({ id, setup(context) })` from
+`@opencode/plugin/tui` (context exposes `ui`, `keymap`, `data`, `storage`;
+see the [CLI plugin guide](https://opencode.ai/v2/docs/build/plugins/cli/)).
+Triage like server plugins: drop + watch-list, or port.
+
 ### Compaction
 
 `preserve_recent_tokens`→`keep.tokens`; `reserved`→`buffer`; `tail_turns`
