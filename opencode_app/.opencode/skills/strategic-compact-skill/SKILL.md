@@ -107,7 +107,7 @@ Create a structured compaction plan:
 Apply the compaction strategy:
 
 1. **Generate summary**: Create a compact session brief
-2. **Preserve in memory**: Store critical information in memory tool or project config
+2. **Preserve in memory**: Store critical information in `LEARNINGS/` markdown or project config
 3. **Update AGENTS.md**: Add relevant findings to project instructions if applicable
 4. **Plan next session**: Define starting point for continued work
 

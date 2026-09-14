@@ -687,7 +687,7 @@ When completing a security audit, report:
 
 ## Runtime Secret Masking (vibeguard)
 
-Vibeguard (`opencode-vibeguard@0.1.0`) is a plugin that masks secrets in provider-bound traffic (LLM requests) using regex patterns and builtin detectors. It intercepts three hooks: `experimental.chat.messages.transform` (outbound messages), `experimental.text.complete` (text completion), and `tool.execute.before` (tool arguments). Masked values are replaced with `__VG_<CATEGORY>_xxxxxxxxxxxx__` placeholders; a per-session map restores real values at tool-execution time.
+Vibeguard (local v2 port at `plugins/vibeguard.ts`, engine from `opencode-vibeguard@0.1.0`, MIT) masks secrets in provider-bound traffic (LLM requests) using regex patterns and builtin detectors. On OpenCode v2 it registers session `context`/`generate` hooks (outbound system + messages, including tool-call input/output parts) and a tool `execute.before` hook (restores real values into tool arguments). Masked values are replaced with `__VG_<CATEGORY>_<hash12>__` placeholders; a per-session map restores real values at tool-execution time.
 
 ### How masking works
 

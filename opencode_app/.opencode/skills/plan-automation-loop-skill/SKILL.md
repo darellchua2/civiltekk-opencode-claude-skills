@@ -36,13 +36,12 @@ than reimplementing them.
 
 Use this skill when:
 
-- The user drives a plan run through **`/goal`** (the **primary** path): e.g.
-  `/goal "load plan-automation-loop-skill and implement PLAN-*.md" --max-turns 40 --budget 400k`.
-  This wraps the skill in the plugin's hard guardrails (auto-resume, token/duration budgets,
-  compaction-survival, evidence-gated completion).
-- The user types **`/run-plan PLAN-*.md`** (the **fallback** path — plain command, soft guardrails
-  only, no plugin runtime hooks; use for short/watched runs).
+- The user types **`/run-plan PLAN-*.md`** (the **primary** path — plain command, soft
+  guardrails: phase/fix budgets, halt rules, idempotent resume; use for both short and long runs).
 - The user says "fully implement the plan", "run the plan to completion", "automation loop".
+  (Historically `/goal` wrapped this skill with plugin-enforced runtime guardrails — the
+  goal plugin has no OpenCode v2 release and was removed; `/run-plan` is the path until it
+  returns.)
 
 **Trigger phrases:**
 
@@ -57,13 +56,10 @@ Use this skill when:
 - The user wants to plan/preview without committing → use `plan-execution-skill` (no push).
 - No PLAN file exists → author one first via `worktree-pipeline-skill` §PLAN Authoring (or run `/run-worktree-pipeline` end-to-end).
 
-> **`/goal` + skill (primary) vs `/run-plan` (fallback).** `/goal` is plugin-owned: it stores the
-> objective, auto-continues on idle, and only stops on an evidence-gated `[goal:complete]`/
-> `[goal:blocked]`. The objective text loads THIS skill (named explicitly, or via the trigger
-> phrases above). `/run-plan` is a plain command that loads the skill directly with no runtime
-> guardrails — keep it for short runs or when the plugin's experimental hooks are flaky on your
-> build. **When running under `/goal`, the skill MUST emit `[goal:*]` markers (see Guardrails) so
-> the plugin honors the terminal state.**
+> **`/run-plan` (primary).** It loads this skill directly; the soft budgets and HALT rules below
+> are the guardrails. If the goal plugin is re-added after a v2 port ships, `/goal` + skill
+> becomes the runtime-guarded path again — in that mode the skill MUST emit `[goal:*]` markers
+> (see Guardrails) so the plugin honors the terminal state.
 
 ## Prerequisites
 
@@ -409,10 +405,10 @@ the runtime. Track each counter across the whole invocation.
 
 **Completion markers (structured terminal state):**
 
-The primary path is `/goal`, whose plugin **only** honors `[goal:complete]`/`[goal:blocked]` (with
-a preceding `[goal:evidence]` line) as the terminal state. Emitting `[plan:*]` under `/goal` would
-leave the plugin auto-continuing past completion. Always end the run with exactly one terminal
-block:
+Always end the run with exactly one terminal block. Nothing currently honors these markers at
+runtime (the goal plugin is removed pending a v2 port) — they are structured text that make the
+terminal state unambiguous to the reader, and they remain the required contract if the plugin
+returns:
 
 ```text
 # success — all phases done + acceptance criteria met
@@ -426,24 +422,16 @@ block:
 Rules:
 
 - `[goal:complete]` is only valid when immediately preceded by a non-empty `[goal:evidence]` line
-  (commands run + results). A bare `[goal:complete]` is rejected by the plugin and it keeps going.
+  (commands run + results) — keep this shape so a returning plugin accepts it.
 - `[goal:blocked]` must state the specific blocker on the line above / inline.
-- Markers go on their own final line(s) of the assistant response.
-- **Fallback (`/run-plan`, no plugin):** the same `[goal:*]` lines are harmless structured text
-  (nothing honors them, but the terminal state is still clear to the reader). `[plan:*]` aliases
-  are also acceptable there.
+- Markers go on their own final line(s) of the assistant response. `[plan:*]` aliases are
+  acceptable when no plugin is present.
 
-> **Want HARD guardrails?** The soft budgets above are obeyed by the agent, not enforced by the
-> runtime. For runtime-enforced turn/token/duration limits, idle auto-resume, compaction-survival,
-> restart-recovery, and evidence-gated completion, drive the skill through `/goal` — the plugin
-> wraps it with all of those:
-> ```
-> /goal "load plan-automation-loop-skill and implement PLAN-x.md" \
->   --max-turns 40 --budget 400k --success "all phases [x] and gate green"
-> ```
-> Tradeoff: that uses `/goal` (so it's no longer the "generic" path). **`/run-plan`** = simple,
-> deliberate, soft-guardrailed, self-contained. **`/goal` + skill** = runtime-guarded autonomy for
-> long hands-off runs. Pick per run; both load the same skill.
+> **Runtime-enforced guardrails are currently unavailable.** The soft budgets above are obeyed by
+> the agent, not enforced by the runtime — the goal plugin that provided turn/token/duration
+> limits, idle auto-resume, and evidence-gated completion has no v2 release (pin removed). For
+> hands-off long runs, babysit `/run-plan` or watch its per-phase status blocks; re-add the
+> plugin when a v2-compatible version ships.
 
 ## Reporting format
 

@@ -61,7 +61,7 @@ If a match exists: do not duplicate — bump the existing entry's confidence (pe
 
 ### Step 3 — Write criteria (decision rubric)
 
-Persist to BOTH `LEARNINGS/<category>/<slug>.md` AND the `memory` tool when **ANY** hold:
+Persist to `LEARNINGS/<category>/<slug>.md` when **ANY** hold:
 
 - Anti-pattern found in 3+ files/components (systemic — high signal)
 - The finding would change future review or dev behavior
@@ -69,15 +69,12 @@ Persist to BOTH `LEARNINGS/<category>/<slug>.md` AND the `memory` tool when **AN
 
 **Skip when:** trivial or obvious, already covered in standard language/framework docs, or a Step 2 duplicate.
 
-### Step 4 — Always persist to the `memory` tool
+### Step 4 — Always persist the LEARNINGS file
 
-Every qualifying finding goes to the `memory` tool (primary store) regardless of markdown write — it is not gated by the scoped `edit` permission:
-
-```
-memory(mode: "add", content: "<structured instinct>", scope: "project"|"user", type: "learned-pattern"|"decision"|"preference")
-```
-
-Markdown files under `LEARNINGS/` are the curated secondary store (permitted by `edit: LEARNINGS/**` where your agent frontmatter grants it).
+Every qualifying finding is written to `LEARNINGS/` (permitted by `edit: LEARNINGS/**` where your
+agent frontmatter grants it). Keep entries tight: title + 2–6 line body with `file:line` evidence
+and a confidence score. The manifest plugin surfaces them next session; the `memory` tool's plugin
+has no v2 release, so markdown is the store.
 
 ### Step 5 — Report
 

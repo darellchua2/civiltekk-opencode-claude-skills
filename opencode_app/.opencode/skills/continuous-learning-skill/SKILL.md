@@ -15,7 +15,7 @@ I extract and persist actionable knowledge from coding sessions using an instinc
 1. **Pattern Extraction**: Identify recurring code patterns, architectural decisions, and problem-solving approaches
 2. **Instinct Model**: Store learnings as atomic "instincts" with confidence scores (0.3-0.9) that evolve over time
 3. **Project Scoping**: Isolate project-specific knowledge from universal patterns to prevent cross-project contamination
-4. **Dual Storage**: Save to both `memory` tool (searchable, primary) and markdown files (curated, reviewable)
+4. **Markdown Storage**: Save to `LEARNINGS/` markdown files (git-committed, reviewable; auto-injected as a manifest each session)
 5. **Instinct Evolution**: Cluster related instincts into skills, commands, or agent improvements
 6. **Cross-Session Learning**: Build a knowledge base that improves agent performance over time
 
@@ -90,38 +90,31 @@ project_id: "my-react-app"
 - Pattern isn't observed for extended periods
 - Contradicting evidence appears
 
-## Dual Storage Strategy
+## Storage Strategy
 
-Knowledge is stored in TWO places with different strengths:
+> The former `memory` tool (opencode-superlocalmemory plugin) has no OpenCode v2 release — the
+> plugin was removed. `LEARNINGS/` markdown is the single store; the auto-inject plugin surfaces
+> a manifest (titles + paths) in the system prompt each session, and `memory`-style recall is a
+> `glob`+`read` on that manifest. Re-evaluate the split-store design if a v2-compatible memory
+> plugin ships.
 
-### Primary: `memory` tool (searchable, always available)
+### `LEARNINGS/` markdown files (curated, reviewable, git-committed, auto-injected)
 
 | Property | Detail |
 |----------|--------|
-| Tool | `memory` (mode: `add`) |
-| Access | `memory` (mode: `search`) |
-| Scope | `project` for project-specific, `user` for cross-project |
-| Best for | Quick facts, decisions, anti-patterns, solutions, instincts |
-| Strength | Relevance-based search, no file I/O needed |
+| Location (project) | `LEARNINGS/<category>/<slug>.md` at repo root |
+| Location (user) | `~/.config/opencode/learnings/<category>/<slug>.md` |
+| Discovery | auto-injected manifest (titles + paths) at session start; `glob`+`read` on demand |
+| Best for | Quick facts and anti-patterns (one-liners) AND detailed patterns/ADRs — file size scales to content |
+| Strength | Human-readable, git-history, PR-reviewable, survives provider changes |
 
-**When to use memory tool ONLY (no markdown file):**
+**When a short entry is enough (single instinct, one file):**
 - Quick capture during active development
 - Simple decisions ("Chose Zod for validation")
 - Anti-patterns ("Avoid mutable default args in Python")
 - Solutions ("Fix race condition with mutex")
 - Facts about the project ("Uses Drizzle ORM, not Prisma")
 - Atomic instincts with confidence scores
-
-### Secondary: `LEARNINGS/` markdown files (curated, reviewable, git-committed)
-
-| Property | Detail |
-|----------|--------|
-| Location (project) | `LEARNINGS/<category>/<slug>.md` at repo root |
-| Location (user) | `~/.config/opencode/learnings/<category>/<slug>.md` |
-| Best for | Detailed patterns, formal ADRs, team conventions, evolved instincts |
-| Strength | Human-readable, git-history, PR-reviewable |
-
-**When to use markdown files (also write to memory tool):**
 - Complex architectural decisions with trade-offs
 - Detailed pattern descriptions with code examples
 - Team conventions that need documentation
