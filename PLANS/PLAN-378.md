@@ -32,7 +32,7 @@ From ticket #378, re-validated against `origin/main` @ `ece1032` (line drift fro
 | `opencode_app/Dockerfile` | `COPY installer/` line | `docker compose build` (no docker on runner — textual gate) | med |
 | `.github/workflows/release.yml` | moved paths | CI gate, npx tarball guard | high |
 | `.releaserc.json` git assets | moved paths | semantic-release release commits | med |
-| `tests/{init,test_autoresearch_skills,test_markitdown_skill}.bats` | mv | CI bats suite | low |
+| `tests/{init,test_autoresearch_skills,test_markitdown_skill,test_docling_skill}.bats` | mv | CI bats suite | low |
 | Docs: `README.md`, `AGENTS.md`, `MIGRATION.md`, `opencode_app/README.md`, 2× `skills/*/SKILL.md` | mv | Humans; no tests read these paths | low |
 
 ## Implementation Phases
@@ -49,17 +49,17 @@ From ticket #378, re-validated against `origin/main` @ `ece1032` (line drift fro
     — **Done when:** `grep -c 'join(REPO, "deploy")' installer/init.mjs` = 0; `node --check installer/init.mjs` passes.
     — **Consumers affected:** `--list/--expand/--describe/resolver` flows, bin entry (1.4).
 
-- [ ] **1.3** Fix intra-installer path joins + comments: `build-registry.mjs:42` (`deploy/agent-tiers.json` → `installer/agent-tiers.json`, header comments :2-31), `build-site.mjs:16` (`deploy/registry.json` → `installer/registry.json`, comments :2-8), `resolve-models.mjs` comments (:5-7), `source.mjs` comments (:1,19,64)
-    — **Why:** These files compute `REPO = dirname(__dirname)` (still correct post-move) but two hardcode `deploy/` segments for siblings that co-moved; comments keep the grep sweep (5.4) clean.
-    — **Done when:** `node --check` on all four; `grep -n 'deploy/' installer/*.mjs` returns 0.
+- [ ] **1.3** Fix intra-installer path joins + stale self-references: `build-registry.mjs` `TIERS_FILE` :42 AND `OUT_FILE` :43 (`join(REPO, "deploy/…")` → `installer/…` — missing :43 would resurrect the old path on regen) + embedded strings :201,:215 + header comments :2-31; `build-site.mjs:16` + comments :2-8; `resolve-models.mjs` comments :5-7 + runtime error strings :387-388; `source.mjs` comments :1,19,64; `tui-primitives.mjs` header comments :1,4; `$comment` fields in co-moved JSON (`presets/pack-*.json` all files, `dependency-map.json:2`); `deploy/merge-packs.mjs:9` comment (file stays, points at moved sibling)
+    — **Why:** These files compute `REPO = dirname(__dirname)` (still correct post-move) but `build-registry.mjs` hardcodes `deploy/` segments for siblings that co-moved (OUT_FILE is the dangerous one); stale comments/`$comment`s would fail the final sweep (5.4) with no owning step. Enumerated from the 1.3/5.4 grep hit set — review finding (step text must cover its own gate's hits).
+    — **Done when:** `node --check` on all installer `.mjs`; `grep -rn 'deploy/' installer/` returns 0 (JSON `$comment`s included).
     — **Consumers affected:** CI drift check, registry regen (1.6), Docker resolver.
 
-- [ ] **1.4** `package.json` bin: `"opencode-skill": "./deploy/init.mjs"` → `"./installer/init.mjs"`
-    — **Why:** Public `npx github:… add <name>` must keep working unchanged — this is the entry the bin resolves after the move.
-    — **Done when:** `node -e "console.log(require('./package.json').bin)"` prints the installer path.
-    — **Consumers affected:** every npx user (public contract).
+- [ ] **1.4** `package.json` bin: `"opencode-skill": "./deploy/init.mjs"` → `"./installer/init.mjs"`; then `npm install` to regenerate `package-lock.json:11` (embeds the bin path) and commit the lockfile — never hand-edit the lockfile
+    — **Why:** Public `npx github:… add <name>` must keep working unchanged — this is the entry the bin resolves after the move; the lockfile mirrors the bin path and `npm ci` hard-fails on drift (repo policy: dependency changes MUST regen the lockfile).
+    — **Done when:** `node -e "console.log(require('./package.json').bin)"` prints the installer path; `grep -c 'installer/init.mjs' package-lock.json` ≥ 1; `npm ci --dry-run` (or `npm install --no-audit --no-fund` idempotent run) clean.
+    — **Consumers affected:** every npx user (public contract), CI `npm ci` steps.
 
-- [ ] **1.5** `deploy/tui.mjs`: import `./tui-primitives.mjs` → `../installer/tui-primitives.mjs`; update comment :6
+- [ ] **1.5** `deploy/tui.mjs`: import `./tui-primitives.mjs` → `../installer/tui-primitives.mjs`; update comments :5-6
     — **Why:** tui.mjs stays in deploy/, its only import moved — the single cross-package edge enforcing one-way `deploy/ → installer/`.
     — **Done when:** `node --check deploy/tui.mjs`; `node deploy/tui.mjs` (no args) prints usage, exits non-zero.
     — **Consumers affected:** setup.sh TUI flows (`provider-picker` etc.).
@@ -73,10 +73,10 @@ From ticket #378, re-validated against `origin/main` @ `ece1032` (line drift fro
 
 ### Phase 2: setup.sh + setup.ps1 rewires
 
-- [ ] **2.1** `deploy/setup.sh`: add `INSTALLER_DIR="${REPO_DIR}/installer"` (:97 block); repoint `RESOLVER_SCRIPT`, `AGENT_TIERS`, `MODELS_DEFAULT_MAP`, `PROVIDER_PRESETS` (:100,106-107) to `${INSTALLER_DIR}`; `init_src` :4005 → `${REPO_DIR}/installer/init.mjs`; comment :4000
+- [ ] **2.1** `deploy/setup.sh`: add `INSTALLER_DIR="${REPO_DIR}/installer"` (:97 block); repoint `RESOLVER_SCRIPT` (:99), `AGENT_TIERS` (:105), `MODELS_DEFAULT_MAP` (:106), `PROVIDER_PRESETS` (:107) to `${INSTALLER_DIR}`; `init_src` :4005 → `${REPO_DIR}/installer/init.mjs` (comment :4000); the inline `--status` read of `${REPO_DIR}/deploy/models.default.json` at :3856 → installer path (its `|| echo` fallback silently masks a missing file — grep gate must not be the only net)
     — **Why:** setup.sh consumes the resolver + tier metadata (shared catalog data — lives in installer/ per ticket decision) and symlinks `opencode-init`; `DEPLOY_DIR` stays for merge-packs/packs/apply-skill-profile/skill-profiles/tui which remain local.
-    — **Done when:** `bash -n deploy/setup.sh` passes; `grep -nE 'deploy/(init\.mjs|resolve-models|agent-tiers|models\.default|provider-presets)' deploy/setup.sh` = 0.
-    — **Consumers affected:** resolver/mix/provider flows, `opencode-init` symlink (AC 4).
+    — **Done when:** `bash -n deploy/setup.sh` passes; `grep -nE 'deploy/(init\.mjs|resolve-models|agent-tiers|models\.default|provider-presets)' deploy/setup.sh` = 0 (includes the :3856 inline read).
+    — **Consumers affected:** resolver/mix/provider flows, `opencode-init` symlink (AC 4), `--status` output.
 
 - [ ] **2.2** `deploy/setup.ps1` mirror: `$InstallDir = Join-Path $RepoDir "installer"`; repoint `$ResolverScript`, `$AgentTiers`, `$ModelsDefaultMap`, `$ProviderPresets` (:113,119-121) and `$initSrc` :2225 (`deploy\init.mjs` → `installer\init.mjs`); comment :2222
     — **Why:** Windows mirror must track setup.sh exactly or the flows diverge across platforms.
@@ -106,12 +106,12 @@ From ticket #378, re-validated against `origin/main` @ `ece1032` (line drift fro
 
 ### Phase 4: Test rewires
 
-- [ ] **4.1** Rewire moved-path refs: `tests/init.bats:8-9` (init.mjs, registry.json), `tests/test_autoresearch_skills.bats:59,76,93` (agent-tiers.json), `tests/test_markitdown_skill.bats:105` (registry.json)
-    — **Why:** These bats files execute the moved files; the other 6 bats files reference only `deploy/setup.sh`/`ps1` which stay.
-    — **Done when:** `grep -rnE 'deploy/(init\.mjs|registry\.json|agent-tiers\.json|build-registry)' tests/` = 0.
+- [ ] **4.1** Rewire moved-path refs: `tests/init.bats:8-9` (init.mjs, registry.json), `tests/test_autoresearch_skills.bats:59,76,93` (agent-tiers.json), `tests/test_markitdown_skill.bats:105` (registry.json), `tests/test_docling_skill.bats:137` (dependency-map.json)
+    — **Why:** These 4 bats files reference moved files at runtime (13 bats files exist; the rest reference only `deploy/setup.sh`/`ps1` which stay) — review finding: docling's dependency-map read was outside the original enumeration and its grep.
+    — **Done when:** the full 5.4 sweep pattern restricted to `tests/` returns 0 (`grep -rnE 'deploy/(init\.mjs|build-registry|registry\.json|source\.mjs|resolve-models|agent-tiers|models\.default|provider-(models|presets)|tui-primitives|presets/|dependency-map|build-site)' tests/`).
     — **Consumers affected:** CI bats suite.
 
-**Phase gate:** per-file `bats` on all 9 affected/referencing test files, all green.
+**Phase gate:** per-file `bats` on the 4 rewired files plus `cleanup_old_backups`, `parse_arguments`, `test_backup_rollback`, `test_count_drift`, `test_mcp_count_consistency`, `test_pack_permissions` — all green (full suite).
 
 ### Phase 5: Docs + final sweep
 
@@ -160,4 +160,5 @@ From ticket #378, re-validated against `origin/main` @ `ece1032` (line drift fro
 | registry.json churn / hash mismatch | Single regen in 1.6, committed atomically; `--check` gate in CI |
 | Docker build breakage undetected | Textual grep gates on Dockerfile; no docker job exists in CI today — noted in PR body |
 | semantic-release stops committing moved sources | 3.3 asset rewire + release.yml greps |
+| PR-branch CI red window: release.yml runs per push; Phases 1-3 pushes leave drift/lint/bats pointing at moved paths until Phase 4 | Expected and documented in the PR body — only the post-Phase-4 (final) state gates merge; alternative (batch Phases 1-4 into one push) rejected to keep per-phase atomic commits |
 | Missed references elsewhere | 5.4 repo-wide sweep is an acceptance criterion |
