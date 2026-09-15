@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.0.1](https://github.com/darellchua2/opencode-config-template/compare/v7.0.0...v7.0.1) (2026-09-15)
+
+### Bug Fixes
+
+* **docker:** opencode-owned npm dir + precise goal healthcheck ([#391](https://github.com/darellchua2/opencode-config-template/issues/391)) ([c543217](https://github.com/darellchua2/opencode-config-template/commit/c5432177291cfb4d52f3afd2148a7ca5aeae8742)), closes [#389](https://github.com/darellchua2/opencode-config-template/issues/389)
+
 ## [7.0.0](https://github.com/darellchua2/opencode-config-template/compare/v6.1.0...v7.0.0) (2026-09-14)
 
 ### ⚠ BREAKING CHANGES
