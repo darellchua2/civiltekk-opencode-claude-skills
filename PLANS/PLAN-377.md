@@ -33,24 +33,24 @@ From ticket #377, re-validated against `origin/main` @ `bc1f6d2` (line refs re-a
 
 ### Phase 1: `--target` flag + `--format` deprecated alias
 
-- [ ] **1.1** `installer/init.mjs` `cmdAdd`: after parse, map alias — if `opts.format` set: if `opts.target` also set → `die("cannot use --format and --target together (--format is deprecated; use --target)")`; else `opts.target = opts.format` + stderr `warning: --format is deprecated; use --target (values: opencode, claude, both)`. Update the project-scope note :553-554 to reference `--target`.
+- [x] **1.1** `installer/init.mjs` `cmdAdd`: after parse, map alias — if `opts.format` set: if `opts.target` also set → `die("cannot use --format and --target together (--format is deprecated; use --target)")`; else `opts.target = opts.format` + stderr `warning: --format is deprecated; use --target (values: opencode, claude, both)`. Update the project-scope note :553-554 to reference `--target`.
     — **Why:** The ticket keeps `--format` working (public command compat) while moving the canonical name to `--target`; conflict-die prevents silent ambiguity at the trust boundary.
     — **Done when:** `node --check`; `--format claude` maps to target with warning; `--format claude --target both` dies exit≠0.
     — **Consumers affected:** CLI users; `--project` note text.
 
-- [ ] **1.2** `writeUserScopeInstall`: `const target = opts.target || "opencode"`; validate `["opencode","claude","both"]` → `die(\`invalid target '${target}'. Use: opencode, claude, or both.\`, 2)`; `doOc`/`doClaude` derive from target; dry-run JSON field `format` → `target` (preview output, not a parsed contract — no bats test reads it today). In the dry-run branch, when `doClaude && sel.agents.length` print the same agent-skip warning to stderr (REQ-1: preview must reflect the skip, not just the real install).
+- [x] **1.2** `writeUserScopeInstall`: `const target = opts.target || "opencode"`; validate `["opencode","claude","both"]` → `die(\`invalid target '${target}'. Use: opencode, claude, or both.\`, 2)`; `doOc`/`doClaude` derive from target; dry-run JSON field `format` → `target` (preview output, not a parsed contract — no bats test reads it today). In the dry-run branch, when `doClaude && sel.agents.length` print the same agent-skip warning to stderr (REQ-1: preview must reflect the skip, not just the real install).
     — **Why:** Core flag semantics; value set unchanged so the alias needs no value translation beyond the name; a preview that hides the skip lies about what install does.
     — **Done when:** `--target claude` and `--target opencode` dry-runs print correct `target` + `destination`; `--target bogus` dies exit 2; `add tdd-subagent --target claude --dry-run` shows the skip warning.
     — **Consumers affected:** every `add` invocation (user scope).
 
 ### Phase 2: Claude target installs skills only
 
-- [ ] **2.1** `writeClaudeFormat`: delete the agent loop (:739-745); when `sel.agents.length > 0` print `warning: N agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)` to **stderr** (`console.error`, REQ-2 — the bats case asserts stderr; not `console.log` like the existing :757 count line); count = skills only. Keep `stripModelLine` and the remove-side cleanup (:787-789) untouched.
+- [x] **2.1** `writeClaudeFormat`: delete the agent loop (:739-745); when `sel.agents.length > 0` print `warning: N agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)` to **stderr** (`console.error`, REQ-2 — the bats case asserts stderr; not `console.log` like the existing :757 count line); count = skills only. Keep `stripModelLine` and the remove-side cleanup (:787-789) untouched.
     — **Why:** Fixes the ticket's named bug — agents written as SKILL.md into `~/.claude/skills/` are silently ignored by Claude Code; the warning makes the skip visible instead of silent, and stderr keeps it out of the success-path stdout stream.
     — **Done when:** `add <agent> --target claude` exits 0, prints warning on stderr, claude dir has no entries; `--target both` with agent: opencode agent written + same warning.
     — **Consumers affected:** Claude Code users; `--target both` flows.
 
-- [ ] **2.2** Manifest write: record `sel.agents` in the manifest only when `doOc` (agents were actually installed somewhere); skills always recorded.
+- [x] **2.2** Manifest write: record `sel.agents` in the manifest only when `doOc` (agents were actually installed somewhere); skills always recorded.
     — **Why:** The manifest is the uninstall ledger (`cmdRemove` decides agent-vs-skill from it, :773); claude-only installs never place agents anywhere, so recording them corrupts `remove` bookkeeping.
     — **Done when:** after `add <agent> --target claude`, manifest `agents` is empty and `skills` lists pulled-in skills; after `--target both`, both recorded.
     — **Consumers affected:** `cmdRemove`, `--prune`.
