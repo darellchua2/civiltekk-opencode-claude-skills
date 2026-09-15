@@ -121,6 +121,7 @@ RUN chmod +x /app/docker-entrypoint.sh \
     && mkdir -p /home/opencode/.local/share/opencode \
     && mkdir -p /home/opencode/.local/share/opencode-goal-plugin \
     && mkdir -p /home/opencode/.cache \
+    && mkdir -p /home/opencode/.npm \
     && chown -R opencode:opencode /app /home/opencode
 
 # PLAN-GIT-262: bake the privacy-hardened markitdown MCP launcher into the

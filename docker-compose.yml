@@ -24,9 +24,12 @@ services:
       # Liveness + goal-plugin presence (#387). v2 mandates HTTP auth on every
       # route, so authenticate with the password materialized by the entrypoint
       # (set OPENCODE_SERVER_PASSWORD in .env to choose your own; otherwise it
-      # is generated and printed once in `docker logs opencode`). Absence of
-      # goal commands marks the container unhealthy — inertness is loud.
-      test: ["CMD-SHELL", "curl -sf -u \"opencode:$(cat /home/opencode/.local/share/opencode/server-password 2>/dev/null)\" http://localhost:4096/api/command | grep -q goal || exit 1"]
+      # is generated and printed once in `docker logs opencode`). The grep is
+      # deliberately precise: a bare `grep goal` false-positives on the word
+      # "/goal" inside OTHER command descriptions (run-plan's mentions it) and
+      # certified an inert container as healthy. Absence of the actual goal
+      # command marks the container unhealthy — inertness is loud.
+      test: ["CMD-SHELL", "curl -sf -u \"opencode:$(cat /home/opencode/.local/share/opencode/server-password 2>/dev/null)\" http://localhost:4096/api/command | grep -q '\"name\":\"goal\"' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

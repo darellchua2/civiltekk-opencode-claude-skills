@@ -28,12 +28,21 @@ else
     echo "Server auth: generated password (also at ${SERVER_PASSWORD_FILE}): ${GENERATED_PW}"
 fi
 
-# Ensure cache dir exists and is writable (defensive against volume mounts)
+# Ensure cache dir exists and is writable (defensive against volume mounts).
+# Root-owned volumes here are the #1 plugin-install killer: opencode's npm
+# installer dies with EACCES on ~/.npm/_cacache and npm-array plugins are then
+# SILENTLY skipped (observed: goal plugin absent with only a WARN in
+# ~/.local/share/opencode/log/opencode.log). Entrypoint runs unprivileged and
+# cannot chown — repair is `docker exec -u root <c> chown -R opencode:opencode
+# /home/opencode/.npm` (one-time; the Dockerfile pre-creates the dirs so FRESH
+# volumes initialize correctly).
 CACHE_DIR="/home/opencode/.cache"
 mkdir -p "${CACHE_DIR}"
-if [ -d "${CACHE_DIR}" ] && [ "$(stat -c '%U' "${CACHE_DIR}" 2>/dev/null)" = "root" ]; then
-    echo "WARNING: ${CACHE_DIR} is owned by root; this may break opencode cache writes"
-fi
+for OWNED_DIR in "${CACHE_DIR}" "${HOME}/.npm"; do
+    if [ -d "${OWNED_DIR}" ] && [ "$(stat -c '%U' "${OWNED_DIR}" 2>/dev/null)" = "root" ]; then
+        echo "WARNING: ${OWNED_DIR} is owned by root; npm/plugin installs will fail (EACCES) until chowned to opencode" >&2
+    fi
+done
 
 python3 << PYEOF
 import json, os
@@ -130,7 +139,7 @@ mkdir -p /workspace-extra 2>/dev/null || true
 (
     PW="$(cat "${SERVER_PASSWORD_FILE}" 2>/dev/null)"
     BODY=""
-    for _ in $(seq 1 30); do
+    for _ in $(seq 1 60); do
         sleep 2
         BODY="$(curl -sf -u "opencode:${PW}" "http://localhost:${PORT}/api/command" 2>/dev/null)" || true
         echo "${BODY}" | grep -q '"goal' && break
@@ -138,7 +147,7 @@ mkdir -p /workspace-extra 2>/dev/null || true
     if echo "${BODY}" | grep -q '"goal'; then
         echo "GOAL-PLUGIN: OK — goal commands registered (@prevalentware/opencode-goal-plugin active)"
     else
-        echo "GOAL-PLUGIN: ABSENT — no goal commands in /api/command after 60s; the plugins key is inert (check binary version and opencode_app/opencode.json)" >&2
+        echo "GOAL-PLUGIN: ABSENT — no goal commands in /api/command after 120s; the plugins key is inert (check binary version, opencode_app/opencode.json, and ~/.npm ownership — see log/opencode.log)" >&2
     fi
 ) &
 
