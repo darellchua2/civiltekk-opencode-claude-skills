@@ -10,7 +10,7 @@
 - [x] `agents/opencode-v2-migration-subagent.md` (source of truth; NOT the `opencode_app/.opencode/agents` symlink bridge) plugin-triage one-liner (line ~168) expanded to point at the MIGRATION.md section
 - [x] Sources cited: opencode.ai/v2/docs/compaction, /v2/docs/config, /v2/docs/build/plugins/migrate-v1, /v2/docs/migrate-v1
 - [x] Verification guidance included: `opencode stats` + `OPENCODE_DISABLE_AUTOCOMPACT`
-- [ ] No config/skill/agent/MCP count changes (docs-only); `node deploy/build-registry.mjs --check` passes (proves frontmatter untouched)
+- [x] No config/skill/agent/MCP count changes (docs-only); `node deploy/build-registry.mjs --check` passes (proves frontmatter untouched)
 
 ## Dependency & Consumer Map
 
@@ -41,10 +41,11 @@ No code, config, frontmatter, or registry surfaces touched. Docs-only diff.
 
 ### Phase 3: Verification
 
-- [ ] **3.1** Run gates: `node deploy/build-registry.mjs --check` (registry sync; CI parity — release.yml runs it), then the `documentation-consistency-skill` audit (count sync, setup.sh/README drift, orphan references — ticket AC5 mandates this confirmation method; expected result: zero count changes since no skills/agents/MCP are added or removed), then bats if runnable locally (`bats tests/` — CI installs it; locally optional, skip cleanly when absent).
+- [x] **3.1** Run gates: `node deploy/build-registry.mjs --check` (registry sync; CI parity — release.yml runs it), then the `documentation-consistency-skill` audit (count sync, setup.sh/README drift, orphan references — ticket AC5 mandates this confirmation method; expected result: zero count changes since no skills/agents/MCP are added or removed), then bats if runnable locally (`bats tests/` — CI installs it; locally optional, skip cleanly when absent).
     — **Why:** CI (release.yml) runs registry check + bats; the ticket explicitly requires the documentation-consistency confirmation, which the registry check alone does not cover.
     — **Done when:** Registry check exits 0; doc-consistency audit reports no count changes needed; bats skipped-with-note or green.
     — **Consumers affected:** CI pipeline on PR; none runtime.
+    — **Done:** Registry check OK (agents=34, skills=149, no drift); doc-consistency audit: README 149 = registry 149 = disk 149 real skills (raw 150 includes `skills/_common`, no SKILL.md — correctly excluded; setup.sh `SKILLS (N)` count format no longer exists post-restructure — no count references to sync); bats absent locally → skipped with note (CI runs it); files: PLANS/PLAN-385.md only; fixes: none
 
 ## Technical Notes
 
