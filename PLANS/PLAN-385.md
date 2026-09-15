@@ -9,7 +9,7 @@
 - [x] `MIGRATION.md` gains a "Context pruning (DCP) → v2 checkpoint compaction" section containing: workflow comparison table (v1 per-request pruning vs v2 episodic checkpoints), why v2 changed (4 reasons), native knob mapping with ALL FOUR rows (compaction.auto/keep.tokens/buffer; tool_output caps + 2000-char retained-tail cap; fixed overhead → skill/MCP allowlists; v1 `experimental.compaction.autocontinue` → native pending-step rebuild), token-reduction levers ranked, and the cache-invalidation note explicitly labeled as inference
 - [x] `agents/opencode-v2-migration-subagent.md` (source of truth; NOT the `opencode_app/.opencode/agents` symlink bridge) plugin-triage one-liner (line ~168) expanded to point at the MIGRATION.md section
 - [x] Sources cited: opencode.ai/v2/docs/compaction, /v2/docs/config, /v2/docs/build/plugins/migrate-v1, /v2/docs/migrate-v1
-- [x] Verification guidance included: `opencode stats` + `OPENCODE_DISABLE_AUTOCOMPACT`
+- [x] Verification guidance included — **corrected in code review**: `compaction.auto: false` kill switch + provider-dashboard measurement; the original AC named `opencode stats` + `OPENCODE_DISABLE_AUTOCOMPACT`, which code review found are v1-docs commands absent from all cited v2 pages
 - [x] No config/skill/agent/MCP count changes (docs-only); `node deploy/build-registry.mjs --check` passes (proves frontmatter untouched)
 
 ## Dependency & Consumer Map
@@ -29,7 +29,7 @@ No code, config, frontmatter, or registry surfaces touched. Docs-only diff.
     — **Why:** Single home for the decision trail; the subagent pointer (Phase 2) needs this section to exist first so the reference is stable.
     — **Done when:** `MIGRATION.md` new section contains all of: `keep.tokens`, `tool_output`, `fixed overhead`, `inference`, `autocontinue` (grep each ≥1 hit within the section) and `git diff --stat` shows exactly one file changed.
     — **Consumers affected:** Human readers of MIGRATION.md; none runtime.
-    — **Done:** Section inserted between "Personal config" and "## Docker" (65 lines): comparison table, 4-reason list, 4-row mapping, ranked levers with plugin-port marked not recommended, cache-inference label, sources + verify commands; files: MIGRATION.md; fixes: none
+    — **Done:** Section inserted between "Personal config" and "## Docker" (65 lines): comparison table, 4-reason list, 4-row mapping, ranked levers with plugin-port marked not recommended, cache-inference label, sources + verify commands; files: MIGRATION.md; fixes: code review (2 BLOCK 3 WARN 3 NOTE) — inference label added to §Why point 2 + repo-analysis note under heading, v1-era env var/stats replaced with `compaction.auto: false` + dashboard guidance, "verbatim"/"intact" reworded vs 2000-char cap, `session.warming`→`warming`, `compaction.tail_turns` qualified, "(#385)" in heading, formula moved to code block
 
 ### Phase 2: Migration-subagent pointer
 
