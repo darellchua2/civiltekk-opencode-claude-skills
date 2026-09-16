@@ -971,7 +971,7 @@ FLAGS
   --prune              remove opencode-init-owned entries absent from the new set
   --permit             (user scope) backup opencode.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
-  --format <f>         (add) target format: opencode (default), claude, or both
+  --target <t>         (add) install target: opencode (default), claude, or both (--format is a deprecated alias)
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and

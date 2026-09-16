@@ -8,12 +8,12 @@
 
 From ticket #377, re-validated against `origin/main` @ `bc1f6d2` (line refs re-anchored):
 
-- [ ] `add <skill> --target claude` writes only `~/.claude/skills/<skill>/` (verified with fake HOME)
-- [ ] `add <agent> --target claude` warns + writes nothing under the claude dir, exit 0
-- [ ] `--format claude` alias still accepted (with deprecation warning)
-- [ ] bats cases for all three behaviors
-- [ ] `--target both` + agent selection: opencode gets agent, claude skips it with the same warning (no silent divergence)
-- [ ] Registry drift check + full bats suite stay green (no frontmatter changes)
+- [x] `add <skill> --target claude` writes only `~/.claude/skills/<skill>/` (verified with fake HOME)
+- [x] `add <agent> --target claude` warns + writes nothing under the claude dir, exit 0
+- [x] `--format claude` alias still accepted (with deprecation warning)
+- [x] `bats cases for all three behaviors
+- [x] `--target both` + agent selection: opencode gets agent, claude skips it with the same warning (no silent divergence)
+- [x] Registry drift check + full bats suite stay green (no frontmatter changes)
 
 **Re-validation deltas:** `deploy/init.mjs:739-744` → `installer/init.mjs:736-758` (`writeClaudeFormat`, agent loop :739-745); flag parse `parseArgs` :65-83 (`--format` value-flag, no BOOL change needed — `--target` parses the same way); validation :564-568; project-scope note :553-554; help :962; README §"Claude Code compatibility (`--format`)" :224-239. No existing `--format` bats cases — all three ticket ACs are new tests. Fake-HOME pattern established in `tests/init.bats:151` (`export HOME="$TMP_PROJ/home"`).
 
@@ -59,19 +59,19 @@ From ticket #377, re-validated against `origin/main` @ `bc1f6d2` (line refs re-a
 
 ### Phase 3: Help + README
 
-- [ ] **3.1** Help :962: replace `--format` line with `--target <t>  (add) install target: opencode (default), claude, or both (--format = deprecated alias)`; keep adjacent lines untouched.
+- [x] **3.1** Help :962: replace `--format` line with `--target <t>  (add) install target: opencode (default), claude, or both (--format = deprecated alias)`; keep adjacent lines untouched.
     — **Why:** Help must show the new canonical flag while teaching the alias exists.
     — **Done when:** `node installer/init.mjs --help | grep -q -- '--target'` and `--format` still mentioned.
     — **Consumers affected:** humans reading help.
 
-- [ ] **3.2** README §:224-239: retitle to `--target`, commands use `--target claude` / `--target both`, table header "Target", swap the `--target both` example to a **skill** name (REQ-3 — an agent example would showcase a warning-producing flow), add one line: `--format is a deprecated alias for --target (prints a warning, values unchanged)`. Also update `AGENTS.md:10` which still names `--format claude|both` as canonical (REQ-4).
+- [x] **3.2** README §:224-239: retitle to `--target`, commands use `--target claude` / `--target both`, table header "Target", swap the `--target both` example to a **skill** name (REQ-3 — an agent example would showcase a warning-producing flow), add one line: `--format is a deprecated alias for --target (prints a warning, values unchanged)`. Also update `AGENTS.md:10` which still names `--format claude|both` as canonical (REQ-4).
     — **Why:** Public docs must match the shipped CLI; the deprecated alias note keeps old links/notes interpretable.
     — **Done when:** grep shows no `--format` usage examples except the deprecation note; section title says `--target`; AGENTS.md references `--target`.
     — **Consumers affected:** humans; doc-consistency skill sweeps.
 
 ### Phase 4: Bats cases
 
-- [ ] **4.1** `tests/init.bats`, 3 new cases using the `export HOME="$TMP_PROJ/home"` pattern: (a) `add <skill> --target claude` → `$HOME/.claude/skills/<skill>/SKILL.md` exists AND `$HOME/.config/opencode/skills/<skill>` absent; (b) `add <agent> --target claude` → exit 0, stderr matches `agent\(s\) skipped`, `$HOME/.claude/skills/<agent>` absent; (c) `--format claude` → stderr matches `deprecated` + install lands in claude dir.
+- [x] **4.1** `tests/init.bats`, 3 new cases using the `export HOME="$TMP_PROJ/home"` pattern: (a) `add <skill> --target claude` → `$HOME/.claude/skills/<skill>/SKILL.md` exists AND `$HOME/.config/opencode/skills/<skill>` absent; (b) `add <agent> --target claude` → exit 0, stderr matches `agent\(s\) skipped`, `$HOME/.claude/skills/<agent>` absent; (c) `--format claude` → stderr matches `deprecated` + install lands in claude dir.
     — **Why:** The ticket's ACs demand executable proof of all three behaviors; fake HOME isolates the runner's real `~/.claude`.
     — **Done when:** `bats tests/init.bats` green including the 3 new cases.
     — **Consumers affected:** CI bats suite.
