@@ -7,7 +7,7 @@ Repo conventions only. Usage docs (install, deploy commands, file tree, chaining
 Multi-mode OpenCode configurator:
 1. **User-space deploy** — `./deploy/setup.sh` copies config, agents, skills to `~/.config/opencode/`.
 2. **Docker standalone** — `docker compose up -d` launches a web endpoint via `opencode_app/`.
-3. **Individual install** — `npx github:darellchua2/opencode-config-template add <name>` pulls a single skill/agent (shadcn-style copy model). Default target `~/.config/opencode/` (auto-discovered, no config touch); `--project` opts into `./.opencode/`; `--format claude|both` writes `~/.claude/skills/` (Agent Skills open standard). See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
+3. **Individual install** — `npx github:darellchua2/opencode-config-template add <name>` pulls a single skill/agent (shadcn-style copy model). Default target `~/.config/opencode/` (auto-discovered, no config touch); `--project` opts into `./.opencode/`; `--target claude|both` writes `~/.claude/skills/` (Agent Skills open standard; `--format` is a deprecated alias). See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
 
 ## Source of Truth
 

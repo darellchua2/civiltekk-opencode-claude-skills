@@ -221,23 +221,25 @@ npx github:darellchua2/opencode-config-template add nextjs-specialist-subagent -
 npx github:darellchua2/opencode-config-template remove solid-principles-skill
 ```
 
-### Claude Code compatibility (`--format`)
+### Multi-app install targets (`--target`)
 
-Skills follow the [Agent Skills](https://agentskills.io) open standard — the same `SKILL.md` format works in both opencode and Claude Code. Use `--format` to control the install target:
+Skills follow the [Agent Skills](https://agentskills.io) open standard — the same `SKILL.md` format works in both opencode and Claude Code. Use `--target` to control the install target:
 
 ```bash
 # G. Install to Claude Code (~/.claude/skills/<name>/SKILL.md)
-npx github:darellchua2/opencode-config-template add solid-principles-skill --format claude
+npx github:darellchua2/opencode-config-template add solid-principles-skill --target claude
 
 # Install to both opencode and Claude Code
-npx github:darellchua2/opencode-config-template add tdd-subagent --format both
+npx github:darellchua2/opencode-config-template add solid-principles-skill --target both
 ```
 
-| Format | Destination | Notes |
+| Target | Destination | Notes |
 |--------|-------------|-------|
 | `opencode` (default) | `~/.config/opencode/{skills,agents}/` | Full opencode compat (model injection, strict-allowlist detection) |
-| `claude` | `~/.claude/skills/<name>/` | Claude Code auto-discovers; `model:` lines stripped (Claude uses its own model selection) |
-| `both` | Both paths above | Cross-tool install in one command |
+| `claude` | `~/.claude/skills/<name>/` | Skills only — agents are opencode-specific and skipped with a warning; `model:` lines stripped (Claude uses its own model selection) |
+| `both` | Both paths above | Agents install to opencode only; skills go to both |
+
+> `--format` is a deprecated alias for `--target` — still accepted (values unchanged), prints a warning.
 
 ### Browsing the catalog
 
