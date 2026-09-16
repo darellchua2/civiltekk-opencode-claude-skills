@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.1.0](https://github.com/darellchua2/opencode-config-template/compare/v7.0.1...v7.1.0) (2026-09-16)
+
+### Features
+
+* **installer:** multi-app install targets — --target opencode|claude ([#377](https://github.com/darellchua2/opencode-config-template/issues/377)) ([#393](https://github.com/darellchua2/opencode-config-template/issues/393)) ([143213e](https://github.com/darellchua2/opencode-config-template/commit/143213e77b171af4a41560e15624493ced2a80f6))
+
+### Documentation
+
+* **migration:** document DCP to v2 checkpoint compaction reasoning ([#385](https://github.com/darellchua2/opencode-config-template/issues/385)) ([#392](https://github.com/darellchua2/opencode-config-template/issues/392)) ([f051539](https://github.com/darellchua2/opencode-config-template/commit/f0515393f2807555166692c536bcba65160f687a))
+
 ## [7.0.1](https://github.com/darellchua2/opencode-config-template/compare/v7.0.0...v7.0.1) (2026-09-15)
 
 ### Bug Fixes
