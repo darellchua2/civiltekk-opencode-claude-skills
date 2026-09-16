@@ -11,7 +11,7 @@ From ticket #377, re-validated against `origin/main` @ `bc1f6d2` (line refs re-a
 - [x] `add <skill> --target claude` writes only `~/.claude/skills/<skill>/` (verified with fake HOME)
 - [x] `add <agent> --target claude` warns + writes nothing under the claude dir, exit 0
 - [x] `--format claude` alias still accepted (with deprecation warning)
-- [x] `bats cases for all three behaviors
+- [x] bats cases for all three behaviors
 - [x] `--target both` + agent selection: opencode gets agent, claude skips it with the same warning (no silent divergence)
 - [x] Registry drift check + full bats suite stay green (no frontmatter changes)
 
