@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.0.0](https://github.com/darellchua2/opencode-config-template/compare/v7.1.1...v8.0.0) (2026-09-17)
+
+### ⚠ BREAKING CHANGES
+
+* **agents:** normalize frontmatter to native v2 permissions (#380) (#395)
+
+### Code Refactoring
+
+* **agents:** normalize frontmatter to native v2 permissions ([#380](https://github.com/darellchua2/opencode-config-template/issues/380)) ([#395](https://github.com/darellchua2/opencode-config-template/issues/395)) ([a04fa6d](https://github.com/darellchua2/opencode-config-template/commit/a04fa6d47eea1b676cb7efa56cb2b08bf323220b)), closes [#379](https://github.com/darellchua2/opencode-config-template/issues/379) [#379](https://github.com/darellchua2/opencode-config-template/issues/379) [#383](https://github.com/darellchua2/opencode-config-template/issues/383)
+
 ## [7.1.1](https://github.com/darellchua2/opencode-config-template/compare/v7.1.0...v7.1.1) (2026-09-17)
 
 ### Bug Fixes
