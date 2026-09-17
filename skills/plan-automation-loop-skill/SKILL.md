@@ -30,10 +30,10 @@ Fully-automated, phase-by-phase PLAN execution with a hard verification gate bet
    - [guardrail] `phases_done >= MAX_PHASES` (12) or `total_fixes >= MAX_FIXES` (20) → HALT + `[goal:blocked]`
    - 4a. IMPLEMENT — every atomic step; delegate per matrix below; keep a per-step WORK LOG
    - 4b. TEST NEW CODE — new/modified source files (`git diff --name-only --diff-filter=AM`, minus configs/docs/PLAN) get tests (TS: `bar.test.ts` sibling; PY: `tests/foo/test_bar.py`; mirror the nearest existing test). Trivial pure-data additions exempt.
-   - 4c. VERIFY — the gate, in order: LINT → TYPECHECK → BUILD → UNIT → E2E. Lint = zero NEW errors on changed files. Then record one verdict: `VERIFIED` (all applicable gates ran green, output captured) / `NOT VERIFIED` (a gate failed) / `INCONCLUSIVE` (a gate could not run). **INCONCLUSIVE is NOT a pass** — advance only on VERIFIED.
+   - 4c. VERIFY — the gate, in order: LINT → TYPECHECK → BUILD → UNIT → E2E (e2e only per the E2E rule). Lint = zero NEW errors on changed files. Then record one verdict: `VERIFIED` (all applicable gates ran green, output captured) / `NOT VERIFIED` (a gate failed) / `INCONCLUSIVE` (a gate could not run). **INCONCLUSIVE is NOT a pass** — advance only on VERIFIED.
    - 4d. FIX-ON-FAIL — max 3 attempts per gate step: read full output → root cause → fix → append to WORK LOG → re-run failed step then the whole gate. Each attempt increments `total_fixes`. After 3 failures: STOP — no checkbox, no commit, no push; report blocker + ask user. **Never push red code.**
-   - 4e. ON GREEN — tick ALL checkboxes (phase-level, every sub-step, satisfied acceptance criteria) + write `— Done:` line per step
-   - 4f/4g. COMMIT + PUSH — one atomic commit: phase files + PLAN update together
+   - 4e. ON GREEN — tick ALL checkboxes (phase-level, every sub-step, satisfied acceptance criteria) + write the `— Done:` line per step (see Traceability)
+   - 4f/4g. COMMIT + PUSH — one atomic commit: phase files + PLAN update together (see Commit + push)
    - 4h. REPORT — one-line phase status, continue
 
 **A phase advances ONLY when its gate is fully green.** Red gate = no checkbox, no Done line, no commit, no push.
@@ -51,11 +51,11 @@ Fully-automated, phase-by-phase PLAN execution with a hard verification gate bet
 
 Verify each step's `Done when` signal before calling it complete; surface `Consumers affected` before mutating (per `plan-execution-skill`).
 
-### E2E rule (6a)
+### E2E rule
 
 Run e2e ONLY IF both: Playwright configured (`playwright.config.*` + `@playwright/test`) AND the phase touched frontend code (`components/**/*.{tsx,jsx,vue,svelte}`, `app|pages|routes|src/ui`, route handlers affecting rendered pages). Backend-only phase → skip e2e and say so. Frontend but no Playwright → note + skip (never install unprompted). **Visual/responsive scope → spawn `responsive-audit-subagent`** (loads the subagent-only `playwright-responsive-audit-skill`, PTY loop) instead of inline `npx playwright test`.
 
-### Traceability (8)
+### Traceability
 
 `— Done:` line per completed step, indented with the Why block:
 
@@ -65,13 +65,13 @@ Run e2e ONLY IF both: Playwright configured (`playwright.config.*` + `@playwrigh
 
 Rules: `fixes:` MUST list every gate fix for that step; one logical line; only tick `[x]` when `Done when` is objectively satisfied AND the gate passed; note deliberate deviations. A completed phase leaves zero unchecked boxes (`grep -n "^- \[ \]" <PLAN>` within it → empty). Optional hash-trace: two commits (code → hash → checkboxes+Done lines → `docs(plan): trace Phase N (<hash>)`).
 
-### Commit + push (9)
+### Commit + push
 
 `git add <phase files> PLANS/PLAN-*.md` → `git commit -m "<type>(<scope>): implement Phase N — <summary>" -m "Plan: <file>. Gate: … green. Trace: per-step Done lines."` → `git push`. Conventions per `git-semantic-commits-skill`; project commitlint overrides; never mix style-only with logic. Push rejected (non-FF) → stop and ask, never force-push.
 
-### Final validation (10)
+### Final validation
 
-`grep -n "^- \[ \]" <PLAN>` — empty → success. Any residue → report exactly which items are unmet and ask; never fabricate completion.
+`grep -n "^- \[ \]" <PLAN>` — empty → success. Any residue → report exactly which items are unmet and ask; never fabricate completion. (This is the Final validation step.)
 
 ## Guardrails & Budget (soft, instruction-level — the native loop has none)
 

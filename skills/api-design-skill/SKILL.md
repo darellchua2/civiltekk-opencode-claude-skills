@@ -19,7 +19,7 @@ Design APIs: REST conventions, OpenAPI generation (FastAPI auto / Next manual), 
 
 Designing or documenting an API; authoring/editing an OpenAPI spec (directly or via generator code); schema-contract verification.
 
-**Related:** `openapi-contract-adherence-skill` (diffing/breaking-change detection) · `security-audit-skill` (auth *implementation* via `authentication-authorization-skill`).
+**Related:** `openapi-contract-adherence-skill` (diffing/breaking-change detection) · `authentication-authorization-skill` (auth *implementation*) · `security-audit-skill` (security *auditing*).
 
 ## Step 4.5: Authoring Quality Gate
 
