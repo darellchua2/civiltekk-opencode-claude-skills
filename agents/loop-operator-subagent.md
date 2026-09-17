@@ -4,25 +4,52 @@ description: >-
   with self-correction and progress tracking.
 mode: subagent
 steps: 25
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-  skill:
-    verification-loop-skill: allow
-    continuous-learning-skill: allow
-    strategic-compact-skill: allow
-    blast-radius-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: general
+    effect: allow
+  - action: skill
+    resource: verification-loop-skill
+    effect: allow
+  - action: skill
+    resource: continuous-learning-skill
+    effect: allow
+  - action: skill
+    resource: strategic-compact-skill
+    effect: allow
+  - action: skill
+    resource: blast-radius-skill
+    effect: allow
 category: research
 ---
 

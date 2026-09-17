@@ -4,33 +4,76 @@ description: >-
   lint/build/test, semantic versioning, JIRA integration.
 mode: subagent
 steps: 30
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    documentation-subagent: allow
-    explore: allow
-    general: allow
-    image-analyzer-subagent: allow
-  skill:
-    semantic-release-convention-skill: allow
-    pr-creation-workflow-skill: allow
-    nextjs-pr-workflow-skill: allow
-    jira-status-updater-skill: allow
-    plan-updater-skill: allow
-    changelog-python-cliff-skill: allow
-    search-first-skill: allow
-    version-bump-standard-skill: allow
-    unslop-skill: allow
-    blast-radius-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: documentation-subagent
+    effect: allow
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: general
+    effect: allow
+  - action: task
+    resource: image-analyzer-subagent
+    effect: allow
+  - action: skill
+    resource: semantic-release-convention-skill
+    effect: allow
+  - action: skill
+    resource: pr-creation-workflow-skill
+    effect: allow
+  - action: skill
+    resource: nextjs-pr-workflow-skill
+    effect: allow
+  - action: skill
+    resource: jira-status-updater-skill
+    effect: allow
+  - action: skill
+    resource: plan-updater-skill
+    effect: allow
+  - action: skill
+    resource: changelog-python-cliff-skill
+    effect: allow
+  - action: skill
+    resource: search-first-skill
+    effect: allow
+  - action: skill
+    resource: version-bump-standard-skill
+    effect: allow
+  - action: skill
+    resource: unslop-skill
+    effect: allow
+  - action: skill
+    resource: blast-radius-skill
+    effect: allow
 category: meta
 ---
 

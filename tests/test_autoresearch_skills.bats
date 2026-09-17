@@ -103,29 +103,30 @@ assert tiers.get('autoresearch-research-subagent') == 'long-context', f'must be 
 @test "subagent_autoresearch_ml_uses_map_form_edit" {
   agent_md="$AGENTS_DIR/autoresearch-ml-subagent.md"
   [ -f "$agent_md" ]
-  # Extract edit permission and verify it's a map (dict), not scalar "allow"
+  # v2 permissions array (#380): edit must deny '*'
   python3 -c "
 import yaml
 d=open('$agent_md').read()
 fm=yaml.safe_load(d.split('---')[1])
-edit=fm['permission']['edit']
-assert isinstance(edit, dict), f'edit must be map form, got scalar: {edit}'
-assert edit.get('*') == 'deny', f'edit must deny * , got: {edit}'
+rules=fm['permissions']
+assert any(r['action']=='edit' and r['resource']=='*' and r['effect']=='deny' for r in rules), 'edit must deny * '
 "
 }
 
-@test "subagent_autoresearch_research_uses_map_form_edit_and_denies_bash" {
+@test "subagent_autoresearch_research_denies_edit_and_bash_allows_web" {
   agent_md="$AGENTS_DIR/autoresearch-research-subagent.md"
   [ -f "$agent_md" ]
   python3 -c "
 import yaml
 d=open('$agent_md').read()
 fm=yaml.safe_load(d.split('---')[1])
-p=fm['permission']
-assert isinstance(p['edit'], dict), 'edit must be map form'
-assert p.get('bash') == 'deny', f'bash must be deny, got: {p.get(\"bash\")}'
-assert p.get('webfetch') == 'allow', 'webfetch must be allow'
-assert p.get('websearch') == 'allow', 'websearch must be allow'
+rules=fm['permissions']
+def has(action, resource, effect):
+    return any(r['action']==action and r['resource']==resource and r['effect']==effect for r in rules)
+assert has('edit','*','deny'), 'edit must deny *'
+assert has('bash','*','deny'), 'bash must be deny'
+assert has('webfetch','*','allow'), 'webfetch must be allow'
+assert has('websearch','*','allow'), 'websearch must be allow'
 "
 }
 
@@ -134,15 +135,27 @@ assert p.get('websearch') == 'allow', 'websearch must be allow'
 # =============================================================================
 
 @test "subagent_autoresearch_ml_allows_ml_skill" {
-  grep -q "autoresearch-ml-skill: allow" "$AGENTS_DIR/autoresearch-ml-subagent.md"
+  python3 -c "
+import yaml
+fm=yaml.safe_load(open('$AGENTS_DIR/autoresearch-ml-subagent.md').read().split('---')[1])
+assert any(r['action']=='skill' and r['resource']=='autoresearch-ml-skill' and r['effect']=='allow' for r in fm['permissions']), 'ml skill rule missing'
+"
 }
 
 @test "subagent_autoresearch_code_allows_code_skill" {
-  grep -q "autoresearch-code-skill: allow" "$AGENTS_DIR/autoresearch-code-subagent.md"
+  python3 -c "
+import yaml
+fm=yaml.safe_load(open('$AGENTS_DIR/autoresearch-code-subagent.md').read().split('---')[1])
+assert any(r['action']=='skill' and r['resource']=='autoresearch-code-skill' and r['effect']=='allow' for r in fm['permissions']), 'code skill rule missing'
+"
 }
 
 @test "subagent_autoresearch_research_allows_research_skill" {
-  grep -q "autoresearch-research-skill: allow" "$AGENTS_DIR/autoresearch-research-subagent.md"
+  python3 -c "
+import yaml
+fm=yaml.safe_load(open('$AGENTS_DIR/autoresearch-research-subagent.md').read().split('---')[1])
+assert any(r['action']=='skill' and r['resource']=='autoresearch-research-skill' and r['effect']=='allow' for r in fm['permissions']), 'research skill rule missing'
+"
 }
 
 # =============================================================================

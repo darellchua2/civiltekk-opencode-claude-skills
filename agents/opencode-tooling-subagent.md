@@ -4,27 +4,58 @@ description: >-
   configurator repos; verifies compliance with opencode.ai docs.
 mode: subagent
 
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: deny
-  question: deny
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-    image-analyzer-subagent: allow
-  skill:
-    opencode-agent-creation-skill: allow
-    opencode-skill-creation-skill: allow
-    opencode-skills-maintainer-skill: allow
-    documentation-sync-workflow-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: deny
+  - action: question
+    resource: '*'
+    effect: deny
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: general
+    effect: allow
+  - action: task
+    resource: image-analyzer-subagent
+    effect: allow
+  - action: skill
+    resource: opencode-agent-creation-skill
+    effect: allow
+  - action: skill
+    resource: opencode-skill-creation-skill
+    effect: allow
+  - action: skill
+    resource: opencode-skills-maintainer-skill
+    effect: allow
+  - action: skill
+    resource: documentation-sync-workflow-skill
+    effect: allow
 category: meta
 ---
 

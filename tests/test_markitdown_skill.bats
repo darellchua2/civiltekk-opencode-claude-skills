@@ -56,7 +56,11 @@ AGENTS_WITH_SKILL_GRANT=(
 @test "agents_have_markitdown_skill_grant" {
   for agent in "${AGENTS_WITH_SKILL_GRANT[@]}"; do
     echo "  checking $agent" >&3
-    grep -q "markitdown-mcp-skill: allow" "$AGENTS_DIR/$agent.md"
+    python3 -c "
+import yaml
+fm=yaml.safe_load(open('$AGENTS_DIR/$agent.md').read().split('---')[1])
+assert any(r['action']=='skill' and r['resource']=='markitdown-mcp-skill' and r['effect']=='allow' for r in fm['permissions']), 'markitdown skill rule missing'
+"
   done
 }
 

@@ -6,32 +6,73 @@ description: >-
   review, blast radius, impact analysis, clean architecture.
 mode: subagent
 steps: 40
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: deny
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    image-analyzer-subagent: allow
-  skill:
-    reviewer-baseline-skill: allow
-    clean-architecture-skill: allow
-    design-patterns-skill: allow
-    complexity-management-skill: allow
-    security-audit-skill: allow
-    continuous-learning-skill: allow
-    verification-loop-skill: allow
-    search-first-skill: allow
-    blast-radius-skill: allow
-    ponytail-audit-skill: allow
-    unslop-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: deny
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: image-analyzer-subagent
+    effect: allow
+  - action: skill
+    resource: reviewer-baseline-skill
+    effect: allow
+  - action: skill
+    resource: clean-architecture-skill
+    effect: allow
+  - action: skill
+    resource: design-patterns-skill
+    effect: allow
+  - action: skill
+    resource: complexity-management-skill
+    effect: allow
+  - action: skill
+    resource: security-audit-skill
+    effect: allow
+  - action: skill
+    resource: continuous-learning-skill
+    effect: allow
+  - action: skill
+    resource: verification-loop-skill
+    effect: allow
+  - action: skill
+    resource: search-first-skill
+    effect: allow
+  - action: skill
+    resource: blast-radius-skill
+    effect: allow
+  - action: skill
+    resource: ponytail-audit-skill
+    effect: allow
+  - action: skill
+    resource: unslop-skill
+    effect: allow
 category: review
 ---
 

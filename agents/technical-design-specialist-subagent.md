@@ -5,33 +5,76 @@ description: >-
   Triggers: technical design, architecture/system design, design spec.
 mode: subagent
 steps: 50
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  question: deny
-  task:
-    "*": deny
-    image-analyzer-subagent: allow
-    explore: allow
-    architecture-review-subagent: allow
-  skill:
-    technical-design-creation-skill: allow
-    interactive-document-rendering-skill: allow
-    clean-architecture-skill: allow
-    design-patterns-skill: allow
-    domain-modeling-skill: allow
-    api-design-skill: allow
-    openapi-contract-adherence-skill: allow
-    markitdown-mcp-skill: allow
-    unslop-skill: allow
-    technical-writing-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: question
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: image-analyzer-subagent
+    effect: allow
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: architecture-review-subagent
+    effect: allow
+  - action: skill
+    resource: technical-design-creation-skill
+    effect: allow
+  - action: skill
+    resource: interactive-document-rendering-skill
+    effect: allow
+  - action: skill
+    resource: clean-architecture-skill
+    effect: allow
+  - action: skill
+    resource: design-patterns-skill
+    effect: allow
+  - action: skill
+    resource: domain-modeling-skill
+    effect: allow
+  - action: skill
+    resource: api-design-skill
+    effect: allow
+  - action: skill
+    resource: openapi-contract-adherence-skill
+    effect: allow
+  - action: skill
+    resource: markitdown-mcp-skill
+    effect: allow
+  - action: skill
+    resource: unslop-skill
+    effect: allow
+  - action: skill
+    resource: technical-writing-skill
+    effect: allow
 category: business
 ---
 

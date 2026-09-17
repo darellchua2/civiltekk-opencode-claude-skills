@@ -5,29 +5,64 @@ description: >-
   Routes to skills by task type.
 mode: subagent
 steps: 30
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: deny
-  question: deny
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-  skill:
-    nextjs-standard-setup-skill: allow
-    docstring-generator-skill: allow
-    nextjs-image-usage-skill: allow
-    react-hooks-antipatterns-skill: allow
-    react-render-antipatterns-skill: allow
-    nextjs-devtools-mcp-skill: allow
-    amplify-nextjs-deployment-skill: allow
-    monorepo-management-skill: allow
-    threejs-nextjs-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: deny
+  - action: question
+    resource: '*'
+    effect: deny
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: skill
+    resource: nextjs-standard-setup-skill
+    effect: allow
+  - action: skill
+    resource: docstring-generator-skill
+    effect: allow
+  - action: skill
+    resource: nextjs-image-usage-skill
+    effect: allow
+  - action: skill
+    resource: react-hooks-antipatterns-skill
+    effect: allow
+  - action: skill
+    resource: react-render-antipatterns-skill
+    effect: allow
+  - action: skill
+    resource: nextjs-devtools-mcp-skill
+    effect: allow
+  - action: skill
+    resource: amplify-nextjs-deployment-skill
+    effect: allow
+  - action: skill
+    resource: monorepo-management-skill
+    effect: allow
+  - action: skill
+    resource: threejs-nextjs-skill
+    effect: allow
 category: frontend
 ---
 

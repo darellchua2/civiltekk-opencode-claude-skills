@@ -12,15 +12,17 @@
 //   (b) nested map:    `permission.task:` then indented `  "*": deny` / `  explore: allow`
 //                      `permission.skill:` then indented `  <name>: allow`
 //                      `metadata:` then indented `  audience: …` / `  workflow: …`
-//   (c) absent keys:   e.g. explorer-subagent has no `task` key at all
+//   (c) sequence:      `permissions:` then indented `  - action: read` items with
+//                      deeper continuation lines (`    resource: '*'`) — collected
+//                      into an array of flat rule objects ({action,resource,effect})
+//   (d) absent keys:   e.g. explorer-subagent has no task rules at all
 // Descriptions are single-line scalars or folded block scalars (`description: >-`
 // with deeper-indented continuation lines, space-joined). No YAML anchors are used.
 //
-// NOTE (opencode v2): these legacy frontmatter shapes remain in the source .md
-// files and are auto-translated at runtime; deployed configs express the same
-// gating as `permissions` arrays ({action,resource,effect}, e.g. action:"task" /
-// action:"skill" rules). Normalisation pass deferred — this parser matches the
-// legacy shapes above until then.
+// NOTE (opencode v2): source agents ship native v2 frontmatter — `permissions:`
+// rules arrays ({action,resource,effect}); the legacy `permission:` nested-map
+// shape is still parsed for user-authored pre-v2 files (opencode v2 also
+// auto-translates those at runtime). Registry edges derive from BOTH shapes.
 //
 // Output shape (installer/registry.json):
 //   { "$comment": …, "generatedAt": …, "agents": [...], "skills": [...] }
@@ -32,7 +34,7 @@
 
 import { readFile, writeFile, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -66,14 +68,17 @@ function frontmatterLines(content) {
 }
 
 // Parse the minimal YAML subset into a nested object via an indentation stack.
-// Handles arbitrary nesting depth (permission.task.* is 3 levels: permission→task→leaf).
+// Handles arbitrary nesting depth (permission.task.* is 3 levels: permission→task→leaf)
+// and sequence blocks (permissions: → `- action: x` items with deeper continuation
+// key:value lines collect into an array of flat objects; `- scalar` items supported).
 // Key extraction: split on the first ": " (colon-space) so quoted keys containing
 // colons (e.g. "mcp:*") survive; a line ending in ":" (no trailing value) is a map marker.
-function parseFrontmatter(fmLines) {
+export function parseFrontmatter(fmLines) {
   const root = {};
   const stack = []; // [{ depth, key }]
   const unquote = (s) => s.trim().replace(/^['"]|['"]$/g, "");
   let fold = null; // { indent, target, key, parts } while consuming a block scalar
+  let seqItem = null; // { depth, obj } active sequence-map item consuming continuation lines
   for (const raw of fmLines) {
     const trimmed = raw.trim();
     const indent = raw.length - raw.replace(/^\s+/, "").length;
@@ -86,6 +91,31 @@ function parseFrontmatter(fmLines) {
     }
     if (trimmed === "" || trimmed.startsWith("#")) continue;
     const depth = Math.floor(indent / 2);
+    // sequence item: `- value` / `- key: value` at this depth
+    const seqMatch = trimmed.match(/^- (.+)$/);
+    if (seqMatch) {
+      while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
+      const arrFrame = stack[stack.length - 1]; // key at depth-1 owns the sequence
+      if (!arrFrame) continue; // stray item, skip
+      let holder = root; // object the array lives on (exclude the naming frame)
+      for (let i = 0; i < stack.length - 1; i++) holder = holder[stack[i].key];
+      if (!Array.isArray(holder[arrFrame.key])) holder[arrFrame.key] = []; // map-marker {} → sequence
+      const body = seqMatch[1];
+      const ci = body.indexOf(": ");
+      if (ci === -1) { holder[arrFrame.key].push(unquote(body)); seqItem = null; continue; } // - scalar
+      const item = {};
+      item[unquote(body.slice(0, ci))] = unquote(body.slice(ci + 2));
+      holder[arrFrame.key].push(item);
+      seqItem = { depth, obj: item }; // continuation lines (depth > this) fill the item
+      continue;
+    }
+    // continuation line of the current sequence-map item
+    if (seqItem && depth > seqItem.depth) {
+      const m = trimmed.match(/^([^:]+):\s*(.*)$/);
+      if (m) seqItem.obj[unquote(m[1])] = unquote(m[2]);
+      continue;
+    }
+    seqItem = null; // anything at item depth or shallower ends the item
     let key, val;
     const mapMatch = trimmed.match(/^([^:]+):\s*$/); // "key:" → map marker
     if (mapMatch) {
@@ -141,9 +171,13 @@ async function build() {
     const fmLines = frontmatterLines(content);
     if (!fmLines) { console.error(`warn: ${stem}: no frontmatter`); continue; }
     const fm = parseFrontmatter(fmLines);
+    // v2 permissions array (native form post-#380); legacy `permission:` maps
+    // (user-authored pre-v2 files) still honored via the same keysOf semantics.
     const perm = fm.permission || {};
-    const requiresSkills = keysOf(perm.skill);
-    const delegatesTo = keysOf(perm.task); // empty when task is a scalar like "allow"
+    const rules = Array.isArray(fm.permissions) ? fm.permissions : [];
+    const ruleRes = (action) => rules.filter((r) => r && r.action === action && r.resource !== "*").map((r) => r.resource);
+    const requiresSkills = rules.length ? ruleRes("skill") : keysOf(perm.skill);
+    const delegatesTo = rules.length ? ruleRes("task") : keysOf(perm.task); // empty when task is a scalar like "allow"
     const category = fm.category || "uncategorized";
     if (!fm.category) console.error(`warn: ${stem}: no category (-> uncategorized)`);
     agents.push({
@@ -231,4 +265,7 @@ async function build() {
   }
 }
 
-build().catch((e) => { console.error(`build-registry error: ${e.message}`); process.exit(1); });
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+if (isMain) {
+  build().catch((e) => { console.error(`build-registry error: ${e.message}`); process.exit(1); });
+}

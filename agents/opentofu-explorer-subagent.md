@@ -4,26 +4,58 @@ description: >-
   provisioning; provider setup with proper state management.
 mode: subagent
 steps: 20
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  skill:
-    opentofu-kubernetes-explorer-skill: allow
-    opentofu-neon-explorer-skill: allow
-    opentofu-aws-explorer-skill: allow
-    opentofu-keycloak-explorer-skill: allow
-    opentofu-provisioning-workflow-skill: allow
-    opentofu-provider-setup-skill: allow
-    opentofu-ecr-provision-skill: allow
-    aws-iac-safety-skill: allow
-    docker-containerization-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: skill
+    resource: opentofu-kubernetes-explorer-skill
+    effect: allow
+  - action: skill
+    resource: opentofu-neon-explorer-skill
+    effect: allow
+  - action: skill
+    resource: opentofu-aws-explorer-skill
+    effect: allow
+  - action: skill
+    resource: opentofu-keycloak-explorer-skill
+    effect: allow
+  - action: skill
+    resource: opentofu-provisioning-workflow-skill
+    effect: allow
+  - action: skill
+    resource: opentofu-provider-setup-skill
+    effect: allow
+  - action: skill
+    resource: opentofu-ecr-provision-skill
+    effect: allow
+  - action: skill
+    resource: aws-iac-safety-skill
+    effect: allow
+  - action: skill
+    resource: docker-containerization-skill
+    effect: allow
 category: devops
 ---
 

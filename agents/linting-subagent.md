@@ -4,24 +4,49 @@ description: >-
   Checkstyle/SpotBugs, C# dotnet format/analyzers, generic workflows.
 mode: subagent
 steps: 25
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    loop-operator-subagent: allow
-  skill:
-    linting-workflow-skill: allow
-    language-linting-skill: allow
-    continuous-learning-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: loop-operator-subagent
+    effect: allow
+  - action: skill
+    resource: linting-workflow-skill
+    effect: allow
+  - action: skill
+    resource: language-linting-skill
+    effect: allow
+  - action: skill
+    resource: continuous-learning-skill
+    effect: allow
 category: meta
 ---
 

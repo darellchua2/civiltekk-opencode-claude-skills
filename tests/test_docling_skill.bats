@@ -126,7 +126,11 @@ assert len(rules)==1 and rules[0]['effect']=='allow', 'deny rule must flip in pl
 }
 
 @test "office_document_primary_agent_has_docling_skill" {
-  grep -q "docling-mcp-skill: allow" "$AGENTS_DIR/office-document-primary-agent.md"
+  python3 -c "
+import yaml
+fm=yaml.safe_load(open('$AGENTS_DIR/office-document-primary-agent.md').read().split('---')[1])
+assert any(r['action']=='skill' and r['resource']=='docling-mcp-skill' and r['effect']=='allow' for r in fm['permissions']), 'docling skill rule missing'
+"
 }
 
 # =============================================================================

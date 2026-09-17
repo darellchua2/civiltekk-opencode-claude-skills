@@ -4,24 +4,52 @@ description: >-
   per language standards (PEP 257, Javadoc, JSDoc, XML).
 mode: subagent
 steps: 20
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: deny
-  webfetch: allow
-  websearch: allow
-  skill:
-    docstring-generator-skill: allow
-    coverage-readme-workflow-skill: allow
-    markitdown-mcp-skill: allow
-    ascii-diagram-creator-skill: allow
-    research-paper-generation-skill: allow
-    unslop-skill: allow
-    technical-writing-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: deny
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: skill
+    resource: docstring-generator-skill
+    effect: allow
+  - action: skill
+    resource: coverage-readme-workflow-skill
+    effect: allow
+  - action: skill
+    resource: markitdown-mcp-skill
+    effect: allow
+  - action: skill
+    resource: ascii-diagram-creator-skill
+    effect: allow
+  - action: skill
+    resource: research-paper-generation-skill
+    effect: allow
+  - action: skill
+    resource: unslop-skill
+    effect: allow
+  - action: skill
+    resource: technical-writing-skill
+    effect: allow
 category: docs
 ---
 

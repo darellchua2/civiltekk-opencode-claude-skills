@@ -5,39 +5,94 @@ description: >-
   framework-specific checks (FastAPI, React/Next.js, Spring Boot, Tokio).
 mode: subagent
 steps: 25
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: deny
-  glob: allow
-  grep: allow
-  bash: deny
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-  skill:
-    language-review-checklists-skill: allow
-    reviewer-baseline-skill: allow
-    solid-principles-skill: allow
-    clean-code-skill: allow
-    code-smells-skill: allow
-    design-patterns-skill: allow
-    python-backend-skill: allow
-    fastapi-pydantic-orm-patterns-skill: allow
-    database-migration-skill: allow
-    python-packaging-skill: allow
-    react-hooks-antipatterns-skill: allow
-    react-render-antipatterns-skill: allow
-    typescript-dry-principle-skill: allow
-    deprecated-code-cleanup-skill: allow
-    language-linting-skill: allow
-    continuous-learning-skill: allow
-    search-first-skill: allow
-    blast-radius-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: deny
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: deny
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: general
+    effect: allow
+  - action: skill
+    resource: language-review-checklists-skill
+    effect: allow
+  - action: skill
+    resource: reviewer-baseline-skill
+    effect: allow
+  - action: skill
+    resource: solid-principles-skill
+    effect: allow
+  - action: skill
+    resource: clean-code-skill
+    effect: allow
+  - action: skill
+    resource: code-smells-skill
+    effect: allow
+  - action: skill
+    resource: design-patterns-skill
+    effect: allow
+  - action: skill
+    resource: python-backend-skill
+    effect: allow
+  - action: skill
+    resource: fastapi-pydantic-orm-patterns-skill
+    effect: allow
+  - action: skill
+    resource: database-migration-skill
+    effect: allow
+  - action: skill
+    resource: python-packaging-skill
+    effect: allow
+  - action: skill
+    resource: react-hooks-antipatterns-skill
+    effect: allow
+  - action: skill
+    resource: react-render-antipatterns-skill
+    effect: allow
+  - action: skill
+    resource: typescript-dry-principle-skill
+    effect: allow
+  - action: skill
+    resource: deprecated-code-cleanup-skill
+    effect: allow
+  - action: skill
+    resource: language-linting-skill
+    effect: allow
+  - action: skill
+    resource: continuous-learning-skill
+    effect: allow
+  - action: skill
+    resource: search-first-skill
+    effect: allow
+  - action: skill
+    resource: blast-radius-skill
+    effect: allow
 category: review
 ---
 

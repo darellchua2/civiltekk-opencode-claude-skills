@@ -4,29 +4,64 @@ description: >-
   following best practices.
 mode: subagent
 steps: 15
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    loop-operator-subagent: allow
-    image-analyzer-subagent: allow
-  skill:
-    test-generator-framework-skill: allow
-    tdd-workflow-skill: allow
-    python-pytest-creator-skill: allow
-    nextjs-unit-test-creator-skill: allow
-    plan-updater-skill: allow
-    continuous-learning-skill: allow
-    search-first-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: loop-operator-subagent
+    effect: allow
+  - action: task
+    resource: image-analyzer-subagent
+    effect: allow
+  - action: skill
+    resource: test-generator-framework-skill
+    effect: allow
+  - action: skill
+    resource: tdd-workflow-skill
+    effect: allow
+  - action: skill
+    resource: python-pytest-creator-skill
+    effect: allow
+  - action: skill
+    resource: nextjs-unit-test-creator-skill
+    effect: allow
+  - action: skill
+    resource: plan-updater-skill
+    effect: allow
+  - action: skill
+    resource: continuous-learning-skill
+    effect: allow
+  - action: skill
+    resource: search-first-skill
+    effect: allow
 category: meta
 ---
 

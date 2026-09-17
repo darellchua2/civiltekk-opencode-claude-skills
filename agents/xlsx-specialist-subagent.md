@@ -5,17 +5,31 @@ description: >-
 mode: subagent
 hidden: true
 steps: 15
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  skill:
-    xlsx-specialist-skill: allow
-    markitdown-mcp-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: skill
+    resource: xlsx-specialist-skill
+    effect: allow
+  - action: skill
+    resource: markitdown-mcp-skill
+    effect: allow
 category: docs
 ---
 
