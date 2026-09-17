@@ -6,113 +6,120 @@
 
 ## Acceptance Criteria
 
-From ticket #379, re-validated against `origin/main` @ `ca5beaf`:
+From ticket #379, re-validated @ `ca5beaf`; amended after plan review (ARCH-1..8, REQ-1..6 folded in):
 
-- [ ] New `tests/update.bats`: fresh-install → mutate source → `update` re-copies; orphan reported; `--prune` removes; legacy manifest (no `entries`) upgrades cleanly
-- [ ] `setup.sh` full run leaves `~/.config/opencode/.skill-manifest.json` populated (verified via the delegated CLI call; full-script fake-HOME run if the existing test harness supports it)
-- [ ] No `setup.sh` path still copies agents/skills directly (grep gate: rsync/cp copy loops gone from the deploy path; `restore_from_dir` backup-restore exempt)
-- [ ] README "Testing & Development" section added (clone dry-run, `npm link`, branch-ref npx, sandboxed HOME, CI)
-- [ ] bats full suite green; registry drift clean; public `npx … add <name>` unchanged
+- [ ] New `tests/update.bats`: fresh-install → mutate source → `update` re-copies; orphan reported not deleted; `--prune` removes; legacy manifest without `entries` upgrades cleanly; no-mutation idempotence (`unchanged`); `--dry-run` writes nothing
+- [ ] Delegated-deploy bats (new, fake HOME): `init.mjs add --all --yes` populates the manifest with registry-complete entries (counts compared dynamically against `registry.json`) — promoted to the primary AC-2 check (no end-to-end setup.sh harness exists — review-verified)
+- [ ] No setup.sh full-deploy path still copies agents/skills directly (grep gates keyed to avoid the `lift-only` false positive)
+- [ ] README "Testing & Development" section + documented redeploy backup/clobber contract
+- [ ] bats full suite green; registry drift clean; public `npx … add <name>` unchanged; Dockerfile resolver call unchanged
 
-**Re-validation notes:** agents are written today by `resolve-models.mjs` (copy + model inject via `run_resolver` args `--agents-src/--agents-dest`), skills by the rsync loop in `setup_config` (:2548-2562, overwrite prompt + `_archived` exclusion). `init.mjs` `writeUserScopeInstall` already writes agents WITH model injection (`tierToModel` + `injectModelLine`) and skills, and writes the manifest (:615-625) — but `tierToModel` reads only `models.default.json` + provider presets, NOT the user `models.json`/`agent-overrides.json` precedence the resolver honors. `cmdRemove` :770 carries the "not tracked" message this ticket kills. There is no `--all` selection and no `update` command (`main()` dispatch :809-813).
+**Re-validation notes:** agents are written today by `resolve-models.mjs` (copy + model inject, via `run_resolver` `--agents-src/--agents-dest`), skills by the rsync loop in `setup_config` (:2548-2562; prompt default-`n` means `--yes` historically never clobbered). `run_resolver` is a SHARED helper serving three modes — deploy (:3333), `--models-only` (:4079), `--migrate-only` (:4094). `resolve-models.mjs` **hard-requires** `--agents-src` in non-lift mode (:120-128, exit 2 — review-proven). Migration+lift live INSIDE `deploy_agents` (:3329), before `run_resolver` (:3333); `setup_config` (:4239) runs BEFORE migration and has early-returns. `init.mjs` has model injection (`tierToModel`) but lacks the resolver's user precedence; manifest write :615-626; `cmdRemove` :763; dispatch :809-813; no `--all`, no `update`.
 
 ## Dependency & Consumer Map
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |--------------------|---------------------------|---------------------------------|-------------|
-| `installer/init.mjs` manifest schema (`entries` + sha256) | Phase 1 precedes update | `update` cmd, `remove`, `--prune`, setup.sh AC | high |
-| `installer/init.mjs` `update` command | Phase 1 (hash util + entries) | npx users, `tests/update.bats` | high |
-| `installer/init.mjs` `--all` selection + `tierToModel` user-precedence | precedes Phase 4 | setup.sh delegation, `add` users | high |
-| `deploy/setup.sh` `deploy_agents`/`setup_config`/`run_resolver` args | Phase 3 precedes | full-deploy users, bats (count/dry-run/default-behavior), Docker (unchanged — Dockerfile resolver call keeps agents args) | high |
-| `deploy/setup.ps1` mirror blocks | track setup.sh exactly | Windows users (grep-verified only) | med |
-| `installer/resolve-models.mjs` | arg-drop only in the setup.sh call site (script keeps full capability for Docker) | Dockerfile :63-74 (unchanged), setup.sh | med |
-| `tests/*.bats` (update.bats new; existing suites touching setup paths) | per-phase | CI | med |
-| `README.md` Testing & Development | behavior lands first | humans | low |
+| `installer/init.mjs` manifest `entries` (per-target hash map) | Phase 1 precedes update | `update`, `remove`, `--prune`, delegated deploy AC | high |
+| `installer/init.mjs` `update` command | Phase 1 | npx users, `tests/update.bats`, `--models-only` flow | high |
+| `installer/init.mjs` `--all` + resolver-faithful `tierToModel` precedence | precedes Phase 4 | setup.sh delegation, `add` users (behavior note: users with `agent-overrides.json` now see pins honored in `add` too — alignment, note in PR) | high |
+| `installer/resolve-models.mjs` agents-args-optional | precedes Phase 4 call-site change | setup.sh 3 modes, Dockerfile (unchanged, keeps args), ps1 mirror | high |
+| `deploy/setup.sh` `deploy_agents` (deploy_content insert) + `setup_config` (loop removal) + `run_resolver` scoped arg-drop | Phases 1-3 + resolver change | full-deploy users, `--models-only`/`--migrate-only` users, bats, dry-run flows | high |
+| `deploy/setup.ps1` mirrors | track setup.sh | Windows users (grep-verified only) | med |
+| `tests/update.bats` + `tests/deploy_delegate.bats` (both new; no existing suite asserts the old copy paths — ARCH-7) | per-phase | CI | med |
+| `README.md` | behavior lands first | humans | low |
 
 ## Implementation Phases
 
-### Phase 1: Manifest `entries` + content hashes (5b)
+### Phase 1: Manifest `entries` with per-target hashes (5b)
 
-- [ ] **1.1** `installer/init.mjs`: add `sha256Hex` helper + `hashSkillDir(dir)` (deterministic tree hash: sorted relative paths + file contents, `_archived`-safe) + `hashAgentContent(str)`; extend the user-scope manifest write (:615-625) with `entries: { <name>: { type: "agent"|"skill", targets: [...], hash: "sha256:<hex>" } }` — targets from the current install (`["opencode"]`, `["claude"]`, or both), agent hash over the WRITTEN file content (post model-injection), skill hash over the written dir; legacy `agents`/`skills` arrays unchanged; merge preserves existing entries for untouched names
-    — **Why:** `update` needs per-entry hashes to detect drift and per-target records to know where to re-copy; hashing written (not source) content avoids false positives from model injection.
-    — **Done when:** fake-HOME `add tdd-subagent --yes` manifest shows `entries.tdd-subagent` + `entries.plan-updater-skill` with sha256 hashes and `targets:["opencode"]`; re-run leaves previous entries intact.
-    — **Consumers affected:** `remove`, future `update`, setup.sh AC.
+- [ ] **1.1** `installer/init.mjs`: `sha256Hex`; `hashSkillDir(dir)` (deterministic tree hash: sorted relative paths + file contents; no mtimes); extend the user-scope manifest write (:615-626) with `entries: { <name>: { type: "agent"|"skill", targets: { opencode?: "sha256:…", claude?: "sha256:…" } } }` — hash the WRITTEN bytes per target (agent file post-injection → opencode only; skill dir for opencode; skill dir post-`stripModelLine` for claude); legacy `agents`/`skills` arrays unchanged; merge preserves untouched entries. **`cmdRemove` (:788-795) and `doPrune`'s manifest rewrite also drop `entries[name]`** (ARCH-6)
+    — **Why:** update needs per-entry hashes and per-target records; claude copies legitimately differ from opencode copies (model-strip) so a single hash would mis-report drift forever (ARCH-5); remove/prune without entries-drop creates ghost "missing" reports.
+    — **Done when:** fake-HOME `add tdd-subagent --yes` + `--target both` of a model:-carrying skill shows distinct per-target hashes; `remove X` then re-read manifest → entry gone; prior entries preserved.
+    — **Consumers affected:** remove, prune, update, delegated deploy.
 
 ### Phase 2: `update` command (5c)
 
-- [ ] **2.1** `installer/init.mjs`: `update [--prune] [--dry-run] [--yes]` (user scope) — load manifest; for each `entries[]` name still in the registry, recompute would-write content hash (agent: readAgent+tierToModel+injectModelLine; skill: source dir tree hash); compare vs stored hash → re-copy changed to recorded targets (agents to opencode target only; skills to each recorded target with `stripModelLine` for claude), rewrite manifest entries; entries missing installed files → `missing`; manifest names absent from the registry → `registryRemoved` (reported, never deleted without `--prune`); `--prune` removes registry-removed entries (files + manifest rows); legacy manifest without `entries` → synthesize entries from `agents[]`/`skills[]` arrays by hashing current installs, then proceed (backward-compatible upgrade); report line `updated N · unchanged M · missing K` + `registryRemoved R` (+ `pruned P`); `--dry-run` prints the JSON plan and writes nothing; after real runs, run the strict-allowlist visibility check (name-stable updates make the permissions union a no-op; warn-only). Help text entry.
-    — **Why:** The ticket's core UX: upgrade installed skills without a full-script rerun, manifest-tracked end to end.
-    — **Done when:** fake-HOME sequence: `add X --yes` → mutate source skill file → `update` re-copies (hash + file changed); orphan (registry-removed) reported; `--prune` deletes it; hand-written legacy manifest upgrades cleanly.
-    — **Consumers affected:** npx users; `tests/update.bats`.
+- [ ] **2.1** `installer/init.mjs`: `update [--prune] [--dry-run] [--yes]` — load manifest; legacy-only manifests (no `entries`) upgrade by hashing current installs into entries then proceed; for each entry still in the registry: recompute would-write hash per target (agent: readAgent + tierToModel + injectModelLine; skill: source dir [+ strip for claude]) vs stored → re-copy changed to that target, update hashes; installed-files-absent → `missing`; registry-absent names → `registryRemoved` (reported only; with `--prune` → files + manifest rows removed); report `updated N · unchanged M · missing K` (+ `registryRemoved R` / `pruned P`); `--dry-run` prints JSON plan, writes nothing; after real runs run the strict-allowlist visibility check (warn-only — name-stable updates cannot grow the union; **conscious deviation from 5c's "refresh permissions union" letter: missing allow rules are NOT repaired — PR body notes it**). Help entry.
+    — **Why:** The ticket's core UX; written-hash recomputation is what makes provider/model swaps propagate (`--models-only` relies on it in Phase 4).
+    — **Done when:** fake-HOME: install → mutate → update re-copies; no mutation → unchanged; registry-removed orphan reported; `--prune` removes; legacy manifest upgrades.
+    — **Consumers affected:** npx users; `--models-only` flow (Phase 4).
 
-- [ ] **2.2** New `tests/update.bats` (fake HOME): (a) fresh-install → mutate source → update re-copies; (b) orphan reported not deleted; (c) `--prune` removes; (d) legacy manifest without `entries` upgrades cleanly; (e) `--dry-run` prints plan, writes nothing
-    — **Why:** Ticket AC demands executable proof of all update behaviors.
+- [ ] **2.2** New `tests/update.bats` (fake HOME): (a) fresh-install → mutate source → update re-copies; (b) orphan reported not deleted; (c) `--prune` removes; (d) legacy manifest without `entries` upgrades cleanly; (e) `--dry-run` prints plan, writes nothing; (f) no-mutation run reports unchanged and rewrites nothing
+    — **Why:** Ticket AC + idempotence proof (REQ-3).
     — **Done when:** `bats tests/update.bats` green.
-    — **Consumers affected:** CI suite.
+    — **Consumers affected:** CI.
 
 **Phase gate:** `node --check`; `bats tests/update.bats tests/init.bats`; registry `--check`.
 
-### Phase 3: `--all` selection + user-precedence for `tierToModel` (5a prep)
+### Phase 3: `--all` selection + resolver-faithful model precedence (5a prep)
 
-- [ ] **3.1** `installer/init.mjs`: `add --all` builds the full selection (every registry agent + skill) non-interactively; `tierToModel` gains the resolver's user precedence — per-agent `~/.config/opencode/agent-overrides.json` > tier from `~/.config/opencode/models.json` > current path (presets-with-provider / `models.default.json`) — cribbing the resolution order from `resolve-models.mjs`
-    — **Why:** setup.sh's delegation needs a full-catalog install in one call, and the installer's model injection must honor the same user overrides the resolver did or full deploys silently lose per-agent pinning.
-    — **Done when:** fake-HOME: `add --all --yes` installs 34 agents + 149 skills with manifest entries; a user `agent-overrides.json` pin changes the injected model for that agent (assert in bats or gate manually).
-    — **Consumers affected:** `add` users (new flag), setup.sh Phase 4.
+- [ ] **3.1** `installer/init.mjs`: `add --all` → full registry selection (every agent + skill) non-interactive; `tierToModel` extended with the resolver's EXACT precedence (project map > provider preset > user `models.json` > default map; per-agent `agent-overrides.json` pin above tier resolution — crib from `resolve-models.mjs` :189-191 ordering); `deploy_content` (Phase 4) passes `--provider` only when the user set one (no forced default — ARCH-8)
+    — **Why:** Full-deploy delegation needs the whole catalog in one call; injection must match the resolver's semantics exactly or agents and config drift to different models for custom-tier users.
+    — **Done when:** fake-HOME `add --all --yes` installs counts == registry counts (assert dynamically vs `registry.json`); an `agent-overrides.json` pin changes that agent's injected model; a user `models.json` tier override beats the default map.
+    — **Consumers affected:** `add` users, setup.sh Phase 4.
 
-### Phase 4: setup.sh/ps1 delegate content to the CLI (5a)
+### Phase 4: Resolver flexibility + setup delegation (5a)
 
-- [ ] **4.1** `deploy/setup.sh`: new `deploy_content()` invoked from `main()` where skills/agents deploy happens today — calls `node "${INSTALLER_DIR}/init.mjs" add --all --yes --provider "${PROVIDER:-zai}"` (+ `--dry-run` passthrough when `DRY_RUN=true`); remove the skills rsync/cp loop + overwrite prompt from `setup_config` (:2546-2563) and drop `--agents-src/--agents-dest` from the `run_resolver` call (:3023-3024) so the resolver resolves CONFIG only (script capability unchanged — Dockerfile still passes agents args); keep migration/lift BEFORE `deploy_content`, packs/profile AFTER; keep counts/banners reading source dirs; backup/rollback (incl. `restore_from_dir`) untouched
-    — **Why:** One install path: every install manifest-tracked; kills the :770 "not tracked" gap; setup keeps config/plugins/MCP/packs/profiles/backup per ticket scope.
-    — **Done when:** fake-HOME `setup.sh --yes` (or the reduced path bats can drive) populates `~/.config/opencode/.skill-manifest.json`; `grep -nE 'rsync .*skills|cp -r .*SKILLS_DIR|agents-dest' deploy/setup.sh` shows no deploy-path hits (restore/backup exempt); `bash -n` + `--dry-run` pass.
-    — **Consumers affected:** every full-deploy user; bats suites on setup paths.
+- [ ] **4.1** `installer/resolve-models.mjs`: make `--agents-src`/`--agents-dest` OPTIONAL in non-lift mode — agent block (:222-458) gated on their presence; JSON summary's agent rows empty-safe when absent; Dockerfile call (passes args) behavior unchanged (ARCH-1)
+    — **Why:** Review-proven: the script hard-exits without `--agents-src`, so any config-only invocation from setup.sh fails; optionality is the minimal change preserving the Docker path byte-for-byte.
+    — **Done when:** config-only invocation (no agents args) exits 0 and patches config; full-args invocation output identical to today (dry-run diff empty); `node --check`.
+    — **Consumers affected:** setup.sh 3 call modes, Dockerfile (unchanged).
 
-- [ ] **4.2** `deploy/setup.ps1`: mirror `deploy_content` (`node $InitDir\init.mjs add --all --yes`), remove the skills copy loop, drop agents args from the resolver call — separator-agnostic grep gates
-    — **Why:** Windows mirror parity.
-    — **Done when:** separator-agnostic greps return 0 deploy-path hits; structure mirrors 4.1.
-    — **Consumers affected:** Windows users (grep-verified only — no pwsh on runner).
+- [ ] **4.2** `deploy/setup.sh`: (a) new `deploy_content()` — snapshot existing `SKILLS_DIR` + `AGENTS_DEST_DIR` into `BACKUP_DIR/content-backup` when non-empty (re-anchors the pre-overwrite net the deleted prompt provided — ARCH-4), then `node "${INSTALLER_DIR}/init.mjs" add --all --yes ${PROVIDER:+--provider $PROVIDER}` (+ `--dry-run` passthrough); (b) insert `deploy_content` INSIDE `deploy_agents` between `run_migration` (:3329) and `run_resolver` (:3333) — NOT in `setup_config` (runs pre-migration, has early-returns — ARCH-3); (c) remove the skills rsync/cp loop + overwrite prompt from `setup_config`; (d) `run_resolver` scoped change: the `deploy_agents` call drops `--agents-src/--agents-dest` (config-only); `--models-only` (:4079) becomes resolver config-only + `node init.mjs update` (written-hash propagates model changes through the manifest path); `--migrate-only` (:4094) unchanged (full resolver — legacy pre-manifest path) (ARCH-2); (e) counts/banners still read source dirs; backup/rollback untouched
+    — **Why:** One manifest-tracked install path with correct ordering (lift sees pre-overwrite agents; migration backup captures the old files), a pre-clobber snapshot (new `--yes` force-copies where it previously skipped), and mode-scoped resolver use that doesn't break provider swaps or migration.
+    — **Done when:** `bash -n`; `--dry-run` exit 0; grep gates: no `--agents-src` in the deploy_agents resolver call (lift-only :3166-3167 and migrate-only exempt — REQ-1), no skills rsync/cp in `setup_config`; delegated bats (4.4) green.
+    — **Consumers affected:** all deploy modes; dry-run flows.
 
-- [ ] **4.3** Rewrite bats tests that assert the old copy paths (survey `test_default_behavior`, `parse_arguments`, `test_count_drift`, `test_backup_rollback` for skills-copy/deploy assertions; retarget to the CLI call + manifest) — keep backup/rollback tests untouched
-    — **Why:** CI must gate the new path, not the removed one.
-    — **Done when:** full `bats tests/` green; no test references the removed rsync loop.
+- [ ] **4.3** `deploy/setup.ps1`: mirror 4.2 — `Deploy-Content` (backup snapshot + CLI call), insert per the ps1 call flow (`Deploy-Agents` :2308-2330), remove `Deploy-Skills` copy loop (:1793+), scoped `Invoke-Resolver` arg handling (base array :1867-1868 gains a config-only variant; models-only :2857 / migrate-only :2876 per 4.2(d) semantics)
+    — **Why:** Windows parity (grep-verified only — no pwsh on runner).
+    — **Done when:** separator-agnostic greps mirror 4.2's gates.
+    — **Consumers affected:** Windows users.
+
+- [ ] **4.4** New `tests/deploy_delegate.bats` (fake HOME): invoke `node installer/init.mjs add --all --yes` exactly as `deploy_content` does → assert manifest `entries` count == registry agents+skills counts (dynamic); spot-assert one agent hash and one skill hash present; second run idempotent (no error, counts stable). Plus: grep-assert `deploy/setup.sh` contains the delegated call between migration and resolver markers (structure pin)
+    — **Why:** ARCH-7: no existing suite covers the replaced path — this is the regression net for the epic's riskiest change and the promoted AC-2 check.
+    — **Done when:** `bats tests/deploy_delegate.bats` green.
     — **Consumers affected:** CI.
 
-**Phase gate:** full bats suite; `bash deploy/setup.sh --dry-run` exit 0; manifest-populated proof (4.1 done-when); grep gates both scripts.
+**Phase gate:** full bats suite; `bash deploy/setup.sh --dry-run`; registry `--check`; grep gates both scripts.
 
-### Phase 5: Testing & Development docs (5d) + final sweep
+### Phase 5: Docs + final sweep (5d)
 
-- [ ] **5.1** `README.md`: add "Testing & Development" section — clone + `node installer/init.mjs add X --dry-run`; `npm link` for the bin; branch testing via `npx github:darellchua2/opencode-config-template#<branch> add X --dry-run`; sandboxed runs with `HOME=<tmp>`; CI note (`--yes`/`--dry-run` enforced); one `update` example
-    — **Why:** Ticket 5d — contributors need the recipes; they double as the maintainer verification kit.
-    — **Done when:** section exists with all five recipes; commands copy-pasteable.
-    — **Consumers affected:** contributors.
+- [ ] **5.1** `README.md`: "Testing & Development" section — clone + `node installer/init.mjs add X --dry-run`; `npm link` for the bin; branch testing `npx github:darellchua2/opencode-config-template#<branch> add X --dry-run`; sandboxed `HOME=<tmp>`; CI note (`--yes`/`--dry-run`); `update` example; PLUS the redeploy contract: setup snapshots existing skills/agents to `content-backup` before overwriting (force-copy on `--yes`)
+    — **Why:** Ticket 5d + the data-loss posture change must be documented (ARCH-4 follow-through).
+    — **Done when:** section exists with all recipes + contract line.
+    — **Consumers affected:** contributors, redeploying users.
 
-- [ ] **5.2** Final sweep: `grep` for stale "not tracked by opencode-skill" messaging (`installer/init.mjs` :770 note becomes false post-5a — reword to reference `update`/`remove`); help text lists `update`; CHANGELOG-facing notes in PR body
-    — **Why:** The old gap message is now false; docs must not teach the dead limitation.
+- [ ] **5.2** Final sweep: reword `cmdRemove`'s "files installed by setup.sh are not tracked" (:773 — false post-5a; point at `update`/`remove`); help lists `update`; full bats; registry `--check`; `npm pack --dry-run` includes installer/
+    — **Why:** The old gap message becomes a false claim the moment 5a lands.
     — **Done when:** `grep -rn 'not tracked' installer/ README.md` clean; help shows update.
     — **Consumers affected:** users reading remove/update output.
 
-**Phase gate:** full bats suite; registry `--check`; `npm pack --dry-run` shows installer/; all ACs re-checked.
+**Phase gate:** all ACs re-checked; full suite green.
 
 ## Technical Notes
 
-- `npx github:` always pulls HEAD — no version pinning (ticket note); npm publish stays the optional follow-up.
-- Hashes cover WRITTEN content (post-injection for agents, post-strip for claude skill copies) so `update` never false-positives on deterministic rewrites; update recomputes would-write hashes rather than diffing source vs installed bytes.
-- Resolver keeps full capability (Docker build path unchanged — Dockerfile :63-74 still passes `--agents-src/--agents-dest`); only the setup.sh CALL drops the agents args.
-- Order in main(): migration/lift → deploy_content (CLI) → run_resolver (config-only) → pack merger → skill profile. lift_customizations reads deployed agents, so it must precede the CLI overwrite.
-- setup.sh `--dry-run`: CLI receives `--dry-run` (prints JSON plan, writes nothing) — parity with the old staged-preview behavior at the "no writes" level (the resolver's `--preview-dir` staging remains for config).
-- Legacy manifest upgrade (2.1d) makes pre-#379 installs (name arrays only) immediately update-able.
+- `npx github:` pulls HEAD only; npm publish remains the optional follow-up (ticket).
+- Written-content hashing is what lets `update` (and `--models-only` via update) propagate tier/override model changes; source hashes could never detect them.
+- Per-target hash map (`targets: {opencode, claude}`) deviates from the ticket's `targets: [...]` array + single-hash letter — required because claude copies are model-stripped (ARCH-5); documented in PR body.
+- Resolver keeps full capability; only invocation shapes change (deploy=config-only, models-only=config+update, migrate=full). Dockerfile untouched.
+- setup.sh `--dry-run`: CLI gets `--dry-run` (no writes); resolver keeps `--preview-dir` staging for config consumers (packs/profile) — parity verified at the no-write level by review.
+- Reviewer learnings to persist post-merge: shared-deploy-helper arg-drop anti-pattern; written-content-hash decision; setup --yes clobber-posture change.
 
 ## Dependencies
 
-- Branch cut from `ca5beaf` (all four prior phases merged: installer/ split, `--target`, v2 frontmatter normalization).
-- Closes the epic #376 (last phase).
+- Branch cut from `ca5beaf` (all four prior phases merged).
+- Closes epic #376 (final phase).
 
 ## Risks & Mitigation
 
 | Risk | Mitigation |
 |------|------------|
-| Full-deploy behavior regression (overwrite prompt semantics lost, counts drift) | 4.1 keeps source-dir counts/banners; backup still runs before overwrite via existing backup flow; bats rewrite asserts manifest + counts |
-| `tierToModel` precedence divergence from resolver | Phase 3 crib + targeted assertion; resolver stays source of truth for config |
-| update hash false-positives (injection noise) | Hash written content; update recomputes would-write; update.bats (a) proves re-copy on real mutation and idempotence on no-mutation |
-| setup.sh full-run untestable on runner (heavy optional installs) | Gate the delegated call in isolation (fake HOME, reduced flags); existing bats suites cover script syntax/dry-run; PR note |
-| ps1 unverifiable (no pwsh) | Separator-agnostic greps (established pattern) |
-| Manifest schema break for existing users | Legacy arrays stay; `entries` additive; legacy-only manifests upgraded on first update |
+| Resolver optionality regresses the Docker/full path | 4.1 done-when: full-args invocation byte-identical (dry-run diff empty) |
+| Wrong insertion point lifts/backs up post-overwrite files | Pinned anchor (inside deploy_agents, migration→deploy_content→resolver) + 4.4 structure-pin grep |
+| Force-clobber loses user edits on redeploy | Pre-overwrite `content-backup` snapshot (4.2a) + documented contract (5.1) |
+| `--models-only` breaks | Rerouted through update (written-hash) + bats; migrate-only untouched |
+| Hash false-positives across re-runs | Deterministic tree hash (no mtime); (f) idempotence case proves it |
+| Manifest schema lock-in with wrong shape | Per-target map landed pre-ship (ARCH-5), legacy arrays retained |
+| ps1 unverifiable | Separator-agnostic greps (established pattern) |
+| PR-body-must-carry deviations | Tracked: permissions-union warn-only; per-target targets shape; `add` now honors user overrides |
