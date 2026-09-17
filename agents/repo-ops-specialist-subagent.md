@@ -6,39 +6,94 @@ description: >-
   labels.
 mode: subagent
 steps: 30
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-  skill:
-    version-bump-standard-skill: allow
-    semantic-release-convention-skill: allow
-    pr-creation-workflow-skill: allow
-    pr-merge-workflow-skill: allow
-    git-issue-labeler-skill: allow
-    jira-git-integration-skill: allow
-    jira-status-updater-skill: allow
-    git-issue-updater-skill: allow
-    ticket-creation-skill: allow
-    jira-ticket-labeler-skill: allow
-    changelog-python-cliff-skill: allow
-    documentation-sync-workflow-skill: allow
-    documentation-consistency-skill: allow
-    plan-updater-skill: allow
-    plan-execution-skill: allow
-    search-first-skill: allow
-    continuous-learning-skill: allow
-    ponytail-debt-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: general
+    effect: allow
+  - action: skill
+    resource: version-bump-standard-skill
+    effect: allow
+  - action: skill
+    resource: semantic-release-convention-skill
+    effect: allow
+  - action: skill
+    resource: pr-creation-workflow-skill
+    effect: allow
+  - action: skill
+    resource: pr-merge-workflow-skill
+    effect: allow
+  - action: skill
+    resource: git-issue-labeler-skill
+    effect: allow
+  - action: skill
+    resource: jira-git-integration-skill
+    effect: allow
+  - action: skill
+    resource: jira-status-updater-skill
+    effect: allow
+  - action: skill
+    resource: git-issue-updater-skill
+    effect: allow
+  - action: skill
+    resource: ticket-creation-skill
+    effect: allow
+  - action: skill
+    resource: jira-ticket-labeler-skill
+    effect: allow
+  - action: skill
+    resource: changelog-python-cliff-skill
+    effect: allow
+  - action: skill
+    resource: documentation-sync-workflow-skill
+    effect: allow
+  - action: skill
+    resource: documentation-consistency-skill
+    effect: allow
+  - action: skill
+    resource: plan-updater-skill
+    effect: allow
+  - action: skill
+    resource: plan-execution-skill
+    effect: allow
+  - action: skill
+    resource: search-first-skill
+    effect: allow
+  - action: skill
+    resource: continuous-learning-skill
+    effect: allow
+  - action: skill
+    resource: ponytail-debt-skill
+    effect: allow
 category: devops
 ---
 

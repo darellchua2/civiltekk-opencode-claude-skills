@@ -5,23 +5,46 @@ description: >-
   re-verification, screenshot review via image-analyzer.
 mode: subagent
 steps: 12
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-    image-analyzer-subagent: allow
-  skill:
-    playwright-responsive-audit-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: general
+    effect: allow
+  - action: task
+    resource: image-analyzer-subagent
+    effect: allow
+  - action: skill
+    resource: playwright-responsive-audit-skill
+    effect: allow
 category: frontend
 ---
 

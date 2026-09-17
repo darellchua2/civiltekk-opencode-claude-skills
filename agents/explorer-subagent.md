@@ -4,14 +4,25 @@ description: >-
   answer structural questions.
 mode: subagent
 steps: 10
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: deny
-  bash: deny
-  webfetch: allow
-  websearch: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: deny
+  - action: bash
+    resource: '*'
+    effect: deny
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
 category: meta
 ---
 

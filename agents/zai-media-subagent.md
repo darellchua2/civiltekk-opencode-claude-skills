@@ -5,20 +5,40 @@ description: >-
   paths. Triggers: generate image/video, transcribe, OCR, extract text.
 mode: subagent
 
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: deny
-  glob: allow
-  grep: allow
-  bash: ask
-  webfetch: allow
-  skill:
-    zai-video-skill: allow
-    zai-asr-skill: allow
-    zai-ocr-skill: allow
-    zai-image-generation-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: deny
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: ask
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: skill
+    resource: zai-video-skill
+    effect: allow
+  - action: skill
+    resource: zai-asr-skill
+    effect: allow
+  - action: skill
+    resource: zai-ocr-skill
+    effect: allow
+  - action: skill
+    resource: zai-image-generation-skill
+    effect: allow
 category: media
 ---
 

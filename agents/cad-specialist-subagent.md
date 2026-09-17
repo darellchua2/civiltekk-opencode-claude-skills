@@ -5,31 +5,73 @@ description: >-
   SendCutSend, Civil 3D. Routes by task type.
 mode: subagent
 steps: 30
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  skill:
-    cad-generation-skill: allow
-    cad-viewer-skill: allow
-    cad-step-parts-skill: allow
-    cad-dxf-skill: allow
-    cad-urdf-skill: allow
-    cad-srdf-skill: allow
-    cad-sdf-skill: allow
-    cad-sendcutsend-skill: allow
-    cad-gcode-skill: allow
-    cad-bambu-labs-skill: allow
-    cad-implicit-skill: allow
-    autodesk-aps-skill: allow
-    civil-3d-skill: allow
-    open3d-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: skill
+    resource: cad-generation-skill
+    effect: allow
+  - action: skill
+    resource: cad-viewer-skill
+    effect: allow
+  - action: skill
+    resource: cad-step-parts-skill
+    effect: allow
+  - action: skill
+    resource: cad-dxf-skill
+    effect: allow
+  - action: skill
+    resource: cad-urdf-skill
+    effect: allow
+  - action: skill
+    resource: cad-srdf-skill
+    effect: allow
+  - action: skill
+    resource: cad-sdf-skill
+    effect: allow
+  - action: skill
+    resource: cad-sendcutsend-skill
+    effect: allow
+  - action: skill
+    resource: cad-gcode-skill
+    effect: allow
+  - action: skill
+    resource: cad-bambu-labs-skill
+    effect: allow
+  - action: skill
+    resource: cad-implicit-skill
+    effect: allow
+  - action: skill
+    resource: autodesk-aps-skill
+    effect: allow
+  - action: skill
+    resource: civil-3d-skill
+    effect: allow
+  - action: skill
+    resource: open3d-skill
+    effect: allow
 category: cad
 ---
 

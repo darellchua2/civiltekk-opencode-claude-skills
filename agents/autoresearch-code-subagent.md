@@ -4,27 +4,58 @@ description: >-
   against any metric (coverage, bundle size, runtime, errors). Full repo edit.
 mode: subagent
 steps: 50
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-  skill:
-    "*": deny
-    autoresearch-core-skill: allow
-    autoresearch-code-skill: allow
-    continuous-learning-skill: allow
-    strategic-compact-skill: allow
-    blast-radius-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: general
+    effect: allow
+  - action: skill
+    resource: '*'
+    effect: deny
+  - action: skill
+    resource: autoresearch-core-skill
+    effect: allow
+  - action: skill
+    resource: autoresearch-code-skill
+    effect: allow
+  - action: skill
+    resource: continuous-learning-skill
+    effect: allow
+  - action: skill
+    resource: strategic-compact-skill
+    effect: allow
+  - action: skill
+    resource: blast-radius-skill
+    effect: allow
 category: research
 ---
 

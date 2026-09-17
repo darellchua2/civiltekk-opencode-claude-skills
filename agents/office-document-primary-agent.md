@@ -4,23 +4,49 @@ description: >-
   by file type.
 mode: subagent
 steps: 25
-permission:
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    pptx-specialist-subagent: allow
-    docx-creation-subagent: allow
-    startup-ceo-subagent: allow
-    xlsx-specialist-subagent: allow
-  skill:
-    pptx-generate-slide-skill: allow
-    pptx-generate-template-skill: allow
-    pptx-template-modifier-skill: allow
-    docx-creation-skill: allow
-    xlsx-specialist-skill: allow
-    markitdown-mcp-skill: allow
-    docling-mcp-skill: allow
+permissions:
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: pptx-specialist-subagent
+    effect: allow
+  - action: task
+    resource: docx-creation-subagent
+    effect: allow
+  - action: task
+    resource: startup-ceo-subagent
+    effect: allow
+  - action: task
+    resource: xlsx-specialist-subagent
+    effect: allow
+  - action: skill
+    resource: pptx-generate-slide-skill
+    effect: allow
+  - action: skill
+    resource: pptx-generate-template-skill
+    effect: allow
+  - action: skill
+    resource: pptx-template-modifier-skill
+    effect: allow
+  - action: skill
+    resource: docx-creation-skill
+    effect: allow
+  - action: skill
+    resource: xlsx-specialist-skill
+    effect: allow
+  - action: skill
+    resource: markitdown-mcp-skill
+    effect: allow
+  - action: skill
+    resource: docling-mcp-skill
+    effect: allow
 category: docs
 ---
 

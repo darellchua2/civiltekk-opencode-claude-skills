@@ -4,17 +4,31 @@ description: >-
   updates.
 mode: subagent
 steps: 12
-permission:
-  edit: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  skill:
-    startup-pitch-deck-skill: allow
-    unslop-skill: allow
-  task:
-    "*": deny
-    "pptx-specialist-subagent": allow
+permissions:
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: skill
+    resource: startup-pitch-deck-skill
+    effect: allow
+  - action: skill
+    resource: unslop-skill
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: pptx-specialist-subagent
+    effect: allow
 category: business
 ---
 

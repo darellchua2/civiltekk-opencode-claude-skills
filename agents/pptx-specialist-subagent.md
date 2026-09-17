@@ -5,21 +5,43 @@ description: >-
   image-analyzer verification. Never builds from scratch.
 mode: subagent
 steps: 30
-permission:
-  edit: allow
-  bash: allow
-  question: deny
-  webfetch: allow
-  websearch: allow
-  skill:
-    pptx-generate-slide-skill: allow
-    pptx-generate-template-skill: allow
-    pptx-template-modifier-skill: allow
-    ooxml-editing-skill: allow
-    office-thumbnail-skill: allow
-    markitdown-mcp-skill: allow
-  task:
-    "image-analyzer-subagent": allow
+permissions:
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: question
+    resource: '*'
+    effect: deny
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: skill
+    resource: pptx-generate-slide-skill
+    effect: allow
+  - action: skill
+    resource: pptx-generate-template-skill
+    effect: allow
+  - action: skill
+    resource: pptx-template-modifier-skill
+    effect: allow
+  - action: skill
+    resource: ooxml-editing-skill
+    effect: allow
+  - action: skill
+    resource: office-thumbnail-skill
+    effect: allow
+  - action: skill
+    resource: markitdown-mcp-skill
+    effect: allow
+  - action: task
+    resource: image-analyzer-subagent
+    effect: allow
 category: docs
 ---
 

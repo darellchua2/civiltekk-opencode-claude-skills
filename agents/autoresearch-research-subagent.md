@@ -5,30 +5,64 @@ description: >-
   research-files-only edits.
 mode: subagent
 steps: 30
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit:
-    "*": deny
-    "**/research*.md": allow
-    "**/research_log.md": allow
-    "**/*-results.tsv": allow
-  glob: allow
-  grep: allow
-  bash: deny
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-  skill:
-    "*": deny
-    autoresearch-core-skill: allow
-    autoresearch-research-skill: allow
-    search-first-skill: allow
-    strategic-compact-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: deny
+  - action: edit
+    resource: '**/research*.md'
+    effect: allow
+  - action: edit
+    resource: '**/research_log.md'
+    effect: allow
+  - action: edit
+    resource: '**/*-results.tsv'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: deny
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: general
+    effect: allow
+  - action: skill
+    resource: '*'
+    effect: deny
+  - action: skill
+    resource: autoresearch-core-skill
+    effect: allow
+  - action: skill
+    resource: autoresearch-research-skill
+    effect: allow
+  - action: skill
+    resource: search-first-skill
+    effect: allow
+  - action: skill
+    resource: strategic-compact-skill
+    effect: allow
 category: research
 ---
 

@@ -5,34 +5,79 @@ description: >-
   document, concept brief, discovery session, solution vision.
 mode: subagent
 steps: 60
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  question: deny
-  task:
-    "*": deny
-    image-analyzer-subagent: allow
-    xlsx-specialist-subagent: allow
-    explore: allow
-    pptx-specialist-subagent: allow
-  skill:
-    vision-creation-skill: allow
-    interactive-document-rendering-skill: allow
-    wireframer-skill: allow
-    domain-modeling-skill: allow
-    grilling-skill: allow
-    docx-creation-skill: allow
-    xlsx-specialist-skill: allow
-    markitdown-mcp-skill: allow
-    unslop-skill: allow
-    technical-writing-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: question
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: image-analyzer-subagent
+    effect: allow
+  - action: task
+    resource: xlsx-specialist-subagent
+    effect: allow
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: pptx-specialist-subagent
+    effect: allow
+  - action: skill
+    resource: vision-creation-skill
+    effect: allow
+  - action: skill
+    resource: interactive-document-rendering-skill
+    effect: allow
+  - action: skill
+    resource: wireframer-skill
+    effect: allow
+  - action: skill
+    resource: domain-modeling-skill
+    effect: allow
+  - action: skill
+    resource: grilling-skill
+    effect: allow
+  - action: skill
+    resource: docx-creation-skill
+    effect: allow
+  - action: skill
+    resource: xlsx-specialist-skill
+    effect: allow
+  - action: skill
+    resource: markitdown-mcp-skill
+    effect: allow
+  - action: skill
+    resource: unslop-skill
+    effect: allow
+  - action: skill
+    resource: technical-writing-skill
+    effect: allow
 category: business
 ---
 

@@ -5,22 +5,46 @@ description: >-
   user invocation only.
 mode: subagent
 steps: 25
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: deny
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  skill:
-    error-resolver-workflow-skill: allow
-    react-hooks-antipatterns-skill: allow
-    react-render-antipatterns-skill: allow
-    continuous-learning-skill: allow
-    agent-introspection-debugging-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: deny
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: skill
+    resource: error-resolver-workflow-skill
+    effect: allow
+  - action: skill
+    resource: react-hooks-antipatterns-skill
+    effect: allow
+  - action: skill
+    resource: react-render-antipatterns-skill
+    effect: allow
+  - action: skill
+    resource: continuous-learning-skill
+    effect: allow
+  - action: skill
+    resource: agent-introspection-debugging-skill
+    effect: allow
 category: meta
 ---
 

@@ -4,19 +4,37 @@ description: >-
   and frameworks.
 mode: subagent
 steps: 25
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit: deny
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  skill:
-    tdd-workflow-skill: allow
-    plan-updater-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: deny
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: skill
+    resource: tdd-workflow-skill
+    effect: allow
+  - action: skill
+    resource: plan-updater-skill
+    effect: allow
 category: meta
 ---
 

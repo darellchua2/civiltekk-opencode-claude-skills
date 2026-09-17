@@ -6,42 +6,100 @@ description: >-
   quality gate.
 mode: subagent
 steps: 30
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit:
-    "*": deny
-    "LEARNINGS/**": allow
-  glob: allow
-  grep: allow
-  bash: deny
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-    language-reviewer-subagent: allow
-    image-analyzer-subagent: allow
-  skill:
-    reviewer-baseline-skill: allow
-    language-review-checklists-skill: allow
-    solid-principles-skill: allow
-    clean-code-skill: allow
-    code-smells-skill: allow
-    object-design-skill: allow
-    complexity-management-skill: allow
-    react-hooks-antipatterns-skill: allow
-    react-render-antipatterns-skill: allow
-    security-audit-skill: allow
-    typescript-dry-principle-skill: allow
-    continuous-learning-skill: allow
-    authentication-authorization-skill: allow
-    logging-observability-skill: allow
-    performance-optimization-skill: allow
-    ponytail-review-skill: allow
-    unslop-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: deny
+  - action: edit
+    resource: 'LEARNINGS/**'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: deny
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: general
+    effect: allow
+  - action: task
+    resource: language-reviewer-subagent
+    effect: allow
+  - action: task
+    resource: image-analyzer-subagent
+    effect: allow
+  - action: skill
+    resource: reviewer-baseline-skill
+    effect: allow
+  - action: skill
+    resource: language-review-checklists-skill
+    effect: allow
+  - action: skill
+    resource: solid-principles-skill
+    effect: allow
+  - action: skill
+    resource: clean-code-skill
+    effect: allow
+  - action: skill
+    resource: code-smells-skill
+    effect: allow
+  - action: skill
+    resource: object-design-skill
+    effect: allow
+  - action: skill
+    resource: complexity-management-skill
+    effect: allow
+  - action: skill
+    resource: react-hooks-antipatterns-skill
+    effect: allow
+  - action: skill
+    resource: react-render-antipatterns-skill
+    effect: allow
+  - action: skill
+    resource: security-audit-skill
+    effect: allow
+  - action: skill
+    resource: typescript-dry-principle-skill
+    effect: allow
+  - action: skill
+    resource: continuous-learning-skill
+    effect: allow
+  - action: skill
+    resource: authentication-authorization-skill
+    effect: allow
+  - action: skill
+    resource: logging-observability-skill
+    effect: allow
+  - action: skill
+    resource: performance-optimization-skill
+    effect: allow
+  - action: skill
+    resource: ponytail-review-skill
+    effect: allow
+  - action: skill
+    resource: unslop-skill
+    effect: allow
 category: review
 ---
 

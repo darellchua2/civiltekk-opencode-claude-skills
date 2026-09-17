@@ -5,31 +5,67 @@ description: >-
   files).
 mode: subagent
 steps: 50
-permission:
-  read:
-    "*": allow
-    "mcp:*": deny
-  edit:
-    "*": deny
-    "**/train.py": allow
-    "**/research*.md": allow
-    "**/research_log.md": allow
-    "**/*-results.tsv": allow
-  glob: allow
-  grep: allow
-  bash: allow
-  webfetch: allow
-  websearch: allow
-  task:
-    "*": deny
-    explore: allow
-    general: allow
-  skill:
-    "*": deny
-    autoresearch-core-skill: allow
-    autoresearch-ml-skill: allow
-    strategic-compact-skill: allow
-    blast-radius-skill: allow
+permissions:
+  - action: read
+    resource: '*'
+    effect: allow
+  - action: read
+    resource: 'mcp:*'
+    effect: deny
+  - action: edit
+    resource: '*'
+    effect: deny
+  - action: edit
+    resource: '**/train.py'
+    effect: allow
+  - action: edit
+    resource: '**/research*.md'
+    effect: allow
+  - action: edit
+    resource: '**/research_log.md'
+    effect: allow
+  - action: edit
+    resource: '**/*-results.tsv'
+    effect: allow
+  - action: glob
+    resource: '*'
+    effect: allow
+  - action: grep
+    resource: '*'
+    effect: allow
+  - action: bash
+    resource: '*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: allow
+  - action: websearch
+    resource: '*'
+    effect: allow
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: explore
+    effect: allow
+  - action: task
+    resource: general
+    effect: allow
+  - action: skill
+    resource: '*'
+    effect: deny
+  - action: skill
+    resource: autoresearch-core-skill
+    effect: allow
+  - action: skill
+    resource: autoresearch-ml-skill
+    effect: allow
+  - action: skill
+    resource: strategic-compact-skill
+    effect: allow
+  - action: skill
+    resource: blast-radius-skill
+    effect: allow
 category: research
 ---
 

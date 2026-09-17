@@ -54,9 +54,6 @@ const USER_OC = join(os.homedir(), ".config/opencode");
 const USER_AGENTS = join(USER_OC, "agents");
 const USER_SKILLS = join(USER_OC, "skills");
 const USER_CONFIG = join(USER_OC, "opencode.json");
-// Legacy deploys (pre-v2.1 of this repo) wrote the global config as
-// config.json, which OpenCode v2 never reads — adopt it when needed.
-const LEGACY_USER_CONFIG = join(USER_OC, "config.json");
 const USER_MANIFEST = join(USER_OC, ".skill-manifest.json");
 const USER_CLAUDE_SKILLS = join(os.homedir(), ".claude/skills");
 
@@ -645,7 +642,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
 
 async function checkStrictAllowlist(sel, opts) {
   if (opts.permit) return; // --permit handles it — skip the warning
-  const config = (await readJsonMaybe(USER_CONFIG)) ?? (await readJsonMaybe(LEGACY_USER_CONFIG));
+  const config = await readJsonMaybe(USER_CONFIG);
   if (!config) return;
   // skills live in the permissions array ({action:"skill"} rules)
   const perms = Array.isArray(config.permissions) ? config.permissions : [];
@@ -687,12 +684,6 @@ async function warnMCPs(sel, depMap) {
 }
 
 async function permitMerge(sel) {
-  // Adopt a legacy config.json (pre-v2.1 deploy) as the live opencode.json so
-  // its mcp servers / plugins / permissions survive the merge.
-  if (!existsSync(USER_CONFIG) && existsSync(LEGACY_USER_CONFIG)) {
-    await copyFile(LEGACY_USER_CONFIG, USER_CONFIG);
-    console.log("  adopted legacy config.json as opencode.json");
-  }
   const config = (await readJsonMaybe(USER_CONFIG)) || {};
   if (existsSync(USER_CONFIG)) {
     const ts = new Date().toISOString().replace(/[:.]/g, "-");
