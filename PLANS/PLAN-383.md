@@ -9,7 +9,7 @@
 - [ ] 5 pilot skills trimmed and shape approved: `clean-code-skill`, `nextjs-image-usage-skill`, `opentofu-kubernetes-explorer-skill`, `git-semantic-commits-skill`, `docx-creation-skill`
 - [ ] `opencode-skill-creation-skill` + `opencode-skills-maintainer-skill` updated to lean standard (removes "more detail is better" mandate — prevents regrowth)
 - [ ] Remaining 44 of top 50 trimmed by category (A textbook → ~40–80 lines; B vendor-ref → ~100–200; C house-workflow → ~40–60% cut; E office → SKILL.md ≤200 + `reference.md` sibling)
-- [ ] All frontmatter byte-identical; `node deploy/build-registry.mjs` shows no unexpected diff
+- [ ] All frontmatter byte-identical; `node installer/build-registry.mjs` shows no unexpected diff
 - [ ] All 22 `Learning:` entries across 5 skills preserved verbatim
 - [ ] No dangling `§` section references (grep AGENTS.md chain, incl. `api-design-skill` §Authoring Quality Gate)
 - [ ] Vendored `gsap-*` / `ponytail` skills untouched
