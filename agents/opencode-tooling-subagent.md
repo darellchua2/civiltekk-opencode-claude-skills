@@ -166,22 +166,32 @@ model: provider/model-id
 temperature: 0.0-1.0
 steps: 5
 prompt: "{file:./prompts/custom.txt}"
-permission:
-  edit: allow | ask | deny
-  bash:
-    "*": ask
-    "git status*": allow
-  webfetch: deny
-  task:
-    "*": deny
-    "reviewer-*": allow
+permissions:
+  - action: edit
+    resource: '*'
+    effect: allow | ask | deny
+  - action: bash
+    resource: '*'
+    effect: ask
+  - action: bash
+    resource: 'git status*'
+    effect: allow
+  - action: webfetch
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: '*'
+    effect: deny
+  - action: task
+    resource: 'reviewer-*'
+    effect: allow
 hidden: true
 color: "#FF5733" | primary | accent
 top_p: 0.0-1.0
 ---
 ```
 
-**DEPRECATED**: `tools` field (use `permission`), `maxSteps` (use `steps`)
+**DEPRECATED**: `tools` field and `permission:` nested maps (use the `permissions:` rules array; last matching rule wins), `maxSteps` (use `steps`)
 
 ## Skill Frontmatter Standard
 
@@ -349,14 +359,26 @@ When creating agents that need to spawn other agents, always configure `permissi
 
 **Common patterns:**
 ```yaml
-permission:
-  task: allow                                              # Full access to all subagents
-  task:                                                    # Selective access
-    "*": deny                                              # Deny all by default
-    explore: allow                                         # Built-in explore
-    general: allow                                         # Built-in general
-    "linting-subagent": allow                              # Specific custom subagent
-    "reviewer-*": allow                                    # Glob pattern matching
+permissions:
+  - action: task
+    resource: '*'
+    effect: allow                                          # Full access to all subagents
+  # — or selective access: —
+  - action: task
+    resource: '*'
+    effect: deny                                           # Deny all by default (first)
+  - action: task
+    resource: explore
+    effect: allow                                          # Built-in explore
+  - action: task
+    resource: general
+    effect: allow                                          # Built-in general
+  - action: task
+    resource: 'linting-subagent'
+    effect: allow                                          # Specific custom subagent
+  - action: task
+    resource: 'reviewer-*'
+    effect: allow                                          # Glob pattern matching
 ```
 
 **Common mistakes to avoid:**

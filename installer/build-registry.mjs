@@ -96,7 +96,7 @@ export function parseFrontmatter(fmLines) {
     if (seqMatch) {
       while (stack.length && stack[stack.length - 1].depth >= depth) stack.pop();
       const arrFrame = stack[stack.length - 1]; // key at depth-1 owns the sequence
-      if (!arrFrame) continue; // stray item, skip
+      if (!arrFrame) { console.error(`warn: stray sequence item dropped: ${trimmed}`); continue; }
       let holder = root; // object the array lives on (exclude the naming frame)
       for (let i = 0; i < stack.length - 1; i++) holder = holder[stack[i].key];
       if (!Array.isArray(holder[arrFrame.key])) holder[arrFrame.key] = []; // map-marker {} → sequence
@@ -173,6 +173,8 @@ async function build() {
     const fm = parseFrontmatter(fmLines);
     // v2 permissions array (native form post-#380); legacy `permission:` maps
     // (user-authored pre-v2 files) still honored via the same keysOf semantics.
+    // Precedence: a non-empty permissions array suppresses the legacy map
+    // wholesale (per-file, not per-action); permissions: [] falls back to the map.
     const perm = fm.permission || {};
     const rules = Array.isArray(fm.permissions) ? fm.permissions : [];
     const ruleRes = (action) => rules.filter((r) => r && r.action === action && r.resource !== "*").map((r) => r.resource);

@@ -15,3 +15,4 @@
 **Date**: 2026-09-17
 
 **Evidence**: #380 plan review — 8 test blocks in 3 bats files structurally consume the legacy map form; plan's consumer map listed only registry/init/resolve/setup/runtime and would have hit red CI at Phase 4 with no owning step.
+— **including agent-body fenced examples**: opencode-tooling-subagent.md:169-184,:352 taught the `permission:` map shape inside its own body docs — caught at code review post-#380 (body byte-identity had deliberately deferred it; fixed in the same hash-churn branch).
