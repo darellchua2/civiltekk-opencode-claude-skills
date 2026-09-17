@@ -62,3 +62,7 @@ Detection: `rg 'z-index:\s*\d+' --type css --type tsx -c`
 ## Iteration Protocol (opt-in)
 
 Only under `AUTORESEARCH_PROTOCOL=1`: bounded iterations (default 10); safety blocks `.env`, `node_modules/`, `rm -rf`, `git push --force`. See `autoresearch-core-skill`.
+
+### Citations
+
+- `autoresearch-core-skill/references/iteration-safety.md`
