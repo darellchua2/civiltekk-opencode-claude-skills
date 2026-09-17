@@ -264,10 +264,21 @@ async function tierToModel(tier, provider) {
     const p = presets && presets[provider];
     if (p) return tier === "primary" ? p.primary : (p.tiers && p.tiers[tier]) || null;
   }
+  // resolver-faithful precedence (#379): provider > user models.json > default.
+  // (project map is N/A for user-scope installs — no project context.)
+  const user = await readJsonMaybe(join(USER_OC, "models.json"));
+  if (user && user.tiers && user.tiers[tier]) return user.tiers[tier];
   const m = await readJsonMaybe(MODELS_DEFAULT);
   if (!m) return null;
   if (tier === "primary") return m.primary;
   return (m.tiers && m.tiers[tier]) || null;
+}
+// Per-agent pin beats tier resolution (mirrors resolve-models.mjs global
+// agent-overrides precedence — the project-level map is N/A at user scope).
+async function agentModel(stem, tier, provider) {
+  const ov = await readJsonMaybe(join(USER_OC, "agent-overrides.json"));
+  if (ov && ov[stem] && ov[stem].model) return ov[stem].model;
+  return tierToModel(tier, provider);
 }
 async function isModelAvailable(modelId) {
   if (!modelId) return false;
@@ -556,6 +567,18 @@ async function summarize(sel, project, globalDeploy) {
 
 // ─────────────────────────── user-scope add/remove (Phase 3) ────────────
 async function cmdAdd(args, opts, reg, depMap) {
+  // --all (#379): full-catalog selection for delegated full deploys.
+  if (opts.all) {
+    const sel = {
+      agents: reg.agents.map((a) => a.stem).sort(),
+      skills: reg.skills.map((s) => s.name).sort(),
+      mcps: [],
+      warnings: [],
+    };
+    await writeUserScopeInstall(sel, opts, reg, depMap);
+    return;
+  }
+
   const name = args[0];
   if (!name) die("add: specify a skill or agent name (e.g. 'solid-principles-skill'). Use --list agents|skills to browse.", 2);
 
@@ -625,12 +648,11 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const newEntries = {};
   if (doOc) {
     await mkdir(USER_AGENTS, { recursive: true });
-    const tierModels = {};
     for (const stem of sel.agents) {
       const agent = await readAgent(stem);
       const tier = reg.agents.find((a) => a.stem === stem)?.tier || "unassigned";
-      if (!tierModels[tier]) tierModels[tier] = await tierToModel(tier, opts.provider);
-      const content = injectModelLine(agent.content, tierModels[tier]);
+      const model = await agentModel(stem, tier, opts.provider);
+      const content = injectModelLine(agent.content, model);
       await writeFile(join(USER_AGENTS, `${stem}.md`), content, "utf8");
       newEntries[stem] = { type: "agent", targets: { opencode: sha256Hex(content) } };
     }
@@ -900,7 +922,7 @@ async function cmdUpdate(args, opts) {
         installedPath = join(USER_AGENTS, `${name}.md`);
         const agent = await readAgent(name);
         const tier = reg.agents.find((a) => a.stem === name)?.tier || "unassigned";
-        wouldContent = injectModelLine(agent.content, await tierToModel(tier, opts.provider));
+        wouldContent = injectModelLine(agent.content, await agentModel(name, tier, opts.provider));
         wouldHash = sha256Hex(wouldContent);
       } else {
         const skill = await readSkill(name);

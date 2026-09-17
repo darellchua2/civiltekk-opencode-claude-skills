@@ -54,7 +54,7 @@ From ticket #379, re-validated @ `ca5beaf`; amended after plan review (ARCH-1..8
 
 ### Phase 3: `--all` selection + resolver-faithful model precedence (5a prep)
 
-- [ ] **3.1** `installer/init.mjs`: `add --all` → full registry selection (every agent + skill) non-interactive; `tierToModel` extended with the resolver's EXACT precedence (project map > provider preset > user `models.json` > default map; per-agent `agent-overrides.json` pin above tier resolution — crib from `resolve-models.mjs` :189-191 ordering); `deploy_content` (Phase 4) passes `--provider` only when the user set one (no forced default — ARCH-8)
+- [x] **3.1** `installer/init.mjs`: `add --all` → full registry selection (every agent + skill) non-interactive; `tierToModel` extended with the resolver's EXACT precedence (project map > provider preset > user `models.json` > default map; per-agent `agent-overrides.json` pin above tier resolution — crib from `resolve-models.mjs` :189-191 ordering); `deploy_content` (Phase 4) passes `--provider` only when the user set one (no forced default — ARCH-8)
     — **Why:** Full-deploy delegation needs the whole catalog in one call; injection must match the resolver's semantics exactly or agents and config drift to different models for custom-tier users.
     — **Done when:** fake-HOME `add --all --yes` installs counts == registry counts (assert dynamically vs `registry.json`); an `agent-overrides.json` pin changes that agent's injected model; a user `models.json` tier override beats the default map.
     — **Consumers affected:** `add` users, setup.sh Phase 4.
