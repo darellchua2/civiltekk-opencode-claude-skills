@@ -63,7 +63,7 @@ From ticket #380, re-validated against `origin/main` @ `816d903` (delta document
 
 ### Phase 2: Remove LEGACY_USER_CONFIG from init.mjs
 
-- [ ] **2.1** Delete `LEGACY_USER_CONFIG` const (:59), the `?? readJsonMaybe(LEGACY_USER_CONFIG)` fallback in `checkStrictAllowlist` (:648), and the legacy `config.json` adoption block in `permitMerge` (:689-695: comment :690-691 + if-block :692-695)
+- [x] **2.1** Delete `LEGACY_USER_CONFIG` const (:59), the `?? readJsonMaybe(LEGACY_USER_CONFIG)` fallback in `checkStrictAllowlist` (:648), and the legacy `config.json` adoption block in `permitMerge` (:689-695: comment :690-691 + if-block :692-695)
     — **Why:** Ticket scope — v2 never reads `~/.config/opencode/config.json`; the adoption path is dead code implying a migration that no longer exists.
     — **Done when:** `grep -c LEGACY_USER_CONFIG installer/init.mjs` = 0; `node --check`; `bats tests/init.bats` green (incl. `--permit` cases exercising `permitMerge`).
     — **Consumers affected:** hypothetical pre-v2.1 deployers (none known).
