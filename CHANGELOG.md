@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.1.1](https://github.com/darellchua2/opencode-config-template/compare/v7.1.0...v7.1.1) (2026-09-17)
+
+### Bug Fixes
+
+* **skills:** restore autoresearch reference citations required by bats suite ([4673550](https://github.com/darellchua2/opencode-config-template/commit/4673550ab8f9a813e3bcb7c8591424a765428f56))
+* **skills:** restore clean-code imperative gating preamble (bats default-behavior suite) ([ec82b1c](https://github.com/darellchua2/opencode-config-template/commit/ec82b1c141e3d5c40014cd0e0c87b06c67b76554))
+
+### Code Refactoring
+
+* **skills:** add lean-standard bloat check to skills maintainer ([e0a98f9](https://github.com/darellchua2/opencode-config-template/commit/e0a98f9dd6284acfd7eee5eabb766835e24a6998))
+* **skills:** adopt lean standard in opencode-skill-creation-skill ([fd77a84](https://github.com/darellchua2/opencode-config-template/commit/fd77a84f06a50c075e225ee3e42c1e069a3d0b64))
+* **skills:** drop vestigial numeric anchors, fix api-design related labels ([fe13e6c](https://github.com/darellchua2/opencode-config-template/commit/fe13e6c0ed1829b10dbc84d5dfe4e6fd5c69f5e1))
+* **skills:** split docx-creation reference into sibling file ([7ea53d1](https://github.com/darellchua2/opencode-config-template/commit/7ea53d1b7fa8a5c202e34d57b285b75ccad3c81e))
+* **skills:** split office reference material into sibling files ([5ce5d7d](https://github.com/darellchua2/opencode-config-template/commit/5ce5d7d9df8d8262c425834fe1ee0fef762f4590))
+* **skills:** trim ceremony from 20 category-C skills ([7693673](https://github.com/darellchua2/opencode-config-template/commit/7693673eb712a2f105e2e96cbfee712540f084a9))
+* **skills:** trim ceremony from git-semantic-commits-skill ([ef32770](https://github.com/darellchua2/opencode-config-template/commit/ef32770fbc8a269802924de05e47a1d468612e12))
+* **skills:** trim HCL recipes from opentofu-kubernetes-explorer-skill ([76db575](https://github.com/darellchua2/opencode-config-template/commit/76db5759c75df70cf4128099516135f0f1e20208))
+* **skills:** trim textbook content from 10 category-A skills ([30a71d8](https://github.com/darellchua2/opencode-config-template/commit/30a71d857b3b68fefe520a900e52680290ca7c0c))
+* **skills:** trim textbook content from clean-code-skill ([e1d26fc](https://github.com/darellchua2/opencode-config-template/commit/e1d26fc155a852272ca40c9f5e83337289b909cf))
+* **skills:** trim vendor API reference from nextjs-image-usage-skill ([380c28b](https://github.com/darellchua2/opencode-config-template/commit/380c28b10af9dbc1a18b255af983c75b385bdb66))
+* **skills:** trim vendor references from 12 category-B skills ([8a9265f](https://github.com/darellchua2/opencode-config-template/commit/8a9265f604138d4f204292c31165f302f5ad7963))
+
+### Documentation
+
+* **plan:** add PLAN-383.md for [#383](https://github.com/darellchua2/opencode-config-template/issues/383) ([8eadb7f](https://github.com/darellchua2/opencode-config-template/commit/8eadb7f315edde89d01c5516e9bfe08a5d9c0ce0))
+* **plan:** apply requirements review findings to PLAN-383.md ([41bb3a1](https://github.com/darellchua2/opencode-config-template/commit/41bb3a112ded5265dc259969100ec4b4382c3be4))
+* **plan:** gate path deploy/ -> installer/ per [#390](https://github.com/darellchua2/opencode-config-template/issues/390) ([fc20883](https://github.com/darellchua2/opencode-config-template/commit/fc20883fb756173f5f6ccf9159ae7d13317464eb))
+* **plan:** tick Phase 2 trace + acceptance criteria — final validation ([0221c25](https://github.com/darellchua2/opencode-config-template/commit/0221c25090ad8b910fc47b454bcc91cdf78ad1c4))
+* **plan:** trace Phase 1 pilot steps 1.1-1.5 (5 commits) ([75cdd27](https://github.com/darellchua2/opencode-config-template/commit/75cdd276b1806a227e709cb985ee87586255afcc))
+* **plan:** trace Phases 3-4 complete (batches A-E + invariants) ([355d989](https://github.com/darellchua2/opencode-config-template/commit/355d9898d168d758adac733bba8979792b191cd4))
+* **plan:** trace step 1.6 user approval gate ([5ac7577](https://github.com/darellchua2/opencode-config-template/commit/5ac757747ef45ec76fd72b667290a654b2271f66))
+* **plan:** trace step 3.4, note skills/ layout move from [#384](https://github.com/darellchua2/opencode-config-template/issues/384) ([c562af1](https://github.com/darellchua2/opencode-config-template/commit/c562af1054fe8773599f0341df41dbf63bb105b6))
+
 ## [7.1.0](https://github.com/darellchua2/opencode-config-template/compare/v7.0.1...v7.1.0) (2026-09-16)
 
 ### Features
