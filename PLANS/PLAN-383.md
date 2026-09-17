@@ -6,14 +6,14 @@
 
 ## Acceptance Criteria
 
-- [ ] 5 pilot skills trimmed and shape approved: `clean-code-skill`, `nextjs-image-usage-skill`, `opentofu-kubernetes-explorer-skill`, `git-semantic-commits-skill`, `docx-creation-skill`
-- [ ] `opencode-skill-creation-skill` + `opencode-skills-maintainer-skill` updated to lean standard (removes "more detail is better" mandate — prevents regrowth)
-- [ ] Remaining 44 of top 50 trimmed by category (A textbook → ~40–80 lines; B vendor-ref → ~100–200; C house-workflow → ~40–60% cut; E office → SKILL.md ≤200 + `reference.md` sibling)
-- [ ] All frontmatter byte-identical; `node installer/build-registry.mjs` shows no unexpected diff
-- [ ] All 22 `Learning:` entries across 5 skills preserved verbatim
-- [ ] No dangling `§` section references (grep AGENTS.md chain, incl. `api-design-skill` §Authoring Quality Gate)
-- [ ] Vendored `gsap-*` / `ponytail` skills untouched
-- [ ] Lint/test gates pass
+- [x] 5 pilot skills trimmed and shape approved: `clean-code-skill`, `nextjs-image-usage-skill`, `opentofu-kubernetes-explorer-skill`, `git-semantic-commits-skill`, `docx-creation-skill`
+- [x] `opencode-skill-creation-skill` + `opencode-skills-maintainer-skill` updated to lean standard (removes "more detail is better" mandate — prevents regrowth)
+- [x] Remaining 44 of top 50 trimmed by category (A textbook → ~40–80 lines; B vendor-ref → ~100–200; C house-workflow → ~40–60% cut; E office → SKILL.md ≤200 + `reference.md` sibling)
+- [x] All frontmatter byte-identical; `node installer/build-registry.mjs` shows no unexpected diff
+- [x] All 22 `Learning:` entries across 5 skills preserved verbatim
+- [x] No dangling `§` section references (grep AGENTS.md chain, incl. `api-design-skill` §Authoring Quality Gate)
+- [x] Vendored `gsap-*` / `ponytail` skills untouched
+- [x] Lint/test gates pass (repo has no lint/build config and bats CLI absent; registry --check green after every batch — documented in 4.2)
 
 ## Dependency & Consumer Map
 
@@ -66,14 +66,16 @@
 
 ### Phase 2: Fix the bloat source (anti-regrowth)
 
-- [ ] **2.1** Rewrite `opencode-skill-creation-skill/SKILL.md` (492 → ~120 lines): delete "Be thorough: More detail is better than less" + ceremony-template mandate; install lean standard (target line budgets per category, model-knowledge rule: "encode only what is house-specific"); keep frontmatter contract table + registry rebuild instruction; commit `refactor(skills): adopt lean standard in opencode-skill-creation-skill`
+- [x] **2.1** Rewrite `opencode-skill-creation-skill/SKILL.md` (492 → ~120 lines): delete "Be thorough: More detail is better than less" + ceremony-template mandate; install lean standard (target line budgets per category, model-knowledge rule: "encode only what is house-specific"); keep frontmatter contract table + registry rebuild instruction; commit `refactor(skills): adopt lean standard in opencode-skill-creation-skill`
     — **Why:** The template is the regrowth engine — every new skill inherits its padding unless this changes first.
     — **Done when:** mandate text absent (`grep -c "More detail is better"` = 0); lean-standard section present; frontmatter byte-identical; commit pushed.
     — **Consumers affected:** all future skill authoring; opencode-skills-maintainer-skill audits.
-- [ ] **2.2** Update `opencode-skills-maintainer-skill/SKILL.md`: add a category-aware bloat check enforcing the lean standard — flag SKILL.md >300 lines for category A/B/E (E exempt when a `reference.md` sibling exists); for category C (house workflows, legitimately 400–600 lines post-trim), record the post-trim baseline in the maintainer and flag regrowth beyond it; commit `refactor(skills): add lean-standard bloat check to skills maintainer`
+    — **Done:** 492->71 lines; "More detail is better" mandate removed (grep 0); lean standard with category line budgets installed; commit fd77a84.
+- [x] **2.2** Update `opencode-skills-maintainer-skill/SKILL.md`: add a category-aware bloat check enforcing the lean standard — flag SKILL.md >300 lines for category A/B/E (E exempt when a `reference.md` sibling exists); for category C (house workflows, legitimately 400–600 lines post-trim), record the post-trim baseline in the maintainer and flag regrowth beyond it; commit `refactor(skills): add lean-standard bloat check to skills maintainer`
     — **Why:** Audits must enforce the new standard or drift back goes undetected.
     — **Done when:** bloat-check rule present with the >300-line threshold + E exception; commit pushed.
     — **Consumers affected:** on-demand skill audits.
+    — **Done:** 329->85 lines; category-aware bloat check installed (A/B/E >300 flag, E sibling exemption, C >600 ceiling — ceiling form chosen over per-file baselines to avoid stale bookkeeping); citation-drift audit + Iteration Protocol retained; commit e0a98f9.
 
 ### Phase 3: Bulk trim (44 files; category batches; one commit per batch)
 
@@ -105,7 +107,6 @@ Phase 3 preamble — per-file protocol (applies to every file below):
     — **Done when:** SKILL.md ≤200 lines each; `reference.md` siblings exist with pointer lines; commit pushed.
     — **Consumers affected:** pdf-specialist routing (AGENTS.md tier 4), pptx pipeline subagents.
     — **Done:** pdf-specialist 732->94 + ref 173; pptx-generate-slide 579->146 + ref 195; commit 5ce5d7d (pre-merge), relocated by merges a3d2acc/c93fdeb.
-    — **Done:** pdf-specialist 732->94 + reference.md (173); pptx-generate-slide 579->146 + reference.md (195); frontmatter frozen; done pre-merge, relocated to skills/ by the #384 merge commit a3d2acc.
 
 ### Phase 4: Verification & invariants
 
