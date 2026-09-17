@@ -8,12 +8,12 @@
 
 From ticket #380, re-validated against `origin/main` @ `816d903` (delta documented in [issue comment](https://github.com/darellchua2/opencode-config-template/issues/380#issuecomment-5712928698)); amended after plan review (blockers ARCH-1/2, majors REQ-1/ARCH-3 folded in):
 
-- [ ] `node installer/build-registry.mjs` regenerates identical counts (149/34) and byte-identical agent/skill arrays (`--check` green; only `$comment`-preserved fields + `generatedAt` move)
-- [ ] `bats tests/` green (full suite, including the 8 rewired test blocks in 3 files)
-- [ ] No `^prompt:` / `^tools:` / `^permission:` left in `agents/` **frontmatter regions** (body prose in fenced examples is exempt — tooling:137-138, :321)
-- [ ] Spot-check: 3 agents parse + schema-validate against the v2 contract (action/resource/effect, order-preserving); real `opencode` load if the CLI is available on the runner, else parse-level floor noted in PR body
-- [ ] `LEGACY_USER_CONFIG` adoption path removed from `installer/init.mjs`
-- [ ] One-shot normalizer deleted after run (ticket scope)
+- [x] `node installer/build-registry.mjs` regenerates identical counts (149/34) and byte-identical agent/skill arrays (`--check` green; only `$comment`-preserved fields + `generatedAt` move)
+- [x] `bats tests/` green (full suite, including the 8 rewired test blocks in 3 files)
+- [x] No `^prompt:` / `^tools:` / `^permission:` left in `agents/` **frontmatter regions** (body prose in fenced examples is exempt — tooling:137-138, :321)
+- [x] Spot-check: 3 agents parse + schema-validate against the v2 contract (action/resource/effect, order-preserving); real `opencode` load if the CLI is available on the runner, else parse-level floor noted in PR body
+- [x] `LEGACY_USER_CONFIG` adoption path removed from `installer/init.mjs`
+- [x] One-shot normalizer deleted after run (ticket scope)
 
 **Re-validation delta:** 0 agents have `prompt:`/`tools:` in frontmatter (the `prompt:` hit, `opencode-tooling-subagent.md:137`, is body prose; same file has body-prose `permission:` at :138, :321). The mass legacy shape is `permission:` (singular) nested map — scalar (`bash: deny`) or resource→effect sub-map (`read: {"*": allow, "mcp:*": deny}`) — in all 34 agents. Mapping: `permission:<map>` → `permissions:` array of `{action, resource, effect}` rules, entry order preserved (v2 last-match-wins ≡ map order). `build-registry.mjs:144-146` consumes the old map (`keysOf(perm.skill)` → requiresSkills, `keysOf(perm.task)` → delegatesTo; `keysOf` drops `*`, ignores effect) and must flip to array reading in the same change.
 
@@ -89,7 +89,7 @@ From ticket #380, re-validated against `origin/main` @ `816d903` (delta document
 
 ### Phase 4: Final verification
 
-- [ ] **4.1** Full gate re-run + v2 spot-check: all 13 bats files; registry `--check`; `--list agents` (34); schema-validate 3 representative agents (scalar-heavy, map-heavy, skill+task rules — code-review-subagent, tdd-subagent, opencode-tooling-subagent): parse their `permissions` arrays, assert every rule has action/resource/effect with valid enums, and assert `mcp:*` deny follows `*` allow where present (order preservation); if `opencode` CLI exists on the runner, load-check one agent, else note parse-level floor in the PR body
+- [x] **4.1** Full gate re-run + v2 spot-check: all 13 bats files; registry `--check`; `--list agents` (34); schema-validate 3 representative agents (scalar-heavy, map-heavy, skill+task rules — code-review-subagent, tdd-subagent, opencode-tooling-subagent): parse their `permissions` arrays, assert every rule has action/resource/effect with valid enums, and assert `mcp:*` deny follows `*` allow where present (order preservation); if `opencode` CLI exists on the runner, load-check one agent, else note parse-level floor in the PR body
     — **Why:** Ticket spot-check AC; parse-level schema validation is the floor (pwsh/docker precedent), a real v2 load is the ceiling.
     — **Done when:** all checks green (or CLI absent + parse-level pass noted for PR).
     — **Consumers affected:** none (verification).
