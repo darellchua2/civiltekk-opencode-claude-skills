@@ -1794,58 +1794,15 @@ function Deploy-Skills {
     Write-Host ""
     Write-LogInfo "Setting up skills directory..."
 
-    $skillsSrc = Join-Path $RepoDir "skills"
-
+    # Skills deploy moved to the single install path (#379): Deploy-Content
+    # (invoked from Deploy-Agents, after migration) installs skills + agents
+    # via the installer CLI — manifest-tracked. Only the directory is ensured.
     if (-not $DryRun) {
         if (-not (Test-Path $SkillsDir)) {
             New-Item -ItemType Directory -Path $SkillsDir -Force | Out-Null
         }
     }
     Write-LogInfo "Skills directory: $SkillsDir"
-
-    if (Test-Path $skillsSrc) {
-        $existingSkills = @(Get-ChildItem $SkillsDir -ErrorAction SilentlyContinue)
-        if ($existingSkills.Count -gt 0) {
-            Write-LogWarn "Skills directory already contains files"
-
-            if (Read-YesNo "Do you want to overwrite existing skills?" $false) {
-                $skillsBackup = Join-Path $BackupDir "skills-backup"
-                if (-not $DryRun) {
-                    if (-not (Test-Path $BackupDir)) {
-                        New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
-                    }
-                    Copy-Item $SkillsDir $skillsBackup -Recurse -Force
-                    Write-LogInfo "Backed up existing skills to $skillsBackup"
-                }
-            } else {
-                Write-LogInfo "Skipping skills deployment. Existing skills preserved."
-                return
-            }
-        }
-
-        if (-not $DryRun) {
-            # Copy all skills except _archived
-            Get-ChildItem -Path $skillsSrc -Directory | Where-Object { $_.Name -ne "_archived" } | ForEach-Object {
-                Copy-Item $_.FullName $SkillsDir -Recurse -Force
-            }
-            Get-ChildItem -Path $skillsSrc -File | ForEach-Object {
-                Copy-Item $_.FullName $SkillsDir -Force
-            }
-        }
-         Write-LogSuccess "Skills copied successfully to $SkillsDir"
-         
-        $skillCount = Get-SkillCount $SkillsDir
-        Write-Host ""
-        Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
-        Write-Host ""
-         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-        Get-SkillCategories $SkillsDir
-        Write-Host ""
-        Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
-        Write-Host ""
-    } else {
-        Write-LogWarn "skills/ folder not found in $skillsSrc"
-    }
 
     Deploy-Agents
     Deploy-Plugins
@@ -1860,13 +1817,14 @@ function Deploy-Skills {
 # and patches opencode.json (explore + general always; primary only if a
 # provider/mix chosen — local deploys omit a baked-in primary). Sets $LASTEXITCODE.
 function Invoke-Resolver {
+    param([switch]$ConfigOnly)
     if (-not (Test-Path $ResolverScript)) {
         Write-LogError "Resolver not found: $ResolverScript"
         return
     }
+    # #379 single install path: -ConfigOnly omits the agents args — the
+    # installer CLI (Deploy-Content) owns agent-file writing.
     $resolverArgs = @(
-        "--agents-src", $AgentsSrcDir,
-        "--agents-dest", $AgentsDestDir,
         "--tiers", $AgentTiers,
         "--default-map", $ModelsDefaultMap,
         "--user-map", $UserModelsMap,
@@ -1875,6 +1833,9 @@ function Invoke-Resolver {
         "--config-dest", $ConfigFile,
         "--state", $ResolvedSidecar
     )
+    if (-not $ConfigOnly) {
+        $resolverArgs = @("--agents-src", $AgentsSrcDir, "--agents-dest", $AgentsDestDir) + $resolverArgs
+    }
     if (Test-Path $ProjectModelsMap) { $resolverArgs += @("--project-map", $ProjectModelsMap) }
     if (Test-Path $ProjectOverrides) { $resolverArgs += @("--project-overrides", $ProjectOverrides) }
     if ($Force) { $resolverArgs += "--force" }
@@ -2282,6 +2243,42 @@ function Deploy-Plugins {
 # ─────────────────────────────────────────────────────────────────────────────
 # AGENT DEPLOYMENT (v2.0 — resolver-driven)
 # ─────────────────────────────────────────────────────────────────────────────
+# Single install path (#379): all content installs flow through the installer
+# CLI so every deploy is manifest-tracked. Snapshots existing content first.
+function Deploy-Content {
+    Write-Host ""
+    Write-LogInfo "Deploying content via installer CLI (manifest-tracked)..."
+
+    if (-not (Test-CommandExists "node")) {
+        Write-LogError "Node.js is required by the installer CLI."
+        return
+    }
+
+    # Pre-overwrite snapshot (ARCH-4): preserve user edits before force-copy.
+    if (Test-Path $BackupDir) {
+        $contentBackup = Join-Path $BackupDir "content-backup"
+        if (-not $DryRun) { New-Item -ItemType Directory -Path $contentBackup -Force | Out-Null }
+        if (@(Get-ChildItem $SkillsDir -ErrorAction SilentlyContinue).Count -gt 0) {
+            if (-not $DryRun) { Copy-Item $SkillsDir (Join-Path $contentBackup "skills") -Recurse -Force }
+            Write-LogInfo "Snapshotted existing skills to content-backup/skills"
+        }
+        if (@(Get-ChildItem $AgentsDestDir -ErrorAction SilentlyContinue).Count -gt 0) {
+            if (-not $DryRun) { Copy-Item $AgentsDestDir (Join-Path $contentBackup "agents") -Recurse -Force }
+            Write-LogInfo "Snapshotted existing agents to content-backup/agents"
+        }
+    }
+
+    $cliArgs = @("add", "--all", "--yes")
+    if ($Provider) { $cliArgs += @("--provider", $Provider) }
+    if ($DryRun) { $cliArgs += "--dry-run" }
+    & node (Join-Path $InstallDir "init.mjs") @cliArgs
+    if ($LASTEXITCODE -ne 0) {
+        Write-LogError "installer CLI failed (exit $LASTEXITCODE)"
+        return
+    }
+    Write-LogSuccess "Content deployed (manifest-tracked)"
+}
+
 function Deploy-Agents {
     Write-Host ""
     Write-LogInfo "Setting up agents (v2.0 model resolution)..."
@@ -2307,9 +2304,17 @@ function Deploy-Agents {
     # Migration (detect pre-v2, backup, lift customizations) before resolve
     Invoke-Migration
 
-    # Resolve + inject concrete models from tiers/overrides/presets
+    # Single install path (#379): content installs via the CLI after migration
+    # (lift must see pre-overwrite agents), before the config-only resolve.
+    Deploy-Content
+    if ($LASTEXITCODE -ne 0) {
+        Write-LogError "Content deployment failed"
+        return
+    }
+
+    # Resolve + inject concrete models into the CONFIG (agent files: Deploy-Content)
     Write-LogInfo "Resolving agent models..."
-    Invoke-Resolver
+    Invoke-Resolver -ConfigOnly
     if ($LASTEXITCODE -ne 0) {
         Write-LogError "Model resolution failed"
         return
@@ -2854,7 +2859,11 @@ function Main {
             return
         }
         Set-ModelProvider
-        Invoke-Resolver
+        # Config via resolver; agent files via the manifest path (#379).
+        Invoke-Resolver -ConfigOnly
+        $updateArgs = @("update")
+        if ($Provider) { $updateArgs += @("--provider", $Provider) }
+        & node (Join-Path $InstallDir "init.mjs") @updateArgs
         Write-Host ""
         Write-Host "Model resolution complete!"
         return

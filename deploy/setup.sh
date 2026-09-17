@@ -2520,49 +2520,10 @@ setup_config() {
         fi
     fi
 
-    # Setup skills directory
-    echo ""
-    log_info "Setting up skills directory..."
-
-    # Create skills directory
+    # Skills deploy moved to the single install path (#379): deploy_content()
+    # (invoked from deploy_agents, after migration) installs skills + agents via
+    # the installer CLI — manifest-tracked. Only the directory is ensured here.
     run_cmd mkdir -p "$SKILLS_DIR"
-    log_info "Created ${SKILLS_DIR} directory"
-
-    # Check if skills folder exists in script directory
-    if [ -d "${REPO_DIR}/skills" ]; then
-        # Check if skills directory already has content
-        if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
-            log_warn "Skills directory already contains files"
-
-            if prompt_yes_no "Do you want to overwrite existing skills?" "n"; then
-                # Backup existing skills
-                if [ -d "${BACKUP_DIR}" ]; then
-                    run_cmd cp -r "$SKILLS_DIR" "${BACKUP_DIR}/skills-backup"
-                    log_info "Backed up existing skills to ${BACKUP_DIR}/skills-backup"
-                fi
-            else
-                log_info "Skipping skills deployment. Existing skills preserved."
-                return 0
-            fi
-        fi
-
-        # Copy skills folder (excluding _archived)
-        if command -v rsync &> /dev/null; then
-            run_cmd rsync -av --exclude='_archived' "${REPO_DIR}/skills/" "${SKILLS_DIR}/"
-        else
-            # Fallback: copy all except _archived
-            mkdir -p "${SKILLS_DIR}"
-            for item in "${REPO_DIR}/skills"/*; do
-                item_name=$(basename "$item")
-                if [[ "$item_name" != "_archived" ]]; then
-                    cp -r "$item" "${SKILLS_DIR}/"
-                fi
-            done
-        fi
-        log_success "Skills copied successfully to ${SKILLS_DIR}"
-    else
-        log_warn "skills/ folder not found in ${REPO_DIR}/skills"
-    fi
 
     return 0
 }
@@ -2995,6 +2956,14 @@ run_resolver() {
         return 1
     fi
 
+    # #379 single install path: when RESOLVER_CONFIG_ONLY=true the call omits the
+    # agents args — the installer CLI (deploy_content) owns agent-file writing.
+    # --models-only / --migrate-only / lift-only keep the full resolver behavior.
+    local agents_args=""
+    if [ "${RESOLVER_CONFIG_ONLY:-false}" != "true" ]; then
+        agents_args="--agents-src ${AGENTS_SRC_DIR} --agents-dest ${AGENTS_DEST_DIR}"
+    fi
+
     local extra_args=""
     if [ "$FORCE_RESOLVE" = true ]; then
         extra_args="$extra_args --force"
@@ -3021,8 +2990,7 @@ run_resolver() {
     fi
 
     node "$RESOLVER_SCRIPT" \
-        --agents-src "$AGENTS_SRC_DIR" \
-        --agents-dest "$AGENTS_DEST_DIR" \
+        $agents_args \
         --tiers "$AGENT_TIERS" \
         --default-map "$MODELS_DEFAULT_MAP" \
         --user-map "$USER_MODELS_MAP" \
@@ -3306,6 +3274,48 @@ run_skill_profile() {
     return 0
 }
 
+# Single install path (#379): all content installs flow through the installer
+# CLI so every deploy is manifest-tracked (update/remove work after this).
+# Snapshots existing content first — the old prompt-default-no overwrite gate
+# is replaced by an explicit backup-then-force-copy contract.
+deploy_content() {
+    echo ""
+    log_info "Deploying content via installer CLI (manifest-tracked)..."
+
+    if ! command_exists node; then
+        log_error "Node.js is required by the installer CLI."
+        return 1
+    fi
+
+    # Pre-overwrite snapshot (ARCH-4): preserve user edits before force-copy.
+    if [ -d "$BACKUP_DIR" ]; then
+        local content_backup="${BACKUP_DIR}/content-backup"
+        mkdir -p "$content_backup"
+        if [ -d "$SKILLS_DIR" ] && [ -n "$(ls -A "$SKILLS_DIR" 2>/dev/null)" ]; then
+            run_cmd cp -r "$SKILLS_DIR" "${content_backup}/skills"
+            log_info "Snapshotted existing skills to ${content_backup}/skills"
+        fi
+        if [ -d "$AGENTS_DEST_DIR" ] && [ -n "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
+            run_cmd cp -r "$AGENTS_DEST_DIR" "${content_backup}/agents"
+            log_info "Snapshotted existing agents to ${content_backup}/agents"
+        fi
+    fi
+
+    local provider_arg=""
+    [ -n "$PROVIDER" ] && provider_arg="--provider ${PROVIDER}"
+    local dry_arg=""
+    [ "$DRY_RUN" = true ] && dry_arg="--dry-run"
+
+    node "${INSTALLER_DIR}/init.mjs" add --all --yes $provider_arg $dry_arg
+    local rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "installer CLI failed (exit ${rc})"
+        return "$rc"
+    fi
+    log_success "Content deployed ($(count_agents "${REPO_DIR}/agents") agents / $(count_skills "${REPO_DIR}/skills") skills, manifest-tracked)"
+    return 0
+}
+
 deploy_agents() {
     echo ""
     log_info "Setting up agents (v2.0 model resolution)..."
@@ -3328,9 +3338,21 @@ deploy_agents() {
     # Migration (detect pre-v2, backup, lift customizations) before resolve
     run_migration
 
-    # Resolve + inject concrete models from tiers/overrides/presets
+    # Single install path (#379): content (agents + skills) installs through the
+    # installer CLI — manifest-tracked, hashed, update-able. Runs AFTER migration
+    # (lift must see pre-overwrite agents) and BEFORE the resolver (which now
+    # resolves config only; the CLI injects models with the same precedence).
+    deploy_content
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Content deployment failed (exit ${rc})"
+        return 1
+    fi
+
+    # Resolve + inject concrete models into the CONFIG (explore/general, primary).
+    # Config-only call since #379 — agent files are written by deploy_content.
     log_info "Resolving agent models..."
-    run_resolver
+    RESOLVER_CONFIG_ONLY=true run_resolver
     local rc=$?
     if [ "$rc" -ne 0 ]; then
         log_error "Model resolution failed (exit ${rc})"
@@ -4076,7 +4098,10 @@ main() {
             exit 1
         fi
         setup_model_provider || true
-        run_resolver
+        # Config via resolver; agent files via the manifest path — update's
+        # written-hash comparison propagates tier/override changes (#379).
+        RESOLVER_CONFIG_ONLY=true run_resolver
+        node "${INSTALLER_DIR}/init.mjs" update ${PROVIDER:+--provider ${PROVIDER}}
         echo ""
         echo "Model resolution complete!"
         exit 0
