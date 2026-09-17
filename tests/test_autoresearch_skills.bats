@@ -40,7 +40,7 @@ AGENTS_DIR="agents"
 
 # =============================================================================
 # Subagent model-tier assertions (v2.0: agents are model-free in source;
-# concrete models are injected at deploy time via deploy/agent-tiers.json)
+# concrete models are injected at deploy time via installer/agent-tiers.json)
 # =============================================================================
 
 @test "subagent_autoresearch_ml_no_hardcoded_model_in_frontmatter" {
@@ -56,7 +56,7 @@ assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.
   # Verify it IS in agent-tiers.json under 'long-context' tier
   python3 -c "
 import json
-data=json.load(open('deploy/agent-tiers.json'))
+data=json.load(open('installer/agent-tiers.json'))
 tiers=data['tiers']
 assert tiers.get('autoresearch-ml-subagent') == 'long-context', f'must be in long-context tier, got: {tiers.get(\"autoresearch-ml-subagent\")}'
 "
@@ -73,7 +73,7 @@ assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.
 "
   python3 -c "
 import json
-data=json.load(open('deploy/agent-tiers.json'))
+data=json.load(open('installer/agent-tiers.json'))
 tiers=data['tiers']
 assert tiers.get('autoresearch-code-subagent') == 'long-context', f'must be in long-context tier, got: {tiers.get(\"autoresearch-code-subagent\")}'
 "
@@ -90,7 +90,7 @@ assert 'model' not in fm, f'frontmatter must not contain model (v2.0), got: {fm.
 "
   python3 -c "
 import json
-data=json.load(open('deploy/agent-tiers.json'))
+data=json.load(open('installer/agent-tiers.json'))
 tiers=data['tiers']
 assert tiers.get('autoresearch-research-subagent') == 'long-context', f'must be in long-context tier, got: {tiers.get(\"autoresearch-research-subagent\")}'
 "

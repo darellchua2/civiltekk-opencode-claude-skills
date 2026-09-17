@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.1.0](https://github.com/darellchua2/opencode-config-template/compare/v7.0.1...v7.1.0) (2026-09-16)
+
+### Features
+
+* **installer:** multi-app install targets — --target opencode|claude ([#377](https://github.com/darellchua2/opencode-config-template/issues/377)) ([#393](https://github.com/darellchua2/opencode-config-template/issues/393)) ([143213e](https://github.com/darellchua2/opencode-config-template/commit/143213e77b171af4a41560e15624493ced2a80f6))
+
+### Documentation
+
+* **migration:** document DCP to v2 checkpoint compaction reasoning ([#385](https://github.com/darellchua2/opencode-config-template/issues/385)) ([#392](https://github.com/darellchua2/opencode-config-template/issues/392)) ([f051539](https://github.com/darellchua2/opencode-config-template/commit/f0515393f2807555166692c536bcba65160f687a))
+
+## [7.0.1](https://github.com/darellchua2/opencode-config-template/compare/v7.0.0...v7.0.1) (2026-09-15)
+
+### Bug Fixes
+
+* **docker:** opencode-owned npm dir + precise goal healthcheck ([#391](https://github.com/darellchua2/opencode-config-template/issues/391)) ([c543217](https://github.com/darellchua2/opencode-config-template/commit/c5432177291cfb4d52f3afd2148a7ca5aeae8742)), closes [#389](https://github.com/darellchua2/opencode-config-template/issues/389)
+
+## [7.0.0](https://github.com/darellchua2/opencode-config-template/compare/v6.1.0...v7.0.0) (2026-09-14)
+
+### ⚠ BREAKING CHANGES
+
+* **installer:** split deploy/ into installer/ + deploy/ (#378) (#390)
+
+### Code Refactoring
+
+* **installer:** split deploy/ into installer/ + deploy/ ([#378](https://github.com/darellchua2/opencode-config-template/issues/378)) ([#390](https://github.com/darellchua2/opencode-config-template/issues/390)) ([56df622](https://github.com/darellchua2/opencode-config-template/commit/56df622c2ed3fd8bbfbafa5706c7a02a086d0ef0)), closes [#281](https://github.com/darellchua2/opencode-config-template/issues/281)
+
 ## [6.1.0](https://github.com/darellchua2/opencode-config-template/compare/v6.0.1...v6.1.0) (2026-09-14)
 
 ### Features

@@ -11,6 +11,13 @@
 **Diagnostic steps** (if a v2 plugin "does nothing" in Docker):
 1. Check the container binary version — a v1 binary cannot read the `plugins` key at all
 2. Do not trust `docker compose build` green as plugin evidence; assert runtime presence (`/goal` in the web endpoint) instead
+
+> **RESOLVED 2026-09-15 (#387):** the image now installs the v2 binary via the scoped
+> `@opencode/cli` npm package (the legacy `opencode-ai` stays v1-only — `1.18.31` latest).
+> The compose healthcheck now authenticates and asserts goal-command presence in `/api/command`,
+> so this class of inertness fails loudly. Related v2 gotcha folded in: v2 enforces HTTP auth
+> on EVERY route (localhost included) with an auto-generated password — healthchecks must
+> authenticate via the password file the entrypoint materializes.
 **Trade-offs**: The fix (v2 binary bump) also needs a goal-state volume mount (`~/.local/share/opencode-goal-plugin/` sits beside the `opencode-data` volume today) — both folded into #387.
 **Confidence**: 0.9
 **Scope**: project

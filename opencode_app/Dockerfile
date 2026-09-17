@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.title="opencode-config-template" \
       org.opencontainers.image.description="OpenCode standalone web endpoint - configurable agent/skill runner" \
       org.opencontainers.image.source="https://github.com/darellchua2/opencode-config-template"
 
-ARG OPENCODE_VERSION=1.18.20
+ARG OPENCODE_VERSION=2.0.3
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -26,7 +26,10 @@ RUN apt-get update \
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
     PUPPETEER_SKIP_DOWNLOAD=true
 
-RUN npm install -g "opencode-ai@${OPENCODE_VERSION}" \
+# OpenCode v2 ships on npm as the scoped package @opencode/cli (the legacy
+# opencode-ai package remains v1-only and silently ignores the v2 `plugins`
+# key — see LEARNINGS/solutions/docker-v1-binary-ignores-v2-plugins-key.md).
+RUN npm install -g "@opencode/cli@${OPENCODE_VERSION}" \
     typescript \
     ts-node
 
@@ -43,7 +46,9 @@ RUN pip install --no-cache-dir \
 
 RUN useradd -m -d /home/opencode -s /bin/bash opencode
 
-# v2.0: build context is repo root. Copy app + content + the model-resolver assets (deploy/).
+# v2.0: build context is repo root. Copy app + content + the installer assets
+# (installer/: model resolver + tier registry) and the deploy tooling (deploy/:
+# merge-packs + packs).
 ARG OPENCODE_PROVIDER=""
 ARG OPENCODE_PACKS=""
 COPY opencode_app/ /app/
@@ -54,19 +59,20 @@ COPY skills/ /app/.opencode/skills/
 COPY agents/ /app/.opencode/agents/
 COPY plugins/ /app/.opencode/plugins/
 COPY plugins/vibeguard.config.json /app/.opencode/vibeguard.config.json
+COPY installer/ /app/installer/
 COPY deploy/ /app/deploy/
 
 # Bake resolved models into the image at build time (default z.ai unless
 # OPENCODE_PROVIDER build-arg swaps the provider preset). --inject-primary is
 # Docker-only: the default primary is baked in so the web endpoint has a model
 # to serve with. Local (setup.sh) deploys omit it so the user picks at runtime.
-RUN node /app/deploy/resolve-models.mjs \
+RUN node /app/installer/resolve-models.mjs \
         --agents-src /app/.opencode/agents \
         --agents-dest /app/.opencode/agents \
-        --tiers /app/deploy/agent-tiers.json \
-        --default-map /app/deploy/models.default.json \
-        --provider-models /app/deploy/provider-models.json \
-        --presets /app/deploy/provider-presets.json \
+        --tiers /app/installer/agent-tiers.json \
+        --default-map /app/installer/models.default.json \
+        --provider-models /app/installer/provider-models.json \
+        --presets /app/installer/provider-presets.json \
         --inject-primary \
         $([ -n "$OPENCODE_PROVIDER" ] && echo "--provider $OPENCODE_PROVIDER") \
         --config-dest /app/opencode.json \
@@ -90,9 +96,8 @@ RUN if [ -n "$OPENCODE_PACKS" ]; then \
 # Inside the container, 127.0.0.1 is the container itself. Local LLM services
 # live in sibling compose containers, so rewrite provider baseURLs to use Docker
 # service names. Host-based deploys (setup.sh) keep 127.0.0.1 in the source file.
-# NOTE: targets the v2 config shape (providers.<name>.settings.baseURL) —
-# requires a v2 opencode binary; OPENCODE_VERSION above still pins v1 until a
-# v2 npm release ships (tracked as the Docker follow-up on ticket #374).
+# NOTE: targets the v2 config shape (providers.<name>.settings.baseURL);
+# OPENCODE_VERSION above pins the v2 binary via @opencode/cli (#387).
 RUN python3 - <<'PYEOF'
 import json
 path = "/app/opencode.json"
@@ -114,7 +119,9 @@ PYEOF
 
 RUN chmod +x /app/docker-entrypoint.sh \
     && mkdir -p /home/opencode/.local/share/opencode \
+    && mkdir -p /home/opencode/.local/share/opencode-goal-plugin \
     && mkdir -p /home/opencode/.cache \
+    && mkdir -p /home/opencode/.npm \
     && chown -R opencode:opencode /app /home/opencode
 
 # PLAN-GIT-262: bake the privacy-hardened markitdown MCP launcher into the
@@ -132,7 +139,13 @@ ENV OPENCODE_SERVER_PORT=4096 \
 
 EXPOSE 4096
 
+# v2 requires HTTP auth on every route (auto-generates a random password when
+# OPENCODE_SERVER_PASSWORD is unset). docker-entrypoint.sh materializes the
+# effective password at ${AUTH_DIR}/server-password so in-container healthchecks
+# can authenticate. Liveness only — the compose file additionally asserts goal
+# plugin presence.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-    CMD curl -f http://localhost:${OPENCODE_SERVER_PORT}/global/health || exit 1
+    CMD curl -sf -u "opencode:$(cat /home/opencode/.local/share/opencode/server-password 2>/dev/null)" \
+        "http://localhost:${OPENCODE_SERVER_PORT}/api/health" || exit 1
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

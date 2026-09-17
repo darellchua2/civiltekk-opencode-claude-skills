@@ -50,22 +50,22 @@ migration, and how to revert.
 ### New concepts
 
 - **4 tiers**: `reasoning`, `fast`, `docs`, `vision`. Each agent is categorized
-  in `deploy/agent-tiers.json`.
-- **Resolver** (`deploy/resolve-models.mjs`): injects concrete `model:` into the
+  in `installer/agent-tiers.json`.
+- **Resolver** (`installer/resolve-models.mjs`): injects concrete `model:` into the
   *deployed* agent files at deploy time + patches `opencode.json`.
 - **Override files** (resolution precedence, highest first):
   1. `<project>/.opencode/agent-overrides.json` (per-agent, project-local)
   2. `~/.config/opencode/agent-overrides.json` (per-agent, global)
   3. `<project>/.opencode/models.json` (tier map, project-local)
   4. `~/.config/opencode/models.json` (tier map, global)
-  5. `deploy/models.default.json` (Z.AI defaults)
+  5. `installer/models.default.json` (Z.AI defaults)
 
 > **Default tier models:** `reasoning` → `zai-coding-plan/glm-5.3`. **Image analysis (#283)**
 > is not a vision tier — `image-analyzer-subagent`/`error-resolver-subagent` run on `docs`
 > (`glm-4.7`) and obtain image content via `zai-vision-analysis-skill` (free `glm-4.6v-flash`
 > through a direct Z.AI API call, since models.dev doesn't list it). The `vision` tier
 > (`zai/glm-4.6v`) is opt-in paid only. The resolver also runs an **exposed-model guard** at
-> deploy (`--provider-models deploy/provider-models.json`, aligned to models.dev) that fails
+> deploy (`--provider-models installer/provider-models.json`, aligned to models.dev) that fails
 > fast if a tier/source-config pin references a model its provider doesn't serve.
 
 ---
@@ -204,6 +204,83 @@ Then `./deploy/setup.sh --models-only`.
 
 ---
 
+## Context pruning (DCP) → v2 checkpoint compaction (#385)
+
+**Verified against opencode.ai v2 docs 2026-09-14.** v1's DCP plugin (dynamic
+context pruning) and the `compaction.prune` / `compaction.tail_turns` config
+fields are gone in v2 — v1 plugin implementations do not load at all, and both
+legacy fields are ignored with a warning. Native checkpoint compaction
+replaces them.
+
+| | v1 DCP / `prune` | v2 checkpoint compaction |
+|---|---|---|
+| When | Every model request, continuously | Episodic — preflight check before each model call, plus one-shot overflow recovery |
+| What | Old tool outputs deleted/abbreviated in place | Older context replaced by a structured summary (`## Objective` / `## Next Move`) + newest `keep.tokens` retained; tool outputs in the tail shortened to 2,000 chars, never dropped |
+| Visible | Silent mutation | Checkpoint message in the transcript; earlier messages stay stored |
+| Info recovery | None — pruned data is gone | Summary carries decisions/state forward; later compactions update it |
+
+The preflight check fires at:
+
+```text
+estimated tokens >= min(input limit - buffer, context limit - max(output reserve, buffer))
+```
+
+### Why v2 dropped pruning
+
+These reasons are repo analysis of the documented v2 behavior, not quoted
+opencode rationale.
+
+1. **Pruning deletes information; summaries relocate it.** A pruned test-run
+   output is forgotten — the model re-runs verified work. A checkpoint summary
+   says "tests pass after X fix."
+2. **Per-request mutation invalidates provider prompt-cache prefixes** every
+   turn → full input price repeatedly. Checkpoints change the prefix rarely,
+   so cache hits stay high between them. (Cache mechanics are inference from
+   provider pricing behavior, not an opencode-docs statement.)
+3. **Tool-pair integrity.** Deleting a tool output risks orphaning its
+   `tool_call` (an API error on OpenAI/Anthropic). Token-budget retention
+   never drops a message — tail content may be capped, never removed.
+4. **Composability + auditability.** v2 can delegate to provider-native
+   compaction (e.g. OpenAI Responses checkpoints), which a local prune layer
+   cannot compose with; checkpoints are visible records, not silent rewrites.
+
+### Native replacement mapping
+
+| DCP-era job | v2 native knob |
+|---|---|
+| History shrinking | `compaction.auto` (default on) + `keep.tokens` (default 15000) + `buffer` (default 20000) |
+| Oversized tool results | 2,000-char cap in the retained tail; globally via `tool_output.max_lines` / `max_bytes` (defaults 2000 / 51200) |
+| Fixed overhead — unused tools/skills riding every request | Skill/MCP permission allowlists (the `lean` skill profile already ships this) |
+| v1 `experimental.compaction.autocontinue` loop keep-alive | Native: a successful checkpoint rebuilds the same pending model step without spending another agent step |
+
+### Token-reduction levers, ranked
+
+1. **Trim fixed overhead** — every enabled MCP server's tool schemas ride on
+   every request; disabling unused servers is the biggest permanent win.
+2. **Tune compaction** — lower `keep.tokens` (8-12k) and raise `buffer` (~30k)
+   to fire earlier and keep the tail small. Over-tightening costs extra
+   summarization calls and re-reads of forgotten files.
+3. **DCP-style plugin port** (`session.hook("context")` eliding old tool
+   outputs) — **not recommended**: it re-accepts cache invalidation for the
+   weakest lever. (The cache claim is inference from provider prompt-caching
+   mechanics — cache reads bill at a fraction of input price — not an
+   opencode-docs statement.)
+
+Keep `warming` off (the default) — periodic keep-alive requests spend
+tokens by design.
+
+### Verify
+
+- `"compaction": { "auto": false }` — the documented kill switch for
+  automatic compaction (manual compaction still works).
+- Measure before/after any tuning via your provider's usage dashboard
+  instead of trusting intuition.
+
+Sources: opencode.ai/v2/docs/compaction, /v2/docs/config,
+/v2/docs/build/plugins/migrate-v1, /v2/docs/migrate-v1
+
+---
+
 ## Docker
 
 Models are resolved at **build time**. To build with a non-default provider:
@@ -250,7 +327,7 @@ Backups are retained per `--keep-backups` (default 5 most recent).
 - **`Node.js is required to resolve agent models`** — install Node.js v20+ first;
   the resolver is a Node script.
 - **An agent got the wrong model** — check its tier in
-  `deploy/agent-tiers.json`, then check `~/.config/opencode/models.json` (tier
+  `installer/agent-tiers.json`, then check `~/.config/opencode/models.json` (tier
   map) and `agent-overrides.json` (per-agent pin). Run `--models-only --dry-run`
   to preview the resolution table.
 - **My custom model disappeared** — it should have been lifted into
@@ -258,5 +335,5 @@ Backups are retained per `--keep-backups` (default 5 most recent).
 
 ---
 
-See `PLANS/PLAN-BT-74.md` for the full design and `deploy/provider-presets.json`
+See `PLANS/PLAN-BT-74.md` for the full design and `installer/provider-presets.json`
 for the available provider model IDs.

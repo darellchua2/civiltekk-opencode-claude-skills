@@ -1,4 +1,4 @@
-// deploy/source.mjs — source isolation module
+// installer/source.mjs — source isolation module
 //
 // Single seam for all reads from {skills,agents}/ at the repo root.
 // The eventual flip to per-skill HTTP remote fetch changes ONLY this file;
@@ -16,7 +16,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DEFAULT_SOURCE_ROOT = join(__dirname, ".."); // deploy/.. = repo root
+const DEFAULT_SOURCE_ROOT = join(__dirname, ".."); // installer/.. = repo root
 
 const skillDir = (root) => join(root, "skills");
 const agentDir = (root) => join(root, "agents");
@@ -61,7 +61,7 @@ export async function readAgent(stem, sourceRoot = DEFAULT_SOURCE_ROOT) {
   return { content, frontmatter: extractFrontmatter(content), path: agentPath };
 }
 
-// ponytail: self-check — `node deploy/source.mjs` exercises all three exports.
+// ponytail: self-check — `node installer/source.mjs` exercises all three exports.
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
 if (isMain) {
   const assert = (cond, msg) => { if (!cond) { console.error(`FAIL: ${msg}`); process.exit(1); } };

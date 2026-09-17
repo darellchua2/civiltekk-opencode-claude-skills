@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// deploy/init.mjs — opencode-init
+// installer/init.mjs — opencode-init
 //
 // Project-scoped selective installer. Copies a curated subset of this repo's
 // agents + skills into a target project's .opencode/ and writes a project
@@ -37,17 +37,17 @@ import { singleSelect, multiSelect, textInput, confirm } from "./tui-primitives.
 import { readAgent, readSkill } from "./source.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO = dirname(__dirname); // deploy/.. = repo root
-const DEPLOY = join(REPO, "deploy");
+const REPO = dirname(__dirname); // installer/.. = repo root
+const INSTALLER = __dirname; // installer dir (post-split); source files co-located
 const AGENTS_SRC = join(REPO, "agents");
 const SKILLS_SRC = join(REPO, "skills");
-const REGISTRY_FILE = join(DEPLOY, "registry.json");
-const PRESETS_DIR = join(DEPLOY, "presets");
-const DEPMAP_FILE = join(DEPLOY, "dependency-map.json");
-const TIERS_FILE = join(DEPLOY, "agent-tiers.json");
-const MODELS_DEFAULT = join(DEPLOY, "models.default.json");
-const PROVIDER_MODELS = join(DEPLOY, "provider-models.json");
-const RESOLVER = join(DEPLOY, "resolve-models.mjs");
+const REGISTRY_FILE = join(INSTALLER, "registry.json");
+const PRESETS_DIR = join(INSTALLER, "presets");
+const DEPMAP_FILE = join(INSTALLER, "dependency-map.json");
+const TIERS_FILE = join(INSTALLER, "agent-tiers.json");
+const MODELS_DEFAULT = join(INSTALLER, "models.default.json");
+const PROVIDER_MODELS = join(INSTALLER, "provider-models.json");
+const RESOLVER = join(INSTALLER, "resolve-models.mjs");
 const SOURCE_OC = join(REPO, "opencode_app/opencode.json");
 const BUILTINS = new Set(["explore", "general", "scout", "build", "plan", "compaction", "title", "summary"]);
 const USER_OC = join(os.homedir(), ".config/opencode");
@@ -96,7 +96,7 @@ const toList = (v) => (v ? String(v).split(",").map((s) => s.trim()).filter(Bool
 // ─────────────────────────── data loading ───────────────────────────────
 async function loadRegistry() {
   const reg = await readJsonMaybe(REGISTRY_FILE);
-  if (!reg) die(`registry not found at ${REGISTRY_FILE}. Run \`node ${join(DEPLOY, "build-registry.mjs")}\` first.`);
+  if (!reg) die(`registry not found at ${REGISTRY_FILE}. Run \`node ${join(INSTALLER, "build-registry.mjs")}\` first.`);
   return reg;
 }
 async function loadPresets() {
@@ -217,7 +217,7 @@ async function cmdDescribe(name, reg) {
     const tierModel = await tierToModel(a.tier);
     const modelAvailable = await isModelAvailable(tierModel);
     const out = { ...a, kind: "agent", resolvedModel: tierModel, modelAvailable };
-    if (!modelAvailable) out.modelAvailabilityNote = `tier '${a.tier}' resolves to '${tierModel}' which is not in ${relative(DEPLOY, PROVIDER_MODELS)} — may be unselectable.`;
+    if (!modelAvailable) out.modelAvailabilityNote = `tier '${a.tier}' resolves to '${tierModel}' which is not in ${relative(INSTALLER, PROVIDER_MODELS)} — may be unselectable.`;
     process.stdout.write(JSON.stringify(out, null, 2) + "\n");
     return;
   }
@@ -235,7 +235,7 @@ async function cmdExpand(presetName, reg, depMap) {
 // tier -> model lookup (from models.default.json, optionally overridden by --provider)
 async function tierToModel(tier, provider) {
   if (provider) {
-    const presets = await readJsonMaybe(join(DEPLOY, "provider-presets.json"));
+    const presets = await readJsonMaybe(join(INSTALLER, "provider-presets.json"));
     const p = presets && presets[provider];
     if (p) return tier === "primary" ? p.primary : (p.tiers && p.tiers[tier]) || null;
   }
@@ -548,10 +548,18 @@ async function cmdAdd(args, opts, reg, depMap) {
     sel = resolveSelection(isAgent ? { agents: [name] } : { skills: [name] }, reg, depMap);
   }
 
+  // --format → --target deprecated alias (#377): map values verbatim, warn once.
+  if (opts.format !== undefined) {
+    if (opts.target !== undefined)
+      die("cannot use --format and --target together (--format is deprecated; use --target)", 2);
+    opts.target = opts.format;
+    console.error("warning: --format is deprecated; use --target (values: opencode, claude, both)");
+  }
+
   const project = opts.project === true ? process.cwd() : opts.project;
   if (project) {
-    if (opts.format && opts.format !== "opencode")
-      console.error(`note: --format ${opts.format} applies to user scope only; --project uses opencode format.`);
+    if (opts.target && opts.target !== "opencode")
+      console.error(`note: --target ${opts.target} applies to user scope only; --project uses opencode target.`);
     opts.project = project;
     await writeInstall(sel, opts, reg, depMap);
     return;
@@ -561,17 +569,22 @@ async function cmdAdd(args, opts, reg, depMap) {
 
 async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const dry = !!opts.dryRun;
-  const format = opts.format || "opencode";
-  if (!["opencode", "claude", "both"].includes(format))
-    die(`invalid format '${format}'. Use: opencode, claude, or both.`, 2);
-  const doOc = format === "opencode" || format === "both";
-  const doClaude = format === "claude" || format === "both";
+  const target = opts.target || "opencode";
+  if (!["opencode", "claude", "both"].includes(target))
+    die(`invalid target '${target}'. Use: opencode, claude, or both.`, 2);
+  const doOc = target === "opencode" || target === "both";
+  const doClaude = target === "claude" || target === "both";
+  // Claude Code target installs skills only — surface the skip in the preview too (#377).
+  const claudeSkipWarning = doClaude && sel.agents.length
+    ? `warning: ${sel.agents.length} agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)`
+    : null;
 
   if (dry) {
+    if (claudeSkipWarning) console.error(claudeSkipWarning);
     process.stdout.write(JSON.stringify({
       dryRun: true,
       scope: "user",
-      format,
+      target,
       destination: doOc ? USER_OC : USER_CLAUDE_SKILLS,
       agents: sel.agents,
       skills: sel.skills,
@@ -602,13 +615,15 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   // write to Claude paths (same SKILL.md format — straight directory copy)
   if (doClaude) await writeClaudeFormat(sel);
 
-  // update user-scope manifest (tracks ALL formats for uninstall)
+  // update user-scope manifest (tracks ALL targets for uninstall). Agents are
+  // recorded only for targets that actually install them (opencode/both) —
+  // claude-only installs place no agent files anywhere (#377).
   await mkdir(USER_OC, { recursive: true });
   const prevManifest = (await readJsonMaybe(USER_MANIFEST)) || { agents: [], skills: [] };
   const manifest = {
     generatedAt: new Date().toISOString(),
     tool: "opencode-skill",
-    agents: [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort(),
+    agents: doOc ? [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort() : (prevManifest.agents || []),
     skills: [...new Set([...(prevManifest.skills || []), ...sel.skills])].sort(),
   };
   await writeFile(USER_MANIFEST, JSON.stringify(manifest, null, 2) + "\n", "utf8");
@@ -735,14 +750,11 @@ function stripModelLine(content) {
 
 async function writeClaudeFormat(sel) {
   await mkdir(USER_CLAUDE_SKILLS, { recursive: true });
+  // Claude Code target installs skills only (#377): agents are opencode-specific
+  // and Claude Code silently ignores agent files written as SKILL.md.
+  if (sel.agents.length)
+    console.error(`warning: ${sel.agents.length} agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)`);
   let count = 0;
-  for (const stem of sel.agents) {
-    const agent = await readAgent(stem);
-    const dir = join(USER_CLAUDE_SKILLS, stem);
-    await mkdir(dir, { recursive: true });
-    await writeFile(join(dir, "SKILL.md"), stripModelLine(agent.content), "utf8");
-    count++;
-  }
   for (const sname of sel.skills) {
     const skill = await readSkill(sname);
     const dst = join(USER_CLAUDE_SKILLS, sname);
@@ -904,7 +916,7 @@ async function runInteractive(reg, depMap, opts) {
   const mSel = await multiSelect("MCP servers", Object.keys((oc && oc.mcp && oc.mcp.servers) || {}).map((k) => ({ label: k, value: k, checked: mcps.includes(k) })));
   if (mSel.aborted) return null;
   // 7. provider (simple single-select; default = use default tier map)
-  const presets = await readJsonMaybe(join(DEPLOY, "provider-presets.json"));
+  const presets = await readJsonMaybe(join(INSTALLER, "provider-presets.json"));
   const provKeys = presets ? Object.keys(presets).filter((k) => !k.startsWith("$")) : [];
   const pSel = await singleSelect("Model provider (tier resolution)", [{ label: "default (models.default.json)", value: "" }, ...provKeys.map((k) => ({ label: k, value: k }))], 0);
   if (pSel.aborted) return null;
@@ -959,7 +971,7 @@ FLAGS
   --prune              remove opencode-init-owned entries absent from the new set
   --permit             (user scope) backup opencode.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
-  --format <f>         (add) target format: opencode (default), claude, or both
+  --target <t>         (add) install target: opencode (default), claude, or both (--format is a deprecated alias)
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and

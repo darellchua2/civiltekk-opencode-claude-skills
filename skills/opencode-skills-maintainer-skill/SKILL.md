@@ -30,7 +30,7 @@ for dir in */; do
   [ "${dir%/}" = "$(grep '^name:' "$f" | head -1 | cut -d' ' -f2)" ] || echo "name/dir mismatch: $dir"
   python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$f" 2>/dev/null || echo "bad YAML: $dir"
 done
-node deploy/build-registry.mjs --check   # from repo root
+node installer/build-registry.mjs --check  # from repo root
 ```
 
 ## Bloat check (lean standard — from `opencode-skill-creation-skill`)

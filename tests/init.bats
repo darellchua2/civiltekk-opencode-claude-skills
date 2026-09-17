@@ -1,12 +1,12 @@
 #!/usr/bin/env bats
 
-# Tests for deploy/init.mjs (opencode-init) — the project-scoped selective installer.
+# Tests for installer/init.mjs (opencode-init) — the project-scoped selective installer.
 # Covers the flag path (primary contract); the interactive TUI is not tested here
 # (needs a real TTY). See PLANS/PLAN-GIT-286 Phase 5.4.
 
 REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
-INIT="node ${REPO}/deploy/init.mjs"
-REG="${REPO}/deploy/registry.json"
+INIT="node ${REPO}/installer/init.mjs"
+REG="${REPO}/installer/registry.json"
 OC="${REPO}/opencode_app/opencode.json"
 
 # JSON helper: extract a value/length via python3 (already a setup.sh dependency).
@@ -181,4 +181,30 @@ EOC
   local cfg="$HOME/.config/opencode/opencode.json"
   jq_get "len([r for r in d['agents']['build']['permissions'] if r['resource'] == 'explore'])" < "$cfg" | grep -q '^0$'
   jq_get "len([r for r in d['agents']['build']['permissions'] if r['resource'] == 'code-review-subagent'])" < "$cfg" | grep -q '^1$'
+}
+
+@test "--target claude writes only ~/.claude/skills/<skill> (#377)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME"
+  $INIT add tdd-workflow-skill --target claude --yes >/dev/null 2>&1
+  [ -f "$HOME/.claude/skills/tdd-workflow-skill/SKILL.md" ]
+  [ ! -d "$HOME/.config/opencode/skills/tdd-workflow-skill" ]
+}
+
+@test "--target claude with an agent: warns, writes nothing for it, exit 0 (#377)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME"
+  run bash -c "$INIT add tdd-subagent --target claude --yes 2>&1 >/dev/null"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "agent(s) skipped"
+  [ ! -d "$HOME/.claude/skills/tdd-subagent" ]
+}
+
+@test "--format claude alias still works with deprecation warning (#377)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME"
+  run bash -c "$INIT add tdd-workflow-skill --format claude --yes 2>&1 >/dev/null"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "deprecated"
+  [ -f "$HOME/.claude/skills/tdd-workflow-skill/SKILL.md" ]
 }

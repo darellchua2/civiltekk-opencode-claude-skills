@@ -1,5 +1,5 @@
 {
-  "$comment": "Preset 'research' for deploy/init.mjs (--preset research). Derived by /tmp/gen-presets.mjs from deploy/registry.json; edit via the generator, not by hand.",
+  "$comment": "Preset 'research' for installer/init.mjs (--preset research). Derived by /tmp/gen-presets.mjs from installer/registry.json; edit via the generator, not by hand.",
   "name": "research",
   "description": "Autonomous loops: autoresearch (code/ml/research) + loop-operator + paper-writing skills. ML loop needs an NVIDIA GPU.",
   "agents": [

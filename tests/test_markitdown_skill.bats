@@ -102,7 +102,7 @@ AGENTS_WITH_SKILL_GRANT=(
   # Category counts drift as skills are merged/recategorized (BT-157);
   # README's Configuration count must equal registry.json's.
   actual=$(grep -oE '\*\*Configuration\*\* \([0-9]+\)|Configuration \([0-9]+\)' README.md | grep -oE '[0-9]+' | head -1)
-  expected=$(node -e "const r=require('./deploy/registry.json'); console.log((r.skills||[]).filter(s=>s.category==='Configuration').length)")
+  expected=$(node -e "const r=require('./installer/registry.json'); console.log((r.skills||[]).filter(s=>s.category==='Configuration').length)")
   echo "README.md Configuration count: $actual, registry: $expected" >&3
   [ "$actual" = "$expected" ]
 }

@@ -1,5 +1,5 @@
 {
-  "$comment": "Preset 'backend' for deploy/init.mjs (--preset backend). Derived by /tmp/gen-presets.mjs from deploy/registry.json; edit via the generator, not by hand.",
+  "$comment": "Preset 'backend' for installer/init.mjs (--preset backend). Derived by /tmp/gen-presets.mjs from installer/registry.json; edit via the generator, not by hand.",
   "name": "backend",
   "description": "Server/devops-lite: Python backend/packaging, DB migrations, API design, security, auth, docker, observability.",
   "agents": [

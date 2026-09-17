@@ -7,7 +7,7 @@ Repo conventions only. Usage docs (install, deploy commands, file tree, chaining
 Multi-mode OpenCode configurator:
 1. **User-space deploy** — `./deploy/setup.sh` copies config, agents, skills to `~/.config/opencode/`.
 2. **Docker standalone** — `docker compose up -d` launches a web endpoint via `opencode_app/`.
-3. **Individual install** — `npx github:darellchua2/opencode-config-template add <name>` pulls a single skill/agent (shadcn-style copy model). Default target `~/.config/opencode/` (auto-discovered, no config touch); `--project` opts into `./.opencode/`; `--format claude|both` writes `~/.claude/skills/` (Agent Skills open standard). See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
+3. **Individual install** — `npx github:darellchua2/opencode-config-template add <name>` pulls a single skill/agent (shadcn-style copy model). Default target `~/.config/opencode/` (auto-discovered, no config touch); `--project` opts into `./.opencode/`; `--target claude|both` writes `~/.claude/skills/` (Agent Skills open standard; `--format` is a deprecated alias). See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
 
 ## Source of Truth
 
@@ -32,7 +32,7 @@ Project-level agents must NOT be counted in setup scripts or README.
 
 ## Subagent Model Tiering (v2.0)
 
-Tiers live in `deploy/agent-tiers.json`; models are resolved at deploy time from `deploy/models.default.json` (Z.AI defaults) and are provider-agnostic — swap via `deploy/provider-presets.json` without editing agent files. See `MIGRATION.md`.
+Tiers live in `installer/agent-tiers.json`; models are resolved at deploy time from `installer/models.default.json` (Z.AI defaults) and are provider-agnostic — swap via `installer/provider-presets.json` without editing agent files. See `MIGRATION.md`.
 
 | Tier | Default (Z.AI) | Use for |
 |------|----------------|---------|
@@ -46,7 +46,7 @@ Pick by purpose: correctness-critical → `reasoning`; exploratory → `fast`; d
 
 **Vision fallback:** when native perception is unavailable ("model does not support image input", text-only session), image-analyzer and error-resolver fall back to the inline bash recipe embedded in `image-analyzer-subagent`, calling the Z.AI vision API directly at `glm-5v-turbo` — a different model from the native `glm-5.3-flash` (coding-plan endpoint preferred, PAAS fallback; requires `ZAI_API_KEY`). Free `glm-4.6v-flash` is a cost-constrained option, not the default.
 
-**Resolution precedence (highest wins):** project `.opencode/agent-overrides.json` > global `~/.config/opencode/agent-overrides.json` > project `.opencode/models.json` > global `~/.config/opencode/models.json` > `deploy/models.default.json`. Swap provider: `setup.sh --provider <p>`; mix per tier: `setup.sh --mix` (stored in `models.json`, re-resolve with `--models-only`); per-agent pin: global `agent-overrides.json`. Built-ins `explore`→`fast` and `general`→`reasoning` are patched in `opencode.json`, not the tier registry.
+**Resolution precedence (highest wins):** project `.opencode/agent-overrides.json` > global `~/.config/opencode/agent-overrides.json` > project `.opencode/models.json` > global `~/.config/opencode/models.json` > `installer/models.default.json`. Swap provider: `setup.sh --provider <p>`; mix per tier: `setup.sh --mix` (stored in `models.json`, re-resolve with `--models-only`); per-agent pin: global `agent-overrides.json`. Built-ins `explore`→`fast` and `general`→`reasoning` are patched in `opencode.json`, not the tier registry.
 
 ## Adding Skills or Subagents — Sync Rules
 
@@ -77,7 +77,7 @@ Skill gating does NOT belong in SKILL.md — it lives in the `permissions` array
 
 **Agents — runtime-read keys:** `description` (required), `steps`, `disabled`, `system` (JSON prompt key; legacy `prompt` auto-translated), `model` (string or `model#variant`), `permissions` (NOT deprecated `tools`; array of `{action,resource,effect}` rules), `mode`, `hidden`, `color`, `request.body.temperature`, `request.body.top_p`. Source files ship no `model:` — tiers inject it at deploy time. `category` is installer-registry-only. Source agent `.md` files still use the legacy key spellings (auto-translated by opencode v2); a normalisation pass to native v2 frontmatter is deferred.
 
-After ANY frontmatter change: run `node deploy/build-registry.mjs` and commit `registry.json`.
+After ANY frontmatter change: run `node installer/build-registry.mjs` and commit `registry.json`.
 
 ## Return Contract
 

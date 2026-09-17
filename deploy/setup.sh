@@ -96,15 +96,16 @@ UPDATE_LOG="${CONFIG_DIR}/update.log"
 
 # v2.0 model resolution (tier-based, provider-agnostic)
 DEPLOY_DIR="${REPO_DIR}/deploy"
-RESOLVER_SCRIPT="${DEPLOY_DIR}/resolve-models.mjs"
+INSTALLER_DIR="${REPO_DIR}/installer"
+RESOLVER_SCRIPT="${INSTALLER_DIR}/resolve-models.mjs"
 MERGE_PACKS_SCRIPT="${DEPLOY_DIR}/merge-packs.mjs"
 PACKS_DIR="${DEPLOY_DIR}/packs"
 APPLY_SKILL_PROFILE_SCRIPT="${DEPLOY_DIR}/apply-skill-profile.mjs"
 SKILL_PROFILES_FILE="${DEPLOY_DIR}/skill-profiles.json"
 TUI_SCRIPT="${DEPLOY_DIR}/tui.mjs"
-AGENT_TIERS="${DEPLOY_DIR}/agent-tiers.json"
-MODELS_DEFAULT_MAP="${DEPLOY_DIR}/models.default.json"
-PROVIDER_PRESETS="${DEPLOY_DIR}/provider-presets.json"
+AGENT_TIERS="${INSTALLER_DIR}/agent-tiers.json"
+MODELS_DEFAULT_MAP="${INSTALLER_DIR}/models.default.json"
+PROVIDER_PRESETS="${INSTALLER_DIR}/provider-presets.json"
 # Global user overrides (~/.config/opencode/)
 USER_MODELS_MAP="${CONFIG_DIR}/models.json"
 USER_OVERRIDES="${CONFIG_DIR}/agent-overrides.json"
@@ -3004,8 +3005,8 @@ run_resolver() {
     # Deploy-time exposed-model guard (#281): fail-fast if a tier/source pin
     # references a model its provider doesn't serve. Guarded by file presence so
     # older deploys without provider-models.json are unaffected.
-    if [ -f "${DEPLOY_DIR}/provider-models.json" ]; then
-        extra_args="$extra_args --provider-models ${DEPLOY_DIR}/provider-models.json"
+    if [ -f "${INSTALLER_DIR}/provider-models.json" ]; then
+        extra_args="$extra_args --provider-models ${INSTALLER_DIR}/provider-models.json"
     fi
 
     local project_map_arg=""
@@ -3853,7 +3854,7 @@ print_summary() {
     # opencode.json status
     if [ -f "$CONFIG_FILE" ]; then
         echo "✓ opencode.json: Copied to ${CONFIG_DIR}/"
-        primary_model=$(node -pe "JSON.parse(require('fs').readFileSync('${REPO_DIR}/deploy/models.default.json','utf8')).primary" 2>/dev/null || echo "zai-coding-plan/glm-5.3")
+        primary_model=$(node -pe "JSON.parse(require('fs').readFileSync('${REPO_DIR}/installer/models.default.json','utf8')).primary" 2>/dev/null || echo "zai-coding-plan/glm-5.3")
         echo "    - Model: ${primary_model}"
         echo "    - Default agent: build"
     else
@@ -3997,12 +3998,12 @@ print_next_steps() {
 ################################################################################
 
 # Setup the opencode-init symlink (project-scoped selective installer CLI).
-# Symlinks <repo>/deploy/init.mjs -> ~/.local/bin/opencode-init so the CLI is on
+# Symlinks <repo>/installer/init.mjs -> ~/.local/bin/opencode-init so the CLI is on
 # PATH and invocable from any project (the LLM uses it via the routing rule in
 # AGENTS.md). Idempotent: refreshes a stale link, skips a correct one. Additive —
 # does not touch any other setup.sh behavior.
 setup_opencode_init_symlink() {
-    local init_src="${REPO_DIR}/deploy/init.mjs"
+    local init_src="${REPO_DIR}/installer/init.mjs"
     if [ ! -f "$init_src" ]; then
         log_warn "opencode-init source not found at ${init_src}; skipping symlink"
         return 0

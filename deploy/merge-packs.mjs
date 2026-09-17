@@ -6,7 +6,7 @@
 // flipping `mcp.servers.<server>.disabled` (packs carry `disabled: false`),
 // appending `permissions` array rules.
 //
-// Companion to deploy/resolve-models.mjs. Zero external dependencies — Node
+// Companion to installer/resolve-models.mjs. Zero external dependencies — Node
 // built-ins only (fs, path). Mirrors resolve-models.mjs conventions:
 //   - ES modules, async main(), camelCase arg parsing
 //   - readJsonMaybe / stripJsonComments helpers

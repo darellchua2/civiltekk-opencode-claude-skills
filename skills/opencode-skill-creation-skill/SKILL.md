@@ -34,15 +34,19 @@ description: <1-1024 chars> # required; house style ≤50 words, preserve trigge
 license: Apache-2.0         # house default
 compatibility: opencode
 metadata:                   # optional string map; house sub-keys: protocol, pattern ONLY
-category: <registry-group>  # installer-registry-only (build-registry.mjs, init.mjs, setup.sh counts)
+category: <registry-group>  # installer-registry-only (build-registry/init/setup counts)
 ---
 ```
 
-Unknown frontmatter fields are ignored by OpenCode. After ANY frontmatter change: `node deploy/build-registry.mjs` and commit `registry.json`.
+Unknown frontmatter fields are ignored by OpenCode. After ANY frontmatter change: `node installer/build-registry.mjs` and commit `registry.json`.
 
 ## Content structure
 
-Minimum: `## What I do` (3–7 capability bullets), `## When to use me` (specific scenarios + not-for boundaries). Everything else only if it carries house signal. Skills live at `opencode_app/.opencode/skills/<name>/SKILL.md` (source of truth — never deployed copies).
+Unknown frontmatter fields are ignored by OpenCode. `category` is installer-registry-only (required by this repo's tooling). After any frontmatter change, run `node installer/build-registry.mjs` and commit `registry.json`.
+
+## Content structure
+
+Minimum: `## What I do` (3–7 capability bullets), `## When to use me` (specific scenarios + not-for boundaries). Everything else only if it carries house signal. Skills live at root `skills/<name>/SKILL.md` (source of truth — never deployed copies, never through the `opencode_app/.opencode/` symlink bridge).
 
 ## Skill permissions (v2)
 
@@ -65,7 +69,7 @@ ALWAYS `read` before `write`/`edit` on existing files — `write` overwrites sil
 ```bash
 python3 -c "import yaml; yaml.safe_load(open('skills/<name>/SKILL.md'))"  # YAML valid
 grep '^name:\|^description:' skills/<name>/SKILL.md                        # required fields
-node deploy/build-registry.mjs --check                                     # registry in sync
+node installer/build-registry.mjs --check                                   # registry in sync
 ```
 
 > Removed 2026-09: the 7-step ceremony template, prompt templates, bash name-validation scripts, per-issue walkthroughs, and the padded example output — they were the regrowth engine. House contract verified against opencode.ai v2 docs in the repo's AGENTS.md §Skill / Agent Frontmatter Contract.
