@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.0.0](https://github.com/darellchua2/opencode-config-template/compare/v8.0.0...v9.0.0) (2026-09-17)
+
+### ⚠ BREAKING CHANGES
+
+* **setup:** single install path + npx update command (#379) (#396)
+
+### Features
+
+* **setup:** single install path + npx update command ([#379](https://github.com/darellchua2/opencode-config-template/issues/379)) ([#396](https://github.com/darellchua2/opencode-config-template/issues/396)) ([9cda837](https://github.com/darellchua2/opencode-config-template/commit/9cda8370ca6f6a6e958a2caeb9109e41b1d89bcd))
+
 ## [8.0.0](https://github.com/darellchua2/opencode-config-template/compare/v7.1.1...v8.0.0) (2026-09-17)
 
 ### ⚠ BREAKING CHANGES
