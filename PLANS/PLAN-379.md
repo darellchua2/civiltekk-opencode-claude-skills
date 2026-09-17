@@ -8,11 +8,11 @@
 
 From ticket #379, re-validated @ `ca5beaf`; amended after plan review (ARCH-1..8, REQ-1..6 folded in):
 
-- [ ] New `tests/update.bats`: fresh-install → mutate source → `update` re-copies; orphan reported not deleted; `--prune` removes; legacy manifest without `entries` upgrades cleanly; no-mutation idempotence (`unchanged`); `--dry-run` writes nothing
-- [ ] Delegated-deploy bats (new, fake HOME): `init.mjs add --all --yes` populates the manifest with registry-complete entries (counts compared dynamically against `registry.json`) — promoted to the primary AC-2 check (no end-to-end setup.sh harness exists — review-verified)
-- [ ] No setup.sh full-deploy path still copies agents/skills directly (grep gates keyed to avoid the `lift-only` false positive)
-- [ ] README "Testing & Development" section + documented redeploy backup/clobber contract
-- [ ] bats full suite green; registry drift clean; public `npx … add <name>` unchanged; Dockerfile resolver call unchanged
+- [x] New `tests/update.bats`: fresh-install → mutate source → `update` re-copies; orphan reported not deleted; `--prune` removes; legacy manifest without `entries` upgrades cleanly; no-mutation idempotence (`unchanged`); `--dry-run` writes nothing
+- [x] Delegated-deploy bats (new, fake HOME): `init.mjs add --all --yes` populates the manifest with registry-complete entries (counts compared dynamically against `registry.json`) — promoted to the primary AC-2 check (no end-to-end setup.sh harness exists — review-verified)
+- [x] No setup.sh full-deploy path still copies agents/skills directly (grep gates keyed to avoid the `lift-only` false positive)
+- [x] README "Testing & Development" section + documented redeploy backup/clobber contract
+- [x] bats full suite green; registry drift clean; public `npx … add <name>` unchanged; Dockerfile resolver call unchanged
 
 **Re-validation notes:** agents are written today by `resolve-models.mjs` (copy + model inject, via `run_resolver` `--agents-src/--agents-dest`), skills by the rsync loop in `setup_config` (:2548-2562; prompt default-`n` means `--yes` historically never clobbered). `run_resolver` is a SHARED helper serving three modes — deploy (:3333), `--models-only` (:4079), `--migrate-only` (:4094). `resolve-models.mjs` **hard-requires** `--agents-src` in non-lift mode (:120-128, exit 2 — review-proven). Migration+lift live INSIDE `deploy_agents` (:3329), before `run_resolver` (:3333); `setup_config` (:4239) runs BEFORE migration and has early-returns. `init.mjs` has model injection (`tierToModel`) but lacks the resolver's user precedence; manifest write :615-626; `cmdRemove` :763; dispatch :809-813; no `--all`, no `update`.
 
@@ -85,12 +85,12 @@ From ticket #379, re-validated @ `ca5beaf`; amended after plan review (ARCH-1..8
 
 ### Phase 5: Docs + final sweep (5d)
 
-- [ ] **5.1** `README.md`: "Testing & Development" section — clone + `node installer/init.mjs add X --dry-run`; `npm link` for the bin; branch testing `npx github:darellchua2/opencode-config-template#<branch> add X --dry-run`; sandboxed `HOME=<tmp>`; CI note (`--yes`/`--dry-run`); `update` example; PLUS the redeploy contract: setup snapshots existing skills/agents to `content-backup` before overwriting (force-copy on `--yes`)
+- [x] **5.1** `README.md`: "Testing & Development" section — clone + `node installer/init.mjs add X --dry-run`; `npm link` for the bin; branch testing `npx github:darellchua2/opencode-config-template#<branch> add X --dry-run`; sandboxed `HOME=<tmp>`; CI note (`--yes`/`--dry-run`); `update` example; PLUS the redeploy contract: setup snapshots existing skills/agents to `content-backup` before overwriting (force-copy on `--yes`)
     — **Why:** Ticket 5d + the data-loss posture change must be documented (ARCH-4 follow-through).
     — **Done when:** section exists with all recipes + contract line.
     — **Consumers affected:** contributors, redeploying users.
 
-- [ ] **5.2** Final sweep: reword `cmdRemove`'s "files installed by setup.sh are not tracked" (:773 — false post-5a; point at `update`/`remove`); help lists `update`; full bats; registry `--check`; `npm pack --dry-run` includes installer/
+- [x] **5.2** Final sweep: reword `cmdRemove`'s "files installed by setup.sh are not tracked" (:773 — false post-5a; point at `update`/`remove`); help lists `update`; full bats; registry `--check`; `npm pack --dry-run` includes installer/
     — **Why:** The old gap message becomes a false claim the moment 5a lands.
     — **Done when:** `grep -rn 'not tracked' installer/ README.md` clean; help shows update.
     — **Consumers affected:** users reading remove/update output.

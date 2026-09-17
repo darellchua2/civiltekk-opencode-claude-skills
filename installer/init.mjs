@@ -837,7 +837,7 @@ async function cmdRemove(args, opts) {
   const prev = await readJsonMaybe(USER_MANIFEST);
   if (!prev) {
     console.log("no user-scope manifest found — nothing to remove.");
-    console.log("(files installed by setup.sh are not tracked by opencode-skill and cannot be removed this way.)");
+    console.log("(for entries installed before #379's manifest tracking, run `opencode-skill update` once to adopt them)");
     return;
   }
   const wasAgent = (prev.agents || []).includes(name);

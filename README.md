@@ -772,3 +772,38 @@ The setup scripts automatically:
 
 This repository includes inline default configurations in all setup scripts. No external template files are required.
 
+
+## Testing & Development
+
+Recipes for testing installer changes without touching your real `~/.config/opencode/`:
+
+```bash
+# 1. Clone dry-run — preview any install, write nothing
+git clone https://github.com/darellchua2/opencode-config-template
+node installer/init.mjs add tdd-subagent --dry-run
+
+# 2. npm link — exercise the real bin name from your working tree
+npm link
+opencode-skill add solid-principles-skill --dry-run
+npm unlink -g
+
+# 3. Branch testing via npx (github refs support branches — zero code)
+npx github:darellchua2/opencode-config-template#feat/my-branch add X --dry-run
+
+# 4. Sandboxed runs — isolated HOME, no real config touched
+HOME="$(mktemp -d)" node installer/init.mjs add tdd-workflow-skill --yes
+
+# 5. CI safety — tests run with --yes / --dry-run only (no TTY, no prompts)
+tests/lib/bats-core/bin/bats tests/update.bats
+```
+
+Upgrading installed content without a full setup rerun:
+
+```bash
+npx github:darellchua2/opencode-config-template update          # re-copy changed entries
+npx github:darellchua2/opencode-config-template update --prune  # also remove registry-removed entries
+```
+
+**Redeploy contract:** `setup.sh --yes` force-copies content through the installer CLI. Existing
+`~/.config/opencode/{skills,agents}/` are snapshotted to the backup dir's `content-backup/`
+first — restore via the usual rollback flow if you had local edits.
