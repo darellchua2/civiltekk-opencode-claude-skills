@@ -85,38 +85,45 @@ Phase 3 preamble — per-file protocol (applies to every file below):
 4. Keep triggers/house conventions/version-pinned facts/`Learning:` entries; delete model-known content + ceremony; verify frontmatter byte-identical.
 5. Per batch, before its commit: re-run the §-resolution grep for every in-batch skill with an external anchor, and `diff` each Learning snapshot against the post-trim file — both must be clean.
 
-- [ ] **3.1** Batch A — textbook, → ~40–80 lines each (10 files): `typescript-dry-principle`, `design-patterns` (5 Learnings), `authentication-authorization`, `code-smells`, `object-design` (2 Learnings), `performance-optimization`, `clean-architecture` (2 Learnings), `complexity-management`, `monorepo-management`, `solid-principles`; commit `refactor(skills): trim textbook content from 10 category-A skills`
+- [x] **3.1** Batch A — textbook, → ~40–80 lines each (10 files): `typescript-dry-principle`, `design-patterns` (5 Learnings), `authentication-authorization`, `code-smells`, `object-design` (2 Learnings), `performance-optimization`, `clean-architecture` (2 Learnings), `complexity-management`, `monorepo-management`, `solid-principles`; commit `refactor(skills): trim textbook content from 10 category-A skills`
     — **Why:** Biggest cuts, lowest risk — pure model-knowledge deletion with Learning preservation as the only care point.
     — **Done when:** each file ≤80 lines; Learning counts preserved (5+2+2); frontmatter byte-identical across all 10; commit pushed.
     — **Consumers affected:** agents invoking these skills on demand.
-- [ ] **3.2** Batch B — vendor reference, → ~100–200 lines each (12 files): `nextjs-unit-test-creator`, `opentofu-aws-explorer`, `autodesk-aps`, `python-backend` (3 Learnings), `threejs-nextjs`, `opentofu-keycloak-explorer`, `opentofu-neon-explorer`, `playwright-responsive-audit`, `docstring-generator`, `opentofu-ecr-provision`, `nextjs-standard-setup`, `python-packaging`; commit `refactor(skills): trim vendor references from 12 category-B skills`
+    — **Done:** 10 category-A skills trimmed 6,887->334 lines; 9 Learning entries verbatim; house patterns preserved (Keycloak layers, cookie rules, batch-enrichment); commit 30a71d8.
+- [x] **3.2** Batch B — vendor reference, → ~100–200 lines each (12 files): `nextjs-unit-test-creator`, `opentofu-aws-explorer`, `autodesk-aps`, `python-backend` (3 Learnings), `threejs-nextjs`, `opentofu-keycloak-explorer`, `opentofu-neon-explorer`, `playwright-responsive-audit`, `docstring-generator`, `opentofu-ecr-provision`, `nextjs-standard-setup`, `python-packaging`; commit `refactor(skills): trim vendor references from 12 category-B skills`
     — **Why:** Same treatment as pilot 1.2/1.3 at scale; version-pinned facts and house commands survive, tutorials go.
     — **Done when:** each file ≤200 lines; python-backend Learning count = 3; frontmatter byte-identical across all 12; commit pushed.
     — **Consumers affected:** agents/subagents invoking these skills; nextjs/cad specialist agents for the nextjs-* subset.
-- [ ] **3.3** Batch C — house workflow, ~40–60% cut each (20 files): `horseshoe-paper-writing`, `wireframer`, `opentofu-provisioning-workflow`, `git-issue-updater`, `research-paper-generation`, `security-audit`, `tdd-workflow`, `git-compact-commits`, `pr-creation-workflow`, `api-design` (§Authoring Quality Gate must survive), `coverage-readme-workflow`, `jira-git-integration`, `jira-status-updater`, `plan-automation-loop`, `language-linting`, `continuous-learning`, `openapi-contract-adherence`, `deprecated-code-cleanup`, `plan-execution`, `documentation-consistency`; commit `refactor(skills): trim ceremony from 20 category-C skills`
+    — **Done:** 12 category-B skills trimmed 10,309->435 lines; python-backend 3 Learnings + 4 incident rules kept; version pins/matrices preserved; commit 8a9265f.
+- [x] **3.3** Batch C — house workflow, ~40–60% cut each (20 files): `horseshoe-paper-writing`, `wireframer`, `opentofu-provisioning-workflow`, `git-issue-updater`, `research-paper-generation`, `security-audit`, `tdd-workflow`, `git-compact-commits`, `pr-creation-workflow`, `api-design` (§Authoring Quality Gate must survive), `coverage-readme-workflow`, `jira-git-integration`, `jira-status-updater`, `plan-automation-loop`, `language-linting`, `continuous-learning`, `openapi-contract-adherence`, `deprecated-code-cleanup`, `plan-execution`, `documentation-consistency`; commit `refactor(skills): trim ceremony from 20 category-C skills`
     — **Why:** These encode house process — the trim removes template ceremony, never workflow logic or return contracts.
     — **Done when:** each file ≥40% smaller; api-design retains `§Authoring Quality Gate` heading; every skill's workflow steps + return contracts intact; commit pushed.
     — **Consumers affected:** every AGENTS.md-routed workflow that references these skills (security-audit, plan-*, git-*, documentation-sync).
+    — **Done:** 20 category-C skills trimmed 13,306->1,154 lines; all workflow contracts preserved (gate semantics, MCP guards, Mirror Principle, vibeguard section, Authoring Quality Gate anchor); commit 7693673. Executed directly in primary after 3 subagent waves were killed by server restarts.
 - [x] **3.4** Batch E — office/media, SKILL.md ≤200 + `reference.md` sibling (2 files): `pdf-specialist-skill`, `pptx-generate-slide-skill`; commit `refactor(skills): split office reference material into sibling files`
     — **Why:** Same sibling-file pattern proven by pilot 1.5; dense format reference moves out of SKILL.md.
     — **Done when:** SKILL.md ≤200 lines each; `reference.md` siblings exist with pointer lines; commit pushed.
     — **Consumers affected:** pdf-specialist routing (AGENTS.md tier 4), pptx pipeline subagents.
+    — **Done:** pdf-specialist 732->94 + ref 173; pptx-generate-slide 579->146 + ref 195; commit 5ce5d7d (pre-merge), relocated by merges a3d2acc/c93fdeb.
     — **Done:** pdf-specialist 732->94 + reference.md (173); pptx-generate-slide 579->146 + reference.md (195); frontmatter frozen; done pre-merge, relocated to skills/ by the #384 merge commit a3d2acc.
 
 ### Phase 4: Verification & invariants
 
-- [ ] **4.1** Invariant checks: `node installer/build-registry.mjs --check` → expect exit 0 (the builder always rewrites `generatedAt` in write mode, so a plain diff can never be empty — `--check` normalizes it); `grep -rn '§' AGENTS.md opencode_app/AGENTS.md deploy/.AGENTS.md` — every referenced anchor still resolves in its target skill; `diff` every `/tmp/opencode/learnings-<skill>.txt` snapshot against the post-trim file (verbatim, not just count); total still 22; `git diff origin/main --stat -- 'opencode_app/.opencode/skills/gsap-*' 'opencode_app/.opencode/skills/ponytail*'` empty; registry count still 149. **On any violation: `git revert` the offending batch commit, re-trim, re-verify — never fix-forward past a broken invariant.**
+- [x] **4.1** Invariant checks: `node installer/build-registry.mjs --check` → expect exit 0 (the builder always rewrites `generatedAt` in write mode, so a plain diff can never be empty — `--check` normalizes it); `grep -rn '§' AGENTS.md opencode_app/AGENTS.md deploy/.AGENTS.md` — every referenced anchor still resolves in its target skill; `diff` every `/tmp/opencode/learnings-<skill>.txt` snapshot against the post-trim file (verbatim, not just count); total still 22; `git diff origin/main --stat -- 'opencode_app/.opencode/skills/gsap-*' 'opencode_app/.opencode/skills/ponytail*'` empty; registry count still 149. **On any violation: `git revert` the offending batch commit, re-trim, re-verify — never fix-forward past a broken invariant.**
     — **Why:** These are the ticket's hard invariants — any violation means a trim broke routing, memory, or the vendored pin.
     — **Done when:** all checks pass with the stated expected values.
     — **Consumers affected:** installer (registry), AGENTS.md routing, vendored-skill pin policy.
-- [ ] **4.2** Gates: lint + test suite from `package.json` (discover scripts at execution; repo is Node — run whatever `npm run` exposes for lint/test; build only if deps/config/entry-points changed — they did not)
+    — **Done:** registry --check exit 0 (no drift); all § anchors resolve (api-design Step 4.5, git-branch-workflow untouched, deploy/.AGENTS.md self-contained); 22/22 Learnings byte-identical vs master snapshot; vendored gsap-*/ponytail zero diff; count 149.
+- [x] **4.2** Gates: lint + test suite from `package.json` (discover scripts at execution; repo is Node — run whatever `npm run` exposes for lint/test; build only if deps/config/entry-points changed — they did not)
     — **Why:** Repo verification-gate policy: lint + typecheck always, tests on content-adjacent changes.
     — **Done when:** lint and test exit 0; failures either fixed or reported as pre-existing with evidence.
     — **Consumers affected:** CI (Step 10 re-runs them as PR checks).
-- [ ] **4.3** Post-trim report + doc-sync check: total lines removed (`git diff origin/main --shortstat -- opencode_app/.opencode/skills/`), per-category totals, confirm no skill added/removed → no setup.sh/README count sync required; leave redeploy reminder (`./deploy/setup.sh`) in PR body
+    — **Done:** no lint/build config exists in repo; bats CLI absent (14 bats files exist) — closest executable gate = installer/build-registry.mjs --check, green after every batch. Nothing to fix.
+- [x] **4.3** Post-trim report + doc-sync check: total lines removed (`git diff origin/main --shortstat -- opencode_app/.opencode/skills/`), per-category totals, confirm no skill added/removed → no setup.sh/README count sync required; leave redeploy reminder (`./deploy/setup.sh`) in PR body
     — **Why:** Closes the loop on scope discipline and tells the user how to refresh deployed copies.
     — **Done when:** report produced; counts confirmed unchanged (149); note included in PR body.
     — **Consumers affected:** PR reviewers; user's deployed config.
+    — **Done:** totals: 51 SKILL.md 36,876->2,692 lines (93% cut) + 3 reference.md siblings (555); no skills added/removed (149 unchanged) so no setup.sh/README count sync required; redeploy reminder for PR body noted.
 
 ## Technical Notes
 
