@@ -32,6 +32,7 @@ import { existsSync } from "node:fs";
 import { dirname, join, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import os from "node:os";
 import { singleSelect, multiSelect, textInput, confirm } from "./tui-primitives.mjs";
 import { readAgent, readSkill } from "./source.mjs";
@@ -89,6 +90,33 @@ async function readJsonMaybe(p) {
   } catch (e) { if (e.code === "ENOENT") return null; throw new Error(`bad JSON ${p}: ${e.message}`); }
 }
 const toList = (v) => (v ? String(v).split(",").map((s) => s.trim()).filter(Boolean) : []);
+
+// ── content hashing (#379) ── update compares hashes of WRITTEN content, so
+// model injection / model-strip differences are tracked per target, never
+// false-positive on deterministic re-runs.
+const sha256Hex = (s) => "sha256:" + createHash("sha256").update(s).digest("hex");
+async function hashSkillDir(dir, transform) {
+  // deterministic tree hash: sorted relative paths + file contents (no mtimes).
+  // transform(rel, buf) lets callers hash WOULD-WRITE content (e.g. claude
+  // model-strip) without touching disk.
+  const files = [];
+  const walk = async (d, prefix) => {
+    if (!existsSync(d)) return;
+    for (const e of await readdir(d, { withFileTypes: true })) {
+      const rel = prefix ? `${prefix}/${e.name}` : e.name;
+      if (e.isDirectory()) await walk(join(d, e.name), rel);
+      else files.push([rel, await readFile(join(d, e.name))]);
+    }
+  };
+  await walk(dir, "");
+  files.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  const h = createHash("sha256");
+  for (const [rel, buf] of files) {
+    const b = transform ? transform(rel, buf) : buf;
+    h.update(rel); h.update("\0"); h.update(b); h.update("\0");
+  }
+  return "sha256:" + h.digest("hex");
+}
 
 // ─────────────────────────── data loading ───────────────────────────────
 async function loadRegistry() {
@@ -236,10 +264,21 @@ async function tierToModel(tier, provider) {
     const p = presets && presets[provider];
     if (p) return tier === "primary" ? p.primary : (p.tiers && p.tiers[tier]) || null;
   }
+  // resolver-faithful precedence (#379): provider > user models.json > default.
+  // (project map is N/A for user-scope installs — no project context.)
+  const user = await readJsonMaybe(join(USER_OC, "models.json"));
+  if (user && user.tiers && user.tiers[tier]) return user.tiers[tier];
   const m = await readJsonMaybe(MODELS_DEFAULT);
   if (!m) return null;
   if (tier === "primary") return m.primary;
   return (m.tiers && m.tiers[tier]) || null;
+}
+// Per-agent pin beats tier resolution (mirrors resolve-models.mjs global
+// agent-overrides precedence — the project-level map is N/A at user scope).
+async function agentModel(stem, tier, provider) {
+  const ov = await readJsonMaybe(join(USER_OC, "agent-overrides.json"));
+  if (ov && ov[stem] && ov[stem].model) return ov[stem].model;
+  return tierToModel(tier, provider);
 }
 async function isModelAvailable(modelId) {
   if (!modelId) return false;
@@ -528,6 +567,18 @@ async function summarize(sel, project, globalDeploy) {
 
 // ─────────────────────────── user-scope add/remove (Phase 3) ────────────
 async function cmdAdd(args, opts, reg, depMap) {
+  // --all (#379): full-catalog selection for delegated full deploys.
+  if (opts.all) {
+    const sel = {
+      agents: reg.agents.map((a) => a.stem).sort(),
+      skills: reg.skills.map((s) => s.name).sort(),
+      mcps: [],
+      warnings: [],
+    };
+    await writeUserScopeInstall(sel, opts, reg, depMap);
+    return;
+  }
+
   const name = args[0];
   if (!name) die("add: specify a skill or agent name (e.g. 'solid-principles-skill'). Use --list agents|skills to browse.", 2);
 
@@ -592,36 +643,49 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   }
 
   // write to opencode paths
+  // written-content hashes per entry (#379): agents → injected file bytes;
+  // skills → written dir tree hash (post model-strip for the claude target).
+  const newEntries = {};
   if (doOc) {
     await mkdir(USER_AGENTS, { recursive: true });
-    const tierModels = {};
     for (const stem of sel.agents) {
       const agent = await readAgent(stem);
       const tier = reg.agents.find((a) => a.stem === stem)?.tier || "unassigned";
-      if (!tierModels[tier]) tierModels[tier] = await tierToModel(tier, opts.provider);
-      const content = injectModelLine(agent.content, tierModels[tier]);
+      const model = await agentModel(stem, tier, opts.provider);
+      const content = injectModelLine(agent.content, model);
       await writeFile(join(USER_AGENTS, `${stem}.md`), content, "utf8");
+      newEntries[stem] = { type: "agent", targets: { opencode: sha256Hex(content) } };
     }
     await mkdir(USER_SKILLS, { recursive: true });
     for (const sname of sel.skills) {
       const skill = await readSkill(sname);
-      await cp(skill.dir, join(USER_SKILLS, sname), { recursive: true, force: true });
+      const dst = join(USER_SKILLS, sname);
+      await cp(skill.dir, dst, { recursive: true, force: true });
+      newEntries[sname] = { type: "skill", targets: { opencode: await hashSkillDir(dst) } };
     }
   }
 
   // write to Claude paths (same SKILL.md format — straight directory copy)
-  if (doClaude) await writeClaudeFormat(sel);
+  if (doClaude) for (const [n, ent] of Object.entries(await writeClaudeFormat(sel))) {
+    newEntries[n] = { type: ent.type, targets: { ...(newEntries[n]?.targets || {}), ...ent.targets } };
+  }
 
-  // update user-scope manifest (tracks ALL targets for uninstall). Agents are
+  // update user-scope manifest (tracks ALL targets for uninstall/update). Agents are
   // recorded only for targets that actually install them (opencode/both) —
-  // claude-only installs place no agent files anywhere (#377).
+  // claude-only installs place no agent files anywhere (#377). entries merge
+  // per-target: re-installing to one target preserves the other target's record.
   await mkdir(USER_OC, { recursive: true });
   const prevManifest = (await readJsonMaybe(USER_MANIFEST)) || { agents: [], skills: [] };
+  const entries = { ...(prevManifest.entries || {}) };
+  for (const [name, ent] of Object.entries(newEntries)) {
+    entries[name] = { type: ent.type, targets: { ...(entries[name]?.targets || {}), ...ent.targets } };
+  }
   const manifest = {
     generatedAt: new Date().toISOString(),
     tool: "opencode-skill",
     agents: doOc ? [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort() : (prevManifest.agents || []),
     skills: [...new Set([...(prevManifest.skills || []), ...sel.skills])].sort(),
+    entries,
   };
   await writeFile(USER_MANIFEST, JSON.stringify(manifest, null, 2) + "\n", "utf8");
 
@@ -650,9 +714,15 @@ async function checkStrictAllowlist(sel, opts) {
   if (skillDenyAll) {
     const hidden = sel.skills.filter((name) => !perms.some((r) => r && r.action === "skill" && r.resource === name && r.effect === "allow"));
     if (hidden.length) {
-      console.error(`\n⚠  STRICT ALLOWLIST DETECTED — ${hidden.length} skill(s) installed but HIDDEN.`);
-      console.error(`   Add to opencode.json permissions array, or re-run with --permit:`);
-      for (const name of hidden) console.error(`     { "action": "skill", "resource": "${name}", "effect": "allow" }`);
+      // Full-catalog deploys/updates hit the lean profile BY DESIGN — collapse
+      // to one line instead of 100+ misleading paste-me hints (CR-3).
+      if (hidden.length > 20) {
+        console.error(`\n⚠  STRICT ALLOWLIST — ${hidden.length} skill(s) HIDDEN (lean profile: by design for full-catalog installs).`);
+      } else {
+        console.error(`\n⚠  STRICT ALLOWLIST DETECTED — ${hidden.length} skill(s) installed but HIDDEN.`);
+        console.error(`   Add to opencode.json permissions array, or re-run with --permit:`);
+        for (const name of hidden) console.error(`     { "action": "skill", "resource": "${name}", "effect": "allow" }`);
+      }
     }
   }
   // agents live in agents.build.permissions ({action:"subagent"} rules)
@@ -746,6 +816,7 @@ async function writeClaudeFormat(sel) {
   if (sel.agents.length)
     console.error(`warning: ${sel.agents.length} agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)`);
   let count = 0;
+  const entries = {};
   for (const sname of sel.skills) {
     const skill = await readSkill(sname);
     const dst = join(USER_CLAUDE_SKILLS, sname);
@@ -755,9 +826,11 @@ async function writeClaudeFormat(sel) {
     if (existsSync(skillMd)) {
       await writeFile(skillMd, stripModelLine(await readFile(skillMd, "utf8")), "utf8");
     }
+    entries[sname] = { type: "skill", targets: { claude: await hashSkillDir(dst) } };
     count++;
   }
   console.log(`  claude:  ${count}  -> ~/.claude/skills/`);
+  return entries;
 }
 
 async function cmdRemove(args, opts) {
@@ -770,7 +843,7 @@ async function cmdRemove(args, opts) {
   const prev = await readJsonMaybe(USER_MANIFEST);
   if (!prev) {
     console.log("no user-scope manifest found — nothing to remove.");
-    console.log("(files installed by setup.sh are not tracked by opencode-skill and cannot be removed this way.)");
+    console.log("(for entries installed before #379's manifest tracking, run `opencode-skill update` once to adopt them)");
     return;
   }
   const wasAgent = (prev.agents || []).includes(name);
@@ -792,8 +865,131 @@ async function cmdRemove(args, opts) {
   if (existsSync(claudeDir)) await rm(claudeDir, { recursive: true, force: true });
   prev.agents = (prev.agents || []).filter((a) => a !== name);
   prev.skills = (prev.skills || []).filter((s) => s !== name);
+  if (prev.entries) delete prev.entries[name];
   await writeFile(USER_MANIFEST, JSON.stringify(prev, null, 2) + "\n", "utf8");
   console.log(`removed '${name}' from user scope.`);
+}
+
+// ─────────────────────────── update (#379) ──────────────────────────────
+// Upgrade manifest-installed entries in place: recompute WOULD-WRITE hashes
+// (post model-injection / model-strip) vs stored, re-copy changed entries to
+// their recorded targets, report drift. Registry-removed entries are reported,
+// never auto-deleted without --prune.
+async function cmdUpdate(args, opts) {
+  const reg = await loadRegistry();
+  const prev = await readJsonMaybe(USER_MANIFEST);
+  if (!prev) die("no user-scope manifest found — nothing to update. Run `add` first (setup.sh users: one full re-run of ./deploy/setup.sh adopts the manifest).", 2);
+
+  // Legacy manifest (pre-#379, name arrays only): synthesize entries by hashing
+  // what is currently installed, then proceed. Missing files stay out of entries.
+  let upgradedLegacy = false;
+  const entries = { ...(prev.entries || {}) };
+  if (!prev.entries) {
+    upgradedLegacy = true;
+    for (const a of prev.agents || []) {
+      const f = join(USER_AGENTS, `${a}.md`);
+      if (existsSync(f)) entries[a] = { type: "agent", targets: { opencode: sha256Hex(await readFile(f, "utf8")) } };
+    }
+    for (const s of prev.skills || []) {
+      // probe every historical target so claude installs keep their lifecycle
+      const targets = {};
+      if (existsSync(join(USER_SKILLS, s))) targets.opencode = await hashSkillDir(join(USER_SKILLS, s));
+      if (existsSync(join(USER_CLAUDE_SKILLS, s))) targets.claude = await hashSkillDir(join(USER_CLAUDE_SKILLS, s));
+      if (Object.keys(targets).length) entries[s] = { type: "skill", targets };
+    }
+  }
+
+  const plan = { updated: [], unchanged: [], missing: [], registryRemoved: [], pruned: [] };
+  const prune = !!opts.prune;
+  const dry = !!opts.dryRun;
+
+  const regAgentStems = new Set(reg.agents.map((a) => a.stem));
+  const regSkillNames = new Set(reg.skills.map((s) => s.name));
+
+  for (const [name, ent] of Object.entries(entries)) {
+    const inRegistry = ent.type === "agent" ? regAgentStems.has(name) : regSkillNames.has(name);
+    if (!inRegistry) {
+      plan.registryRemoved.push(name);
+      if (prune && !dry) {
+        if (ent.type === "agent") await rm(join(USER_AGENTS, `${name}.md`), { force: true });
+        else await rm(join(USER_SKILLS, name), { recursive: true, force: true });
+        await rm(join(USER_CLAUDE_SKILLS, name), { recursive: true, force: true });
+        delete entries[name];
+        prev.agents = (prev.agents || []).filter((x) => x !== name);
+        prev.skills = (prev.skills || []).filter((x) => x !== name);
+        plan.pruned.push(name);
+      }
+      continue;
+    }
+
+    let touched = false, missingHere = false;
+    let wouldContent = null; // agent: the full would-write file content
+    for (const target of Object.keys(ent.targets)) {
+      let wouldHash = null, installedPath = null;
+      if (ent.type === "agent") {
+        // agents only ever install to the opencode target (#377)
+        installedPath = join(USER_AGENTS, `${name}.md`);
+        const agent = await readAgent(name);
+        const tier = reg.agents.find((a) => a.stem === name)?.tier || "unassigned";
+        wouldContent = injectModelLine(agent.content, await agentModel(name, tier, opts.provider));
+        wouldHash = sha256Hex(wouldContent);
+      } else {
+        const skill = await readSkill(name);
+        if (target === "opencode") {
+          installedPath = join(USER_SKILLS, name);
+          wouldHash = await hashSkillDir(skill.dir);
+        } else {
+          installedPath = join(USER_CLAUDE_SKILLS, name);
+          wouldHash = await hashSkillDir(skill.dir, (rel, buf) =>
+            rel === "SKILL.md" ? Buffer.from(stripModelLine(buf.toString("utf8")), "utf8") : buf);
+        }
+      }
+      if (!existsSync(installedPath)) { plan.missing.push(`${name} (${target})`); missingHere = true; continue; }
+      if (wouldHash === ent.targets[target]) continue;
+      if (!dry) {
+        if (ent.type === "agent") {
+          await writeFile(installedPath, wouldContent, "utf8");
+        } else {
+          // clean re-copy: rm first so stale files from a thinner source converge
+          const skill = await readSkill(name);
+          await rm(installedPath, { recursive: true, force: true });
+          await cp(skill.dir, installedPath, { recursive: true });
+          if (target === "claude") {
+            const skillMd = join(installedPath, "SKILL.md");
+            if (existsSync(skillMd))
+              await writeFile(skillMd, stripModelLine(await readFile(skillMd, "utf8")), "utf8");
+          }
+        }
+        ent.targets[target] = wouldHash;
+      }
+      touched = true;
+    }
+    if (missingHere) continue;
+    plan[touched ? "updated" : "unchanged"].push(name);
+  }
+
+  if (dry) {
+    process.stdout.write(JSON.stringify({ dryRun: true, scope: "user", legacyUpgraded: upgradedLegacy, ...plan }, null, 2) + "\n");
+    return;
+  }
+
+  const manifest = { ...prev, generatedAt: new Date().toISOString(), entries };
+  await writeFile(USER_MANIFEST, JSON.stringify(manifest, null, 2) + "\n", "utf8");
+
+  console.log(`update complete: updated ${plan.updated.length} · unchanged ${plan.unchanged.length} · missing ${plan.missing.length}`);
+  if (plan.registryRemoved.length) console.log(`  registry-removed (present locally): ${plan.registryRemoved.join(", ")}${prune ? "" : " — re-run with --prune to remove"}`);
+  if (plan.pruned.length) console.log(`  pruned: ${plan.pruned.join(", ")}`);
+  if (plan.missing.length) for (const m of plan.missing) console.log(`  missing: ${m}`);
+  if (upgradedLegacy) console.log("  (legacy manifest upgraded with per-entry hashes)");
+
+  // visibility check only — name-stable updates cannot grow the permissions
+  // union; missing allow rules are NOT repaired (documented deviation, #379).
+  const sel = {
+    agents: Object.entries(entries).filter(([, e]) => e.type === "agent").map(([n]) => n),
+    skills: Object.entries(entries).filter(([, e]) => e.type === "skill").map(([n]) => n),
+    warnings: [],
+  };
+  await checkStrictAllowlist(sel, opts);
 }
 
 // ─────────────────────────── main ───────────────────────────────────────
@@ -807,6 +1003,7 @@ async function main() {
 
   // verb dispatch: add / remove (npx UX surface)
   if (opts.rest[0] === "add") { await cmdAdd(opts.rest.slice(1), opts, reg, depMap); return; }
+  if (opts.rest[0] === "update") { await cmdUpdate(opts.rest.slice(1), opts); return; }
   if (opts.rest[0] === "remove") { await cmdRemove(opts.rest.slice(1), opts); return; }
 
   // read modes
@@ -929,6 +1126,8 @@ function printHelp() {
 USAGE
   opencode-skill add <name>                    install a skill or agent (USER scope)
   opencode-skill add <name> --project [dir]    install to project .opencode/ (full config)
+  opencode-skill add --all --yes               install the full catalog (user scope)
+  opencode-skill update [--prune]              re-copy manifest entries whose source changed
   opencode-skill remove <name>                 remove a user-scope install
   opencode-skill --list agents [--category X]      list agents (JSON)
   opencode-skill --list skills [--category X]      list skills (JSON)

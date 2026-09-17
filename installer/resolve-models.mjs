@@ -116,10 +116,11 @@ function injectModel(content, modelValue) {
 
 // ─────────────────────────── main ───────────────────────────────────────
 async function main() {
-  // lift-only needs fewer args than a full resolve
+  // lift-only needs fewer args than a full resolve; config-only (no agent
+  // rewrite, #379 setup delegation) needs no agent paths at all.
   const required = O.liftOnly
     ? ["agentsDest", "defaultMap"]
-    : ["agentsSrc", "agentsDest", "tiers", "defaultMap"];
+    : ["tiers", "defaultMap", ...(O.agentsSrc || O.agentsDest ? ["agentsSrc", "agentsDest"] : [])];
   for (const k of required) {
     if (!O[k]) {
       console.error(`error: --${k.replace(/([A-Z])/g, "-$1").toLowerCase()} is required`);
@@ -218,12 +219,13 @@ async function main() {
   const knownDefaults = new Set(Object.values(defaultTiers));
   knownDefaults.add(defaultMap && defaultMap.primary);
 
-  // ── resolve agents ──
-  const srcFiles = (await readdir(O.agentsSrc))
-    .filter((f) => f.endsWith(".md"));
-
+  // ── resolve agents (skipped in config-only mode — no --agents-src/--agents-dest) ──
   const rows = []; // {stem, tier, model, reason, action}
   const newState = {};
+  const agentsMode = !!O.agentsSrc && !!O.agentsDest;
+  const srcFiles = agentsMode
+    ? (await readdir(O.agentsSrc)).filter((f) => f.endsWith(".md"))
+    : [];
 
   for (const f of srcFiles) {
     const stem = basename(f, ".md");
@@ -431,7 +433,7 @@ async function main() {
   }
 
   // ── write resolved agent files ──
-  if (doWrite) {
+  if (doWrite && agentsMode) {
     await mkdir(outDir, { recursive: true });
     const total = writeRows.length;
     const verb = O.dryRun ? "Staging" : "Writing";
