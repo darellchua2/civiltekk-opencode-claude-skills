@@ -337,3 +337,25 @@ Backups are retained per `--keep-backups` (default 5 most recent).
 
 See `PLANS/PLAN-BT-74.md` for the full design and `installer/provider-presets.json`
 for the available provider model IDs.
+
+## Frontmatter normalized to opencode v2 (#380)
+
+All 34 source agents now ship **native v2 frontmatter** instead of the legacy v1
+spelling:
+
+- `permission:` nested maps (e.g. `bash: deny`, `skill: {<name>: allow}`) →
+  `permissions:` rules arrays (`- action: / resource: / effect:`), rule order
+  preserved (v2 evaluates the **last matching rule**, identical to the old map
+  order). `ask` effects preserved verbatim.
+- The `opencode-init` installer no longer adopts a legacy
+  `~/.config/opencode/config.json` as `opencode.json` — OpenCode v2 never read
+  it; delete any leftover file.
+
+Why: drop the dependence on opencode v2's runtime auto-translation of legacy
+keys and unlock clean v2-only validation. If you maintain **your own** v1-era
+agent files, opencode v2 still auto-translates their `permission:` maps — but
+updating them to `permissions:` arrays is recommended. See the frontmatter
+contract in `AGENTS.md`.
+
+After pulling: re-run `./deploy/setup.sh` to redeploy — every agent file
+changed (content hashes differ), which is expected and one-time.

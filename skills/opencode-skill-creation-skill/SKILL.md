@@ -58,7 +58,7 @@ Gate skills in the `permissions` array (config.json) or agent frontmatter — NO
   { "action": "skill", "resource": "<prefix>-*", "effect": "allow" } ] }
 ```
 
-Last matching rule wins; deny-all first, allows after. Agent frontmatter still uses the legacy `permission.skill` map spelling (opencode v2 auto-translates). `tools: skill: false` is deprecated.
+Last matching rule wins; deny-all first, allows after. The same `permissions` rules shape is used in config.json and agent frontmatter. `tools: skill: false` and the `permission.skill` map are deprecated.
 
 ## File safety
 

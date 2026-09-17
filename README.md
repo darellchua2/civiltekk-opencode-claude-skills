@@ -249,7 +249,7 @@ Run `opencode-init --list agents` or `--list skills` to browse in JSON, or visit
 
 Not every project needs all 34 agents + 149 skills. <!-- count: hand-maintained — sync on skill/agent add (BT-157) --> `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
 
-> **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. The subagent-spawn allowlist (frontmatter `permission.task`, legacy spelling — v2 auto-translates) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
+> **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. The subagent-spawn allowlist (frontmatter `permissions` rules with `action:"task"`) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
 
 ### Presets
 
@@ -265,7 +265,7 @@ Not every project needs all 34 agents + 149 skills. <!-- count: hand-maintained 
 | `research` | autoresearch-{ml,code,research} + loop-operator | 12 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
 | `cad` | cad-specialist | 14 (CAD & Hardware Design) | — | CAD / robotics / hardware |
 
-Member counts include transitive deps auto-pulled by the resolver (a preset's agent frontmatter subagent-delegate + skill-require rules — legacy `permission.task`/`permission.skill`, auto-translated). Run `opencode-init --expand <preset>` to see the exact resolved set.
+Member counts include transitive deps auto-pulled by the resolver (a preset's agent frontmatter `permissions` rules — `task`-action delegates and `skill`-action requirements). Run `opencode-init --expand <preset>` to see the exact resolved set.
 
 ### Usage
 
@@ -406,7 +406,7 @@ Every allowed skill's `description` is injected into the primary session's conte
 Key properties:
 
 - Only the **deployed** copy's skill rules in the `permissions` array (`action:"skill"` entries) are rewritten (`deploy/apply-skill-profile.mjs`); the shipped `opencode.json` is never modified — `full` is a verified no-op.
-- **Subagents are profile-immune.** All 149 skills stay on disk and every skill has either a frontmatter skill-allow consumer (legacy `permission.skill` spelling, auto-translated by v2) or a lean slot — nothing is orphaned under lean.
+- **Subagents are profile-immune.** All 149 skills stay on disk and every skill has either a frontmatter skill-allow consumer (`permissions` rules with `action:"skill"`) or a lean slot — nothing is orphaned under lean.
 - Lean-hidden skills cannot be `@`-loaded by the primary until re-exposed; re-exposing any skill is a one-line edit to `deploy/skill-profiles.json`.
 - Typo-guarded: a lean key that doesn't match a real skill directory or the shipped allowlist fails the deploy closed.
 

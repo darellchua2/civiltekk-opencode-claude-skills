@@ -70,17 +70,17 @@ From ticket #380, re-validated against `origin/main` @ `816d903` (delta document
 
 ### Phase 3: Docs
 
-- [ ] **3.1** Root `AGENTS.md` §Skill/Agent Frontmatter Contract: drop the "Source agent `.md` files still use the legacy key spellings … normalisation pass … is deferred" sentence (:78); state: source agents ship native `permissions:` rules arrays and no `model:` (tier-injected at deploy); the markdown body is the system prompt — do NOT claim agents carry `system:` (none do, REQ-4)
+- [x] **3.1** Root `AGENTS.md` §Skill/Agent Frontmatter Contract: drop the "Source agent `.md` files still use the legacy key spellings … normalisation pass … is deferred" sentence (:78); state: source agents ship native `permissions:` rules arrays and no `model:` (tier-injected at deploy); the markdown body is the system prompt — do NOT claim agents carry `system:` (none do, REQ-4)
     — **Why:** The contract doc is the repo's agent-file source of truth; a lingering deferred note (or an over-broad replacement claim) is a false doc claim (doc-claims-match-plugin-defaults lesson).
     — **Done when:** `grep -c 'normalisation pass' AGENTS.md` = 0; new sentence mentions `permissions` array + tier-injected `model:` only.
     — **Consumers affected:** agent authors (human + AI) reading the contract.
 
-- [ ] **3.2** Legacy-spelling doc sweep (ARCH-3): fix claims that THIS REPO's source agents still use legacy spellings — `README.md` :252, :268, :409; `opencode_app/README.md` :189; `skills/opencode-skill-creation-skill/SKILL.md` :283, :317 (teaching examples must show `permissions` arrays). Exempt: text describing USER-authored v1 agents being debugged/migrated (e.g. `agent-introspection-debugging-skill` :100-258 — legitimately discusses legacy user configs)
+- [x] **3.2** Legacy-spelling doc sweep (ARCH-3): fix claims that THIS REPO's source agents still use legacy spellings — `README.md` :252, :268, :409; `opencode_app/README.md` :189; `skills/opencode-skill-creation-skill/SKILL.md` :283, :317 (teaching examples must show `permissions` arrays). Exempt: text describing USER-authored v1 agents being debugged/migrated (e.g. `agent-introspection-debugging-skill` :100-258 — legitimately discusses legacy user configs)
     — **Why:** These become false the moment this lands; the skill-creation skill actively teaches the old spelling to every reader.
     — **Done when:** per-file grep for `legacy`/`permission\.` near agent-frontmatter claims shows only exempt (user-config) contexts; updated examples are array-form.
     — **Consumers affected:** README readers; skill-creation skill consumers.
 
-- [ ] **3.3** `MIGRATION.md`: add "Frontmatter normalized to v2" section — what changed (`permission:` map → `permissions:` rules array, order-preserving; `LEGACY_USER_CONFIG` adoption removed), why (drop v2 auto-translation dependence), pointer to AGENTS.md contract
+- [x] **3.3** `MIGRATION.md`: add "Frontmatter normalized to v2" section — what changed (`permission:` map → `permissions:` rules array, order-preserving; `LEGACY_USER_CONFIG` adoption removed), why (drop v2 auto-translation dependence), pointer to AGENTS.md contract
     — **Why:** MIGRATION.md is the change ledger users consult on version bumps; this is a user-visible file-format change in a major cycle.
     — **Done when:** section exists with the three facts + pointer.
     — **Consumers affected:** users diffing deployed agent files after `setup.sh`.
