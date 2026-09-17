@@ -2251,21 +2251,20 @@ function Deploy-Content {
 
     if (-not (Test-CommandExists "node")) {
         Write-LogError "Node.js is required by the installer CLI."
+        $global:LASTEXITCODE = 1
         return
     }
 
     # Pre-overwrite snapshot (ARCH-4): preserve user edits before force-copy.
-    if (Test-Path $BackupDir) {
-        $contentBackup = Join-Path $BackupDir "content-backup"
-        if (-not $DryRun) { New-Item -ItemType Directory -Path $contentBackup -Force | Out-Null }
-        if (@(Get-ChildItem $SkillsDir -ErrorAction SilentlyContinue).Count -gt 0) {
-            if (-not $DryRun) { Copy-Item $SkillsDir (Join-Path $contentBackup "skills") -Recurse -Force }
-            Write-LogInfo "Snapshotted existing skills to content-backup/skills"
-        }
-        if (@(Get-ChildItem $AgentsDestDir -ErrorAction SilentlyContinue).Count -gt 0) {
-            if (-not $DryRun) { Copy-Item $AgentsDestDir (Join-Path $contentBackup "agents") -Recurse -Force }
-            Write-LogInfo "Snapshotted existing agents to content-backup/agents"
-        }
+    # Unconditional — $BackupDir may not exist yet on -Yes redeploy.
+    $contentBackup = Join-Path $BackupDir "content-backup"
+    if (@(Get-ChildItem $SkillsDir -ErrorAction SilentlyContinue).Count -gt 0) {
+        if (-not $DryRun) { New-Item -ItemType Directory -Path $contentBackup -Force | Out-Null; Copy-Item $SkillsDir (Join-Path $contentBackup "skills") -Recurse -Force }
+        Write-LogInfo "Snapshotted existing skills to content-backup/skills"
+    }
+    if (@(Get-ChildItem $AgentsDestDir -ErrorAction SilentlyContinue).Count -gt 0) {
+        if (-not $DryRun) { New-Item -ItemType Directory -Path $contentBackup -Force | Out-Null; Copy-Item $AgentsDestDir (Join-Path $contentBackup "agents") -Recurse -Force }
+        Write-LogInfo "Snapshotted existing agents to content-backup/agents"
     }
 
     $cliArgs = @("add", "--all", "--yes")

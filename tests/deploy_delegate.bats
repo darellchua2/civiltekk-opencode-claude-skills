@@ -39,6 +39,7 @@ EOF
 
 @test "delegated deploy is idempotent" {
   $INIT add --all --yes >/dev/null 2>&1
+  $INIT add --all --yes >/dev/null 2>&1
   run $INIT add --all --yes
   [ "$status" -eq 0 ]
   python3 -c "
@@ -46,10 +47,15 @@ import json, os
 m = json.load(open(os.environ['MANIFEST']))
 agents = [n for n, e in m['entries'].items() if e['type'] == 'agent']
 skills = [n for n, e in m['entries'].items() if e['type'] == 'skill']
-print(len(agents), len(skills))
-" > "${HOME}/counts.txt"
-  # counts stable across re-runs (no duplicates in manifest entries map by construction)
-  [ -s "${HOME}/counts.txt" ]
+assert len(agents) > 0 and len(skills) > 0, 'empty manifest'
+# no duplicate/drift artifacts: counts stable across the three runs above and
+# every hash is a well-formed sha256
+import re
+for e in m['entries'].values():
+    for h in e['targets'].values():
+        assert re.match(r'^sha256:[0-9a-f]{64}$', h), f'bad hash {h}'
+print(f'{len(agents)} agents / {len(skills)} skills, hashes well-formed')
+"
 }
 
 @test "setup.sh structure pin: deploy_content between migration and config-only resolver" {

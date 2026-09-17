@@ -3288,17 +3288,18 @@ deploy_content() {
     fi
 
     # Pre-overwrite snapshot (ARCH-4): preserve user edits before force-copy.
-    if [ -d "$BACKUP_DIR" ]; then
-        local content_backup="${BACKUP_DIR}/content-backup"
-        mkdir -p "$content_backup"
-        if [ -d "$SKILLS_DIR" ] && [ -n "$(ls -A "$SKILLS_DIR" 2>/dev/null)" ]; then
-            run_cmd cp -r "$SKILLS_DIR" "${content_backup}/skills"
-            log_info "Snapshotted existing skills to ${content_backup}/skills"
-        fi
-        if [ -d "$AGENTS_DEST_DIR" ] && [ -n "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
-            run_cmd cp -r "$AGENTS_DEST_DIR" "${content_backup}/agents"
-            log_info "Snapshotted existing agents to ${content_backup}/agents"
-        fi
+    # Unconditional mkdir — BACKUP_DIR may not exist yet on --yes redeploy (the
+    # config-overwrite prompt auto-declines, so create_backup never ran).
+    local content_backup="${BACKUP_DIR}/content-backup"
+    if [ -d "$SKILLS_DIR" ] && [ -n "$(ls -A "$SKILLS_DIR" 2>/dev/null)" ]; then
+        run_cmd mkdir -p "$content_backup"
+        run_cmd cp -r "$SKILLS_DIR" "${content_backup}/skills"
+        log_info "Snapshotted existing skills to ${content_backup}/skills"
+    fi
+    if [ -d "$AGENTS_DEST_DIR" ] && [ -n "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
+        run_cmd mkdir -p "$content_backup"
+        run_cmd cp -r "$AGENTS_DEST_DIR" "${content_backup}/agents"
+        log_info "Snapshotted existing agents to ${content_backup}/agents"
     fi
 
     local provider_arg=""
@@ -4102,6 +4103,10 @@ main() {
         # written-hash comparison propagates tier/override changes (#379).
         RESOLVER_CONFIG_ONLY=true run_resolver
         node "${INSTALLER_DIR}/init.mjs" update ${PROVIDER:+--provider ${PROVIDER}}
+        rc=$?
+        if [ "$rc" -ne 0 ]; then
+            log_warn "manifest update skipped (exit ${rc}) — pre-#379 installs: one full ./deploy/setup.sh run adopts the manifest"
+        fi
         echo ""
         echo "Model resolution complete!"
         exit 0

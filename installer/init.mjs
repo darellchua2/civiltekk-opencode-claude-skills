@@ -714,9 +714,15 @@ async function checkStrictAllowlist(sel, opts) {
   if (skillDenyAll) {
     const hidden = sel.skills.filter((name) => !perms.some((r) => r && r.action === "skill" && r.resource === name && r.effect === "allow"));
     if (hidden.length) {
-      console.error(`\n⚠  STRICT ALLOWLIST DETECTED — ${hidden.length} skill(s) installed but HIDDEN.`);
-      console.error(`   Add to opencode.json permissions array, or re-run with --permit:`);
-      for (const name of hidden) console.error(`     { "action": "skill", "resource": "${name}", "effect": "allow" }`);
+      // Full-catalog deploys/updates hit the lean profile BY DESIGN — collapse
+      // to one line instead of 100+ misleading paste-me hints (CR-3).
+      if (hidden.length > 20) {
+        console.error(`\n⚠  STRICT ALLOWLIST — ${hidden.length} skill(s) HIDDEN (lean profile: by design for full-catalog installs).`);
+      } else {
+        console.error(`\n⚠  STRICT ALLOWLIST DETECTED — ${hidden.length} skill(s) installed but HIDDEN.`);
+        console.error(`   Add to opencode.json permissions array, or re-run with --permit:`);
+        for (const name of hidden) console.error(`     { "action": "skill", "resource": "${name}", "effect": "allow" }`);
+      }
     }
   }
   // agents live in agents.build.permissions ({action:"subagent"} rules)
@@ -872,7 +878,7 @@ async function cmdRemove(args, opts) {
 async function cmdUpdate(args, opts) {
   const reg = await loadRegistry();
   const prev = await readJsonMaybe(USER_MANIFEST);
-  if (!prev) die("no user-scope manifest found — nothing to update. Run `add` first.", 2);
+  if (!prev) die("no user-scope manifest found — nothing to update. Run `add` first (setup.sh users: one full re-run of ./deploy/setup.sh adopts the manifest).", 2);
 
   // Legacy manifest (pre-#379, name arrays only): synthesize entries by hashing
   // what is currently installed, then proceed. Missing files stay out of entries.
@@ -885,8 +891,11 @@ async function cmdUpdate(args, opts) {
       if (existsSync(f)) entries[a] = { type: "agent", targets: { opencode: sha256Hex(await readFile(f, "utf8")) } };
     }
     for (const s of prev.skills || []) {
-      const d = join(USER_SKILLS, s);
-      if (existsSync(d)) entries[s] = { type: "skill", targets: { opencode: await hashSkillDir(d) } };
+      // probe every historical target so claude installs keep their lifecycle
+      const targets = {};
+      if (existsSync(join(USER_SKILLS, s))) targets.opencode = await hashSkillDir(join(USER_SKILLS, s));
+      if (existsSync(join(USER_CLAUDE_SKILLS, s))) targets.claude = await hashSkillDir(join(USER_CLAUDE_SKILLS, s));
+      if (Object.keys(targets).length) entries[s] = { type: "skill", targets };
     }
   }
 
