@@ -177,6 +177,7 @@ def _validate_geometry(entity: dict, errors: list) -> None:
         return
 
     def need_point(field):
+        """Extract geometry[field] as a [x, y] point, appending a schema error if malformed."""
         value = _point(geometry.get(field))
         if value is None:
             errors.append(
@@ -189,6 +190,7 @@ def _validate_geometry(entity: dict, errors: list) -> None:
         return value
 
     def need_number(field):
+        """Extract geometry[field] as a number, appending a schema error if malformed."""
         value = _num(geometry.get(field))
         if value is None:
             errors.append(
@@ -339,6 +341,7 @@ def _validate_constraints(
             continue
 
         def skip(reason):
+            """Downgrade this constraint to a warning with a named reason instead of drawing it."""
             warnings.append(
                 _error("constraint", cid, f"constraint '{cid}' skipped: {reason}")
             )
