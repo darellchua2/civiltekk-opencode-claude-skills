@@ -28,8 +28,8 @@ From ticket #401:
     — **Done when:** `node --check`; fake-HOME bats: global pin → injected `model:` equals the pin; project pin + global pin → project pin wins; no pins → tier default unchanged.
     — **Consumers affected:** `writeInstall` output agents; `models.json` artifact unchanged; user-scope paths untouched (default param `null`).
 
-- [ ] **1.2** `tests/init.bats`: two new cases — fixture `add <fast-tier-agent> --project "$TMP_PROJ" --yes` with `HOME` exported to a temp dir; (a) global pin: seed `$HOME/.config/opencode/agent-overrides.json` with `{stem: {model: "test/global-pin"}}`, assert `.opencode/agents/<stem>.md` contains `model: test/global-pin`; (b) project pin wins: additionally seed `$TMP_PROJ/.opencode/agent-overrides.json` with `{stem: {model: "test/project-pin"}}`, assert `model: test/project-pin` (and not the global pin)
-    — **Why:** The ticket's acceptance demands executable proof at both precedence levels (fake HOME isolates the global read from the CI runner's real home).
+- [ ] **1.2** `tests/init.bats`: three new cases — fixture `add <fast-tier-agent> --project "$TMP_PROJ" --yes` with `HOME` exported to a temp dir; (a) global pin: seed `$HOME/.config/opencode/agent-overrides.json` with `{stem: {model: "test/global-pin"}}`, assert `.opencode/agents/<stem>.md` contains `model: test/global-pin`; (b) project pin wins: additionally seed `$TMP_PROJ/.opencode/agent-overrides.json` with `{stem: {model: "test/project-pin"}}`, assert `model: test/project-pin` (and not the global pin); (c) no-pin tier default BY VALUE (REQ-2): empty fake HOME + no project overrides → assert the injected `model:` equals the fast-tier value from `installer/models.default.json` (existing tests only grep `^model:` existence under the real HOME — indistinguishable from a pin on pinned machines)
+    — **Why:** The ticket's acceptance demands executable proof at both precedence levels (fake HOME isolates the global read from the CI runner's real home); (c) pins the no-pin regression contract.
     — **Done when:** `bats tests/init.bats` green.
     — **Consumers affected:** CI.
 
