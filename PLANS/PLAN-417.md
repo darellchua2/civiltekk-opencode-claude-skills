@@ -31,29 +31,34 @@ Cross-module nodes exist (templates ↔ setup-skill ↔ registry build) → arch
 
 ### Phase 1: Canonical form templates (skill-owned source of truth)
 
-- [ ] **1.1** Write `skills/ticket-creation-skill/templates/bug_report.yml` — GitHub issue form: search-first checkbox, Problem, Steps to Reproduce, Expected vs Actual, Environment, Logs (render: shell), References; labels `["bug"]`, title prefix `[Bug]: `
+- [x] **1.1** Write `skills/ticket-creation-skill/templates/bug_report.yml` — GitHub issue form: search-first checkbox, Problem, Steps to Reproduce, Expected vs Actual, Environment, Logs (render: shell), References; labels `["bug"]`, title prefix `[Bug]: `
     — **Why:** This file is the canonical source both the repo-level forms and the setup-skill scaffold copy from; writing it first fixes the field labels every other artifact must match.
     — **Done when:** File exists, parses as YAML, and contains the 7 labeled fields with `validations.required` marking Title/Problem/Steps/Expected-Actual/Environment required.
     — **Consumers affected:** repo-level forms (Phase 2), setup-skill scaffold (Phase 4), distribution channels.
-- [ ] **1.2** Write `skills/ticket-creation-skill/templates/feature_request.yml` — GitHub issue form: search-first checkbox, Problem/Use Case, Proposed Solution, Alternatives Considered, Acceptance Criteria, References; labels `["enhancement"]`
+    — **Done:** file written, parses via python3-yaml, 7 labeled fields with required flags; files: skills/ticket-creation-skill/templates/bug_report.yml; fixes: none
+- [x] **1.2** Write `skills/ticket-creation-skill/templates/feature_request.yml` — GitHub issue form: search-first checkbox, Problem/Use Case, Proposed Solution, Alternatives Considered, Acceptance Criteria, References; labels `["enhancement"]`
     — **Why:** Feature path needs its own lighter variant; label auto-applied on submission drives triage.
     — **Done when:** File exists, parses as YAML, contains the 6 labeled fields with required flags set.
     — **Consumers affected:** same as 1.1.
-- [ ] **1.3** Write `skills/ticket-creation-skill/templates/config.yml` — `blank_issues_enabled: false`, `contact_links` for questions
+    — **Done:** file written, parses via python3-yaml, 6 labeled fields; files: skills/ticket-creation-skill/templates/feature_request.yml; fixes: none
+- [x] **1.3** Write `skills/ticket-creation-skill/templates/config.yml` — `blank_issues_enabled: false`, `contact_links` for questions
     — **Why:** Chooser config forces template use so the structured intake actually applies to humans.
     — **Done when:** File exists, parses as YAML, `blank_issues_enabled: false` present.
     — **Consumers affected:** same as 1.1.
+    — **Done:** file written with `blank_issues_enabled: false`; contact_links deliberately omitted — Discussions disabled on this repo (gh-verified), a 404 link would be worse than none; files: skills/ticket-creation-skill/templates/config.yml; fixes: none
 
 ### Phase 2: Repo-level issue forms
 
-- [ ] **2.1** Create `.github/ISSUE_TEMPLATE/` and copy the 3 template files into it via `cp`
+- [x] **2.1** Create `.github/ISSUE_TEMPLATE/` and copy the 3 template files into it via `cp`
     — **Why:** Byte-identical copies guarantee the human-facing forms and the distributable templates never diverge at authoring time.
     — **Done when:** All 3 files exist under `.github/ISSUE_TEMPLATE/`.
     — **Consumers affected:** human contributors opening issues; triage filters.
-- [ ] **2.2** Verify byte-identity: `cmp` each repo-level file against its skill template
+    — **Done:** dir created, 3 files copied via cp; files: .github/ISSUE_TEMPLATE/{bug_report,feature_request,config}.yml; fixes: none
+- [x] **2.2** Verify byte-identity: `cmp` each repo-level file against its skill template
     — **Why:** The AC requires byte-identity; verification proves the copy, not a paraphrase.
     — **Done when:** All 3 `cmp` runs exit 0.
     — **Consumers affected:** none (verification only).
+    — **Done:** all 3 cmp runs exit 0 (BYTE-IDENTICAL), pinned permanently by tests/test_issue_template_byte_identity.bats; files: none; fixes: none
 
 ### Phase 3: Ticket skill intake flow
 
