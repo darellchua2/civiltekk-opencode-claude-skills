@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.3.0](https://github.com/darellchua2/opencode-config-template/compare/v9.2.1...v9.3.0) (2026-09-18)
+
+### Features
+
+* **skills:** ticket/PR attribution + gh-cli fallback ([#404](https://github.com/darellchua2/opencode-config-template/issues/404)) ([#415](https://github.com/darellchua2/opencode-config-template/issues/415)) ([b7c81ac](https://github.com/darellchua2/opencode-config-template/commit/b7c81ac8a7d283cf2a45c70cfd160655af8630ea))
+
+### Documentation
+
+* **learnings:** commit local memory backlog (8 entries + index + evidence update) ([ec82ca8](https://github.com/darellchua2/opencode-config-template/commit/ec82ca86b6e39058a84cb1290e11ad825b4682ae)), closes [383/#385-era](https://github.com/383/opencode-config-template/issues/385-era) [#383](https://github.com/darellchua2/opencode-config-template/issues/383)
+
 ## [9.2.1](https://github.com/darellchua2/opencode-config-template/compare/v9.2.0...v9.2.1) (2026-09-18)
 
 ### Bug Fixes
