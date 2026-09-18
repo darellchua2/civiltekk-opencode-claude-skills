@@ -212,11 +212,13 @@ const plugin = {
       return st;
     };
 
-    // depth counter of plugin-initiated sends currently in flight; the prompt
-    // hook ignores echoes of our own sends so the cap and ESC latch can only be
-    // reset by a real user message. Cleared on NEXT TICK because a prompt hook
-    // may fire after the awaited prompt resolves.
-    let ownSends = 0;
+    // depth guard for plugin-initiated sends currently in flight, scoped PER
+    // SESSION: the prompt hook ignores echoes of our own sends so the cap and
+    // ESC latch can only be reset by a real user message — and a send in flight
+    // for session A must never swallow a real user message in session B.
+    // Cleared on NEXT TICK because a prompt hook may fire after the awaited
+    // prompt resolves.
+    const ownSendSessions = new Set<string>();
 
     const send = async (sessionID: string): Promise<void> => {
       const st = state.get(sessionID);
@@ -247,7 +249,7 @@ const plugin = {
       st.pending = undefined;
       st.attempts += 1;
       st.lastSentAt = Date.now();
-      ownSends += 1;
+      ownSendSessions.add(sessionID);
       try {
         await ctx.session?.prompt?.({ sessionID, text: cfg.message });
         log(`sent ${JSON.stringify(cfg.message)} to ${sessionID} (attempt ${st.attempts}/${cfg.maxConsecutive}, reason=${reason})`);
@@ -255,7 +257,7 @@ const plugin = {
         log(`prompt send failed for ${sessionID}: ${err instanceof Error ? err.message : String(err)}`);
       } finally {
         setImmediate(() => {
-          ownSends = Math.max(0, ownSends - 1);
+          ownSendSessions.delete(sessionID);
         });
       }
     };
@@ -355,7 +357,7 @@ const plugin = {
       const registration = await ctx.session.hook('prompt', (event: any) => {
         const sid = event?.sessionID;
         if (!sid) return;
-        if (ownSends > 0) {
+        if (ownSendSessions.has(sid)) {
           log(`session ${sid}: ignoring own-send echo`);
           return;
         }
@@ -385,6 +387,7 @@ const plugin = {
     return () => {
       controller.abort();
       for (const st of state.values()) clearTimer(st);
+      ownSendSessions.clear();
       disposeHook?.();
     };
   },

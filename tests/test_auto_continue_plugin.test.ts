@@ -122,7 +122,7 @@ class FakeBus {
 
 async function makePlugin(
   env: Record<string, string>,
-  opts: { hostile?: boolean; getStatus?: () => string } = {},
+  opts: { hostile?: boolean; getStatus?: () => string; hostileEchoDelayMs?: number } = {},
 ) {
   const saved = { ...process.env };
   for (const k of Object.keys(env)) delete process.env[k]; // no inherited leakage
@@ -137,6 +137,7 @@ async function makePlugin(
     session: {
       get: async () => ({ status: opts.getStatus ? opts.getStatus() : 'idle' }),
       prompt: async (input: any) => {
+        if (opts.hostileEchoDelayMs) await sleep(opts.hostileEchoDelayMs);
         // hostile fake: a real server may fire the prompt hook for our own send
         if (opts.hostile) promptHook?.({ sessionID: input.sessionID, prompt: { text: input.text } });
         prompts.push({ sessionID: input.sessionID, text: input.text, at: Date.now() });
@@ -161,9 +162,9 @@ async function makePlugin(
     for (const k of Object.keys(env)) delete process.env[k];
     Object.assign(process.env, saved);
   };
-  const error = (text: string) => bus.push({ type: 'session.error', properties: { sessionID: SID, error: { name: 'APIError', message: text } } });
-  const idle = () => bus.push({ type: 'session.idle', properties: { sessionID: SID } });
-  const interrupted = () => bus.push({ type: 'session.interrupted', properties: { sessionID: SID } });
+  const error = (text: string, sid: string = SID) => bus.push({ type: 'session.error', properties: { sessionID: sid, error: { name: 'APIError', message: text } } });
+  const idle = (sid: string = SID) => bus.push({ type: 'session.idle', properties: { sessionID: sid } });
+  const interrupted = (sid: string = SID) => bus.push({ type: 'session.interrupted', properties: { sessionID: sid } });
   return {
     ctx,
     bus,
@@ -173,7 +174,7 @@ async function makePlugin(
     error,
     idle,
     interrupted,
-    userPrompt: () => promptHook?.({ sessionID: SID, prompt: { text: 'go' } }),
+    userPrompt: (sid: string = SID) => promptHook?.({ sessionID: sid, prompt: { text: 'go' } }),
   };
 }
 
@@ -339,17 +340,43 @@ test('runtime: busy session re-arms and sends once idle again', async () => {
   }
 });
 
-test('runtime: session deletion clears pending retries', async () => {
+test('runtime: session deletion clears pending retries (and the armed timer)', async () => {
   const h = await makePlugin({
-    OPENCODE_AUTO_CONTINUE_BASE_BACKOFF_MS: '10',
+    OPENCODE_AUTO_CONTINUE_BASE_BACKOFF_MS: '500', // long enough to observe the armed timer
     OPENCODE_AUTO_CONTINUE_THROTTLE_MS: '10',
   });
   try {
     h.error('400 bad request');
-    h.bus.push({ type: 'session.deleted', properties: { sessionID: SID } });
     h.idle();
+    await sleep(40); // the retry timer is now armed ~500ms out
+    h.bus.push({ type: 'session.deleted', properties: { sessionID: SID } });
     await sleep(120);
-    assert.equal(h.prompts.length, 0, 'no retry may fire for a deleted session');
+    assert.equal(h.prompts.length, 0, 'no retry may fire for a deleted session (timer must be cleared)');
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('runtime: own-send guard does not swallow a real user message in another session', async () => {
+  const SID_B = 'ses_test_B';
+  const h = await makePlugin(
+    {
+      OPENCODE_AUTO_CONTINUE_BASE_BACKOFF_MS: '10',
+      OPENCODE_AUTO_CONTINUE_THROTTLE_MS: '10',
+    },
+    { hostile: true, hostileEchoDelayMs: 40 }, // session A's send stays in flight ~40ms
+  );
+  try {
+    h.interrupted(SID_B); // latch session B
+    h.error('400 bad request'); // session A arms and schedules a send
+    h.idle();
+    await sleep(10); // A's prompt is now in flight (guard active for A only)
+    h.userPrompt(SID_B); // a REAL user message lands in B mid-flight
+    await waitFor(() => h.prompts.some((p) => p.sessionID === SID), 'A send completes');
+    // B's user message must have lifted B's latch despite A's in-flight send
+    h.error('read ECONNRESET', SID_B);
+    h.idle(SID_B);
+    await waitFor(() => h.prompts.some((p) => p.sessionID === SID_B), 'B sends after its real user message');
   } finally {
     await h.teardown();
   }

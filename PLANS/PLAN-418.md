@@ -84,11 +84,11 @@ No in-repo module consumes the plugin's exports besides its test — the sole ru
     — **Done when:** no unawaited promise without a rejection handler remains in the plugin; 17/17 tests pass.
     — **Consumers affected:** OpenCode server process (all sessions).
     — **Done:** post-await re-validation + guarded send + Promise.resolve().catch on log/dispose + logAlways on stream death; files: plugins/opencode-auto-continue-v2.ts; fixes: review BLOCK
-- [x] **5.2** Own-send guard: `ownSends` depth counter set before `ctx.session.prompt`, cleared on next tick in `finally`; the prompt hook ignores echoes so the cap and ESC latch can only reset via a real user message (WARN / relayed Gap 1, next-tick semantics per Mode R answer).
-    — **Why:** if v2 fires the prompt hook for plugin-initiated sends, an unguarded hook resets the counter every cycle — an unlimited retry loop against a permanently failing session.
-    — **Done when:** hostile-fake test (hook echoes own sends) shows the cap still binds at maxConsecutive.
+- [x] **5.2** Own-send guard: `ownSendSessions` per-session Set set before `ctx.session.prompt`, deleted on next tick in `finally`; the prompt hook ignores echoes only for the sending session so the cap and ESC latch can only reset via a real user message (WARN / relayed Gap 1, next-tick semantics per Mode R answer; per-session scope per round-2 WARN).
+    — **Why:** if v2 fires the prompt hook for plugin-initiated sends, an unguarded hook resets the counter every cycle — an unlimited retry loop against a permanently failing session; and a GLOBAL guard would swallow a real user message in another session while a send is in flight.
+    — **Done when:** hostile-fake test (hook echoes own sends) shows the cap still binds AND the cross-session test shows B's real user message still resets B mid-flight of A's send.
     — **Consumers affected:** prompt hook consumers; none in-repo.
-    — **Done:** guard + next-tick clear implemented; hostile test passes; files: plugins/opencode-auto-continue-v2.ts, tests/test_auto_continue_plugin.test.ts; fixes: review WARN
+    — **Done:** per-session Set guard + next-tick delete + cleanup clear; hostile cap test and cross-session test pass; files: plugins/opencode-auto-continue-v2.ts, tests/test_auto_continue_plugin.test.ts; fixes: review WARN round 1 + round 2
 - [x] **5.3** Test hardening: debug-silence log-spy (zero `app.log` calls with `_DEBUG` deleted from env), throttle-window runtime test (second send delayed ≥ window), busy re-arm test, `session.deleted` cleanup test (WARN / relayed Gaps 2-3).
     — **Why:** AC3/AC4 safety properties were previously only unit-asserted, not behaviorally pinned — regressions would ship green.
     — **Done when:** all five new runtime tests pass; total suite 17/17.
@@ -96,9 +96,19 @@ No in-repo module consumes the plugin's exports besides its test — the sole ru
     — **Done:** 5 tests added (silence, hostile cap, throttle ≥45ms delta, busy re-arm, deleted cleanup); files: tests/test_auto_continue_plugin.test.ts; fixes: none
 - [x] **5.4** Cleanup: remove dead destructured export, type the timer handle, drop the `p.id` sessionID fallback, and call `ensure()` only on stateful events so the bounded map self-selects (review NOTEs).
     — **Why:** dead exports and per-event map churn are the kind of noise the next reader pays for; zero behavior change intended.
-    — **Done when:** import smoke passes; suite 17/17 unchanged.
+    — **Done when:** import smoke passes; suite green unchanged.
     — **Consumers affected:** none.
     — **Done:** export removed, `timer?: ReturnType<typeof setTimeout>`, `p.id` fallback dropped, ensure() scoped to error/interrupted/idle/deleted branches; files: plugins/opencode-auto-continue-v2.ts; fixes: none
+- [x] **5.5** Cross-session test + arming-first deleted-cleanup coverage (round-2 NOTEs): deleted test now arms the timer first (500ms backoff) so the `clearTimer` half of the deleted branch is exercised; new test proves a real user message in session B resets B while session A's send is in flight (guard is per-session, not global).
+    — **Why:** the deleted test previously skipped the timer-clear half; the cross-session bleed was exactly what round 2 found — both must stay pinned.
+    — **Done when:** suite 18/18 green including the two updated tests.
+    — **Consumers affected:** verification gate.
+    — **Done:** 18/18 pass; files: tests/test_auto_continue_plugin.test.ts; fixes: none
+- [x] **5.6** Capture the review's learning candidate in LEARNINGS/ per memory-hygiene (one file: global in-flight guards bleed across sessions).
+    — **Why:** reviewer surfaced a generalizable anti-pattern ("scope concurrency guards to the affected entity") worth one reusable note.
+    — **Done when:** LEARNINGS/anti-patterns/global-in-flight-guard-cross-session-bleed.md committed on the branch.
+    — **Consumers affected:** future reviews in this repo (LEARNINGS auto-inject manifest picks it up on next session).
+    — **Done:** file written in house format (Context/Pattern/Rationale/Alternatives/Confidence/Scope); files: LEARNINGS/anti-patterns/global-in-flight-guard-cross-session-bleed.md; fixes: none
 
 ## Technical Notes
 
