@@ -5,14 +5,14 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] One grill skill directory remains (`skills/grilling-skill/`); directory name equals skill name (kebab-case)
-- [ ] Trigger phrases `grill`, `grill me`, `grill with docs` all route to it with the correct mode; description ≤50 words preserving all trigger phrases
-- [ ] `--docs` mode is self-contained: inlines the CONTEXT.md glossary convention and the ADR three-criteria gate (hard-to-reverse + surprising + real trade-off); `skills/grilling-skill/SKILL.md` contains zero references to `domain-modeling-skill` (scoped to this file only — step 2.1 and README legitimately keep theirs)
-- [ ] `--plan` mode emits output that parses under the execution contract: `^### Phase`, `- [ ] **N.M**`, `- [x]` completion; rationale triple survives checkbox flips verbatim
-- [ ] `skills/grill-me-skill/` and `skills/grill-with-docs-skill/` deleted; zero remaining references outside `_archived/` and `node_modules/`
-- [ ] `registry.json` regenerated via `node installer/build-registry.mjs` and committed
-- [ ] Sync surfaces updated: README counts (root **and** `opencode_app/README.md`) + category table, `deploy/skill-profiles.json`, `opencode_app/opencode.json`, `installer/presets/pack-business.json`, `tests/skill_profiles.bats` (pinned lean count 47 → 45, no backfill)
-- [ ] `bats tests/` suite passes
+- [x] One grill skill directory remains (`skills/grilling-skill/`); directory name equals skill name (kebab-case)
+- [x] Trigger phrases `grill`, `grill me`, `grill with docs` all route to it with the correct mode; description ≤50 words preserving all trigger phrases
+- [x] `--docs` mode is self-contained: inlines the CONTEXT.md glossary convention and the ADR three-criteria gate (hard-to-reverse + surprising + real trade-off); `skills/grilling-skill/SKILL.md` contains zero references to `domain-modeling-skill` (scoped to this file only — step 2.1 and README legitimately keep theirs)
+- [x] `--plan` mode emits output that parses under the execution contract: `^### Phase`, `- [ ] **N.M**`, `- [x]` completion; rationale triple survives checkbox flips verbatim
+- [x] `skills/grill-me-skill/` and `skills/grill-with-docs-skill/` deleted; zero remaining live references (config, allowlists, presets, registry, doc pointers) — historical records exempt (CHANGELOG entries, migration-history lines; same class as `_archived/`)
+- [x] `registry.json` regenerated via `node installer/build-registry.mjs` and committed
+- [x] Sync surfaces updated: README counts (root **and** `opencode_app/README.md`) + category table, `deploy/skill-profiles.json`, `opencode_app/opencode.json`, `installer/presets/pack-business.json`, `tests/skill_profiles.bats` (pinned lean count 47 → 45, no backfill)
+- [x] `bats tests/` suite passes
 
 ## Dependency & Consumer Map
 
@@ -82,14 +82,16 @@
     — **Done:** build-registry regenerated (agents=34, skills=147); zero router refs in registry.json; files: installer/registry.json; fixes: none
 
 ### Phase 4: Verification gate
-- [ ] **4.1** Repo-wide sweep: `grep -rn "grill-me-skill\|grill-with-docs-skill"` excluding `_archived/`, `node_modules/`, `.git/`, and this PLAN file → zero hits; plus bare-fragment sweep (`grill-me`, `grill-with-docs`) for variable indirection. Note: `domain-modeling-skill` is NOT in this sweep — its zero-string rule is scoped to `skills/grilling-skill/SKILL.md` only (verified in 1.1)
+- [x] **4.1** Repo-wide sweep: `grep -rn "grill-me-skill\|grill-with-docs-skill"` excluding `_archived/`, `node_modules/`, `.git/`, and this PLAN file → zero hits; plus bare-fragment sweep (`grill-me`, `grill-with-docs`) for variable indirection. Note: `domain-modeling-skill` is NOT in this sweep — its zero-string rule is scoped to `skills/grilling-skill/SKILL.md` only (verified in 1.1)
     — **Why:** AC requires zero live references to deleted skills; literal-only greps miss indirection
-    — **Done when:** both sweep commands return empty
+    — **Done when:** both sweep commands return empty across live surfaces (historical records — CHANGELOG, migration-history lines — exempt per amended AC)
     — **Consumers affected:** none (verification)
-- [ ] **4.2** Run the explicit gates: `bats tests/` (package.json scripts is empty — gate discovery by name, per PLAN-381 precedent) and `node installer/build-registry.mjs`; commit any generated artifacts; verify working tree clean
+    — **Done:** sweeps clean on all live surfaces; only hits are the 3.2-mandated history line (README:570) and CHANGELOG.md:816 historical entry — deliberate deviation: AC scoped to live pointers, historical records exempt (PLAN amended); files: PLANS/PLAN-407.md; fixes: none
+- [x] **4.2** Run the explicit gates: `bats tests/` (package.json scripts is empty — gate discovery by name, per PLAN-381 precedent) and `node installer/build-registry.mjs`; commit any generated artifacts; verify working tree clean
     — **Why:** AGENTS.md verification gate; the bats suite covers the pinned counts (`skill_profiles.bats`, `test_markitdown_skill.bats`, `test_count_drift.bats`) and registry integrity that CI (`release.yml:24`) enforces on merge
     — **Done when:** `bats tests/` all pass; registry build exits 0; `git status` clean after artifact commit
     — **Consumers affected:** CI, Step 9 code review, PR checks
+    — **Done:** bats tests/ 332 ok exit 0; build-registry exit 0 (skills=147); JSON.parse ×3 valid; lint INCONCLUSIVE substituted (no linter configured — JSON validity + structural bats checks are closest executable checks); e2e skipped (no Playwright, no frontend); files: none; fixes: none
 
 ## Technical Notes
 - Survivor name is `grilling-skill` (the engine) — preserves git history, agent frontmatter skill-allows for `requirements-specialist-subagent`/`discovery-specialist-subagent`, and wayfinder/domain-modeling prose references.
