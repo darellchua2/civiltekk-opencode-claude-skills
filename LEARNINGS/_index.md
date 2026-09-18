@@ -26,6 +26,15 @@
 - **Summary**: Never let a validator traceback on the invalid input it exists to reject (#402 spec_to_dxf parallel-constraint crash); guard extractions or skip dependent checks when schema errors exist
 - **Date**: 2026-09-19
 
+### Global in-flight guard bleeds across sessions
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/global-in-flight-guard-cross-session-bleed.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Scope hook-suppression/in-flight guards to the affected entity (per-session Set), never a global counter — a send in flight for session A must not swallow a real user message in session B (#418 auto-continue review round 2)
+- **Date**: 2026-09-19
+
 ### opencode.json // comments break CI
 
 - **Category**: anti-pattern
