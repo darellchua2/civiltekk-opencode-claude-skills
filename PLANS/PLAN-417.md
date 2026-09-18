@@ -80,18 +80,21 @@ Cross-module nodes exist (templates ↔ setup-skill ↔ registry build) → arch
 
 ### Phase 4: Setup skill scaffold offer
 
-- [ ] **4.1** Add detection row to `skills/opencode-repo-setup-skill/SKILL.md` Step 1: GitHub remote or `.github/` present + `.github/ISSUE_TEMPLATE/` absent → offer scaffold
+- [x] **4.1** Add detection row to `skills/opencode-repo-setup-skill/SKILL.md` Step 1: GitHub remote or `.github/` present + `.github/ISSUE_TEMPLATE/` absent → offer scaffold
     — **Why:** Detection drives the menu; without the signal the offer never fires.
     — **Done when:** Row present in the Step 1 table.
     — **Consumers affected:** setup flow in target repos.
-- [ ] **4.2** Add extras offer + Step 3 write sub-step: copy `bug_report.yml`, `feature_request.yml`, `config.yml` from the installed ticket-creation-skill `templates/` dir into `<repo>/.github/ISSUE_TEMPLATE/`; create-if-absent only — existing files are skipped and reported, never overwritten
+    — **Done:** detection row added ("GitHub repo | .github/ or GitHub remote present AND ISSUE_TEMPLATE absent | offer issue-template scaffold"); files: skills/opencode-repo-setup-skill/SKILL.md; fixes: none
+- [x] **4.2** Add extras offer + Step 3 write sub-step: copy `bug_report.yml`, `feature_request.yml`, `config.yml` from the installed ticket-creation-skill `templates/` dir into `<repo>/.github/ISSUE_TEMPLATE/`; create-if-absent only — existing files are skipped and reported, never overwritten
     — **Why:** Distributes the forms to every repo where setup runs; idempotency respects repos that already maintain their own community health files.
     — **Done when:** SKILL.md documents the copy command, the skip-if-present rule, the source path, and the per-skill-install fallback: source templates dir absent → skip the offer with a note (mirrors the CodeGraph soft-skip).
     — **Consumers affected:** target repos' `.github/ISSUE_TEMPLATE/`; distribution channels.
-- [ ] **4.3** Add Step 5 report line (files written, revert = delete dir) + Jira rule block `<!-- opencode:jira-templates -->` offering Jira description templates appended to target-repo AGENTS.md on accept
+    — **Done:** extras option added with source path, create-if-absent-only rule, per-skill-install soft-skip, and the "never touches opencode.json" note (review W3); files: skills/opencode-repo-setup-skill/SKILL.md; fixes: none
+- [x] **4.3** Add Step 5 report line (files written, revert = delete dir) + Jira rule block `<!-- opencode:jira-templates -->` offering Jira description templates appended to target-repo AGENTS.md on accept
     — **Why:** Setup skill reports all writes (existing convention); Jira has no repo-file equivalent, so the rule block is the symmetric application path.
     — **Done when:** Report bullet added; rule block with marker documented alongside CodeGraph/LSP blocks.
     — **Consumers affected:** target repos' AGENTS.md; Jira-facing agent flows.
+    — **Done:** Step 5 "Files written" bullet added; Jira-templates rule block with marker documented after the LSP block; files: skills/opencode-repo-setup-skill/SKILL.md; fixes: none
 
 ### Phase 5: Registry sync + verification gates
 
