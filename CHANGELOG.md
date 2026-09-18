@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.1.1](https://github.com/darellchua2/opencode-config-template/compare/v9.1.0...v9.1.1) (2026-09-18)
+
+### Bug Fixes
+
+* **installer:** update reports per-target outcomes without dropping partial updates ([#400](https://github.com/darellchua2/opencode-config-template/issues/400)) ([#403](https://github.com/darellchua2/opencode-config-template/issues/403)) ([c06bcde](https://github.com/darellchua2/opencode-config-template/commit/c06bcde4cb731fac89a1c02b3431d34a4bdaea79))
+
 ## [9.1.0](https://github.com/darellchua2/opencode-config-template/compare/v9.0.0...v9.1.0) (2026-09-18)
 
 ### Features
