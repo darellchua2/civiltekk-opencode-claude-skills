@@ -62,18 +62,21 @@ Cross-module nodes exist (templates ↔ setup-skill ↔ registry build) → arch
 
 ### Phase 3: Ticket skill intake flow
 
-- [ ] **3.1** Rewrite `skills/ticket-creation-skill/SKILL.md` Step 2 as the intake cycle: classify (bug | feature | task via labeler skills) → intake (batched field collection, ask-don't-invent) → validate (required fields non-empty) → preview (rendered ticket confirmed) → submit; add field-spec tables for the bug and feature/task variants with labels matching the templates verbatim; ALSO rewrite the "What I do" list and the Example Usage section so no stale 5-field intake (including Technical Notes collection) survives anywhere in the file
+- [x] **3.1** Rewrite `skills/ticket-creation-skill/SKILL.md` Step 2 as the intake cycle: classify (bug | feature | task via labeler skills) → intake (batched field collection, ask-don't-invent) → validate (required fields non-empty) → preview (rendered ticket confirmed) → submit; add field-spec tables for the bug and feature/task variants with labels matching the templates verbatim; ALSO rewrite the "What I do" list and the Example Usage section so no stale 5-field intake (including Technical Notes collection) survives anywhere in the file
     — **Why:** This is the core behavioral change — the agent now runs the same required-field intake a human runs in the browser form. Review finding W1: the old intake also lives in "What I do" (:21) and Example Usage (:254-271); leaving them teaches agents the deprecated flow.
     — **Done when:** SKILL.md contains both variant tables and the 5-stage cycle; every table label string-matches a field label in the corresponding template file; the file no longer collects Technical Notes anywhere.
     — **Consumers affected:** primary agent runtime; `installer/build-registry.mjs` (frontmatter unchanged).
-- [ ] **3.2** Add per-platform render templates to SKILL.md: GitHub markdown body (sections mirror form headings), Jira description mapping (Bug fields; Story renders "As a… I want… so that…" + AC checklist; Task gets feature/task fields)
+    — **Done:** Step 2 replaced with the 5-stage intake + both variant tables; "What I do" item 2 and Example Usage rewritten; grep confirms Technical Notes appears only in the boundary rule itself; labels pinned verbatim by bats test; files: skills/ticket-creation-skill/SKILL.md; fixes: none
+- [x] **3.2** Add per-platform render templates to SKILL.md: GitHub markdown body (sections mirror form headings), Jira description mapping (Bug fields; Story renders "As a… I want… so that…" + AC checklist; Task gets feature/task fields)
     — **Why:** One canonical schema with platform renderings prevents human-created and agent-created tickets drifting structurally.
     — **Done when:** SKILL.md shows both renderings and states that labeler classification selects the variant.
     — **Consumers affected:** agent ticket creation on both platforms; Jira REST fallback path.
-- [ ] **3.3** Add agent behavior rules + ticket-vs-plan boundary to SKILL.md: never invent field values; headless/CI fallback (proceed only if all required fields came in the request, else fail naming gaps); boundary rules (ticket executable without discussion context; every plan references exactly one ticket ID; Technical Notes moves to the PLAN)
+    — **Done:** "Rendering the Ticket Body" section added between Steps 3 and 4 with both GitHub variants + Jira mapping table; files: skills/ticket-creation-skill/SKILL.md; fixes: none
+- [x] **3.3** Add agent behavior rules + ticket-vs-plan boundary to SKILL.md: never invent field values; headless/CI fallback (proceed only if all required fields came in the request, else fail naming gaps); boundary rules (ticket executable without discussion context; every plan references exactly one ticket ID; Technical Notes moves to the PLAN)
     — **Why:** The boundary rules are the contract that keeps this skill upstream of plan generation (worktree-pipeline); headless fallback prevents stalls in non-interactive runs.
     — **Done when:** SKILL.md states both boundary rules verbatim and the headless fallback.
     — **Consumers affected:** `worktree-pipeline-skill` (consumes ticket refs); plan authoring skills.
+    — **Done:** "Agent behavior rules" (ask-don't-invent, parity, headless/CI fallback, sub-item intake) + "Ticket-vs-plan boundary" (3 rules) added to Step 2; files: skills/ticket-creation-skill/SKILL.md; fixes: none
 
 ### Phase 4: Setup skill scaffold offer
 
