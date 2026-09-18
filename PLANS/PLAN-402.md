@@ -93,22 +93,26 @@ Cross-module consumers exist (registry ← frontmatter, presets ← registry, ro
 
 ### Phase 3: Image pipeline scripts
 
-- [ ] **3.1** Create `scripts/preflight_image.py`: hash, resolution, blur, contrast, skew/perspective estimate, visible unit/scale-anchor detection → JSON report with `warning` vs `blocker` classified by the selected profile; Pillow/NumPy/OpenCV import-guarded with named `pip install` hints; `--self-check` on a synthetic image
+- [x] **3.1** Create `scripts/preflight_image.py`: hash, resolution, blur, contrast, skew/perspective estimate, visible unit/scale-anchor detection → JSON report with `warning` vs `blocker` classified by the selected profile; Pillow/NumPy/OpenCV import-guarded with named `pip install` hints; `--self-check` on a synthetic image
     — **Why:** Mode C step 1 is the evidence gate; a quality warning must become a blocker exactly when the profile requires evidence the image cannot provide
     — **Done when:** `--self-check` exits 0; degraded synthetic image yields flagged report
     — **Consumers affected:** SKILL.md Mode C step 1
-- [ ] **3.2** Create `scripts/compare_visual.py`: anchors JSON → affine/homography registration, side-by-side, overlay, difference image, edge coverage + distance stats, all output labelled "visual only"; OpenCV import-guarded; `--self-check` with synthetic anchors
+    — **Done:** preflight_image.py implemented (sha256, blur/contrast/skew, profile-keyed warnings vs blockers — strict-dimensioned blocks anchor-less, others warn); self-check PASS; files: skills/cad-redraw-skill/scripts/preflight_image.py; fixes: none
+- [x] **3.2** Create `scripts/compare_visual.py`: anchors JSON → affine/homography registration, side-by-side, overlay, difference image, edge coverage + distance stats, all output labelled "visual only"; OpenCV import-guarded; `--self-check` with synthetic anchors
     — **Why:** Mode C step 6 needs registered comparison to find omitted/shifted geometry while never asserting dimensional accuracy
     — **Done when:** `--self-check` exits 0 producing the four comparison artifacts
     — **Consumers affected:** SKILL.md Mode C step 6
-- [ ] **3.3** Create `scripts/pdf_vector_to_dxf.py`: PyMuPDF vector paths → ezdxf DXF on generic layers (LINEWORK, TEXT, BORDER, DIM), text written as TEXT only when extractable, else marked uncertain; PyMuPDF import-guarded; `--self-check` on a generated single-page PDF
+    — **Done:** compare_visual.py implemented (affine/homography RANSAC registration, 4 artifacts + metrics.json carrying the visual-only label, min-pairs enforced); self-check PASS; files: skills/cad-redraw-skill/scripts/compare_visual.py; fixes: none
+- [x] **3.3** Create `scripts/pdf_vector_to_dxf.py`: PyMuPDF vector paths → ezdxf DXF on generic layers (LINEWORK, TEXT, BORDER, DIM), text written as TEXT only when extractable, else marked uncertain; PyMuPDF import-guarded; `--self-check` on a generated single-page PDF
     — **Why:** Mode B depends on vector-first PDF extraction with honest fallback labeling
     — **Done when:** `--self-check` exits 0; output DXF passes `fingerprint.py`
     — **Consumers affected:** SKILL.md Mode B
-- [ ] **3.4** Verify optional-dependency degradation across all image-path scripts: with opencv/pymupdf unavailable, each script exits with a named install hint and no traceback
+    — **Done:** pdf_vector_to_dxf.py implemented (pymupdf get_drawings → LINEWORK/TEXT/BORDER layers, curve flattening, unitless PDF-points output with documented 0.3528 mm/pt constant); self-check PASS incl. ezdxf re-read; files: skills/cad-redraw-skill/scripts/pdf_vector_to_dxf.py; fixes: none
+- [x] **3.4** Verify optional-dependency degradation across all image-path scripts: with opencv/pymupdf unavailable, each script exits with a named install hint and no traceback
     — **Why:** the DXF-first zero-required-deps promise is a design decision reviewers will check
     — **Done when:** forced-import-failure run of each script prints the hint and exits non-zero cleanly
     — **Consumers affected:** SKILL.md runtime requirements section
+    — **Done:** degradation verified per script (cv2 shadowed for preflight+compare, pymupdf for pdf_vector): exit 2 + named pip hint, no traceback; orchestrator re-verified compare_visual guard independently; files: none; fixes: none
 
 ### Phase 4: Agent routing
 
