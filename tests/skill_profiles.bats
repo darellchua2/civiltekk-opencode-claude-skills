@@ -2,9 +2,9 @@
 # GIT-333: skill-profile mechanism coverage (v2 shapes, PLAN-374).
 #   1. every lean key in deploy/skill-profiles.json matches a real skill dir
 #   2. lean ⊆ shipped skill allows in opencode_app/opencode.json (typo guard)
-#   3. lean count == 47
+#   3. lean count == 48
 #   4. apply-skill-profile.mjs lean rewrites a scratch deployed config to
-#      exactly 47 allow rules + a skill deny-all-first; full leaves the
+#      exactly 48 allow rules + a skill deny-all-first; full leaves the
 #      shipped permissions array verbatim. Non-skill rules are never touched.
 # Note: these tests intentionally do NOT assert the shipped skill-allow count
 # (count-drift tests own disk counts; allowlist size is profile-dependent).
@@ -23,9 +23,9 @@ lean_keys() {
     node -e "console.log(require('${PROJECT_ROOT}/deploy/skill-profiles.json').lean.join('\n'))"
 }
 
-@test "skill-profiles: lean has exactly 47 keys" {
+@test "skill-profiles: lean has exactly 48 keys" {
     count=$(lean_keys | wc -l)
-    [ "$count" -eq 47 ]
+    [ "$count" -eq 48 ]
 }
 
 @test "skill-profiles: every lean key matches a skill dir on disk" {
@@ -44,7 +44,7 @@ console.log(p.lean.filter(k=>!allow.has(k)).join(' '));")
     [ -z "$bad" ] || { echo "not in shipped skill allows: $bad"; return 1; }
 }
 
-@test "apply-skill-profile: lean rewrites scratch config to 47 allows + deny-all-first" {
+@test "apply-skill-profile: lean rewrites scratch config to 48 allows + deny-all-first" {
     scratch="${TEST_HOME}/opencode.json"
     cp "${PROJECT_ROOT}/opencode_app/opencode.json" "$scratch"
     non_skill_before=$(node -e "const c=require('$scratch');console.log(c.permissions.filter(r=>r.action!=='skill').length)")
@@ -61,7 +61,7 @@ const first=rules[0]||{};
 const nonSkill=c.permissions.filter(r=>r.action!=='skill').length;
 console.log(allows.length, first.resource==='*'&&first.effect==='deny'?'deny-ok':'no-deny', nonSkill===${non_skill_before}?'non-skill-ok':'non-skill-lost');")
     echo "result: $out"
-    [ "$out" = "47 deny-ok non-skill-ok" ]
+    [ "$out" = "48 deny-ok non-skill-ok" ]
 }
 
 @test "apply-skill-profile: full is a verified no-op on a fresh copy" {
