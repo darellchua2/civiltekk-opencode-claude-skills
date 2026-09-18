@@ -63,10 +63,11 @@ No in-repo module consumes the plugin's exports besides its test — the sole ru
 
 ### Phase 3: Docs
 
-- [ ] **3.1** Add a README.md section for the plugin in the existing local-plugins area (vibeguard/ponytail/learnings style): what it does, error classes covered, env knobs, v2 status note, and the explicit upgrade path (AC5, AC6).
+- [x] **3.1** Add a README.md section for the plugin in the existing local-plugins area (vibeguard/ponytail/learnings style): what it does, error classes covered, env knobs, v2 status note, and the explicit upgrade path (AC5, AC6).
     — **Why:** README.md:17 already advertises `plugins/` contents; an undocumented plugin breaks the repo's own documentation contract.
     — **Done when:** README contains the section with the v2 status note; `bats tests/test_count_drift.bats` still passes (plugin counts are not synced, prose-only edit).
     — **Consumers affected:** users; doc-consistency checks.
+    — **Done:** "Auto-Continue v2 (local plugin)" section added after Learnings Auto-Inject (v2 status, behavior, 7 env knobs, out-of-scope note); count-drift bats green; files: README.md; fixes: none
 
 ### Phase 4: Verification gate
 
