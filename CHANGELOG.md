@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.1.3](https://github.com/darellchua2/opencode-config-template/compare/v9.1.2...v9.1.3) (2026-09-18)
+
+### Bug Fixes
+
+* **installer:** project-scope installs honor agent-overrides.json ([#401](https://github.com/darellchua2/opencode-config-template/issues/401)) ([#410](https://github.com/darellchua2/opencode-config-template/issues/410)) ([889e7a7](https://github.com/darellchua2/opencode-config-template/commit/889e7a7fcbdd94607d1cf159563e62d7b88cabe9))
+
 ## [9.1.2](https://github.com/darellchua2/opencode-config-template/compare/v9.1.1...v9.1.2) (2026-09-18)
 
 ### Bug Fixes
