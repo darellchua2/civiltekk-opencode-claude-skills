@@ -22,7 +22,7 @@ Merely *reading* `CONTEXT.md` for vocabulary is NOT this skill — that's a one-
 5. **Update CONTEXT.md inline** — capture resolved terms immediately, never batch them
 6. **Offer ADRs sparingly** — only when a decision is hard-to-reverse, surprising, and a real trade-off
 
-I am the **docs engine** (model-invoked). `grill-with-docs-skill` pairs me with `grilling-skill` so docs are captured during the interview.
+I am the **docs engine** (model-invoked). `grilling-skill --docs` mode inlines a compact copy of my capture convention (glossary + three-criteria ADR gate) so the interview captures docs directly; I remain the canonical full engine.
 
 ## When to use me
 
@@ -30,7 +30,7 @@ Use this skill when:
 - The user introduces or disputes domain terminology
 - A ubiquitous language needs to be established or sharpened
 - An architectural decision has just been made and may warrant an ADR
-- Another skill (e.g. `grill-with-docs-skill`) delegates doc maintenance during a session
+- Another skill (e.g. `grilling-skill --docs` mode) captures docs inline during a session
 - Code contradicts the user's stated understanding of how the system works
 
 **Trigger phrases**:
@@ -225,8 +225,7 @@ All three of these must be true (hard to reverse + surprising + real trade-off).
 
 | Skill | Integration |
 |-------|-------------|
-| `grill-with-docs-skill` | Orchestrates `grilling-skill` + me to capture docs during an interview |
-| `grilling-skill` | The interview engine whose resolved terms I write down |
+| `grilling-skill` | The interview engine whose resolved terms I write down; its `--docs` mode inlines a compact copy of my capture convention |
 | `continuous-learning-skill` | ADRs and glossary entries feed into long-term learning storage |
 | `architecture-review-subagent` | Review findings may surface decisions worth recording as ADRs |
 
@@ -257,6 +256,6 @@ Agent: "We've decided ordering and billing communicate via domain events rather 
 
 ## References
 
-- `grill-with-docs-skill` - User-facing command that pairs `grilling-skill` with me
+- `grilling-skill --docs` - User-facing mode that inlines a compact copy of my capture convention
 - `grilling-skill` - The interview engine I capture docs from
 - `continuous-learning-skill` - Long-term storage for decisions

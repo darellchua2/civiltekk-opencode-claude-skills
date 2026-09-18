@@ -132,16 +132,6 @@
         },
         {
             "action": "skill",
-            "resource": "grill-me-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "grill-with-docs-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
             "resource": "wireframer-skill",
             "effect": "allow"
         },

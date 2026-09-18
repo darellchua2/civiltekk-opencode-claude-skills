@@ -38,26 +38,31 @@
     — **Done:** rewrote SKILL.md: Modes section (default / --docs inline capture / --plan emitter) supersedes restatements; description 49 words; zero forbidden strings (grep=0); five interview rules diff-verified byte-identical; files: skills/grilling-skill/SKILL.md; fixes: none
 
 ### Phase 2: Reference and allowlist sweep (deleted dirs still present — harmless)
-- [ ] **2.1** Update `skills/domain-modeling-skill/SKILL.md`: replace the grill-with-docs pairing text with the consolidated form — it remains the canonical full doc-capture engine; `grilling-skill --docs` carries the compact inline copy
+- [x] **2.1** Update `skills/domain-modeling-skill/SKILL.md`: replace the grill-with-docs pairing text with the consolidated form — it remains the canonical full doc-capture engine; `grilling-skill --docs` carries the compact inline copy
     — **Why:** only live doc describing the old pairing; stale pointers misroute users; noting canonicity mitigates the two-copy drift risk introduced by inlining
     — **Done when:** file contains no `grill-with-docs-skill` string; pairing text names `grilling-skill --docs`
     — **Consumers affected:** readers of domain-modeling docs
-- [ ] **2.2** Check `skills/wayfinder-skill/SKILL.md` grilling references; update only if they name the deleted routers (grilling-skill survives — expect no change)
+    — **Done:** pairing text rewritten to grilling-skill --docs mode (4 sites) with canonicity note; files: skills/domain-modeling-skill/SKILL.md; fixes: none
+- [x] **2.2** Check `skills/wayfinder-skill/SKILL.md` grilling references; update only if they name the deleted routers (grilling-skill survives — expect no change)
     — **Why:** sweep completeness; wayfinder chains from the grill family
     — **Done when:** file contains no references to the two deleted skill names
     — **Consumers affected:** wayfinder readers
-- [ ] **2.3** Update `deploy/skill-profiles.json`: remove `grill-me-skill` and `grill-with-docs-skill` entries (shipped/lean lists); keep `grilling-skill`. Then update `tests/skill_profiles.bats` to pin 45 at all six literal sites — header comments (lines 5, 7), test names (lines 26, 47), count assertion (line 28), expected output (line 64: `45 deny-ok non-skill-ok`). Do NOT backfill the lean profile to 47: the count is an outcome of curation, not a target; backfilled skills would be re-exposed to lean primaries, which the profile intentionally hides
+    — **Done:** verified zero deleted-name refs in wayfinder — no edit needed; files: none; fixes: none
+- [x] **2.3** Update `deploy/skill-profiles.json`: remove `grill-me-skill` and `grill-with-docs-skill` entries (shipped/lean lists); keep `grilling-skill`. Then update `tests/skill_profiles.bats` to pin 45 at all six literal sites — header comments (lines 5, 7), test names (lines 26, 47), count assertion (line 28), expected output (line 64: `45 deny-ok non-skill-ok`). Do NOT backfill the lean profile to 47: the count is an outcome of curation, not a target; backfilled skills would be re-exposed to lean primaries, which the profile intentionally hides
     — **Why:** denied-but-deleted entries are dead config; the bats suite pins the lean count as a deliberate change-detector — deleting two lean keys without re-pinning fails the Phase 4 verification gate
     — **Done when:** JSON valid (`node -e JSON.parse`); zero deleted names present; `grilling-skill` still listed; `grep -nE '\b47\b' tests/skill_profiles.bats` returns nothing
     — **Consumers affected:** `setup.sh --skill-profile lean|full`; CI release workflow (`.github/workflows/release.yml:24` runs bats)
-- [ ] **2.4** Update `opencode_app/opencode.json`: remove the two deleted skills from any skill allowlist entries; keep `grilling-skill`
+    — **Done:** lean entries removed (47→45); six 47-sites re-pinned in skill_profiles.bats; JSON valid; grilling-skill retained; files: deploy/skill-profiles.json tests/skill_profiles.bats; fixes: none
+- [x] **2.4** Update `opencode_app/opencode.json`: remove the two deleted skills from any skill allowlist entries; keep `grilling-skill`
     — **Why:** Docker web runtime allowlist must match the shipped skill set
     — **Done when:** JSON valid, zero deleted names present
     — **Consumers affected:** `docker compose up` runtime
-- [ ] **2.5** Update `installer/presets/pack-business.json`: remove the two deleted skills from the preset skill list; keep `grilling-skill`
+    — **Done:** two permission objects removed from app allowlist; JSON valid; files: opencode_app/opencode.json; fixes: none
+- [x] **2.5** Update `installer/presets/pack-business.json`: remove the two deleted skills from the preset skill list; keep `grilling-skill`
     — **Why:** preset installs must not reference nonexistent skills
     — **Done when:** JSON valid, zero deleted names present
     — **Consumers affected:** `opencode-init` pack-business users
+    — **Done:** two entries removed from pack-business preset; JSON valid; files: installer/presets/pack-business.json; fixes: none
 
 ### Phase 3: Deletion, counts, registry (land together — no red intermediate commit)
 - [ ] **3.1** `git rm -r skills/grill-me-skill skills/grill-with-docs-skill`
