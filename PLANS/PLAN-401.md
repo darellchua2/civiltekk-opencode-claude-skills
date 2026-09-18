@@ -8,9 +8,9 @@
 
 From ticket #401:
 
-- [ ] project-scope install honors a global `~/.config/opencode/agent-overrides.json` pin (injected `model:` matches the pin)
-- [ ] a project-level `.opencode/agent-overrides.json` pin outranks the global one (resolver parity: project > global)
-- [ ] bats coverage for both precedence levels (fake HOME + temp project); no-pin behavior unchanged (existing tier default still injected)
+- [x] project-scope install honors a global `~/.config/opencode/agent-overrides.json` pin (injected `model:` matches the pin)
+- [x] a project-level `.opencode/agent-overrides.json` pin outranks the global one (resolver parity: project > global)
+- [x] bats coverage for both precedence levels (fake HOME + temp project); no-pin behavior unchanged (existing tier default still injected)
 
 ## Dependency & Consumer Map
 
@@ -23,12 +23,12 @@ From ticket #401:
 
 ### Phase 1: Precedence parity + bats
 
-- [ ] **1.1** `agentModel(stem, tier, provider, projectOverrides = null)`: new optional 4th param — if `projectOverrides?.[stem]?.model` exists, return it (project pin, highest); else global pin (existing behavior); else `tierToModel`. `writeInstall`: read `.opencode/agent-overrides.json` under the target project ONCE before the agent loop; pass it per agent; KEEP populating the `tierModels` cache per tier (the project `models.json` artifact at :399 still consumes it — pins are per-agent and may differ from the tier map, matching the artifact's `$comment`)
+- [x] **1.1** `agentModel(stem, tier, provider, projectOverrides = null)`: new optional 4th param — if `projectOverrides?.[stem]?.model` exists, return it (project pin, highest); else global pin (existing behavior); else `tierToModel`. `writeInstall`: read `.opencode/agent-overrides.json` under the target project ONCE before the agent loop; pass it per agent; KEEP populating the `tierModels` cache per tier (the project `models.json` artifact at :399 still consumes it — pins are per-agent and may differ from the tier map, matching the artifact's `$comment`)
     — **Why:** CR-9: `--project` installs call `tierToModel` directly, so agent-overrides pins are silently ignored at project scope while user scope honors them — scope-dependent inconsistency. Resolver precedence (:210-215) is project > global > tier chain; init.mjs must mirror it.
     — **Done when:** `node --check`; fake-HOME bats: global pin → injected `model:` equals the pin; project pin + global pin → project pin wins; no pins → tier default unchanged.
     — **Consumers affected:** `writeInstall` output agents; `models.json` artifact unchanged; user-scope paths untouched (default param `null`).
 
-- [ ] **1.2** `tests/init.bats`: three new cases — fixture `add <fast-tier-agent> --project "$TMP_PROJ" --yes` with `HOME` exported to a temp dir; (a) global pin: seed `$HOME/.config/opencode/agent-overrides.json` with `{stem: {model: "test/global-pin"}}`, assert `.opencode/agents/<stem>.md` contains `model: test/global-pin`; (b) project pin wins: additionally seed `$TMP_PROJ/.opencode/agent-overrides.json` with `{stem: {model: "test/project-pin"}}`, assert `model: test/project-pin` (and not the global pin); (c) no-pin tier default BY VALUE (REQ-2): empty fake HOME + no project overrides → assert the injected `model:` equals the fast-tier value from `installer/models.default.json` (existing tests only grep `^model:` existence under the real HOME — indistinguishable from a pin on pinned machines)
+- [x] **1.2** `tests/init.bats`: three new cases — fixture `add <fast-tier-agent> --project "$TMP_PROJ" --yes` with `HOME` exported to a temp dir; (a) global pin: seed `$HOME/.config/opencode/agent-overrides.json` with `{stem: {model: "test/global-pin"}}`, assert `.opencode/agents/<stem>.md` contains `model: test/global-pin`; (b) project pin wins: additionally seed `$TMP_PROJ/.opencode/agent-overrides.json` with `{stem: {model: "test/project-pin"}}`, assert `model: test/project-pin` (and not the global pin); (c) no-pin tier default BY VALUE (REQ-2): empty fake HOME + no project overrides → assert the injected `model:` equals the fast-tier value from `installer/models.default.json` (existing tests only grep `^model:` existence under the real HOME — indistinguishable from a pin on pinned machines)
     — **Why:** The ticket's acceptance demands executable proof at both precedence levels (fake HOME isolates the global read from the CI runner's real home); (c) pins the no-pin regression contract.
     — **Done when:** `bats tests/init.bats` green.
     — **Consumers affected:** CI.
