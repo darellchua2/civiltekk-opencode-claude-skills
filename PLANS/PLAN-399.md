@@ -57,18 +57,21 @@ Cross-module contract: the two Step-10 surfaces form one behavioral pair; the tw
     — **Done:** Step 4 delegates refactor/clean to parent with review-only note; Subagents line lists testing + documentation only; siblings agree; files: skills/plan-execution-skill/SKILL.md; fixes: none
 
 ### Phase 3: Verification gate + no-drift proof
-- [ ] **3.1** Run `node installer/build-registry.mjs --check` in the worktree and prove zero drift
+- [x] **3.1** Run `node installer/build-registry.mjs --check` in the worktree and prove zero drift
     — **Why:** agent-body edits must not perturb the derived registry; this is the ticket's explicit acceptance criterion
     — **Done when:** command exits 0 reporting no drift and `git status --porcelain` shows no `installer/registry.json` modification
     — **Consumers affected:** none (read-only proof)
-- [ ] **3.2** Prove the diff scope: `git diff --name-only origin/main...feat/399` lists exactly the 4 edited files plus `PLANS/PLAN-399.md` (no `CHANGELOG.md`, no `installer/registry.json`), and three pinned retired strings grep to zero outside PLANS/: `git grep -F -e 'docstring sweep and PLAN.md sync' -- ':!PLANS'`; `git grep -F -e '| Refactor / DRY | `code-review-subagent` |' -- ':!PLANS'`; `git grep -F -e 'refactor/clean → `code-review-subagent`' -- ':!PLANS'` (phrase 1 uses the wrap-tolerant anchor — the live text wraps across lines; never grep the bare `code-review-subagent` token — legitimate review-role mentions remain)
+    — **Done:** exit 0 "registry OK (agents=34, skills=149, no drift)"; registry.json unmodified; files: none; fixes: none
+- [x] **3.2** Prove the diff scope: `git diff --name-only origin/main...feat/399` lists exactly the 4 edited files plus `PLANS/PLAN-399.md` (no `CHANGELOG.md`, no `installer/registry.json`), and three pinned retired strings grep to zero outside PLANS/: `git grep -F -e 'docstring sweep and PLAN.md sync' -- ':!PLANS'`; `git grep -F -e '| Refactor / DRY | `code-review-subagent` |' -- ':!PLANS'`; `git grep -F -e 'refactor/clean → `code-review-subagent`' -- ':!PLANS'` (phrase 1 uses the wrap-tolerant anchor — the live text wraps across lines; never grep the bare `code-review-subagent` token — legitimate review-role mentions remain)
     — **Why:** the ticket's CHANGELOG-untouched criterion and the contract-pair wording need mechanical proof that cannot self-match the PLAN file (which quotes the retired phrases) nor pass vacuously on wrapped text
     — **Done when:** the 5-file list matches exactly and all three scoped greps return empty
     — **Consumers affected:** none (read-only proof)
-- [ ] **3.3** Attempt the bats suite (`bats tests/`); runner is absent on this machine — record INCONCLUSIVE with that reason, do not install unprompted
+    — **Done:** diff lists exactly the 5 expected files (4 edited + PLAN-399.md; no CHANGELOG.md, no registry.json); all three pinned greps returned empty under ':!PLANS'; files: none; fixes: none
+- [x] **3.3** Attempt the bats suite (`bats tests/`); runner is absent on this machine — record INCONCLUSIVE with that reason, do not install unprompted
     — **Why:** run-plan's gate rule forbids silently skipping a discoverable check; the diff touches no shell so INCONCLUSIVE is the honest verdict
     — **Done when:** the verdict INCONCLUSIVE + reason is written into the phase report
     — **Consumers affected:** none
+    — **Done:** `bats: command not found` observed; verdict INCONCLUSIVE (runner absent, not installed unprompted; diff touches no shell); files: none; fixes: none
 
 ## Technical Notes
 
