@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.3.2](https://github.com/darellchua2/opencode-config-template/compare/v9.3.1...v9.3.2) (2026-09-18)
+
+### Code Refactoring
+
+* **skills:** implement Phase 1 — grilling-skill becomes the consolidated grill skill with modes ([2e96df3](https://github.com/darellchua2/opencode-config-template/commit/2e96df33865021f91168d3823e16a6408a2cb577))
+* **skills:** implement Phase 2 — sweep grill router references and re-pin lean count ([d657b54](https://github.com/darellchua2/opencode-config-template/commit/d657b54db04aeba30dce9fc8e0fff9170bd33137))
+* **skills:** implement Phase 3 — delete grill routers, sync counts, regenerate registry ([9bc7dcf](https://github.com/darellchua2/opencode-config-template/commit/9bc7dcfb1df208d300f987b9b902b501958d9e4c))
+
+### Documentation
+
+* **plan:** add PLAN-407.md for [#407](https://github.com/darellchua2/opencode-config-template/issues/407) ([79428cd](https://github.com/darellchua2/opencode-config-template/commit/79428cd113cf338e5cfbe205c235a422151efb4d))
+* **plan:** apply review findings to PLAN-407 (test-pinned counts, --docs inline, phase bundling) ([42c8cdc](https://github.com/darellchua2/opencode-config-template/commit/42c8cdc547c194042afe80ac06e89a5c0331bc0c))
+* **plan:** implement Phase 4 — verification green, trace historical-records exemption ([c504d8f](https://github.com/darellchua2/opencode-config-template/commit/c504d8fbb014c10953de38ff2dacd34cf27d22f5))
+
 ## [9.3.1](https://github.com/darellchua2/opencode-config-template/compare/v9.3.0...v9.3.1) (2026-09-18)
 
 ### Code Refactoring
