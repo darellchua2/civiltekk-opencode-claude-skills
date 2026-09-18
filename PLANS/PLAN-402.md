@@ -12,8 +12,8 @@
 - [ ] Evidence levels + 5 profiles (`strict-dimensioned`, `general`, `hybrid`, `visual-trace`, `geometry-only`) enforced in spec validation; no unit/scale anchor forces `visual-trace`/`unitless`, never a silent mm default
 - [ ] DWG input degrades gracefully: odafc → LibreDWG → clear error with install guidance; converter used + fidelity reported on every DWG path
 - [ ] `agents/cad-specialist-subagent.md`: permission allow rule + routing line + count 14 → 15
-- [ ] `installer/registry.json` + `docs/registry.json` rebuilt via `build-registry.mjs`; `installer/presets/pack-cad.json` regenerated (15 skills)
-- [ ] `deploy/setup.sh`, `deploy/setup.ps1`, `README.md` listings synced (documentation-sync-workflow pass)
+- [ ] `installer/registry.json` rebuilt via `node installer/build-registry.mjs` (lists `cad-redraw-skill` with correct frontmatter-derived metadata; `--check` exits 0); `installer/presets/pack-cad.json` regenerated (15 skills); `docs/registry.json` out of scope — gitignored release artifact of `build-site.mjs`, regenerates from the installer registry at release
+- [ ] `deploy/setup.sh`, `deploy/setup.ps1`, `README.md` listings synced, including the five hand-maintained totals 149→150 (README.md ~15/250/409/566, opencode_app/README.md ~30) and the README preset-table row ~266 (documentation-sync-workflow pass)
 - [ ] E2E smoke passes: fingerprint → diff fails on drifted fixture → regenerate → diff passes → preview renders
 - [ ] `ruff` lint green; `bats tests/` green
 
@@ -31,10 +31,10 @@
 | `skills/cad-redraw-skill/scripts/compare_visual.py` | OpenCV (optional, import-guarded); preview PNG | SKILL.md Mode C step 6 | low |
 | `skills/cad-redraw-skill/scripts/pdf_vector_to_dxf.py` | PyMuPDF (optional, import-guarded); ezdxf | SKILL.md Mode B | low |
 | `agents/cad-specialist-subagent.md` | `LEARNINGS/conventions/task-delegate-permission-sync.md` conventions; skill dir existing | opencode agent loader, registry frontmatter scan, pack-cad description, README agent references | medium |
-| `installer/registry.json`, `docs/registry.json` | all skill/agent frontmatter final | `build-registry.mjs` output; preset generator; doc count claims | medium |
+| `installer/registry.json` | all skill/agent frontmatter final | `build-registry.mjs` output (`--check` guard); preset derivation; docs site regenerates its gitignored `docs/registry.json` copy from it at release | medium |
 | `installer/presets/pack-cad.json` | `registry.json` final | `installer/init.mjs --preset cad` | low |
 | `deploy/setup.sh`, `deploy/setup.ps1` | skills dir final | deploy users (dynamic `count_skills`, banner text) | low |
-| `README.md` (CAD row ~line 598, Subagents table) | registry counts final | human readers; doc-consistency checks | low |
+| `README.md` (CAD row ~598, preset-table row ~266, hand-maintained totals ~15/250/409/566, Subagents table) and `opencode_app/README.md` (~30 total) | registry counts final | human readers; doc-consistency checks (BT-157 sync markers) | low |
 
 Cross-module consumers exist (registry ← frontmatter, presets ← registry, routing ← skill), so architecture review is selected at plan review.
 
@@ -113,26 +113,26 @@ Cross-module consumers exist (registry ← frontmatter, presets ← registry, ro
     — **Consumers affected:** opencode agent loader, registry frontmatter scan, pack-cad description
 - [ ] **4.2** Sweep `README.md` (Subagents table) and `deploy/setup.sh` / `deploy/setup.ps1` help text for hardcoded "14"/skill-count claims tied to cad-specialist and sync any found
     — **Why:** stale counts fail documentation-consistency checks and mislead `npx add` users
-    — **Done when:** `grep -rn "orchestrating 14" README.md deploy/` returns nothing
+    — **Done when:** `grep -rnE "orchestrat(es|ing) 14" README.md deploy/` returns nothing (installer/ surfaces are owned by 5.2/5.4, which run after pack-cad lands)
     — **Consumers affected:** deploy users, doc-consistency gates
 
 ### Phase 5: Registry and docs sync
 
-- [ ] **5.1** Run `node installer/build-registry.mjs` and verify `installer/registry.json` + `docs/registry.json` now contain `cad-redraw-skill`
-    — **Why:** AGENTS.md mandates registry rebuild after any frontmatter change; presets derive from it
-    — **Done when:** both registry files list the skill with correct metadata
-    — **Consumers affected:** preset generator, doc counts
-- [ ] **5.2** Regenerate `installer/presets/pack-cad.json` via the documented generator path (per its `$comment`: derived from registry.json — locate the generator in `installer/` and rerun; hand-edit only if no generator exists), updating skills array to 15 and the description count
-    — **Why:** `init.mjs --preset cad` must install the new skill
-    — **Done when:** pack-cad.json lists 15 skills including `cad-redraw-skill`
+- [ ] **5.1** Run `node installer/build-registry.mjs` and verify `installer/registry.json` lists `cad-redraw-skill` with correct frontmatter-derived metadata; run `node installer/build-registry.mjs --check` as the drift guard. `docs/registry.json` is out of scope: gitignored copy emitted by `installer/build-site.mjs` at release (release.yml) from the installer registry — never committed, never hand-generated
+    — **Why:** AGENTS.md mandates the registry rebuild after any frontmatter change, and `--check` makes the done-when CI-verifiable; asserting the gitignored docs copy would be an unachievable check
+    — **Done when:** `installer/registry.json` contains the skill and `--check` exits 0
+    — **Consumers affected:** preset derivation (5.2), doc totals (5.3)
+- [ ] **5.2** Hand-edit `installer/presets/pack-cad.json` (verified: the `/tmp/gen-presets.mjs` generator no longer exists and no generator lives in `installer/`): skills array to 15 entries including `cad-redraw-skill`, description count 14 → 15; verify array contents exactly match the registry's cad-family skill set
+    — **Why:** `init.mjs --preset cad` must install the new skill; the derivation source is the freshly rebuilt registry, and the hand-edit path is pre-authorized by the file's own `$comment` fallback and PLAN risk #3
+    — **Done when:** pack-cad.json lists 15 skills including `cad-redraw-skill`, description reads 15, and the array equals the registry's cad set
     — **Consumers affected:** installer preset users
-- [ ] **5.3** Update `README.md` CAD & Hardware Design row: count 14 → 15, add `cad-redraw-skill` to the listing and blurb
-    — **Why:** the README table is the human-facing source for skill categories
-    — **Done when:** README row shows 15 skills and includes the new name
-    — **Consumers affected:** doc-consistency checks, humans
+- [ ] **5.3** Update the doc count surfaces: `README.md` CAD & Hardware Design row (~598: count 14 → 15, add `cad-redraw-skill` + blurb), README preset-table row (~266: `15 (CAD & Hardware Design)`), the four hand-maintained totals in README.md (~15, ~250, ~409, ~566: "149 skill directories" → 150), and `opencode_app/README.md` (~30: 149 → 150); agents stay 34, categories stay 24
+    — **Why:** these are number-keyed bare counts (two without BT-157 markers) that no name-keyed sweep can flag; house precedent PLAN-GIT-364 §4.1 bumps totals in-ticket
+    — **Done when:** `grep -rn "149 skill" README.md opencode_app/README.md` returns nothing, all five sites read 150, and the preset row reads `15 (CAD & Hardware Design)`
+    — **Consumers affected:** doc-consistency checks, humans, installer users
 - [ ] **5.4** Run the documentation-sync-workflow pass (or equivalent manual sweep) across `deploy/setup.sh`, `deploy/setup.ps1`, `opencode_app/README.md`, and banner text for any remaining stale CAD counts or missing listing
     — **Why:** the sync workflow is the house gate catching orphan references the targeted edits miss
-    — **Done when:** workflow/sweep reports zero drift for cad-redraw-skill surfaces
+    — **Done when:** full number- and verb-keyed sweep `grep -rnE "orchestrat(es|ing) 14|149 skill" README.md deploy/ installer/ opencode_app/` returns nothing and the workflow reports zero drift for cad-redraw-skill surfaces
     — **Consumers affected:** all doc surfaces
 - [ ] **5.5** Run full verification gates: `ruff check` + `ruff format --check` on the new scripts (fallback `python -m py_compile` if ruff absent), `bats tests/`, all script `--self-check`s, and the Phase 2 E2E smoke; fix any red
     — **Why:** the ticket's final acceptance criteria are the gates, and the pipeline PR cannot open on red
@@ -157,6 +157,6 @@ Cross-module consumers exist (registry ← frontmatter, presets ← registry, ro
 
 - ODA File Converter is GUI-linked; headless may need `QT_QPA_PLATFORM=offscreen` → documented in `linux-toolchain.md` and reported per-run by `fingerprint.py`
 - LibreDWG coverage of recent DWG versions is partial → converter + fidelity always reported; ODA recommended for modern DWGs
-- Preset regeneration path may be undocumented → locate generator in `installer/`; fall back to surgical hand-edit consistent with `$comment`, verified against registry
+- Preset regeneration path: generator verified absent (`/tmp/gen-presets.mjs` gone, none in `installer/`) → surgical hand-edit pre-authorized, verified against the rebuilt registry (step 5.2)
 - Stale "14" counts scattered in docs → dedicated sweep steps 4.2 and 5.4 plus doc-sync pass
 - Optional deps absent in CI/dev → import guards with named hints; self-checks skip image-path assertions only when deps are truly absent, and say so
