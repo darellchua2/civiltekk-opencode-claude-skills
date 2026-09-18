@@ -1,6 +1,6 @@
 ---
 name: complexity-management-skill
-description: Manage software complexity by minimizing accidental complexity and clearly expressing essential complexity through KISS, YAGNI, DRY principles
+description: "KISS/YAGNI/DRY tradeoff heuristics for minimizing accidental complexity. Triggers: complexity, accidental complexity. Not for smell detection (code-smells-skill), over-engineering audit (ponytail-audit-skill), or SOLID reference (solid-principles-skill)."
 license: Apache-2.0
 compatibility: opencode
 category: Code Quality

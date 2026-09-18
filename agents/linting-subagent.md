@@ -1,6 +1,8 @@
 ---
 description: >-
-  Code linting and quality checks — Python Ruff, JS/TS ESLint, Java
+  Lint executor — runs linters and auto-fixes detected via language-linting-skill
+  (the rules reference); gate sequence and pass semantics per
+  verification-loop-skill. Python Ruff, JS/TS ESLint, Java
   Checkstyle/SpotBugs, C# dotnet format/analyzers, generic workflows.
 mode: subagent
 steps: 25

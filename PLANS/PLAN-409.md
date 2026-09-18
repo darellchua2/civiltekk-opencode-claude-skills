@@ -116,14 +116,16 @@
 
 ### Phase 3: Description boundaries (AC5)
 
-- [ ] **3.1** Rewrite six frontmatter `description:` values (value-only change, shape untouched): jira-git-integration (plumbing-only, "not for" create/label/status), plan-execution (soft mode, defer hard mode to plan-automation-loop), verification-loop (canonical gate contract, scoring → eval-harness), complexity-management (tradeoff heuristics, "not for" code-smells/ponytail-audit), git-issue-updater (when-pushed trigger), test-generator-framework (framework reference loaded by the two creators + testing-subagent). Preserve ≤50-word house style + trigger phrases.
+- [x] **3.1** Rewrite six frontmatter `description:` values (value-only change, shape untouched): jira-git-integration (plumbing-only, "not for" create/label/status), plan-execution (soft mode, defer hard mode to plan-automation-loop), verification-loop (canonical gate contract, scoring → eval-harness), complexity-management (tradeoff heuristics, "not for" code-smells/ponytail-audit), git-issue-updater (when-pushed trigger), test-generator-framework (framework reference loaded by the two creators + testing-subagent). Preserve ≤50-word house style + trigger phrases.
     — **Why:** descriptions are the router; boundaries stop trigger poaching. Also lands the lint-trio router markers moved from 1.6: linting-workflow = executor reference, language-linting = per-language rules reference, linting-subagent = executor.
     — **Done when:** all six carry a boundary clause + ≥3 trigger phrases; trio descriptions carry executor/reference markers.
     — **Consumers affected:** registry.json (3.2).
-- [ ] **3.2** `node installer/build-registry.mjs`, commit registry.json.
+    — **Done:** 9 descriptions rewritten (6 priority + lint-trio markers) — boundary clauses + triggers, value-only shape; files: skills/{jira-git-integration,plan-execution,verification-loop,complexity-management,git-issue-updater,test-generator-framework,linting-workflow,language-linting}-skill/SKILL.md agents/linting-subagent.md; fixes: none
+- [x] **3.2** `node installer/build-registry.mjs`, commit registry.json.
     — **Why:** descriptions are registry content.
     — **Done when:** registry diff shows the six new descriptions.
     — **Consumers affected:** installer consumers.
+    — **Done:** registry rebuilt (148 skills) with new descriptions, check clean; files: installer/registry.json; fixes: none
 
 ### Phase 4: Body trims, #383 recipe (AC6)
 

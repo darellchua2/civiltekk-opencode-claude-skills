@@ -1,6 +1,6 @@
 ---
 name: verification-loop-skill
-description: Continuously verify implementations against requirements, acceptance criteria, and quality standards throughout the development cycle
+description: "Canonical verification-gate contract — command discovery, gate order (lint, typecheck, build, unit, e2e), scoped-lint rule, INCONCLUSIVE handling, gate memo. Triggers: verification gate, gate memo, verify implementation. Pipeline skills defer here instead of restating gates. Scoring rubrics: eval-harness-skill."
 license: Apache-2.0
 compatibility: opencode
 metadata:
