@@ -6,16 +6,16 @@
 
 ## Acceptance Criteria
 
-- [ ] `skills/cad-redraw-skill/SKILL.md` conforming to the house frontmatter contract (name = directory, Apache-2.0, compatibility opencode, ≤50-word description preserving trigger phrases: dwg redraw, image to dxf, pdf to dxf)
-- [ ] `references/`: `redraw-spec.md` (JSON spec schema), `validation.md` (acceptance policies + dispositions), `linux-toolchain.md` (ODA install, LibreDWG fallback, DWG degradation caveats)
-- [ ] 7 scripts with self-checks: `fingerprint.py`, `fingerprint_diff.py`, `spec_to_dxf.py`, `render_preview.py`, `preflight_image.py`, `compare_visual.py`, `pdf_vector_to_dxf.py`
-- [ ] Evidence levels + 5 profiles (`strict-dimensioned`, `general`, `hybrid`, `visual-trace`, `geometry-only`) enforced in spec validation; no unit/scale anchor forces `visual-trace`/`unitless`, never a silent mm default
-- [ ] DWG input degrades gracefully: odafc → LibreDWG → clear error with install guidance; converter used + fidelity reported on every DWG path
-- [ ] `agents/cad-specialist-subagent.md`: permission allow rule + routing line + count 14 → 15
-- [ ] `installer/registry.json` rebuilt via `node installer/build-registry.mjs` (lists `cad-redraw-skill` with correct frontmatter-derived metadata; `--check` exits 0); `installer/presets/pack-cad.json` regenerated (15 skills); `docs/registry.json` out of scope — gitignored release artifact of `build-site.mjs`, regenerates from the installer registry at release
-- [ ] `deploy/setup.sh`, `deploy/setup.ps1`, `README.md` listings synced, including the five hand-maintained totals 149→150 (README.md ~15/250/409/566, opencode_app/README.md ~30) and the README preset-table row ~266 (documentation-sync-workflow pass)
-- [ ] E2E smoke passes: fingerprint → diff fails on drifted fixture → regenerate → diff passes → preview renders
-- [ ] `ruff` lint green; `bats tests/` green
+- [x] `skills/cad-redraw-skill/SKILL.md` conforming to the house frontmatter contract (name = directory, Apache-2.0, compatibility opencode, ≤50-word description preserving trigger phrases: dwg redraw, image to dxf, pdf to dxf)
+- [x] `references/`: `redraw-spec.md` (JSON spec schema), `validation.md` (acceptance policies + dispositions), `linux-toolchain.md` (ODA install, LibreDWG fallback, DWG degradation caveats)
+- [x] 7 scripts with self-checks: `fingerprint.py`, `fingerprint_diff.py`, `spec_to_dxf.py`, `render_preview.py`, `preflight_image.py`, `compare_visual.py`, `pdf_vector_to_dxf.py`
+- [x] Evidence levels + 5 profiles (`strict-dimensioned`, `general`, `hybrid`, `visual-trace`, `geometry-only`) enforced in spec validation; no unit/scale anchor forces `visual-trace`/`unitless`, never a silent mm default
+- [x] DWG input degrades gracefully: odafc → LibreDWG → clear error with install guidance; converter used + fidelity reported on every DWG path
+- [x] `agents/cad-specialist-subagent.md`: permission allow rule + routing line + count 14 → 15
+- [x] `installer/registry.json` rebuilt via `node installer/build-registry.mjs` (lists `cad-redraw-skill` with correct frontmatter-derived metadata; `--check` exits 0); `installer/presets/pack-cad.json` regenerated (15 skills); `docs/registry.json` out of scope — gitignored release artifact of `build-site.mjs`, regenerates from the installer registry at release
+- [x] `deploy/setup.sh`, `deploy/setup.ps1`, `README.md` listings synced, including the five hand-maintained totals 149→150 (README.md ~15/250/409/566, opencode_app/README.md ~30) and the README preset-table row ~266 (documentation-sync-workflow pass)
+- [x] E2E smoke passes: fingerprint → diff fails on drifted fixture → regenerate → diff passes → preview renders
+- [x] `ruff` lint green; `bats tests/` green
 
 ## Dependency & Consumer Map
 
