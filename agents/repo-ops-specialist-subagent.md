@@ -50,6 +50,9 @@ permissions:
     resource: pr-creation-workflow-skill
     effect: allow
   - action: skill
+    resource: gh-cli-setup-skill
+    effect: allow
+  - action: skill
     resource: pr-merge-workflow-skill
     effect: allow
   - action: skill

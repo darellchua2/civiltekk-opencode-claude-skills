@@ -42,7 +42,7 @@ create the ticket here, then run the pipeline against its ref.
 ## Prerequisites
 
 ### GitHub Issues
-- GitHub CLI (`gh`) installed and authenticated (`gh auth status` valid)
+- GitHub CLI (`gh`) installed and authenticated (`gh auth status` valid). If `command -v gh` fails, load `gh-cli-setup-skill` (install + auth), then continue instead of erroring.
 - Git repository with GitHub remote; write access to repository
 
 ### JIRA
@@ -121,6 +121,15 @@ Ask: "Should this be broken into smaller sub-issues/subtasks?"
 - **Single Ticket**: one ticket for contained work
 
 ### Step 4: Create Ticket
+
+#### Attribution (author/assignee)
+
+- **GitHub**: the issue author is the `gh auth` user by construction (token owner — GitHub does not allow spoofing); `--assignee @me` self-assigns the same identity. `git config user.name`/`user.email` are NOT valid assignee sources (display name, not a login; email may be a private noreply address).
+- **JIRA reporter**: defaults to the account behind the MCP token / REST credentials — automatic, no field needed.
+- **JIRA assignee**: must be set explicitly by `accountId` (JIRA never assigns by display name or email):
+  1. Fetch own accountId: REST `curl -u email:token https://<site>.atlassian.net/rest/api/3/myself` → `.accountId` (on Atlassian MCP v2, `atlassianUserInfo`/`lookupJiraAccountId` are the MCP-native equivalents).
+  2. Set assignee: REST `PUT /rest/api/3/issue/{key}/assignee` with `{"accountId": "<id>"}` — the only guaranteed path; works from the §MCP Availability Guard REST fallback.
+  3. `atlassian_createJiraIssue` (v1, pinned) assignee parameter: **unverified — server absent** (2026-09-19 static inspection: Atlassian's supported-tools page documents v2 only — there the create tool is `createJiraIssue` with no published per-parameter schema and `editJiraIssue` is the documented field-edit path; the pinned v1 schema is not statically published). Re-inspect live when a project enables the atlassian MCP; until then use the REST PUT above, or MCP v2 `editJiraIssue` where v2 is enabled.
 
 #### GitHub Issues
 
@@ -204,7 +213,9 @@ done
 
 ## Common Issues
 
-### GitHub CLI Not Authenticated
+### GitHub CLI Missing or Not Authenticated
+- Missing (`command -v gh` fails): load `gh-cli-setup-skill`, then continue.
+- Not authenticated:
 ```bash
 gh auth login && gh auth status
 ```

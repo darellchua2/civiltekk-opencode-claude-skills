@@ -51,6 +51,9 @@ permissions:
     resource: pr-creation-workflow-skill
     effect: allow
   - action: skill
+    resource: gh-cli-setup-skill
+    effect: allow
+  - action: skill
     resource: jira-status-updater-skill
     effect: allow
   - action: skill
@@ -116,6 +119,7 @@ Quality Checks — defer to the contract:
 - PR-boundary execution is `pr-creation-workflow-skill` steps 2-3 (framework detect + gate contract/memo check); coverage badges via `coverage-readme-workflow` on the standalone path only; docstring validation via `docstring-generator`.
 
 JIRA Integration:
+- Attribution: self-assign the linked ticket (fetch own accountId — see ticket-creation-skill §Attribution; REST `PUT /rest/api/3/issue/{key}/assignee` is the guaranteed path) and create the PR with `--assignee @me` (author = `gh auth` user by construction)
 - Update JIRA tickets with PR links via atlassian MCP tools
 - Transition ticket status after PR merge via jira-status-updater
 - Add PR screenshots/images as attachments

@@ -591,7 +591,7 @@ USAGE:
                            primary-visible
                            skills + "*": "deny" (subagents unaffected — they
                            self-scope via frontmatter allows); full deploys the
-                           shipped 105-allow allowlist verbatim.
+                           shipped 107-allow allowlist verbatim.
 
   LOCAL LLM (gemma-4-E4B via llama.cpp in Docker):
     --enable-local-llm   Install local LLM inference server. Requires NVIDIA GPU,
@@ -3237,8 +3237,8 @@ deploy_plugins() {
 # Apply the skill profile (GIT-333): rewrites ONLY the skill rules
 # (action:"skill") inside the permissions array of the DEPLOYED config
 # (never the source opencode_app/opencode.json).
-#   lean (default) -> 46 primary-visible skills + "*": "deny"
-#   full           -> verified no-op (shipped 105-allow allowlist stays verbatim)
+#   lean (default) -> 48 primary-visible skills + "*": "deny"
+#   full           -> verified no-op (shipped 107-allow allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
 # stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
 run_skill_profile() {
