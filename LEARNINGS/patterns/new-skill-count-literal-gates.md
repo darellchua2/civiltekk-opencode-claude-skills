@@ -8,7 +8,7 @@
 4. **Hand-maintained doc counts** — README.md :250, :566 (`<!-- count: hand-maintained -->`), :397 ("105 allows" / "46 primary-visible"), :409, :570 running-total narrative.
 5. **Subagent frontmatter skill-allow rules** — any skill a DELEGATED flow must load needs an allow rule in the executing agent's frontmatter (`pr-workflow-subagent.md:47-75`, `repo-ops-specialist-subagent.md`); a lean slot only serves the primary.
 **Rationale**: Same failure mode as frontmatter-shape-change-blast-radius: literal assertions and doc literals are invisible to "who references this file" sweeps; they fail at full-suite time (release.yml runs every tests/*.bats, :66-69).
-**Verification**: `grep -rnE '\-eq 4[0-9]|"[0-9]+ deny-ok' tests/` + `grep -rn "skill director" README.md opencode_app/README.md tests/` before sign-off on any skill add/remove.
+**Verification**: `grep -rnE '\-eq 4[0-9]|"[0-9]+ deny-ok' tests/` + `grep -rn "skill director" README.md opencode_app/README.md tests/` before sign-off on any skill add/remove. When sweeping already-stale hand-maintained literals (README.md:397 said 105/46 while disk was 106/47), derive target values from current disk + delta — never from the stale doc's own numbers (PLAN-404 rev 2 encoded 106 instead of the correct 107 this way).
 **Confidence**: 0.95
 **Scope**: project
 **Date**: 2026-09-19
