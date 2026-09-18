@@ -44,7 +44,7 @@ Cross-module consumers exist (registry ← frontmatter, presets ← registry, ro
 
 - [ ] **1.1** Create `skills/cad-redraw-skill/SKILL.md` with house-contract frontmatter (`name: cad-redraw-skill`, `license: Apache-2.0`, `compatibility: opencode`, `category: CAD & Hardware Design`, `metadata: {protocol, pattern}`, no `model:`) and a ≤50-word description preserving triggers `dwg redraw`, `image to dxf`, `pdf to dxf`; body sections: provenance credit (methodology from pengxiaoan, zero code reused), non-negotiable rules (evidence levels `known/scaled/inferred/unreadable`, pixels never override written dimensions, visual similarity ≠ dimensional accuracy, conflicts → `needs_review`, never overwrite source), Mode A/B/C workflows, 5 profiles, validation contract, viewer handoff, DWG I/O
     — **Why:** the SKILL.md is the runtime contract every later script and sync surface derives from; writing it first fixes the vocabulary (modes, profiles, dispositions) all other steps use
-    — **Done when:** frontmatter parses, name equals directory name, description ≤50 words containing all three trigger phrases, and the six body sections exist
+    — **Done when:** frontmatter parses, name equals directory name, description ≤50 words containing all three trigger phrases, and the six body sections exist; `node installer/build-registry.mjs` has been run so `--check` exits 0 within this phase's commit (registry-vs-disk tests `init.bats`/`deploy_delegate.bats` are per-commit invariants — deviation from the ticket's phase-5-only registry landing, see Technical Notes)
     — **Consumers affected:** skill loader, build-registry scan, cad-specialist routing (later steps)
 - [ ] **1.2** Write `references/redraw-spec.md` defining the JSON spec schema: views with independent calibration, anchor lists, evidence levels per value, constraint records, entity records (LINE, ARC, CIRCLE, LWPOLYLINE, TEXT, MTEXT, DIMENSION) with stable IDs, source vs CAD coordinate system separation
     — **Why:** the spec JSON is the interchange format between spec authoring, `spec_to_dxf.py` validation, and drawing; the schema must exist before the validator/drawer encode it
@@ -109,7 +109,7 @@ Cross-module consumers exist (registry ← frontmatter, presets ← registry, ro
     — **Consumers affected:** all Phase 4 edits
 - [ ] **4.1** Edit `agents/cad-specialist-subagent.md`: add the `cad-redraw-skill` skill allow rule after the existing cad rules (order matters — last match wins), update the description count 14 → 15, add a routing line (source-DWG/PDF/image redraw → cad-redraw-skill; 3D solids → cad-generation-skill)
     — **Why:** the skill is subagent-only like the whole CAD family; without the allow rule and routing the skill is dead weight
-    — **Done when:** grep shows 15 `action: skill` rules including `cad-redraw-skill`, description reads 15, routing line present
+    — **Done when:** grep shows 15 `action: skill` rules including `cad-redraw-skill`, description reads 15, routing line present; `node installer/build-registry.mjs` rerun so `--check` exits 0 (agent frontmatter is scanned into the registry — same per-commit invariant as step 1.1)
     — **Consumers affected:** opencode agent loader, registry frontmatter scan, pack-cad description
 - [ ] **4.2** Sweep `README.md` (Subagents table) and `deploy/setup.sh` / `deploy/setup.ps1` help text for hardcoded "14"/skill-count claims tied to cad-specialist and sync any found
     — **Why:** stale counts fail documentation-consistency checks and mislead `npx add` users
@@ -146,6 +146,7 @@ Cross-module consumers exist (registry ← frontmatter, presets ← registry, ro
 - 3D solids defer to `cad-generation-skill` (build123d)
 - Validation: fingerprint diff + dispositions (`pass`, `pass_with_warnings`, `needs_review`, `blocked`, `fail`); pixel comparison never proves dimensional accuracy
 - Commit sequence: ① `feat(skills): add cad-redraw-skill contract and references` → ② `feat(skills): add cad-redraw fingerprint and spec-to-dxf scripts` → ③ `feat(skills): add cad-redraw image pipeline scripts` → ④ `feat(agents): route dwg/image redraw to cad-redraw-skill` → ⑤ `chore(registry): register cad-redraw-skill`
+- Deviation from the ticket's commit plan: `installer/registry.json` rebuilds ride commits ① and ④ (not only ⑤) because `tests/init.bats` + `tests/deploy_delegate.bats` enforce registry-vs-disk equality per commit (BT-157); step 5.1 remains as the final `--check` verification pass
 - House frontmatter contract per root `AGENTS.md`; no `model:` in agent edits (tier-injected at deploy)
 - Untouched by design: `deploy/skill-profiles.json`, `opencode_app/opencode.json` (skill stays subagent-only)
 
