@@ -224,10 +224,11 @@ EOC
   mkdir -p "$HOME/.config/opencode"
   echo '{"explorer-subagent": {"model": "test/global-pin"}}' > "$HOME/.config/opencode/agent-overrides.json"
   mkdir -p "$TMP_PROJ/.opencode"
-  echo '{"explorer-subagent": {"model": "test/project-pin"}}' > "$TMP_PROJ/.opencode/agent-overrides.json"
+  echo '{"explorer-subagent": {"model": "test/project-pin"}, "code-review-subagent": {"model": "test/other-pin"}}' > "$TMP_PROJ/.opencode/agent-overrides.json"
   $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
   grep -q "^model: test/project-pin$" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
   ! grep -q "test/global-pin" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
+  ! grep -q "test/other-pin" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
 }
 
 @test "project install with no pins injects the tier default by value (#401c)" {
