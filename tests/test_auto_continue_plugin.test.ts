@@ -120,25 +120,39 @@ class FakeBus {
   }
 }
 
-async function makePlugin(env: Record<string, string>) {
+async function makePlugin(
+  env: Record<string, string>,
+  opts: { hostile?: boolean; getStatus?: () => string } = {},
+) {
   const saved = { ...process.env };
+  for (const k of Object.keys(env)) delete process.env[k]; // no inherited leakage
   for (const [k, v] of Object.entries(env)) process.env[k] = v;
+  delete process.env.OPENCODE_AUTO_CONTINUE_DEBUG; // silence spy needs this guaranteed
   const bus = new FakeBus();
-  const prompts: Array<{ sessionID: string; text: string }> = [];
+  const prompts: Array<{ sessionID: string; text: string; at: number }> = [];
+  let logCalls = 0;
   let promptHook: ((event: any) => void) | undefined;
   const ctx = {
     event: { subscribe: (o: any) => bus.subscribe(o) },
     session: {
-      get: async () => ({ status: 'idle' }),
+      get: async () => ({ status: opts.getStatus ? opts.getStatus() : 'idle' }),
       prompt: async (input: any) => {
-        prompts.push(input);
+        // hostile fake: a real server may fire the prompt hook for our own send
+        if (opts.hostile) promptHook?.({ sessionID: input.sessionID, prompt: { text: input.text } });
+        prompts.push({ sessionID: input.sessionID, text: input.text, at: Date.now() });
       },
       hook: async (_name: string, fn: (event: any) => void) => {
         promptHook = fn;
         return { dispose: async () => {} };
       },
     },
-    client: { app: { log: async () => {} } },
+    client: {
+      app: {
+        log: async () => {
+          logCalls += 1;
+        },
+      },
+    },
   };
   const cleanup = (await plugin.setup(ctx as any)) as (() => void) | undefined;
   const teardown = async () => {
@@ -150,7 +164,17 @@ async function makePlugin(env: Record<string, string>) {
   const error = (text: string) => bus.push({ type: 'session.error', properties: { sessionID: SID, error: { name: 'APIError', message: text } } });
   const idle = () => bus.push({ type: 'session.idle', properties: { sessionID: SID } });
   const interrupted = () => bus.push({ type: 'session.interrupted', properties: { sessionID: SID } });
-  return { ctx, bus, prompts, teardown, error, idle, interrupted, userPrompt: () => promptHook?.({ sessionID: SID, prompt: { text: 'go' } }) };
+  return {
+    ctx,
+    bus,
+    prompts,
+    logCalls: () => logCalls,
+    teardown,
+    error,
+    idle,
+    interrupted,
+    userPrompt: () => promptHook?.({ sessionID: SID, prompt: { text: 'go' } }),
+  };
 }
 
 test('runtime: retryable error + idle sends one continue', async () => {
@@ -225,6 +249,107 @@ test('runtime: non-retryable errors never send', async () => {
     h.idle();
     await sleep(120);
     assert.equal(h.prompts.length, 0);
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('runtime: silent in normal operation (zero log calls without debug)', async () => {
+  const h = await makePlugin({
+    OPENCODE_AUTO_CONTINUE_BASE_BACKOFF_MS: '10',
+    OPENCODE_AUTO_CONTINUE_THROTTLE_MS: '10',
+  });
+  try {
+    assert.equal(process.env.OPENCODE_AUTO_CONTINUE_DEBUG, undefined, 'debug must be unset for this test');
+    h.error('400 bad request');
+    h.idle();
+    await waitFor(() => h.prompts.length === 1, 'send');
+    await sleep(30);
+    assert.equal(h.logCalls(), 0, 'ctx.client.app.log must not be called when debug is unset');
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('runtime: own sends do not defeat the consecutive cap (hostile hook echo)', async () => {
+  const h = await makePlugin(
+    {
+      OPENCODE_AUTO_CONTINUE_MAX_CONSECUTIVE: '2',
+      OPENCODE_AUTO_CONTINUE_BASE_BACKOFF_MS: '10',
+      OPENCODE_AUTO_CONTINUE_THROTTLE_MS: '10',
+    },
+    { hostile: true },
+  );
+  try {
+    h.error('400 bad request');
+    h.idle();
+    await waitFor(() => h.prompts.length === 1, 'attempt 1');
+    h.error('read ECONNRESET');
+    h.idle();
+    await waitFor(() => h.prompts.length === 2, 'attempt 2');
+    h.error('no data received');
+    h.idle();
+    await sleep(120);
+    assert.equal(h.prompts.length, 2, 'cap must hold even when our own sends echo the prompt hook');
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('runtime: throttle delays the second consecutive send beyond the window', async () => {
+  const h = await makePlugin({
+    OPENCODE_AUTO_CONTINUE_THROTTLE_MS: '60',
+    OPENCODE_AUTO_CONTINUE_BASE_BACKOFF_MS: '1',
+    OPENCODE_AUTO_CONTINUE_MAX_BACKOFF_MS: '8',
+  });
+  try {
+    h.error('400 bad request');
+    h.idle();
+    await waitFor(() => h.prompts.length === 1, 'first send');
+    h.error('read ECONNRESET');
+    h.idle();
+    await sleep(20);
+    assert.equal(h.prompts.length, 1, 'second send must not land inside the throttle window');
+    await waitFor(() => h.prompts.length === 2, 'second send after the window');
+    const delta = h.prompts[1].at - h.prompts[0].at;
+    assert.ok(delta >= 45, `send delta ${delta}ms should honor the 60ms throttle (>= ~45ms)`);
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('runtime: busy session re-arms and sends once idle again', async () => {
+  let busy = true;
+  const h = await makePlugin(
+    {
+      OPENCODE_AUTO_CONTINUE_BASE_BACKOFF_MS: '10',
+      OPENCODE_AUTO_CONTINUE_THROTTLE_MS: '10',
+    },
+    { getStatus: () => (busy ? 'busy' : 'idle') },
+  );
+  try {
+    h.error('400 bad request');
+    h.idle();
+    await sleep(80);
+    assert.equal(h.prompts.length, 0, 'must not send while the session is busy');
+    busy = false;
+    await waitFor(() => h.prompts.length === 1, 'send after the session goes idle again');
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('runtime: session deletion clears pending retries', async () => {
+  const h = await makePlugin({
+    OPENCODE_AUTO_CONTINUE_BASE_BACKOFF_MS: '10',
+    OPENCODE_AUTO_CONTINUE_THROTTLE_MS: '10',
+  });
+  try {
+    h.error('400 bad request');
+    h.bus.push({ type: 'session.deleted', properties: { sessionID: SID } });
+    h.idle();
+    await sleep(120);
+    assert.equal(h.prompts.length, 0, 'no retry may fire for a deleted session');
   } finally {
     await h.teardown();
   }

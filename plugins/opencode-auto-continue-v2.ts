@@ -137,7 +137,7 @@ interface SessionState {
   attempts: number;
   lastSentAt: number;
   esc: boolean;
-  timer: any;
+  timer?: ReturnType<typeof setTimeout>;
   updatedAt: number;
 }
 
@@ -150,16 +150,25 @@ const plugin = {
 
     const log = (msg: string) => {
       if (!cfg.debug) return;
+      logAlways(msg, 'info');
+    };
+    // unconditional logging for abnormal events only (never debug-gated), so a
+    // broken event stream is visible even in silent operation
+    const logAlways = (msg: string, level: 'info' | 'error' = 'info') => {
       try {
-        void ctx.client?.app?.log?.({
-          body: {
-            level: 'info',
-            message: `[opencode-auto-continue-v2] ${msg}`,
-            service: 'opencode-auto-continue-v2',
-          },
+        Promise.resolve(
+          ctx.client?.app?.log?.({
+            body: {
+              level,
+              message: `[opencode-auto-continue-v2] ${msg}`,
+              service: 'opencode-auto-continue-v2',
+            },
+          }),
+        ).catch(() => {
+          // logging must never break recovery
         });
       } catch {
-        // logging must never break recovery
+        // ditto for synchronous throws
       }
     };
 
@@ -199,8 +208,15 @@ const plugin = {
           }
         }
       }
+      st.updatedAt = Date.now();
       return st;
     };
+
+    // depth counter of plugin-initiated sends currently in flight; the prompt
+    // hook ignores echoes of our own sends so the cap and ESC latch can only be
+    // reset by a real user message. Cleared on NEXT TICK because a prompt hook
+    // may fire after the awaited prompt resolves.
+    let ownSends = 0;
 
     const send = async (sessionID: string): Promise<void> => {
       const st = state.get(sessionID);
@@ -224,12 +240,24 @@ const plugin = {
       } catch {
         // status probe unavailable — proceed (prompt to an active session is harmless)
       }
+      // re-validate after the await: ESC latch, user message, or a cap change
+      // may have landed while the status probe was in flight
+      if (!st.pending || st.esc || st.attempts >= cfg.maxConsecutive) return;
       const { reason } = st.pending;
       st.pending = undefined;
       st.attempts += 1;
       st.lastSentAt = Date.now();
-      await ctx.session?.prompt?.({ sessionID, text: cfg.message });
-      log(`sent ${JSON.stringify(cfg.message)} to ${sessionID} (attempt ${st.attempts}/${cfg.maxConsecutive}, reason=${reason})`);
+      ownSends += 1;
+      try {
+        await ctx.session?.prompt?.({ sessionID, text: cfg.message });
+        log(`sent ${JSON.stringify(cfg.message)} to ${sessionID} (attempt ${st.attempts}/${cfg.maxConsecutive}, reason=${reason})`);
+      } catch (err) {
+        log(`prompt send failed for ${sessionID}: ${err instanceof Error ? err.message : String(err)}`);
+      } finally {
+        setImmediate(() => {
+          ownSends = Math.max(0, ownSends - 1);
+        });
+      }
     };
 
     const onIdle = (sessionID: string) => {
@@ -262,12 +290,11 @@ const plugin = {
     const handleEvent = (ev: any) => {
       const type = String(ev?.type ?? '');
       const p = ev?.properties ?? ev ?? {};
-      const sessionID: string | undefined = p.sessionID ?? p.info?.sessionID ?? p.id;
+      const sessionID: string | undefined = p.sessionID ?? p.info?.sessionID;
       if (!sessionID) return;
-      const st = ensure(sessionID);
-      st.updatedAt = Date.now();
 
       if (type === 'session.error') {
+        const st = ensure(sessionID);
         const cls = classifyError(extractErrorText(p));
         log(`session ${sessionID}: error classified retryable=${cls.retryable} (${cls.reason})`);
         if (st.esc) {
@@ -280,6 +307,7 @@ const plugin = {
         return;
       }
       if (type === 'session.interrupted') {
+        const st = ensure(sessionID);
         log(`session ${sessionID}: interrupted — ESC latch on`);
         st.esc = true;
         st.pending = undefined;
@@ -291,8 +319,11 @@ const plugin = {
         return;
       }
       if (type === 'session.deleted' || type === 'session.removed') {
-        clearTimer(st);
-        state.delete(sessionID);
+        const st = state.get(sessionID);
+        if (st) {
+          clearTimer(st);
+          state.delete(sessionID);
+        }
         return;
       }
     };
@@ -309,18 +340,25 @@ const plugin = {
         }
       } catch (err) {
         if (!controller.signal.aborted) {
-          log(`event stream error: ${err instanceof Error ? err.message : String(err)}`);
+          // abnormal: the self-healing loop itself died — say so unconditionally
+          logAlways(`event stream error: ${err instanceof Error ? err.message : String(err)}`, 'error');
         }
       }
     };
     void pump();
 
     // A real user message resets the consecutive counter and lifts the ESC latch.
+    // Echoes of the plugin's own sends are ignored (ownSends guard) so the cap
+    // and latch cannot be defeated by the recovery prompts themselves.
     let disposeHook: (() => void) | undefined;
     try {
       const registration = await ctx.session.hook('prompt', (event: any) => {
         const sid = event?.sessionID;
         if (!sid) return;
+        if (ownSends > 0) {
+          log(`session ${sid}: ignoring own-send echo`);
+          return;
+        }
         const st = state.get(sid);
         if (st) {
           st.attempts = 0;
@@ -331,7 +369,9 @@ const plugin = {
       });
       disposeHook = () => {
         try {
-          void registration?.dispose?.();
+          Promise.resolve(registration?.dispose?.()).catch(() => {
+            // already disposed
+          });
         } catch {
           // already disposed
         }
@@ -350,5 +390,4 @@ const plugin = {
   },
 };
 
-export const { id, setup } = plugin;
 export default plugin;

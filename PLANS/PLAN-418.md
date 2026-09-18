@@ -77,6 +77,29 @@ No in-repo module consumes the plugin's exports besides its test — the sole ru
     — **Consumers affected:** none.
     — **Done:** 12/12 tests pass, import smoke OK, count-drift OK; files: none (gate-only phase); fixes: none
 
+### Phase 5: Review fixes (Step 9 findings)
+
+- [x] **5.1** Rejection-safety: re-validate `pending` after the status-probe await, wrap the prompt send in try/catch, attach `.catch` to the voided `app.log`/`dispose` promises, and add an unconditional (non-debug-gated) `logAlways` for abnormal event-stream death (BLOCK: crash paths into the server process).
+    — **Why:** fire-and-forget async in the server process turns a transient failure into an unhandled rejection that can kill every running session — the plugin must never be the outage it heals.
+    — **Done when:** no unawaited promise without a rejection handler remains in the plugin; 17/17 tests pass.
+    — **Consumers affected:** OpenCode server process (all sessions).
+    — **Done:** post-await re-validation + guarded send + Promise.resolve().catch on log/dispose + logAlways on stream death; files: plugins/opencode-auto-continue-v2.ts; fixes: review BLOCK
+- [x] **5.2** Own-send guard: `ownSends` depth counter set before `ctx.session.prompt`, cleared on next tick in `finally`; the prompt hook ignores echoes so the cap and ESC latch can only reset via a real user message (WARN / relayed Gap 1, next-tick semantics per Mode R answer).
+    — **Why:** if v2 fires the prompt hook for plugin-initiated sends, an unguarded hook resets the counter every cycle — an unlimited retry loop against a permanently failing session.
+    — **Done when:** hostile-fake test (hook echoes own sends) shows the cap still binds at maxConsecutive.
+    — **Consumers affected:** prompt hook consumers; none in-repo.
+    — **Done:** guard + next-tick clear implemented; hostile test passes; files: plugins/opencode-auto-continue-v2.ts, tests/test_auto_continue_plugin.test.ts; fixes: review WARN
+- [x] **5.3** Test hardening: debug-silence log-spy (zero `app.log` calls with `_DEBUG` deleted from env), throttle-window runtime test (second send delayed ≥ window), busy re-arm test, `session.deleted` cleanup test (WARN / relayed Gaps 2-3).
+    — **Why:** AC3/AC4 safety properties were previously only unit-asserted, not behaviorally pinned — regressions would ship green.
+    — **Done when:** all five new runtime tests pass; total suite 17/17.
+    — **Consumers affected:** verification gate.
+    — **Done:** 5 tests added (silence, hostile cap, throttle ≥45ms delta, busy re-arm, deleted cleanup); files: tests/test_auto_continue_plugin.test.ts; fixes: none
+- [x] **5.4** Cleanup: remove dead destructured export, type the timer handle, drop the `p.id` sessionID fallback, and call `ensure()` only on stateful events so the bounded map self-selects (review NOTEs).
+    — **Why:** dead exports and per-event map churn are the kind of noise the next reader pays for; zero behavior change intended.
+    — **Done when:** import smoke passes; suite 17/17 unchanged.
+    — **Consumers affected:** none.
+    — **Done:** export removed, `timer?: ReturnType<typeof setTimeout>`, `p.id` fallback dropped, ensure() scoped to error/interrupted/idle/deleted branches; files: plugins/opencode-auto-continue-v2.ts; fixes: none
+
 ## Technical Notes
 
 - v2 API surface: `ctx.event.subscribe({ signal })` (events: `session.error`, `session.status`, `session.idle`, `session.interrupted`), `ctx.session.prompt({ sessionID, text })`, `ctx.client.app.log()`.
