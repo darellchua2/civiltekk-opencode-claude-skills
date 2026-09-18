@@ -46,6 +46,14 @@ def load_anchors(path: Path) -> dict:
     except json.JSONDecodeError as exc:
         print(f"invalid anchors JSON '{path}': {exc}", file=sys.stderr)
         sys.exit(1)
+    except UnicodeDecodeError:
+        print(
+            f"anchors '{path}' is not valid UTF-8 text (wrong file?)", file=sys.stderr
+        )
+        sys.exit(1)
+    except OSError as exc:
+        print(f"cannot read anchors '{path}': {exc}", file=sys.stderr)
+        sys.exit(1)
 
 
 def load_gray(path: Path) -> np.ndarray:
@@ -154,7 +162,11 @@ def compare(
     out_dir: Path,
 ) -> dict:
     """Register cad onto source, write artifacts + metrics.json, return metrics."""
-    out_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        out_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        print(f"cannot create output directory '{out_dir}': {exc}", file=sys.stderr)
+        sys.exit(1)
     src_pts, cad_pts = correspondences(anchors, model)
     matrix, mask = estimate_transform(model, cad_pts, src_pts)
     if matrix is None:
@@ -325,7 +337,11 @@ def main(argv: list[str] | None = None) -> int:
     source = load_gray(Path(args.source))
     cad = load_gray(Path(args.cad_preview))
     out_dir = Path(args.output_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        out_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        print(f"cannot create output directory '{out_dir}': {exc}", file=sys.stderr)
+        sys.exit(1)
     metrics = compare(source, cad, anchors, model, out_dir)
     print(
         f"comparison: {out_dir} (edge coverage {metrics['edge_coverage']:.2%})"

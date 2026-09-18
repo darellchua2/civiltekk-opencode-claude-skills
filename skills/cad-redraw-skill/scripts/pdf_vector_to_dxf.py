@@ -148,7 +148,11 @@ def extract_page(pdf_path: Path, page_number: int, output: Path) -> dict:
         ).set_placement(_pt(x0, y1, page_height))
         texts += 1
 
-    dxf.saveas(str(output))
+    try:
+        dxf.saveas(str(output))
+    except OSError as exc:
+        print(f"cannot write DXF '{output}': {exc}", file=sys.stderr)
+        sys.exit(1)
     doc.close()
     return {"lines": lines, "texts": texts}
 

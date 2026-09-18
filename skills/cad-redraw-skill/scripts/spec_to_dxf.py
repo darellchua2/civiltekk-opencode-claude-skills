@@ -633,7 +633,20 @@ def validate_spec(spec) -> dict:
         else:
             view_ids.append(vid)
 
-    entities = [e for e in (spec.get("entities") or []) if isinstance(e, dict)]
+    entities_raw = spec.get("entities") or []
+    if not isinstance(entities_raw, list):
+        errors.append(_error("schema", None, "'entities' must be a list"))
+        entities_raw = []
+    entities = [e for e in entities_raw if isinstance(e, dict)]
+    for raw in entities_raw:
+        if not isinstance(raw, dict):
+            errors.append(
+                _error(
+                    "schema",
+                    None,
+                    "non-object entry in 'entities' (each entity must be a JSON object)",
+                )
+            )
     entity_ids: list[str] = []
     entities_by_id: dict = {}
     evidence_counts = {level: 0 for level in sorted(EVIDENCE_LEVELS)}
@@ -855,6 +868,9 @@ def load_spec(path: Path) -> dict:
         sys.exit(1)
     except json.JSONDecodeError as exc:
         print(f"invalid spec JSON '{path}': {exc}", file=sys.stderr)
+        sys.exit(1)
+    except UnicodeDecodeError:
+        print(f"spec '{path}' is not valid UTF-8 text (wrong file?)", file=sys.stderr)
         sys.exit(1)
     except OSError as exc:
         print(f"cannot read spec '{path}': {exc}", file=sys.stderr)
