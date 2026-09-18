@@ -1,8 +1,11 @@
 ---
 name: grilling-skill
 description: >-
-  Interview the user relentlessly to stress-test a plan or design — one question
-  at a time with a recommended answer. Any 'grill' trigger phrase.
+  Relentless interview to stress-test a plan or design — one question at a time
+  with a recommended answer. Modes: grill (default), 'grill with docs' (inline
+  CONTEXT.md glossary + ADRs), --plan (emit PLANS/PLAN-GIT-<issue>.md in the
+  canonical phased contract). Triggers: grill, grill me, grill with docs,
+  stress-test my plan.
 license: Apache-2.0
 compatibility: opencode
 category: Planning & Alignment
@@ -10,7 +13,7 @@ category: Planning & Alignment
 
 ## What I do
 
-I am the reusable interview engine behind `grill-me-skill` and `grill-with-docs-skill`. I relentlessly interview the user about a plan or design until we reach a shared understanding:
+I relentlessly interview the user about a plan or design until we reach a shared understanding:
 
 1. **Decision-tree walk**: Walk down each branch of the design tree, resolving dependencies between decisions one-by-one
 2. **One question at a time**: Never ask multiple questions at once — that is bewildering
@@ -18,22 +21,23 @@ I am the reusable interview engine behind `grill-me-skill` and `grill-with-docs-
 4. **Codebase-first**: If a question can be answered by exploring the codebase, explore it instead of asking
 5. **Shared understanding**: Continue until every branch of the decision tree is resolved
 
-I am the **engine** (model-invoked). User-facing skills (`grill-me-skill`, `grill-with-docs-skill`) orchestrate me; they do not duplicate my behavior.
+## Modes
+
+**This Modes section supersedes any other session-shape framing elsewhere in this document.** Pick the mode from the user's phrasing:
+
+| Invocation | Behavior |
+|------------|----------|
+| `grill` / `grill me` / `stress-test this plan` (default) | Interview only — no files written |
+| `grill with docs` / `grill me and write it up` / `--docs` | Interview **plus** inline capture: `CONTEXT.md` glossary entries and ADRs, written as decisions crystallise (see §Doc capture) |
+| `grill --plan` | Interview, then **emit** `PLANS/PLAN-GIT-{issue}.md` in the canonical phased contract (see §PLAN emission) |
 
 ## When to use me
 
 Use this skill when:
 - A plan, spec, or design needs stress-testing before implementation begins
 - The user uses any "grill" trigger phrase
-- Another skill (e.g. `grill-with-docs-skill`) delegates an interview session
+- You want the alignment session to also produce durable docs (`--docs`) or a checkable plan (`--plan`)
 - Ambiguity in requirements is causing misalignment between user and agent
-
-**Trigger phrases**:
-- "grill me"
-- "interview me about"
-- "stress-test this plan"
-- "walk through the decision tree"
-- "what haven't we covered"
 
 ## Core Workflow
 
@@ -68,6 +72,63 @@ Keep walking the tree until either:
 - The user signals they want to start building (respect this — don't grill past their appetite)
 - Remaining unknowns are genuinely unresolvable until implementation begins (note them explicitly and move on)
 
+## Doc capture (`--docs` mode)
+
+Self-contained capture convention — runs interleaved with the interview, not after it:
+
+- **Capture inline, not in a batch.** Write `CONTEXT.md` entries and ADRs the moment a term or decision crystallises.
+- **CONTEXT.md is a glossary and nothing else.** Totally devoid of implementation details.
+
+Format — one entry per resolved term:
+
+```md
+**Term**: One or two sentences defining what it IS, not what it does.
+_Avoid_: alias, other-alias
+```
+
+Rules: be opinionated (pick the best word, list the rest under `_Avoid_`); only project-specific terms (general programming concepts don't belong); group under subheadings when natural clusters emerge.
+
+**ADRs — the three-criteria gate.** Offer an ADR only when **all three** are true:
+1. **Hard to reverse** — changing your mind later costs meaningfully
+2. **Surprising without context** — a future reader will wonder "why this way?"
+3. **The result of a real trade-off** — genuine alternatives existed and one was picked for specific reasons
+
+If any of the three is missing, skip the ADR. Most sessions create zero ADRs, and that's correct.
+
+ADR format: `docs/adr/NNNN-slug.md`, sequential numbering (scan for the highest existing number, increment; create the directory lazily). One to three sentences: context, decision, why. Optional Status/Considered/Consequences sections only when they add genuine value.
+
+Conclude `--docs` sessions with a summary: terms added/changed, ADRs created (if any), remaining open questions.
+
+## PLAN emission (`--plan` mode)
+
+After convergence, emit `PLANS/PLAN-GIT-{issue}.md` (or `PLANS/PLAN-{KEY}.md` for non-GitHub keys) in the canonical contract the execution skills parse:
+
+```markdown
+# PLAN: <title>
+
+**Branch**: feat/<KEY>
+**Issue**: <ticket URL>
+**Base**: <base>
+
+## Acceptance Criteria
+- [ ] <checkable criteria>
+
+## Dependency & Consumer Map
+
+| Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
+|---------------------|---------------------------|---------------------------------|-------------|
+
+## Implementation Phases
+
+### Phase 1: <name>
+- [ ] **N.M** <single atomic action — verb + target + outcome>
+    — **Why:** <what this unblocks / why it must precede others>
+    — **Done when:** <objective, checkable completion signal>
+    — **Consumers affected:** <who depends on this; none if N/A>
+```
+
+Contract rules: phases parse on `^### Phase`; steps parse on `- [ ] **N.M**` with completion `- [x]`; every step carries the full rationale triple (`Why` / `Done when` / `Consumers affected`) — a step missing any field is malformed; executors read `## Dependency & Consumer Map` before executing, so author it honestly.
+
 ## Rules
 
 - **One question at a time.** This is the non-negotiable rule. A wall of questions overwhelms the user and breaks the feedback loop.
@@ -80,10 +141,9 @@ Keep walking the tree until either:
 
 | Skill | Integration |
 |-------|-------------|
-| `grill-with-docs-skill` | Orchestrates me AND `domain-modeling-skill` to capture docs during the interview |
-| `grill-me-skill` | Orchestrates me alone (no docs capture) |
-| `domain-modeling-skill` | Paired with me by `grill-with-docs-skill` to write CONTEXT.md + ADRs inline |
 | `ticket-creation-skill` / `worktree-pipeline-skill` | A grilled, resolved outcome feeds into ticket creation, then the branch+PLAN+execute pipeline |
+| `wayfinder-skill` | An oversized grilled plan maps onto decision tickets |
+| `strategic-compact-skill` | A resolved grilling session can be compacted into a decision summary |
 
 ## Example Usage
 
@@ -99,8 +159,10 @@ The skill will:
 3. Wait for the answer, then proceed to the next branch.
 4. Continue until the decision tree is resolved.
 
-## References
+### With docs and plan output
 
-- `grill-with-docs-skill` - User-facing command that pairs me with doc capture
-- `domain-modeling-skill` - Doc capture engine used alongside me
-- `strategic-compact-skill` - A resolved grilling session can be compacted into a decision summary
+```
+"Grill with docs, then --plan — we're adding a notifications module"
+```
+
+Interview as above; as terms resolve ("notification" vs "alert" vs "digest"), update `CONTEXT.md` inline; if a hard-to-reverse decision emerges (message bus, not polling), offer an ADR; on convergence, emit `PLANS/PLAN-GIT-<issue>.md` with the resolved decisions as phased atomic steps.
