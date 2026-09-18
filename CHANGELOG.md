@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.2.1](https://github.com/darellchua2/opencode-config-template/compare/v9.2.0...v9.2.1) (2026-09-18)
+
+### Bug Fixes
+
+* **init:** conflict-gate project models.json like opencode.json ([#412](https://github.com/darellchua2/opencode-config-template/issues/412)) ([#413](https://github.com/darellchua2/opencode-config-template/issues/413)) ([30784da](https://github.com/darellchua2/opencode-config-template/commit/30784dae55f79f527116dd4d7d272a58f4b59697))
+
 ## [9.2.0](https://github.com/darellchua2/opencode-config-template/compare/v9.1.3...v9.2.0) (2026-09-18)
 
 ### Features
