@@ -49,6 +49,8 @@ permissions:
     effect: allow
   - action: skill
     resource: pr-creation-workflow-skill
+  - action: skill
+    resource: gh-cli-setup-skill
     effect: allow
   - action: skill
     resource: nextjs-pr-workflow-skill
@@ -132,6 +134,7 @@ Generic:
 - Run appropriate lint/build/test commands
 
 JIRA Integration:
+- Attribution: self-assign the linked ticket (fetch own accountId — see ticket-creation-skill §Attribution; REST `PUT /rest/api/3/issue/{key}/assignee` is the guaranteed path) and create the PR with `--assignee @me` (author = `gh auth` user by construction)
 - Update JIRA tickets with PR links via atlassian MCP tools
 - Transition ticket status after PR merge via jira-status-updater
 - Add PR screenshots/images as attachments

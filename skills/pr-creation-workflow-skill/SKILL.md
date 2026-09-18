@@ -38,7 +38,7 @@ Any PR creation in this config (also the engine behind `pr-workflow-subagent`).
 
 4. **Tracking system**: commit messages/branch naming (`IBIS-123`, `#123`) → GitHub Issues or JIRA; include `Closes <ref>` (keep the `#` for GitHub) in the body.
 5. **Git status check**: clean tree, all changes committed before creating.
-6. **Create PR** (`gh pr create`); body template: Summary / (JIRA|Issue) Reference / Changes / Quality Checks (per-step pass results) / Files Modified / Checklist.
+6. **Create PR** (`gh pr create --assignee @me`); body template: Summary / (JIRA|Issue) Reference / Changes / Quality Checks (per-step pass results) / Files Modified / Checklist. Author = the `gh auth` user by construction (token owner; GitHub does not allow spoofing) — `@me` self-assigns the same identity. If `command -v gh` fails, load `gh-cli-setup-skill`, then continue.
 7. **Semver label** from the PR title: `type!:` → `major`; `feat:` → `minor`; `fix:` and everything else → `patch`. Apply via `gh pr edit --add-label`.
 8. **Images**: any generated diagrams/visuals are committed and referenced in the body (never inlined as base64).
 
