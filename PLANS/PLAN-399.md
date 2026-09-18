@@ -6,11 +6,11 @@
 
 ## Acceptance Criteria
 
-- [ ] Step 10 Task prompt instruction in `worktree-pipeline-skill` switched to pipeline mode: skip pr-workflow steps 2 / 2.5 / 4 — gates verified by run-plan, docstrings filled per-phase, PLAN ticked+committed; `gh pr checks --watch` is the merge gate; agent's job reduces to PR create (`Closes <TICKET_ID>`) + JIRA link
-- [ ] `pr-workflow-subagent.md` gains a pipeline-mode conditional (parent states gates green → skip 2 / 2.5 / 4, proceed to PR creation) so the skip is agent-side, not prompt-only; standalone behavior unchanged
-- [ ] Refactor/DRY delegation in `plan-automation-loop-skill` delegate matrix AND `plan-execution-skill` Step 4 + Subagents line → "Handle directly"; `code-review-subagent` remains review-only
-- [ ] `node installer/build-registry.mjs --check` exits 0, no drift, `installer/registry.json` unmodified
-- [ ] `CHANGELOG.md` untouched (release-automation owns it)
+- [x] Step 10 Task prompt instruction in `worktree-pipeline-skill` switched to pipeline mode: skip pr-workflow steps 2 / 2.5 / 4 — gates verified by run-plan, docstrings filled per-phase, PLAN ticked+committed; `gh pr checks --watch` is the merge gate; agent's job reduces to PR create (`Closes <TICKET_ID>`) + JIRA link
+- [x] `pr-workflow-subagent.md` gains a pipeline-mode conditional (parent states gates green → skip 2 / 2.5 / 4, proceed to PR creation) so the skip is agent-side, not prompt-only; standalone behavior unchanged
+- [x] Refactor/DRY delegation in `plan-automation-loop-skill` delegate matrix AND `plan-execution-skill` Step 4 + Subagents line → "Handle directly"; `code-review-subagent` remains review-only
+- [x] `node installer/build-registry.mjs --check` exits 0, no drift, `installer/registry.json` unmodified
+- [x] `CHANGELOG.md` untouched (release-automation owns it)
 
 ## Dependency & Consumer Map
 
