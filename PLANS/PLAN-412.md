@@ -11,6 +11,7 @@ From ticket #412 (owner ruling: configurator repo — never clobber config it di
 - [x] bats: hand-authored `.opencode/models.json` survives `add --project` (stderr `conflict (skipped, use --force)` warning; content byte-identical)
 - [x] bats: `--force` overwrites it and the rewritten manifest claims it (`modelsPath`)
 - [x] bats: a previously-generated `models.json` re-installs silently (idempotent, no warning)
+- [x] Manifest claims ownership ONLY of files actually written this run — a conflict-skipped `modelsPath`/`configPath` is recorded as `null`, so the warning repeats every run until `--force` (owner ruling: protection until force, not one-time; includes the pre-existing `configPath` twin; review CR-1 + requirements-gap answer applied in-branch)
 - [x] Gate mirrors the adjacent `opencode.json` gate byte-for-byte in pattern (existsSync + prevManifest claim + `--force`); no content comparison, no new heuristics
 
 ## Dependency & Consumer Map

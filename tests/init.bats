@@ -257,7 +257,7 @@ EOC
   echo '{"tiers": {"fast": "hand/authored"}}' > "$TMP_PROJ/.opencode/models.json"
   $INIT add explorer-subagent --project "$TMP_PROJ" --yes --force >/dev/null 2>&1
   grep -q '"\$comment"' "$TMP_PROJ/.opencode/models.json"
-  grep -q '"modelsPath"' "$TMP_PROJ/.opencode/.opencode-init.manifest.json"
+  [ "$(jq_get "d['modelsPath']" < "$TMP_PROJ/.opencode/.opencode-init.manifest.json")" = "$TMP_PROJ/.opencode/models.json" ]
 }
 
 @test "previously-generated models.json re-installs silently (#412c)" {
@@ -268,4 +268,30 @@ EOC
   [ "$status" -eq 0 ]
   [[ "$output" != *"conflict (skipped"* ]]
   grep -q "glm-5.3-flash" "$TMP_PROJ/.opencode/models.json"
+}
+
+@test "hand-authored models.json keeps protection across re-installs (#412d)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME" "$TMP_PROJ/.opencode"
+  echo '{"tiers": {"fast": "hand/authored"}}' > "$TMP_PROJ/.opencode/models.json"
+  # run 1: warn + skip; manifest must NOT claim the file (claim only what we wrote)
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  [ "$(jq_get "d.get('modelsPath')" < "$TMP_PROJ/.opencode/.opencode-init.manifest.json")" = "None" ]
+  # run 2: warning repeats, file still intact — no silent clobber
+  run $INIT add code-review-subagent --project "$TMP_PROJ" --yes
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "conflict (skipped, use --force).*models.json"
+  grep -q "hand/authored" "$TMP_PROJ/.opencode/models.json"
+}
+
+@test "hand-authored opencode.json survives re-installs too (configPath twin, #412)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME" "$TMP_PROJ/.opencode"
+  echo '{"mcp": {"myserver": {"type": "local", "command": ["echo"]}}}' > "$TMP_PROJ/.opencode/opencode.json"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  run $INIT add code-review-subagent --project "$TMP_PROJ" --yes
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "conflict (skipped, use --force).*opencode.json"
+  grep -q "myserver" "$TMP_PROJ/.opencode/opencode.json"
+  [ "$(jq_get "d.get('configPath')" < "$TMP_PROJ/.opencode/.opencode-init.manifest.json")" = "None" ]
 }
