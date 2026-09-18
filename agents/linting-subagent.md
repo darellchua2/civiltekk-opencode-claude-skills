@@ -90,17 +90,7 @@ When `.codegraph/` exists, use `codegraph_files` for fast project structure dete
 
 ## Language Detection & Linter Selection
 
-| Language | File Patterns | Primary Linter | Auto-Fix Command |
-|----------|--------------|----------------|------------------|
-| Python | `*.py` | Ruff | `ruff check --fix .` |
-| JS/TS | `*.{js,ts,jsx,tsx,mjs,cjs}` | ESLint | `npx eslint --fix .` |
-| Java | `*.java`, `pom.xml`/`build.gradle` | Checkstyle + SpotBugs | Limited (IDE-based) |
-| C# | `*.cs`, `*.csproj`/`*.sln` | dotnet format + analyzers | `dotnet format` |
-
-Loaded skill: `language-linting-skill` — the source of truth for per-language linting rules,
-configs, commands, and error-code tables (Python Ruff, JS/TS ESLint, Java Checkstyle/PMD/SpotBugs
-incl. Spring Boot checks, C# dotnet format/Roslyn/StyleCop incl. .NET 10 checks); this subagent
-orchestrates detection, workflow, and reporting.
+Language → linter mapping, auto-fix commands, and per-language rules/configs/error-code tables live in `language-linting-skill` (the source of truth) — detect the language stack, then load that skill rather than consulting a local table. This subagent orchestrates detection, workflow, and reporting only. Gate sequence and pass semantics are `verification-loop-skill` §The gate contract — lint is one gate inside it, not a definition of it.
 
 ## Error Severity Classification
 

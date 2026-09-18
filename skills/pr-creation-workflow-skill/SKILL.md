@@ -22,19 +22,7 @@ Any PR creation in this config (also the engine behind `pr-workflow-subagent`).
 
 1. **Target branch**: PR base = the branch the feature was cut from (default repo default branch).
 2. **Framework detection** (manifest-first): `package.json` deps → nextjs/nestjs/vue/angular/react/express/node · `pyproject.toml`/`requirements.txt` → django/fastapi/flask/python · `pom.xml`/`build.gradle*` → spring-boot/java · `*.csproj|*.sln` → dotnet · `go.mod` → go · `Cargo.toml` → rust · `composer.json` → laravel/symfony · `Gemfile` → rails.
-3. **Quality checks per framework** (skip what's N/A; all must pass before PR):
-
-| Framework | Lint | Build | Test | Typecheck |
-|---|---|---|---|---|
-| JS/TS (nextjs/nestjs/vue/angular/react) | `npm run lint` | `npm run build` | `npm run test` | `npm run typecheck` |
-| node/express | `npm run lint` | — | `npm run test` | `npm run typecheck` |
-| python (django/fastapi/flask) | `ruff check .` | — | `pytest` | `mypy .` |
-| java (maven) | `mvn checkstyle:check` | `mvn compile` | `mvn test` | — |
-| java (gradle) | `./gradlew checkstyleMain` | `./gradlew build` | `./gradlew test` | — |
-| dotnet | `dotnet format --verify-no-changes` | `dotnet build` | `dotnet test` | — |
-| go | `golangci-lint run` | `go build ./...` | `go test ./...` | — |
-| rust | `cargo clippy` | `cargo build` | `cargo test` | — |
-| laravel | `./vendor/bin/pint --test` | — | `php artisan test` | — |
+3. **Quality checks — gate contract + memo check** (per `verification-loop-skill` §The gate contract): run the gate for the detected stack via manifest discovery — never a restated per-framework command table. Before running, check the gate memo: a `GATE <sha> …` line for the current tree SHA in the PLAN trace block (when a PLAN is in play) or the orchestrator's green-gates assertion (pipeline mode) → skip the re-run and state it. No memo for the current SHA → run the gates; skipping on absent evidence is forbidden. Fill the PR body's Quality Checks slot (step 6) from the memo/assertion — that SHA→green record drives later re-run decisions. CI (`gh pr checks`) remains the only unconditional re-run.
 
 4. **Tracking system**: commit messages/branch naming (`IBIS-123`, `#123`) → GitHub Issues or JIRA; include `Closes <ref>` (keep the `#` for GitHub) in the body.
 5. **Git status check**: clean tree, all changes committed before creating.

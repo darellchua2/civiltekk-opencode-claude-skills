@@ -115,21 +115,9 @@ PR Workflows by Framework:
 - pr-creation-workflow: Generic PR creation with configurable quality checks and JIRA image handling
 - nextjs-pr-workflow: Complete Next.js PR workflow with lint/build/test and coverage badges
 
-Framework-Specific Quality Checks:
- Next.js:
- - Run: npm run lint && npm run build && npm run test
- - Coverage badges via coverage-readme-workflow
- - TSDoc validation via docstring-generator (covers TypeScript)
-
- Python:
-  - Run: ruff check . && pytest
-  - Coverage via coverage-framework
-  - Docstring validation via docstring-generator (covers Python PEP 257)
-  - Changelog generation via changelog-python-cliff
-
-Generic:
-- Detect framework from project files (package.json, pyproject.toml, etc.)
-- Run appropriate lint/build/test commands
+Quality Checks — defer to the contract:
+- Gate commands come from manifest discovery per `verification-loop-skill` §The gate contract — this agent owns no framework command table.
+- PR-boundary execution is `pr-creation-workflow-skill` steps 2-3 (framework detect + gate contract/memo check); coverage badges via `coverage-readme-workflow` on the standalone path only; docstring validation via `docstring-generator`.
 
 JIRA Integration:
 - Update JIRA tickets with PR links via atlassian MCP tools
@@ -162,7 +150,7 @@ Note: Subagent-to-subagent chaining is not used here. Use `explore` for discover
 
 Workflow:
 1. Detect project framework (Next.js, Python, or other)
-2. Run framework-specific quality checks (lint, build, test)
+2. Run quality checks per the gate contract (`verification-loop-skill` §The gate contract; execution via `pr-creation-workflow-skill` steps 2-3)
 2.5. Docstring sweep (delegate to documentation-subagent — division of labor, the delegate has `bash: deny`):
     - Compute the PR-diff file list yourself (`git diff --name-only <base>...HEAD`) and pass ONLY that list in the Task prompt
     - documentation-subagent scans those files for new/changed public symbols missing docstrings and fills them per language standard (Python PEP 257, Javadoc, JSDoc/TSDoc, C# XML) — docstrings only, no README/coverage work
@@ -176,7 +164,7 @@ Workflow:
 7. Use skills for specialized tasks (linting, testing, docs as needed)
 8. Inform user to say "pr merge to [branch]" when ready to merge
 
-**Pipeline mode** (parent states gates are green — e.g. worktree-pipeline Step 10 after `/run-plan`): skip steps 2, 2.5, 3, and 4 — the gate ran per-phase upstream, docstrings were filled before the gate, coverage badges would mutate the README after code review, and the PLAN is ticked and committed; CI (`gh pr checks`) is the merge gate. Proceed via step 1 (framework detect) → step 5 (PR create) → step 6 (JIRA link); step 8's merge handoff is moot — the orchestrator owns the merge via the CI gate. Standalone callers (direct "create pr" without a green-gates assertion) keep the full workflow. In pipeline mode this skip supersedes every other restatement of steps 2/2.5/3/4 in this file (e.g. the PLAN.md Sync section, the docstring-sweep delegation bullet, the framework quality-checks sections, the closing gates line) — those apply on the standalone path only.
+**Pipeline mode** (parent states gates are green — e.g. worktree-pipeline Step 10 after `/run-plan`): skip steps 2, 2.5, 3, and 4 — the gate ran per-phase upstream, docstrings were filled before the gate, coverage badges would mutate the README after code review, and the PLAN is ticked and committed; CI (`gh pr checks`) is the merge gate. Proceed via step 1 (framework detect) → step 5 (PR create) → step 6 (JIRA link); step 8's merge handoff is moot — the orchestrator owns the merge via the CI gate. Standalone callers (direct "create pr" without a green-gates assertion) keep the full workflow. In pipeline mode this skip supersedes every other restatement of steps 2/2.5/3/4 in this file (e.g. the PLAN.md Sync section, the docstring-sweep delegation bullet, the closing gates line) — those apply on the standalone path only.
 
 PLAN.md Sync:
 - Before creating PR, invoke plan-updater skill

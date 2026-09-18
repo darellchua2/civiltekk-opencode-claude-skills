@@ -24,13 +24,13 @@ Fully-automated, phase-by-phase PLAN execution with a hard verification gate bet
 ## Core Workflow — The Phase Loop
 
 1. **Resolve the plan** from the argument (explicit path/glob, or auto-detect from branch). Explicit path wins; never guess.
-2. **Discover verification commands ONCE** from project manifests (`package.json` scripts, Makefile, pyproject, Cargo…) into `GATE.lint/.typecheck/.build/.test/.e2e`. A command that cannot be found → that gate step is `INCONCLUSIVE` — never silently skip; say so, and either install/repair, substitute the closest executable check, or stop and report. Never invent commands.
+2. **Discover verification commands ONCE** from project manifests (`package.json` scripts, Makefile, pyproject, Cargo…) into `GATE.lint/.typecheck/.build/.test/.e2e`. Discovery order, pass semantics (incl. the scoped-lint rule), and INCONCLUSIVE handling are defined by `verification-loop-skill` §The gate contract — defer there, don't restate.
 3. **Clean baseline**: `git status --porcelain` clean, correct branch (never `main`/`master`), work committed. Dirty tree → commit/stash first (ask if ambiguous).
 4. **Per phase, in order:**
    - [guardrail] `phases_done >= MAX_PHASES` (12) or `total_fixes >= MAX_FIXES` (20) → HALT + `[goal:blocked]`
    - 4a. IMPLEMENT — every atomic step; delegate per matrix below; keep a per-step WORK LOG
    - 4b. TEST NEW CODE — new/modified source files (`git diff --name-only --diff-filter=AM`, minus configs/docs/PLAN) get tests (TS: `bar.test.ts` sibling; PY: `tests/foo/test_bar.py`; mirror the nearest existing test). Trivial pure-data additions exempt.
-   - 4c. VERIFY — the gate, in order: LINT → TYPECHECK → BUILD → UNIT → E2E (e2e only per the E2E rule). Lint = zero NEW errors on changed files. Then record one verdict: `VERIFIED` (all applicable gates ran green, output captured) / `NOT VERIFIED` (a gate failed) / `INCONCLUSIVE` (a gate could not run). **INCONCLUSIVE is NOT a pass** — advance only on VERIFIED.
+   - 4c. VERIFY — the gate per `verification-loop-skill` §The gate contract (sequence, scoped-lint rule, verdict protocol; E2E per the E2E rule). On green, append the memo line `GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t|-|n.a>` to the PLAN trace block (memo format: §Gate memo there).
    - 4d. FIX-ON-FAIL — max 3 attempts per gate step: read full output → root cause → fix → append to WORK LOG → re-run failed step then the whole gate. Each attempt increments `total_fixes`. After 3 failures: STOP — no checkbox, no commit, no push; report blocker + ask user. **Never push red code.**
    - 4e. ON GREEN — tick ALL checkboxes (phase-level, every sub-step, satisfied acceptance criteria) + write the `— Done:` line per step (see Traceability)
    - 4f/4g. COMMIT + PUSH — one atomic commit: phase files + PLAN update together (see Commit + push)
@@ -101,7 +101,7 @@ Gate red after 3 attempts → report + ask · phase/fix budget hit → HALT `[go
 
 ## Compose, don't duplicate
 
-Plan parse/execute/delegate → `plan-execution-skill` · checkbox/progress commits → `plan-updater-skill` · verification philosophy → `verification-loop-skill` · commit format → `git-semantic-commits-skill` · unit tests → `testing-subagent`/`tdd-workflow-skill` · lint → `linting-workflow-skill`/`linting-subagent` · failure diagnosis → `error-resolver-workflow-skill` · responsive e2e → `responsive-audit-subagent`.
+Plan parse/execute/delegate → `plan-execution-skill` · checkbox/progress commits → `plan-updater-skill` · canonical gate contract + memo → `verification-loop-skill` · commit format → `git-semantic-commits-skill` · unit tests → `testing-subagent`/`tdd-workflow-skill` · lint → `linting-workflow-skill`/`linting-subagent` · failure diagnosis → `error-resolver-workflow-skill` · responsive e2e → `responsive-audit-subagent`.
 
 ## Iteration Protocol (opt-in)
 

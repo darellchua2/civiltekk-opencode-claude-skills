@@ -10,279 +10,59 @@ category: Agent Optimization
 
 ## What I do
 
-I provide continuous verification of implementations against defined requirements throughout the development cycle:
+I am the **canonical verification-gate contract** for this estate. Pipeline surfaces defer here instead of restating gate tables — compose, don't duplicate.
 
-1. **Checkpoint Creation**: Define verification checkpoints at key stages of implementation
-2. **Requirement Tracking**: Map each requirement to verifiable conditions
-3. **Automated Verification**: Check implementations against acceptance criteria automatically
-4. **Regression Detection**: Verify that new changes don't break existing functionality
-5. **Progress Reporting**: Track verification status across all requirements over time
+## The gate contract
 
-## When to use me
+### Gate sequence (in order)
 
-Use this skill when:
-- You want to verify implementation against acceptance criteria before committing
-- You're working on a feature with clear requirements and want continuous validation
-- You need to ensure no requirements are missed during implementation
-- You want to catch regressions as soon as they happen
-- You're doing TDD/BDD and want structured verification beyond unit tests
+LINT → TYPECHECK → BUILD → UNIT → E2E. E2E runs only per the E2E rule: Playwright configured (`playwright.config.*` + `@playwright/test`) AND the change touched frontend code. Backend-only change → skip e2e and say so.
 
-**Trigger phrases**:
-- "verify implementation"
-- "check against requirements"
-- "run verification"
-- "validate against criteria"
-- "checkpoint"
+### Command discovery (once per run)
 
-## Core Workflow
+Discover commands from project manifests in this order: `package.json` scripts → `Makefile` → `pyproject.toml` → README. Never invent commands. A gate whose command cannot be found is `INCONCLUSIVE` — never silently skipped; install/repair, substitute the closest executable check, or stop and report.
 
-### Step 1: Define Verification Scope
+### Pass semantics
 
-Establish what needs to be verified:
+- **Lint = zero NEW errors on changed files** (scoped rule; repo-wide zero-error sweeps are CI's job, not the local gate's).
+- Record one verdict per run: `VERIFIED` (all applicable gates ran green, output captured) / `NOT VERIFIED` (a gate failed) / `INCONCLUSIVE` (a gate could not run).
+- **INCONCLUSIVE is NOT a pass** — advance only on `VERIFIED`.
 
-```markdown
-## Verification Scope
+### Gate memo
 
-### Source of Truth
-- Issue/PLAN file: [reference]
-- Acceptance criteria: [list]
-- Requirements: [list]
-
-### Files in Scope
-| File | Purpose | Criteria Covered |
-|------|---------|-----------------|
-| src/auth/login.ts | Login handler | AC-1, AC-2 |
-| src/auth/session.ts | Session management | AC-3, AC-4 |
-| tests/auth.test.ts | Test coverage | AC-5 |
-
-### Verification Levels
-1. **Syntax** — Code compiles/types correctly
-2. **Functional** — Code does what it should
-3. **Integration** — Code works with other components
-4. **Acceptance** — Code meets all acceptance criteria
-5. **Non-regression** — Existing features still work
-```
-
-### Step 2: Create Verification Checkpoints
-
-Define checkpoints aligned with implementation phases:
-
-```markdown
-## Checkpoints
-
-### Checkpoint 1: Structure
-- [ ] All required files exist
-- [ ] File structure follows conventions
-- [ ] Types/interfaces defined correctly
-- [ ] No syntax errors
-
-### Checkpoint 2: Core Logic
-- [ ] Main functionality implemented
-- [ ] Edge cases handled
-- [ ] Error paths covered
-- [ ] Input validation present
-
-### Checkpoint 3: Tests
-- [ ] Unit tests written
-- [ ] Integration tests written (if applicable)
-- [ ] Edge case tests present
-- [ ] All tests passing
-
-### Checkpoint 4: Acceptance
-- [ ] AC-1: [description] — verified
-- [ ] AC-2: [description] — verified
-- [ ] AC-3: [description] — verified
-
-### Checkpoint 5: Non-Regression
-- [ ] Existing tests still pass
-- [ ] No new lint errors
-- [ ] No type errors
-- [ ] Build succeeds
-```
-
-### Step 3: Execute Verification
-
-Run verification at each checkpoint:
-
-1. **Parse requirements**: Extract acceptance criteria from issue/PLAN
-2. **Map to code**: Find which code files implement each criterion
-3. **Verify each criterion**: Check if the code satisfies the requirement
-4. **Run automated checks**: lint, type-check, tests, build
-5. **Record results**: Track pass/fail status with evidence
-
-### Step 4: Report Verification Status
-
-Generate a verification status report:
-
-```markdown
-## Verification Report
-
-**Checkpoint**: 3 (Tests)
-**Time**: 2024-01-25 14:30
-**Status**: IN PROGRESS
-
-### Requirements Status
-| ID | Requirement | Status | Evidence |
-|----|-------------|--------|----------|
-| AC-1 | User can login with email/password | PASS | tests/auth.test.ts:L12 |
-| AC-2 | Failed login shows error message | PASS | tests/auth.test.ts:L34 |
-| AC-3 | Session persists across page reloads | FAIL | No test found |
-| AC-4 | Session expires after 24 hours | SKIP | Not yet implemented |
-| AC-5 | Logout clears session | PASS | tests/auth.test.ts:L56 |
-
-### Automated Checks
-| Check | Status | Details |
-|-------|--------|---------|
-| TypeScript | PASS | No type errors |
-| ESLint | PASS | No lint errors |
-| Unit tests | 4/5 pass | Session persistence test missing |
-| Build | PASS | Successful compilation |
-
-### Blocking Issues
-- AC-3: No test for session persistence — needs implementation
-```
-
-### Step 5: Iterate Until Complete
-
-Loop through verification until all criteria pass:
+After every green gate, write one line into the PLAN trace block (or task record when no PLAN exists):
 
 ```
-while (failing_criteria exist):
-    1. Fix the failing implementation
-    2. Re-run verification for affected criteria
-    3. Run regression check
-    4. Update status
+GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t|-|n.a>
 ```
 
-## Verification Strategies
+- Same tree SHA already green since the last gate → later pipeline stages skip the re-run and state it.
+- No memo for the current SHA → run the gates. Skipping on absent evidence is forbidden.
+- CI (`gh pr checks`) remains the only unconditional re-run (post-push).
 
-### By Task Type
+### Who defers here
 
-| Task Type | Primary Verification | Secondary Verification |
-|-----------|---------------------|----------------------|
-| Feature | Acceptance criteria | Integration tests |
-| Bug fix | Reproduce -> fix -> verify gone | Regression tests |
-| Refactoring | Behavior unchanged | All existing tests pass |
-| Documentation | Content accuracy | No broken links |
-| Config change | System still functional | Integration tests |
+| Surface | Role under this contract |
+|---------|--------------------------|
+| `plan-automation-loop-skill` | Runs the gate per PLAN phase; writes the memo |
+| `pr-creation-workflow-skill` | PR-boundary memo check; fills the PR Quality Checks slot from memo/assertion |
+| `worktree-pipeline-skill` | Sequences phases; its green assertion cites the final GATE line for the pushed SHA |
+| `pr-workflow-subagent` | Executes PR checks via this contract; owns no command table |
+| `linting-subagent` | Lint execution; `language-linting-skill` is its rules reference |
+| `eval-harness-skill` | Scoring rubrics only — not gate execution |
 
-### By Confidence Level
+## Requirements verification (secondary role)
 
-| Level | Verification Depth | When to Use |
-|-------|-------------------|-------------|
-| **Quick** | Syntax + basic functional | During rapid prototyping |
-| **Standard** | Syntax + functional + tests | Regular feature work |
-| **Thorough** | All 5 levels | Critical features, PRs |
-| **Exhaustive** | Thorough + edge cases + perf | Production releases |
+Beyond the gate, verify implementations against acceptance criteria: parse criteria from the issue/PLAN, map each to code, check each with evidence, report PASS/FAIL/SKIP per criterion, iterate until green. Write criteria that are specific, measurable, binary, and evidence-based ("Returns HTTP 401 for invalid credentials", not "Handles errors").
 
-## Checkpoint Management
+**Triggers**: verify implementation, check against requirements, run verification, validate against criteria, checkpoint, verification gate, gate memo.
 
-### Saving Checkpoints
+## Integration
 
-```markdown
-## Checkpoint: pre-refactor
-**Date**: 2024-01-25 14:00
-**Status**: All tests passing (12/12)
-**Files**: src/auth/*.ts
-**Command**: `npm test -- --coverage`
-**Result**: 12 passed, 0 failed, 87% coverage
-```
-
-### Restoring Checkpoints
-
-When verification fails, restore to last good checkpoint:
-
-1. Identify the last passing checkpoint
-2. Determine what changed since then
-3. Either revert changes or fix forward
-4. Re-verify from the checkpoint
-
-### Checkpoint Naming Convention
-
-- `pre-<task>`: Before starting a task
-- `post-<task>`: After completing a task
-- `mid-<task>-<step>`: Mid-task at significant step
-- `pre-pr`: Before creating a PR
-
-## Integration with Other Skills
-
-| Skill | Integration |
-|-------|-------------|
-| `eval-harness` | Verification provides data for evaluation scoring |
-| `continuous-learning` | Verification failures become learning opportunities |
-| `strategic-compact` | Checkpoints are preserved during compaction |
-| `tdd-workflow` | Verification extends TDD with acceptance-level checks |
-| `plan-updater` | Update PLAN.md with verification progress |
-| `error-resolver-workflow` | Verification failures trigger error resolution |
-
-## Best Practices
-
-### Writing Good Verification Criteria
-- **Specific**: "Returns HTTP 401 for invalid credentials" not "Handles errors"
-- **Measurable**: "Response time < 200ms" not "Fast"
-- **Binary**: Each criterion should be clearly pass or fail
-- **Evidence-based**: Include how to verify (test, manual check, command)
-
-### Verification Cadence
-- **Per file**: Quick syntax check after editing a file
-- **Per task**: Standard check after completing a task
-- **Per phase**: Thorough check after completing a phase
-- **Pre-commit**: Standard check before committing
-- **Pre-PR**: Thorough check before creating a PR
-
-### Handling Failures
-1. Record the failure with context (what, when, expected vs actual)
-2. Classify severity (blocking vs non-blocking)
-3. Fix or document as known issue
-4. Re-verify affected criteria
-5. Run regression check
-
-## Example Usage
-
-### Verify against acceptance criteria
-
-```
-"Verify our auth implementation against issue #42 acceptance criteria"
-```
-
-The skill will:
-1. Parse acceptance criteria from the issue
-2. Map each criterion to relevant code
-3. Run checks for each criterion
-4. Report pass/fail with evidence
-5. List any unmet criteria with suggestions
-
-### Pre-PR verification
-
-```
-"Run full verification before I create the PR"
-```
-
-The skill will:
-1. Run all 5 verification levels
-2. Check all acceptance criteria
-3. Run automated checks (lint, type, test, build)
-4. Check for regressions
-5. Report full status — only proceed if all pass
-
-### Checkpoint and resume
-
-```
-"Save checkpoint before refactoring the auth module"
-```
-
-The skill will:
-1. Run current test suite
-2. Record passing state
-3. Save file list and test results
-4. After refactoring, verify against checkpoint
-
-## References
-
-- `eval-harness` - Score-based evaluation framework
-- `continuous-learning` - Learn from verification failures
-- `strategic-compact` - Preserve verification state during compaction
-- `plan-updater` - Update PLAN.md with verification progress
+- `eval-harness-skill` — score-based evaluation rubrics
+- `error-resolver-workflow-skill` — failure diagnosis when a gate goes red
+- `git-semantic-commits-skill` — commit discipline the gate protects
+- `plan-updater-skill` — PLAN progress ticks
 
 ## Iteration Protocol (opt-in)
 

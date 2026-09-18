@@ -35,34 +35,41 @@
 
 ### Phase 1: Gate contract consolidation (AC1, AC2, AC3)
 
-- [ ] **1.1** Rewrite `skills/verification-loop-skill/SKILL.md` as the canonical gate contract: command discovery order (package.json → Makefile → pyproject → README), gate sequence lint→typecheck→build→unit→e2e, scoped-lint rule ("zero NEW errors on changed files"), INCONCLUSIVE-is-not-pass verdict protocol, and gate-memo format `GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t/-/n.a>`.
+- [x] **1.1** Rewrite `skills/verification-loop-skill/SKILL.md` as the canonical gate contract: command discovery order (package.json → Makefile → pyproject → README), gate sequence lint→typecheck→build→unit→e2e, scoped-lint rule ("zero NEW errors on changed files"), INCONCLUSIVE-is-not-pass verdict protocol, and gate-memo format `GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t/-/n.a>`.
     — **Why:** every other pipeline surface defers to this file; it must land first.
     — **Done when:** contract file contains all five elements; its own restated generic checklists removed; references eval-harness-skill for scoring; preserves test-pinned invariants: `## Iteration Protocol (opt-in)` heading, `metadata.protocol: autoresearch-opt-in`, all autoresearch-core-skill citations, `DO NOT execute…` preamble exactly once with results.tsv tokens.
     — **Consumers affected:** all nodes pointing at it (1.2-1.6).
-- [ ] **1.2** `plan-automation-loop-skill`: keep the phase loop and GATE discovery mechanics, replace the restated contract wording with a pointer to verification-loop-skill; add memo-write after each green gate (into the PLAN trace block).
+    — **Done:** verification-loop-skill rewritten as canonical gate contract (sequence, discovery, scoped-lint, verdicts, memo, defer table); Iteration Protocol section verbatim; files: skills/verification-loop-skill/SKILL.md; fixes: none
+- [x] **1.2** `plan-automation-loop-skill`: keep the phase loop and GATE discovery mechanics, replace the restated contract wording with a pointer to verification-loop-skill; add memo-write after each green gate (into the PLAN trace block).
     — **Why:** it is the per-phase gate owner; memo must be written where phases complete.
     — **Done when:** file contains no self-styled contract definition beyond the pointer; memo-write step present.
     — **Consumers affected:** worktree-pipeline Step 8 wording (1.5).
-- [ ] **1.3** `pr-creation-workflow-skill`: replace the inline framework→command table with a pointer to the verification-loop contract; add memo check per the Memo surface definition (pre-creation read = PLAN trace block when a PLAN is in play; pipeline mode = orchestrator assertion; no memo for current SHA → run gates, never skip on absent evidence); fill the PR body's Quality Checks slot from the memo/assertion as the durable record.
+    — **Done:** gate restate replaced with contract pointer; memo-write added to 4c; compose line updated; files: skills/plan-automation-loop-skill/SKILL.md; fixes: none
+- [x] **1.3** `pr-creation-workflow-skill`: replace the inline framework→command table with a pointer to the verification-loop contract; add memo check per the Memo surface definition (pre-creation read = PLAN trace block when a PLAN is in play; pipeline mode = orchestrator assertion; no memo for current SHA → run gates, never skip on absent evidence); fill the PR body's Quality Checks slot from the memo/assertion as the durable record.
     — **Why:** removes duplicated table + implements AC2 skip logic at the PR boundary.
     — **Done when:** no inline command table; memo-check step present; preserves test-pinned invariants (Iteration Protocol heading, opt-in metadata, autoresearch citations, preamble-once).
     — **Consumers affected:** pr-workflow-subagent (2.3).
-- [ ] **1.4** `pr-merge-workflow-skill`: autofix response rows commit with `style:` (format) / `fix(lint):` (lint) prefixes.
+    — **Done:** inline framework table replaced with gate contract + memo check per relay ruling; files: skills/pr-creation-workflow-skill/SKILL.md; fixes: none
+- [x] **1.4** `pr-merge-workflow-skill`: autofix response rows commit with `style:` (format) / `fix(lint):` (lint) prefixes.
     — **Why:** resolves the style-only-commit clash with the atomic-commit rule (plan-automation-loop:70).
     — **Done when:** both rows name the commit type prefix; preserves test-pinned invariants (Iteration Protocol heading, opt-in metadata, autoresearch citations, preamble-once).
     — **Consumers affected:** none.
-- [ ] **1.5** `worktree-pipeline-skill`: line ~121 gate restate → pointer to verification-loop contract; Step 8 note that per-phase gates write the memo and Step 10 relies on CI only.
+    — **Done:** autofix rows now commit as fix(lint)/fix(types)/fix(test)/fix(build)/style prefixes; files: skills/pr-merge-workflow-skill/SKILL.md; fixes: none
+- [x] **1.5** `worktree-pipeline-skill`: line ~121 gate restate → pointer to verification-loop contract; Step 8 note that per-phase gates write the memo and Step 10 relies on CI only.
     — **Why:** orchestrator must not define gates, only sequence them.
     — **Done when:** no gate restatement; pointers present.
     — **Consumers affected:** none.
-- [ ] **1.6** `agents/pr-workflow-subagent.md` + `agents/linting-subagent.md` (body-only edits — no frontmatter/description changes, so no registry impact): drop own framework/command tables, defer to pr-creation-workflow-skill (PR checks) and language-linting-skill (lint execution reference); keep the pipeline-mode block (:179) coherent with the deleted framework-check sections.
+    — **Done:** step 8 gate restate to contract pointer; step 10 assertion cites final GATE memo line; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **1.6** `agents/pr-workflow-subagent.md` + `agents/linting-subagent.md` (body-only edits — no frontmatter/description changes, so no registry impact): drop own framework/command tables, defer to pr-creation-workflow-skill (PR checks) and language-linting-skill (lint execution reference); keep the pipeline-mode block (:179) coherent with the deleted framework-check sections.
     — **Why:** three lint surfaces currently allow divergent behavior; body-only keeps Phase 1 registry-clean.
     — **Done when:** agent files contain no command tables; pipeline-mode block references only surviving sections.
     — **Consumers affected:** none (description markers move to 3.1).
-- [ ] **1.7** Phase gate: `bats tests/test_default_behavior.bats tests/test_autoresearch_protocol.bats` + `node installer/build-registry.mjs --check`.
+    — **Done:** pr-workflow-subagent table dropped for contract deferral + pipeline block coherence; linting-subagent table to language-linting pointer; files: agents/pr-workflow-subagent.md agents/linting-subagent.md; fixes: none
+- [x] **1.7** Phase gate: `bats tests/test_default_behavior.bats tests/test_autoresearch_protocol.bats` + `node installer/build-registry.mjs --check`.
     — **Why:** Phase 1 rewrites files with test-pinned invariants; CI runs this check on every push, so the phase must exit green locally.
     — **Done when:** both bats files green; registry check clean.
     — **Consumers affected:** none (verification only).
+    — **Done:** bats default_behavior+autoresearch_protocol exit 0 (0 failures, 175 ok); build-registry --check OK (agents=34 skills=149 no drift); files: none; fixes: none
 
 ### Phase 2: nextjs-pr-workflow-skill deletion + consumer sync (AC4)
 
