@@ -73,38 +73,46 @@
 
 ### Phase 2: nextjs-pr-workflow-skill deletion + consumer sync (AC4)
 
-- [ ] **2.1** Fold the PR coverage-badge behavior into `skills/coverage-readme-workflow-skill/SKILL.md` as a short "PR badge comment" section (≤10 lines).
+- [x] **2.1** Fold the PR coverage-badge behavior into `skills/coverage-readme-workflow-skill/SKILL.md` as a short "PR badge comment" section (≤10 lines).
     — **Why:** the only unique feature of the deleted skill must survive it.
     — **Done when:** section present; no nextjs-specific wording.
     — **Consumers affected:** none (deletion in 2.7).
-- [ ] **2.2** Update cross-references in `skills/nextjs-unit-test-creator-skill/SKILL.md` and `skills/semantic-release-convention-skill/SKILL.md` to point at `pr-creation-workflow-skill` instead of nextjs-pr-workflow.
+    — **Done:** PR badge comment section added before Iteration Protocol; files: skills/coverage-readme-workflow-skill/SKILL.md; fixes: none
+- [x] **2.2** Update cross-references in `skills/nextjs-unit-test-creator-skill/SKILL.md` and `skills/semantic-release-convention-skill/SKILL.md` to point at `pr-creation-workflow-skill` instead of nextjs-pr-workflow.
     — **Why:** prevents dangling skill references after deletion.
     — **Done when:** `grep -rn "nextjs-pr-workflow" skills/` returns only the doomed skill dir.
     — **Consumers affected:** none.
-- [ ] **2.3** Remove every `nextjs-pr-workflow` reference from `agents/pr-workflow-subagent.md` — all four sites: frontmatter `permissions` allow rule `resource: nextjs-pr-workflow-skill` (:54), skills list (:116), and the two body notes (:161, :173).
+    — **Done:** unit-test-creator repointed to pr-creation-workflow + gate contract; semantic-release consumption row removed; files: skills/nextjs-unit-test-creator-skill/SKILL.md skills/semantic-release-convention-skill/SKILL.md; fixes: none
+- [x] **2.3** Remove every `nextjs-pr-workflow` reference from `agents/pr-workflow-subagent.md` — all four sites: frontmatter `permissions` allow rule `resource: nextjs-pr-workflow-skill` (:54), skills list (:116), and the two body notes (:161, :173).
     — **Why:** agent must not reference a deleted skill; the frontmatter permission rule is the consumer class most often missed.
     — **Done when:** `grep -rn "nextjs-pr-workflow" agents/` empty.
     — **Consumers affected:** registry.json (2.8 rebuild).
-- [ ] **2.4** Remove the `nextjs-pr-workflow` entry from `installer/presets/pack-frontend.json` (hand-edit is the only path — the generator script is gone; update the file's `$comment` header accordingly) and, if present, from the skill allowlist in `opencode_app/opencode.json`. Not in the lean skill profile (verified, `tests/skill_profiles.bats:29-33`) — no profile change needed.
+    — **Done:** all 4 sites removed (permissions rule, workflows list, chaining note, workflow step 5); files: agents/pr-workflow-subagent.md; fixes: none
+- [x] **2.4** Remove the `nextjs-pr-workflow` entry from `installer/presets/pack-frontend.json` (hand-edit is the only path — the generator script is gone; update the file's `$comment` header accordingly) and, if present, from the skill allowlist in `opencode_app/opencode.json`. Not in the lean skill profile (verified, `tests/skill_profiles.bats:29-33`) — no profile change needed.
     — **Why:** installer + runtime configs must not ship a deleted skill.
     — **Done when:** grep clean outside tests/READMEs/registry; `$comment` no longer claims generator-only edits.
     — **Consumers affected:** none.
-- [ ] **2.5** Delete the 6 `nextjs-pr-workflow` test blocks: 3 in `tests/test_default_behavior.bats` (:777, :782, :788) and 3 in `tests/test_autoresearch_protocol.bats` (:487, :492, :497).
+    — **Done:** preset entry removed + comment updated; opencode.json allowlist block removed; lean profile untouched (verified not present); files: installer/presets/pack-frontend.json opencode_app/opencode.json; fixes: none
+- [x] **2.5** Delete the 6 `nextjs-pr-workflow` test blocks: 3 in `tests/test_default_behavior.bats` (:777, :782, :788) and 3 in `tests/test_autoresearch_protocol.bats` (:487, :492, :497).
     — **Why:** tests assert on files that will no longer exist.
     — **Done when:** `grep -rn "nextjs-pr-workflow" tests/` empty; both files still parse.
     — **Consumers affected:** none.
-- [ ] **2.6** `git rm -r skills/nextjs-pr-workflow-skill`.
+    — **Done:** 6 test blocks cut (3+3); tests/ grep clean; files: tests/test_default_behavior.bats tests/test_autoresearch_protocol.bats; fixes: none
+- [x] **2.6** `git rm -r skills/nextjs-pr-workflow-skill`.
     — **Why:** the deletion itself; consumers are clean by 2.1-2.5.
     — **Done when:** directory gone from tree.
     — **Consumers affected:** README/setup counts (2.7), registry (2.8).
-- [ ] **2.7** Sync counts and listings: `README.md` AND `opencode_app/README.md` skill totals (149 → 148) + category tables. `deploy/setup.sh`/`setup.ps1` counts are dynamic (`count_skills()`) — verify no hardcoding, expected no-op.
+    — **Done:** skill directory removed via git rm; files: skills/nextjs-pr-workflow-skill/; fixes: none
+- [x] **2.7** Sync counts and listings: `README.md` AND `opencode_app/README.md` skill totals (149 → 148) + category tables. `deploy/setup.sh`/`setup.ps1` counts are dynamic (`count_skills()`) — verify no hardcoding, expected no-op.
     — **Why:** the enforcing test is `test_markitdown_skill.bats:74-110` (disk == both READMEs == registry), which the plan previously missed; `test_count_drift.bats` guards the scripts.
     — **Done when:** `bats tests/test_markitdown_skill.bats tests/test_count_drift.bats` green.
     — **Consumers affected:** deploy tests.
-- [ ] **2.8** Run `node installer/build-registry.mjs`, commit regenerated `installer/registry.json`.
+    — **Done:** both READMEs 149 to 148 (tree, overview, profile-immunity, modularization, ledger Post-#409, category 11 to 10, subagent table, tier3 15 to 14); files: README.md opencode_app/README.md; fixes: none
+- [x] **2.8** Run `node installer/build-registry.mjs`, commit regenerated `installer/registry.json`.
     — **Why:** registry is committed and must reflect the tree (repo convention after any frontmatter/skill change).
     — **Done when:** registry.json has no nextjs-pr-workflow entry; `git diff --stat` shows it regenerated.
     — **Consumers affected:** installer consumers.
+    — **Done:** registry rebuilt at agents=34 skills=148 and committed; files: installer/registry.json; fixes: none
 
 ### Phase 3: Description boundaries (AC5)
 

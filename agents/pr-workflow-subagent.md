@@ -51,9 +51,6 @@ permissions:
     resource: pr-creation-workflow-skill
     effect: allow
   - action: skill
-    resource: nextjs-pr-workflow-skill
-    effect: allow
-  - action: skill
     resource: jira-status-updater-skill
     effect: allow
   - action: skill
@@ -113,7 +110,6 @@ Common target branch patterns: main, master, develop, dev, staging, production
 
 PR Workflows by Framework:
 - pr-creation-workflow: Generic PR creation with configurable quality checks and JIRA image handling
-- nextjs-pr-workflow: Complete Next.js PR workflow with lint/build/test and coverage badges
 
 Quality Checks — defer to the contract:
 - Gate commands come from manifest discovery per `verification-loop-skill` §The gate contract — this agent owns no framework command table.
@@ -146,7 +142,7 @@ Built-in Subagent Delegation:
   - Reviewing generated diagram or screenshot diffs when they appear in the PR
 - Use `explore` via Task tool with subagent_type="explore" for discovery, `general` via subagent_type="general" for parallel work
 
-Note: Subagent-to-subagent chaining is not used here. Use `explore` for discovery tasks, `general` for parallel quality checks, `documentation-subagent` for the diff-scope docstring sweep, and `image-analyzer-subagent` for image-heavy PR artifacts. Skills handle the actual PR creation workflows (pr-creation-workflow, nextjs-pr-workflow).
+Note: Subagent-to-subagent chaining is not used here. Use `explore` for discovery tasks, `general` for parallel quality checks, `documentation-subagent` for the diff-scope docstring sweep, and `image-analyzer-subagent` for image-heavy PR artifacts. Skills handle the actual PR creation workflows (pr-creation-workflow).
 
 Workflow:
 1. Detect project framework (Next.js, Python, or other)
@@ -157,9 +153,7 @@ Workflow:
     - Re-run lint (and tests where doctests exist) after the edits, then commit docstring additions with semantic format before PR creation
 3. Generate coverage badges if applicable
 4. Update branch-specific PLAN.md (invoke plan-updater skill)
-5. Create PR using appropriate workflow:
-   - Next.js: Use nextjs-pr-workflow
-   - Generic: Use pr-creation-workflow
+5. Create PR using `pr-creation-workflow` (gate contract + memo check per `verification-loop-skill`)
 6. Update JIRA ticket with PR link (if applicable)
 7. Use skills for specialized tasks (linting, testing, docs as needed)
 8. Inform user to say "pr merge to [branch]" when ready to merge

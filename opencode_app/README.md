@@ -27,7 +27,7 @@ opencode_app/
     └── vibeguard.config.json → ../../plugins/vibeguard.config.json
 ```
 
-Content (149 skill directories, 34 agents, plugins) lives at the **repo root** and is COPY'd
+Content (148 skill directories, 34 agents, plugins) lives at the **repo root** and is COPY'd
 into `/app/.opencode/` at build time. The symlinks above exist only for
 local non-Docker serving (`restart-opencode-pm2.sh` runs `opencode serve`
 with `--cwd opencode_app`); the root `.dockerignore` keeps them out of the

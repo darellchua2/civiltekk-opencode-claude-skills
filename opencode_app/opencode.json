@@ -237,11 +237,6 @@
         },
         {
             "action": "skill",
-            "resource": "nextjs-pr-workflow-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
             "resource": "semantic-release-convention-skill",
             "effect": "allow"
         },

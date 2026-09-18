@@ -1,5 +1,5 @@
 {
-  "$comment": "Preset 'frontend' for installer/init.mjs (--preset frontend). Derived by /tmp/gen-presets.mjs from installer/registry.json; edit via the generator, not by hand.",
+  "$comment": "Preset 'frontend' for installer/init.mjs (--preset frontend). Hand-maintained (generator retired): edit by hand, keep lists sorted, keep entries in installer/registry.json.",
   "name": "frontend",
   "description": "Web frontend: Next.js specialist + UI/UX review + responsive audit, with the Next.js/React/Three.js/a11y skill stack.",
   "agents": [
@@ -17,7 +17,6 @@
     "monorepo-management-skill",
     "nextjs-devtools-mcp-skill",
     "nextjs-image-usage-skill",
-    "nextjs-pr-workflow-skill",
     "nextjs-standard-setup-skill",
     "nextjs-unit-test-creator-skill",
     "playwright-responsive-audit-skill",

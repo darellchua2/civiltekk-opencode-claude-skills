@@ -36,7 +36,6 @@ This is a **governance skill** - it defines conventions that other skills and ag
 | `git-semantic-commits` | Commit type definitions and format rules |
 | `git-compact-commits` | Length budgets (72-char subject, 150-word body), semantic grouping strategy, commitlint config authority |
 | `pr-creation-workflow` | PR title format, label mapping, merge conventions, JIRA image handling |
-| `nextjs-pr-workflow` | Inherits via `pr-creation-workflow` |
 | `git-issue-labeler` | Semver label definitions and detection |
 | `changelog-python-cliff` | Changelog category structure from commit types |
 | `version-bump-standard` | Release tag formats, branch-aware pre-release suffixes, workflow templates for dev/uat/main flow |
