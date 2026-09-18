@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.1.2](https://github.com/darellchua2/opencode-config-template/compare/v9.1.1...v9.1.2) (2026-09-18)
+
+### Bug Fixes
+
+* **pipeline:** extend pipeline-mode skip set to step 3 + supersede all restatements ([1c62d41](https://github.com/darellchua2/opencode-config-template/commit/1c62d4120ebc1f26dda7dd1edfea424979574d8b))
+
+### Code Refactoring
+
+* **pipeline:** pipeline-mode PR handoff — skip pr-workflow steps 2/2.5/4 ([6385bd1](https://github.com/darellchua2/opencode-config-template/commit/6385bd160b5640be80e97727985c7acb8e19f16d))
+* **skills:** handle refactor/DRY directly — code-review-subagent is review-only ([3099b69](https://github.com/darellchua2/opencode-config-template/commit/3099b69f7a44fc1060d4d8bd5338f84663e37941))
+
+### Documentation
+
+* **agents:** disposition step 8 in pipeline-mode block per re-review note ([1efcd2a](https://github.com/darellchua2/opencode-config-template/commit/1efcd2aa6b0b7403e70169b71d713b3f317c4a46))
+* **plan:** add PLAN-399.md for [#399](https://github.com/darellchua2/opencode-config-template/issues/399) ([7aafdf2](https://github.com/darellchua2/opencode-config-template/commit/7aafdf23425db69a2fa994cec270c3fc06e3453a))
+* **plan:** apply architecture+Mode R amendments to PLAN-399 ([74bc965](https://github.com/darellchua2/opencode-config-template/commit/74bc96514f48c656d20a3651a19d3fbfdafa990c))
+* **plan:** tick PLAN-399 acceptance criteria — all 5 satisfied ([d579398](https://github.com/darellchua2/opencode-config-template/commit/d579398cd2ae5d48bc26c0a1a32cadfdbe2f1abd))
+* **plan:** verify PLAN-399 Phase 3 — registry no-drift, scoped proofs, bats INCONCLUSIVE ([7fc5217](https://github.com/darellchua2/opencode-config-template/commit/7fc5217b5dde4974070d676d6e542c7c9eb30d64))
+
 ## [9.1.1](https://github.com/darellchua2/opencode-config-template/compare/v9.1.0...v9.1.1) (2026-09-18)
 
 ### Bug Fixes
