@@ -9,14 +9,14 @@
 From ticket #400:
 
 - [ ] bats case: multi-target entry, one target missing + one changed → `update` re-copies the changed target AND reports the entry under `updated`
-- [ ] Report line reflects per-target outcomes without double-counting entries (each entry lands in exactly one of `updated`/`unchanged`; `missing` stays a per-target detail list)
+- [ ] Report line reflects per-target outcomes without double-counting entries — entries with ≥1 present target land in exactly one of `updated`/`unchanged`; fully-missing entries report per-target `missing` only (ticket-sanctioned)
 - [ ] Full bats suite green; no behavior change to file operations (reporting only)
 
 ## Dependency & Consumer Map
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |--------------------|---------------------------|---------------------------------|-------------|
-| `installer/init.mjs` `cmdUpdate` bucket logic (~:938-960) | — | report line, `--dry-run` JSON plan, `tests/update.bats` | low |
+| `installer/init.mjs` `cmdUpdate` bucket logic (:925-967) | — | report line, `--dry-run` JSON plan, `tests/update.bats` | low |
 
 ## Implementation Phases
 
@@ -27,8 +27,8 @@ From ticket #400:
     — **Done when:** `node --check`; fake-HOME scenario: install `--target both` → remove claude dir → mutate source → `update` prints `updated 1 · ...`, JSON plan has the entry under `updated` and `name (claude)` under `missing`.
     — **Consumers affected:** `update` report line, dry-run JSON, `tests/update.bats`.
 
-- [ ] **1.2** `tests/update.bats`: new case — `add tdd-workflow-skill --target both --yes`; `rm -rf` the claude dir; append a mutation marker to the source (cp backup/restore discipline + teardown fallback); run `update`; assert report contains `updated 1`, JSON plan lists the entry under `updated` and `tdd-workflow-skill (claude)` under `missing`; assert the opencode copy carries the mutation and the claude dir stays absent
-    — **Why:** The ticket's acceptance is an executable proof of exactly this scenario.
+- [ ] **1.2** `tests/update.bats`: new case — `add tdd-workflow-skill --target both --yes`; `rm -rf` the claude dir; append a mutation marker to the source (cp backup/restore discipline + teardown fallback); run `update --dry-run` (assert JSON plan: entry under `updated`, `tdd-workflow-skill (claude)` under `missing`, claude dir still absent); then run a real `update` (assert report line `updated 1` and the stderr footer `missing: tdd-workflow-skill (claude)`); assert the opencode copy carries the mutation and the claude dir stays absent
+    — **Why:** The ticket's acceptance is an executable proof of exactly this scenario; the real run prints no JSON, so the plan requires both a dry-run pass (JSON) and a real pass (report line + footer) (REQ-1).
     — **Done when:** `bats tests/update.bats` green (7 cases).
     — **Consumers affected:** CI.
 
