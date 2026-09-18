@@ -129,38 +129,46 @@
 
 ### Phase 4: Body trims, #383 recipe (AC6)
 
-- [ ] **4.1** Trim `skills/git-issue-labeler-skill/SKILL.md` 360 → ~90 lines: keep label decision table + `gh` command contract; delete worked examples and prose repetition; freeze frontmatter byte-identical; append dated removal-note blockquote.
+- [x] **4.1** Trim `skills/git-issue-labeler-skill/SKILL.md` 360 → ~90 lines: keep label decision table + `gh` command contract; delete worked examples and prose repetition; freeze frontmatter byte-identical; append dated removal-note blockquote.
     — **Why:** largest single bloat offender (label assignment needs a table, not 1,842 words).
     — **Done when:** frontmatter hash unchanged; all `Learning:` entries verbatim; removal note present.
     — **Consumers affected:** tests grepping its literals (sweep in 4.7).
-- [ ] **4.2** Trim `skills/search-first-skill/SKILL.md`: keep the adopt/extend/compose/build decision matrix + triggers; cut exhortation prose (~318 → ~150 lines). Same preservation rules as 4.1.
+    — **Done:** 360 to ~115 lines; LABELS array, taxonomy, sync contracts, semver code, verification kept; examples/prose dropped with removal note; files: skills/git-issue-labeler-skill/SKILL.md; fixes: none
+- [x] **4.2** Trim `skills/search-first-skill/SKILL.md`: keep the adopt/extend/compose/build decision matrix + triggers; cut exhortation prose (~318 → ~150 lines). Same preservation rules as 4.1.
     — **Why:** the matrix is the payload.
     — **Done when:** same preservation checks as 4.1; preserves test-pinned invariants: `DO NOT execute…` preamble exactly once with results.tsv tokens, Iteration Protocol heading, opt-in metadata, autoresearch citations.
     — **Consumers affected:** none.
-- [ ] **4.3** Trim `skills/strategic-compact-skill/SKILL.md` and `skills/eval-harness-skill/SKILL.md`: decision rules + output contracts only. Same preservation rules.
+    — **Done:** 318 to ~105 lines; decision matrix, criteria, channels, anti-patterns kept; 4 worked examples + Best Practices dropped; files: skills/search-first-skill/SKILL.md; fixes: none
+- [x] **4.3** Trim `skills/strategic-compact-skill/SKILL.md` and `skills/eval-harness-skill/SKILL.md`: decision rules + output contracts only. Same preservation rules.
     — **Why:** guidance prose the model already knows.
     — **Done when:** same preservation checks as 4.1; eval-harness keeps its pinned preamble/protocol invariants.
     — **Consumers affected:** verification-loop pointer (eval-harness scoring boundary, from 1.1).
-- [ ] **4.4** Trim `skills/agent-introspection-debugging-skill/SKILL.md`: keep the diagnosis decision tree + config-validation commands. Same preservation rules.
+    — **Done:** strategic-compact 247 to ~80, eval-harness 284 to ~95; tiers/thresholds/protocol kept, templates/examples dropped; files: skills/strategic-compact-skill/SKILL.md skills/eval-harness-skill/SKILL.md; fixes: none
+- [x] **4.4** Trim `skills/agent-introspection-debugging-skill/SKILL.md`: keep the diagnosis decision tree + config-validation commands. Same preservation rules.
     — **Why:** 1,771 words for a diagnostic flow.
     — **Done when:** same preservation checks.
     — **Consumers affected:** none.
-- [ ] **4.5** Trim `skills/frontend-design-skill/SKILL.md`: keep the 3 AI-design-cluster red flags + anti-patterns + step skeleton; compress framework/tone/steps prose that repeats them (~2,944 → ~1,400 words). Same preservation rules.
+    — **Done:** 294 to ~105 lines; symptom/permission tables + output contract kept, 3 worked examples dropped, v1 permission refs corrected to v2 permissions array; files: skills/agent-introspection-debugging-skill/SKILL.md; fixes: none
+- [x] **4.5** Trim `skills/frontend-design-skill/SKILL.md`: keep the 3 AI-design-cluster red flags + anti-patterns + step skeleton; compress framework/tone/steps prose that repeats them (~2,944 → ~1,400 words). Same preservation rules.
     — **Why:** taste tables are the payload; the rest re-explains them.
     — **Done when:** same preservation checks as 4.1; keeps pinned preamble/protocol invariants (preamble-once with results.tsv tokens, Iteration Protocol heading, opt-in metadata, autoresearch citations).
     — **Consumers affected:** uiux-review-skill axis-13 sync note (keep the "synced with" pointer).
-- [ ] **4.6** Sweep quoted § pointers and literal strings against trimmed files (`grep -rn "<skill-name>" skills/ agents/ tests/ README.md opencode_app/README.md`), repair any pointer to a removed heading.
+    — **Done:** 421 to ~155 lines; cluster table, tokens, 13-axis check, verification kept, framework/steps prose compressed; files: skills/frontend-design-skill/SKILL.md; fixes: none (initial write missed protocol section, caught and appended before commit)
+- [x] **4.6** Sweep quoted § pointers and literal strings against trimmed files (`grep -rn "<skill-name>" skills/ agents/ tests/ README.md opencode_app/README.md`), repair any pointer to a removed heading.
     — **Why:** LEARNINGS heading-rename-syncs-quoted-pointers — trims that rename/remove headings break cross-references silently.
     — **Done when:** no dangling `§`/heading quotes into trimmed files.
     — **Consumers affected:** all trimmed files.
-- [ ] **4.7** Commit the #383 recipe file `LEARNINGS/patterns/skill-trim-verbatim-preservation.md` (exists untracked in the main checkout) so AC6's normative citation resolves in the merged tree.
+    — **Done:** pointer sweep clean — no cross-file references into removed headings; false positives only (other skills own sections); files: none; fixes: none
+- [x] **4.7** Commit the #383 recipe file `LEARNINGS/patterns/skill-trim-verbatim-preservation.md` (exists untracked in the main checkout) so AC6's normative citation resolves in the merged tree.
     — **Why:** AC6 and steps 4.1-4.5 cite this recipe; an untracked citation is a dangling reference for every future auditor.
     — **Done when:** file tracked on feat/409, content identical to the main-checkout copy.
     — **Consumers affected:** none.
-- [ ] **4.8** Run the full gate: `bats tests/` (suite), `node installer/build-registry.mjs` + commit if drifted.
+    — **Done:** LEARNINGS/patterns/skill-trim-verbatim-preservation.md tracked on feat/409 (committed 76b752b); files: LEARNINGS/patterns/skill-trim-verbatim-preservation.md; fixes: none
+- [x] **4.8** Run the full gate: `bats tests/` (suite), `node installer/build-registry.mjs` + commit if drifted.
     — **Why:** bats tests grep literal strings in skill bodies; trims can break them only detected at suite time.
     — **Done when:** suite green; registry committed.
     — **Consumers affected:** all.
+    — **Done:** full bats suite exit 0, 326 ok, 0 failures; build-registry --check OK; files: none; fixes: none
 
 ### Phase 5: Prevention + final gate (AC1-AC6 enforcement)
 
