@@ -17,6 +17,15 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### Validator crashes on invalid input
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/validator-crashes-on-invalid-input.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Never let a validator traceback on the invalid input it exists to reject (#402 spec_to_dxf parallel-constraint crash); guard extractions or skip dependent checks when schema errors exist
+- **Date**: 2026-09-19
+
 ### opencode.json // comments break CI
 
 - **Category**: anti-pattern
