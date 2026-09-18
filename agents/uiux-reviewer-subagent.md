@@ -123,6 +123,14 @@ Load `uiux-review-skill` and work through axes 1-13:
 
 Skip axis 9 (Conversion & trust) for internal tools and non-marketing surfaces.
 
+### Step 4a: Verify Requirements Coverage (ticket/PLAN-context reviews)
+
+When the delegation includes a ticket or PLAN: check that the acceptance
+criteria cover the ticket's stated UX requirements. Missing or ambiguous
+requirements become a **Requirements Gap** — never a silent assumption.
+The primary relays gaps to `requirements-specialist-subagent` (Mode R)
+for a grilling pass.
+
 ### Step 5: Synthesize and Return
 
 Merge findings from screenshot delegation and source review. Deduplicate. Apply the severity rubric. Produce the final report using the finding schema. Run the post-review learning gate.
@@ -215,6 +223,7 @@ When your task is complete, return ONLY this structure:
 **Output:** [Findings by severity + target list + screenshots reviewed + coverage state + learning entries saved: N (anti-patterns/patterns/conventions/decisions/solutions)]
 **Summary:** [2-3 sentences max describing what was done]
 **Issues:** [blockers, warnings, or "None"]
+**Requirements Gaps:** `[{source: "file:line | PLAN step | design assumption", blocked_check: "<which check could not be evaluated>", suggested_question: "...", recommended_answer: "..."}]` — Required. `[]` if none (visual-only reviews without ticket/PLAN context return `[]`).
 **Patterns applied/violated:** `[{id, status, evidence}]` — Required. `[]` if none.
 
 **Status definitions:**
