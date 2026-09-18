@@ -133,6 +133,86 @@
 - **Scope**: project
 - **Summary**: agentModel must mirror resolveAgent at both override levels (project > global > tier), incl. throw-on-malformed-JSON; changes land in both files + fake-HOME bats per level
 - **Date**: 2026-09-19
+### Unexpanded `$(cat …)` in subagent prompt + cwd on wrong branch
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/unexpanded-cat-embedding-wrong-branch-cwd.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #383 review spawn delivered literal `$(cat …)` (never expanded) while the subagent's clone sat on main without the feat/383 ref — read-only tools returned the pre-trim side; embed real `git show` output or run the reviewer in the branch worktree
+- **Date**: 2026-09-17
+
+### Literal-only stale-path greps miss variable indirection
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/literal-only-path-sweep-misses-variable-indirection.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: Path-move sweeps grepping only literal `deploy/<file>` miss `${DEPLOY_DIR}/<file>` forms — #378's setup.sh:3008 provider-models guard silently skipped post-move while all PLAN grep gates read 0; sweep the variables that resolve into the moved dir, not just literal paths
+- **Date**: 2026-09-15
+
+### Verified-stamp docs must cite every actionable claim
+
+- **Category**: convention
+- **File**: `conventions/verified-doc-claims-need-citations.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: In docs stamped "Verified against <source>", every command/env var/field path must trace to that source or carry an inference label at EACH occurrence — #385 review caught unlabeled cache-inference restated under "Why v2 dropped pruning", uncited `OPENCODE_DISABLE_AUTOCOMPACT`/`opencode stats`, and `session.warming` (actual key: top-level `warming`)
+- **Date**: 2026-09-15
+
+### Skill-content trim with verbatim preservation (#383 recipe)
+
+- **Category**: pattern
+- **File**: `patterns/skill-trim-verbatim-preservation.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: 93% SKILL.md trim recipe — frontmatter byte-identical, Learning entries verbatim, external anchors + live workflow contracts intact, dated removal-note blockquote, compose-don't-duplicate pointers
+- **Date**: 2026-09-17
+
+### bats structure pin: grep line-ordering test for shell call ordering
+
+- **Category**: pattern
+- **File**: `patterns/bats-structure-pin-call-order.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Pin call order in big shell scripts with bats grep line-number assertions (mig < deploy_content < config-only resolver) + negative grep of the removed pattern — #379's ordering rule regression net
+- **Date**: 2026-09-17
+
+### Safety snapshot gated on a side-effect-created directory
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/conditional-backup-dead-path.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: deploy_content's content-backup gate `[ -d "$BACKUP_DIR" ]` is dead in `--yes` redeploys (config-overwrite prompt auto-accepts default n → no create_backup) — snapshots must mkdir their own target
+- **Date**: 2026-09-17
+
+### Legacy manifest upgrades must probe every on-disk target
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/legacy-upgrade-target-probe.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: #379 legacy entries synthesis hashes opencode targets only — claude-target installs silently stop being updated/pruned; probe every target dir when upgrading manifests
+- **Date**: 2026-09-17
+
+### Advisory visibility checks must not run at full-catalog scale
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/advisory-check-full-catalog-noise.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: checkStrictAllowlist on `add --all`/`update` prints 100+ misleading warning lines against the default lean profile — gate per-item advisories to partial selections
+- **Date**: 2026-09-17
+
+### Adaptive review drops proactive requirements review; gaps flow via Mode R relay
+
+- **Category**: decision
+- **File**: `decisions/adaptive-review-requirements-relay.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Step 7 selects reviewers by blast-radius only; uiux gained a required Requirements Gaps field; surfaced gaps relay to requirements-specialist Mode R; Step 1 preflight guards per-skill installs
+- **Date**: 2026-09-18
 
 ---
 
