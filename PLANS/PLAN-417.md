@@ -19,7 +19,7 @@ _Before writing steps, list each touched file/module and who consumes it._
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `skills/ticket-creation-skill/templates/*.yml` | field labels defined here (canonical source) | repo-level `.github/ISSUE_TEMPLATE/` (copy source), setup-skill scaffold step, distribution channels (`deploy/setup.sh:1475` cp -r, `installer/init.mjs:397` recursive copy) | med |
+| `skills/ticket-creation-skill/templates/*.yml` | field labels defined here (canonical source) | repo-level `.github/ISSUE_TEMPLATE/` (copy source), setup-skill scaffold step, distribution channels (`installer/init.mjs:397,676,836,969` recursive copy; deploy delegates to `init.mjs add --all`) | med |
 | `.github/ISSUE_TEMPLATE/*.yml` | skill templates (byte-identity) | human contributors (browser issue form), triage label filters | low |
 | `skills/ticket-creation-skill/SKILL.md` | templates dir (labels must match tables verbatim) | primary agent runtime (ticket creation), `installer/build-registry.mjs` (frontmatter) | med |
 | `skills/opencode-repo-setup-skill/SKILL.md` | ticket skill `templates/` dir location | setup flow in target repos, `installer/build-registry.mjs` (frontmatter) | med |
@@ -57,9 +57,9 @@ Cross-module nodes exist (templates ↔ setup-skill ↔ registry build) → arch
 
 ### Phase 3: Ticket skill intake flow
 
-- [ ] **3.1** Rewrite `skills/ticket-creation-skill/SKILL.md` Step 2 as the intake cycle: classify (bug | feature | task via labeler skills) → intake (batched field collection, ask-don't-invent) → validate (required fields non-empty) → preview (rendered ticket confirmed) → submit; add field-spec tables for the bug and feature/task variants with labels matching the templates verbatim
-    — **Why:** This is the core behavioral change — the agent now runs the same required-field intake a human runs in the browser form.
-    — **Done when:** SKILL.md contains both variant tables and the 5-stage cycle; every table label string-matches a field label in the corresponding template file.
+- [ ] **3.1** Rewrite `skills/ticket-creation-skill/SKILL.md` Step 2 as the intake cycle: classify (bug | feature | task via labeler skills) → intake (batched field collection, ask-don't-invent) → validate (required fields non-empty) → preview (rendered ticket confirmed) → submit; add field-spec tables for the bug and feature/task variants with labels matching the templates verbatim; ALSO rewrite the "What I do" list and the Example Usage section so no stale 5-field intake (including Technical Notes collection) survives anywhere in the file
+    — **Why:** This is the core behavioral change — the agent now runs the same required-field intake a human runs in the browser form. Review finding W1: the old intake also lives in "What I do" (:21) and Example Usage (:254-271); leaving them teaches agents the deprecated flow.
+    — **Done when:** SKILL.md contains both variant tables and the 5-stage cycle; every table label string-matches a field label in the corresponding template file; the file no longer collects Technical Notes anywhere.
     — **Consumers affected:** primary agent runtime; `installer/build-registry.mjs` (frontmatter unchanged).
 - [ ] **3.2** Add per-platform render templates to SKILL.md: GitHub markdown body (sections mirror form headings), Jira description mapping (Bug fields; Story renders "As a… I want… so that…" + AC checklist; Task gets feature/task fields)
     — **Why:** One canonical schema with platform renderings prevents human-created and agent-created tickets drifting structurally.
@@ -78,7 +78,7 @@ Cross-module nodes exist (templates ↔ setup-skill ↔ registry build) → arch
     — **Consumers affected:** setup flow in target repos.
 - [ ] **4.2** Add extras offer + Step 3 write sub-step: copy `bug_report.yml`, `feature_request.yml`, `config.yml` from the installed ticket-creation-skill `templates/` dir into `<repo>/.github/ISSUE_TEMPLATE/`; create-if-absent only — existing files are skipped and reported, never overwritten
     — **Why:** Distributes the forms to every repo where setup runs; idempotency respects repos that already maintain their own community health files.
-    — **Done when:** SKILL.md documents the copy command, the skip-if-present rule, and the source path.
+    — **Done when:** SKILL.md documents the copy command, the skip-if-present rule, the source path, and the per-skill-install fallback: source templates dir absent → skip the offer with a note (mirrors the CodeGraph soft-skip).
     — **Consumers affected:** target repos' `.github/ISSUE_TEMPLATE/`; distribution channels.
 - [ ] **4.3** Add Step 5 report line (files written, revert = delete dir) + Jira rule block `<!-- opencode:jira-templates -->` offering Jira description templates appended to target-repo AGENTS.md on accept
     — **Why:** Setup skill reports all writes (existing convention); Jira has no repo-file equivalent, so the rule block is the symmetric application path.
@@ -91,11 +91,15 @@ Cross-module nodes exist (templates ↔ setup-skill ↔ registry build) → arch
     — **Why:** Repo contract: any SKILL.md edit must be followed by a registry rebuild and commit.
     — **Done when:** Command exits 0; `git status` shows `registry.json` either unchanged or committed.
     — **Consumers affected:** `installer/init.mjs` registry consumers.
-- [ ] **5.2** Run the bats test suite (`bats tests/`)
-    — **Why:** Skill-structure and count validators must pass after new files appear inside a skill dir.
+- [ ] **5.2** Write `tests/test_issue_template_byte_identity.bats` pinning `cmp -s` on the 3 file pairs (repo-level `.github/ISSUE_TEMPLATE/*.yml` vs `skills/ticket-creation-skill/templates/*.yml`)
+    — **Why:** Review finding W2: byte-identity verified only by a one-time `cmp` decays silently on the next edit to either copy; the repo idiom (LEARNINGS: bats-structure-pin) pins load-bearing invariants in bats.
+    — **Done when:** Test file exists and every pair assertion passes in 5.3's run.
+    — **Consumers affected:** future edits to either copy of the forms (regression net).
+- [ ] **5.3** Run the bats test suite (`bats tests/`)
+    — **Why:** Skill-structure and count validators must pass after new files appear inside a skill dir; the new byte-identity pin rides the same run.
     — **Done when:** All bats tests exit 0.
     — **Consumers affected:** none (verification only).
-- [ ] **5.3** Tick the acceptance-criteria checkboxes on GitHub issue #417 body via `gh issue edit`
+- [ ] **5.4** Tick the acceptance-criteria checkboxes on GitHub issue #417 body via `gh issue edit`
     — **Done when:** `gh issue view 417` shows all 6 checkboxes ticked.
     — **Why:** The ticket is the artifact of record; its AC must reflect verified completion before PR merge.
     — **Consumers affected:** issue #417 readers/reviewers.
@@ -106,7 +110,7 @@ Ticket carries none by design (ticket-vs-plan boundary rule). Plan-owned impleme
 
 - Do NOT parse the YAML forms at agent runtime to derive required fields — keep the field spec in SKILL.md and sync labels by verbatim match (LEARNINGS: hand-rolled YAML parsers fail on shapes richer than anticipated).
 - No frontmatter changes to either SKILL.md (descriptions/triggers unchanged) → registry output should be unchanged; rebuild anyway per contract.
-- Distribution channels need no code changes: both copy skill dirs recursively (verified at `deploy/setup.sh:1475`, `installer/init.mjs:397,676,836,969`).
+- Distribution channels need no code changes: the deploy path delegates content installs to `installer/init.mjs add --all`, and every copy path is recursive (verified `installer/init.mjs:397,676,836,969`; registry enumerates top-level skill dirs only, so a `templates/` subdir is invisible to it).
 
 ## Dependencies
 
