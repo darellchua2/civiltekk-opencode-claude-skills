@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.1.0](https://github.com/darellchua2/opencode-config-template/compare/v9.0.0...v9.1.0) (2026-09-18)
+
+### Features
+
+* **skills:** reviewer-owned requirements coverage + Mode R relay ([2c5e66c](https://github.com/darellchua2/opencode-config-template/commit/2c5e66c01b88e9879e7af7608f22139f069da44b)), closes [#397](https://github.com/darellchua2/opencode-config-template/issues/397)
+
 ## [9.0.0](https://github.com/darellchua2/opencode-config-template/compare/v8.0.0...v9.0.0) (2026-09-17)
 
 ### ⚠ BREAKING CHANGES
