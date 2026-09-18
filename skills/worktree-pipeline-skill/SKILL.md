@@ -127,8 +127,11 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    **Bounded loop: max 2
    fix-and-re-review iterations** — exhaustion → halt per §Failure Policy.
 10. **PR + cleanup**: `pr-workflow-subagent` creates the PR **target
-    `<base>`** (its step 2.5 docstring sweep and PLAN.md sync run as part of
-    it). The Task prompt MUST instruct it to include `Closes <TICKET_ID>`
+    `<base>`** — the Task prompt MUST state gates are green (pipeline mode)
+    and instruct it to skip its steps 2 / 2.5 / 4: run-plan verified the
+    gate per phase, docstrings were filled before the gate, and the PLAN is
+    ticked and committed; the CI gate below is the merge decision. The Task
+    prompt MUST instruct it to include `Closes <TICKET_ID>`
     in the PR body (keep the `#` — `Closes #366`, not `Closes 366`; must
     predate the merge).
     **CI gate**: `timeout 1800 gh pr checks <num> --watch` (GNU coreutils;
