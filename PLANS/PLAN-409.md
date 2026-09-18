@@ -6,12 +6,12 @@
 
 ## Acceptance Criteria
 
-- [ ] AC1 — `verification-loop-skill` is the single gate contract; `pr-creation-workflow`, `plan-automation-loop`, `worktree-pipeline`, `pr-workflow-subagent` defer via pointer, no restated gate tables
-- [ ] AC2 — Gate memo convention (`GATE <sha> lint=t typecheck=t …`) checked before re-runs; CI stays the only unconditional re-run
-- [ ] AC3 — `pr-merge-workflow` autofix commits use `style:`/`fix(lint):` prefixes
-- [ ] AC4 — `nextjs-pr-workflow-skill` removed; coverage badge folded into `coverage-readme-workflow-skill`; README, setup.sh/.ps1 counts, `registry.json` synced
-- [ ] AC5 — Colliding descriptions (jira-git-integration, plan-execution, verification-loop, complexity-management, git-issue-updater, test-generator-framework) carry "not for X" boundaries + trigger phrases
-- [ ] AC6 — Top body offenders (git-issue-labeler, search-first, strategic-compact, eval-harness, agent-introspection-debugging, frontend-design) trimmed per LEARNINGS #383 recipe; full bats suite green
+- [x] AC1 — `verification-loop-skill` is the single gate contract; `pr-creation-workflow`, `plan-automation-loop`, `worktree-pipeline`, `pr-workflow-subagent` defer via pointer, no restated gate tables
+- [x] AC2 — Gate memo convention (`GATE <sha> lint=t typecheck=t …`) checked before re-runs; CI stays the only unconditional re-run
+- [x] AC3 — `pr-merge-workflow` autofix commits use `style:`/`fix(lint):` prefixes
+- [x] AC4 — `nextjs-pr-workflow-skill` removed; coverage badge folded into `coverage-readme-workflow-skill`; README, setup.sh/.ps1 counts, `registry.json` synced
+- [x] AC5 — Colliding descriptions (jira-git-integration, plan-execution, verification-loop, complexity-management, git-issue-updater, test-generator-framework) carry "not for X" boundaries + trigger phrases
+- [x] AC6 — Top body offenders (git-issue-labeler, search-first, strategic-compact, eval-harness, agent-introspection-debugging, frontend-design) trimmed per LEARNINGS #383 recipe; full bats suite green
 
 ## Dependency & Consumer Map
 
@@ -172,18 +172,21 @@
 
 ### Phase 5: Prevention + final gate (AC1-AC6 enforcement)
 
-- [ ] **5.1** Add to `skills/opencode-skill-creation-skill/SKILL.md` an authoring rule: body sections must be decision rules / boundaries / commands / templates / edge cases; worked examples ≤1 per non-obvious concept, none for stdlib-level knowledge.
+- [x] **5.1** Add to `skills/opencode-skill-creation-skill/SKILL.md` an authoring rule: body sections must be decision rules / boundaries / commands / templates / edge cases; worked examples ≤1 per non-obvious concept, none for stdlib-level knowledge.
     — **Why:** prevention — future skills stay lean without audits.
     — **Done when:** rule present in the skill's authoring-checklist section.
     — **Consumers affected:** none.
-- [ ] **5.2** Add to `skills/opencode-skills-maintainer-skill/SKILL.md` two audit checks: description-without-boundary-clause, and tutorial-fence density (non-template skills >12 fences flag).
+    — **Done:** body-section-type rule + example budget + description-boundary guidance added to Content structure; pre-existing duplicate Content-structure heading merged; files: skills/opencode-skill-creation-skill/SKILL.md; fixes: none
+- [x] **5.2** Add to `skills/opencode-skills-maintainer-skill/SKILL.md` two audit checks: description-without-boundary-clause, and tutorial-fence density (non-template skills >12 fences flag).
     — **Why:** makes this review's findings mechanically detectable next time.
     — **Done when:** both checks present in its audit list.
     — **Consumers affected:** none.
-- [ ] **5.3** Final verification: full `bats tests/` green + `git status` clean + AC checklist fully ticked in PLAN and ticket body updated (`gh issue edit` closing-comment summary).
+    — **Done:** two audit checks added to Bloat check (description-without-boundary-clause; tutorial-fence density); files: skills/opencode-skills-maintainer-skill/SKILL.md; fixes: none
+- [x] **5.3** Final verification: full `bats tests/` green + `git status` clean + AC checklist fully ticked in PLAN and ticket body updated (`gh issue edit` closing-comment summary).
     — **Why:** phase gate for the last phase; ticket traceability.
     — **Done when:** suite green; PLAN-409.md all `[x]`; issue comment posted.
     — **Consumers affected:** PR body (Step 10).
+    — **Done:** full bats suite exit 0 (0 failures); build-registry --check OK (34 agents, 148 skills); files: none; fixes: none
 
 ## Technical Notes
 
