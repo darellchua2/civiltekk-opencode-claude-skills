@@ -729,6 +729,24 @@ Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See 
 
 Toggle per session: `/learnings`, `/learnings-on`, `/learnings-off`, `/learnings-refresh`. See `plugins/learnings-autoinject.README.md`.
 
+### Auto-Continue v2 (local plugin)
+
+> **OpenCode v2 status:** v2-native (`ctx.event.subscribe` + `ctx.session.prompt`) — no npm dependency, no upstream v1 plugin loads on v2. Pattern list adapted as data from MIT-licensed `developing-today/opencode-auto-continue`; `Mte90/opencode-auto-resume` (GPL) was design reference only.
+
+`plugins/opencode-auto-continue-v2.ts` makes long-running agent tasks self-heal: when a session fails with a **transient** provider error (bad request, SSE timeouts, ECONNRESET/ECONNREFUSED, idle timeout, context overflow, tool-protocol failures), it waits for the session to go idle and sends `"continue"` with exponential backoff — instead of the run dying midway. Idle-boundary only: it **never aborts a live runner**, so it cannot kill a long build that is actually working, and it **never resumes a session you cancelled** (ESC latch on `MessageAbortedError`/`session.interrupted`, lifted by your next message).
+
+| Env var | Default | Purpose |
+|---------|---------|---------|
+| `OPENCODE_AUTO_CONTINUE_ENABLED` | `true` | Global on/off |
+| `OPENCODE_AUTO_CONTINUE_MESSAGE` | `continue` | Text sent as the recovery prompt |
+| `OPENCODE_AUTO_CONTINUE_MAX_CONSECUTIVE` | `5` | Hard cap of consecutive auto-continues per session (reset by a real user message) |
+| `OPENCODE_AUTO_CONTINUE_THROTTLE_MS` | `10000` | Minimum ms between consecutive sends |
+| `OPENCODE_AUTO_CONTINUE_BASE_BACKOFF_MS` | `1000` | First retry delay (doubles per attempt) |
+| `OPENCODE_AUTO_CONTINUE_MAX_BACKOFF_MS` | `8000` | Backoff cap |
+| `OPENCODE_AUTO_CONTINUE_DEBUG` | `false` | `[opencode-auto-continue-v2]` diagnostics via the server log |
+
+Deliberately out of scope (upgrade path if real bugs demand it): busy-stall abort-first recovery (a parked prompt cannot unblock a hung v2 runner), tool-call loop fingerprinting, tool-call-as-raw-text scanning. Tests: `node --test tests/test_auto_continue_plugin.test.ts`.
+
 ### Skill Architecture
 
 Skills follow a modular architecture:
