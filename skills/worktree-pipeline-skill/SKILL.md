@@ -44,6 +44,14 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   per-ticket skip predictions (merged / `blocked-by:`), and the would-be
   `feat/<KEY>` branch + worktree names, then stop before Step 2. Read-only:
   no writes, no branch/worktree/remote mutations.
+- **Dependency preflight (per-skill installs)**: hard deps — skill
+  `plan-automation-loop-skill` (Step 8), agents `code-review-subagent`
+  (Step 9) and `pr-workflow-subagent` (Step 10). Any missing → abort
+  (`failed`) with the install hint
+  `npx github:darellchua2/opencode-config-template add <name>`. Soft deps
+  degrade with a note: `ticket-creation-skill` (only for new-work tickets,
+  Step 3), `architecture-review-subagent` / `uiux-reviewer-subagent` /
+  `requirements-specialist-subagent` (Step 7 skip-with-note rule).
 - **Ticket order = execution order** (sequential; never parallel worktrees).
   Before starting a ticket, if its body contains `blocked-by: <ref>` naming a
   ticket that is not yet merged, skip it and report why (no JIRA link
@@ -81,20 +89,30 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 7. **Plan review (§Adaptive Review)**: you triage before delegating — from
    the ticket, the PLAN's Dependency & Consumer Map, and the touched paths,
    select reviewers, then issue **parallel Task calls** for the selected
-   ones only:
-   - `requirements-specialist-subagent` iff the PLAN was **freshly
-     generated** (not an adopted draft).
+   ones only (a selected reviewer absent from this session's agent list →
+   skip it with a note; per-skill installs may not carry every reviewer):
    - `architecture-review-subagent` iff the Consumer Map has **cross-module
      nodes** (a consumer beyond the node itself).
    - `uiux-reviewer-subagent` iff **frontend signal** (tsx/jsx/vue/svelte/css
      files, components/pages/app paths, UI keywords in the diff).
-   Triage assumptions (stated, not hidden): adopted drafts receive no
-   requirements review (accepted — `/run-plan` never re-reviews either);
-   a thin Consumer Map may skip architecture review, so author the map
-   honestly at Step 6. `coverage-subagent` is NOT part of plan review — it
-   is a coverage *reporting* agent, so reviewing a pre-implementation PLAN
-   is a stage mismatch (nothing measurable exists yet). Apply findings to
-   the PLAN; re-review only when findings were structural. Zero selected
+   No proactive requirements review — requirements coverage is
+   reviewer-owned: each selected reviewer verifies the PLAN against the
+   ticket's stated requirements and emits **Requirements Gaps** for
+   anything missing or ambiguous (never a silent assumption). A thin-map
+   backend ticket may select zero reviewers — Step 9 code review
+   (unconditional) backstops.
+   **Requirements Gaps relay**: any reviewer (here or Step 9) returning a
+   non-empty `Requirements Gaps` array → relay it to
+   `requirements-specialist-subagent` **Mode R** and apply the answers to
+   the PLAN before proceeding (max 2 relay rounds — agent contract bound;
+   agent absent → surface the gaps to the user directly and proceed on
+   their answers).
+   Triage assumptions (stated, not hidden): a thin Consumer Map may skip
+   architecture review, so author the map honestly at Step 6.
+   `coverage-subagent` is NOT part of plan review — it is a coverage
+   *reporting* agent, so reviewing a pre-implementation PLAN is a stage
+   mismatch (nothing measurable exists yet). Apply findings to the
+   PLAN; re-review only when findings were structural. Zero selected
    reviewers → skip delegation entirely.
 8. **Execute**: run `/run-plan PLANS/PLAN-${KEY}.md`
    (`plan-automation-loop-skill`) **inside the worktree** — always pass the
@@ -104,7 +122,9 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 9. **Code review**: `code-review-subagent` has `bash: deny` — **you compute
    the diff** (`git diff origin/<base>...feat/<KEY>` and `--stat`) and embed
    it (file list + hunks) in the Task prompt. Fix findings: severity ≥
-   Major mandatory; Minor by judgment. **Bounded loop: max 2
+   Major mandatory; Minor by judgment. Relay any non-empty
+   `Requirements Gaps` array per Step 7's relay rule before fixing.
+   **Bounded loop: max 2
    fix-and-re-review iterations** — exhaustion → halt per §Failure Policy.
 10. **PR + cleanup**: `pr-workflow-subagent` creates the PR **target
     `<base>`** (its step 2.5 docstring sweep and PLAN.md sync run as part of
@@ -231,7 +251,9 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
    (line number + text), fix, re-check. Gate must pass with zero malformed
    steps.
 4. Also verify: Dependency & Consumer Map section exists; phase ordering
-   matches the map's constraints.
+   matches the map's constraints; every Acceptance Criterion is addressed
+   by ≥1 implementation step (catches silently forgotten requirements at
+   authoring time — belt for thin-map tickets that select zero reviewers).
 
 ### 6e. Commit and push the PLAN
 
@@ -262,7 +284,8 @@ file would be lost on worktree removal, which is why this step pushes it.
 - **Abort remaining tickets** — no override; per-ticket status report.
 - **Return Contract semantics**: `partial` for any halt after a ticket has
   started; `failed` is reserved for pre-execution failures (invalid base
-  branch, zero tickets resolved).
+  branch, zero tickets resolved, missing hard dependency from Step 1's
+  preflight).
 
 ## Guarantees
 
