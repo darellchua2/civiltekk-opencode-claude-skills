@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.3.1](https://github.com/darellchua2/opencode-config-template/compare/v9.3.0...v9.3.1) (2026-09-18)
+
+### Code Refactoring
+
+* **skills:** consolidate verification gates, trim skill estate ([#409](https://github.com/darellchua2/opencode-config-template/issues/409)) ([#419](https://github.com/darellchua2/opencode-config-template/issues/419)) ([a424ed9](https://github.com/darellchua2/opencode-config-template/commit/a424ed978e4ed0d8cce657d151fca6190f7239be)), closes [#383](https://github.com/darellchua2/opencode-config-template/issues/383)
+
 ## [9.3.0](https://github.com/darellchua2/opencode-config-template/compare/v9.2.1...v9.3.0) (2026-09-18)
 
 ### Features
