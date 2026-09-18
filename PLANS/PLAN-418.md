@@ -6,12 +6,12 @@
 
 ## Acceptance Criteria
 
-- [ ] AC1 — `plugins/opencode-auto-continue-v2.ts` ships as plain `{ id, setup }` default export (no `@opencode/plugin` runtime dep), matching the `vibeguard.ts` convention
-- [ ] AC2 — Listens via `ctx.event.subscribe({ signal })`; matches a curated retryable error-pattern list; excludes `MessageAbortedError`/`operation was aborted` + ESC latch via `session.interrupted`
-- [ ] AC3 — On idle: `ctx.session.prompt("continue")` with exponential backoff (1s→8s cap), 10s cooldown, max 5 consecutive auto-continues; counter resets on a real user message
-- [ ] AC4 — Env-configurable (`OPENCODE_AUTO_CONTINUE_*`), debug via `OPENCODE_AUTO_CONTINUE_DEBUG=1`, logging via `ctx.client.app.log()` only
-- [ ] AC5 — Deploys via existing `deploy_plugins()` with zero setup.sh changes; README section with v2 status note
-- [ ] AC6 — Out-of-scope recovery paths (busy-stall abort-first, tool-loop detection, tool-as-text scanning) documented as upgrade path in the plugin header
+- [x] AC1 — `plugins/opencode-auto-continue-v2.ts` ships as plain `{ id, setup }` default export (no `@opencode/plugin` runtime dep), matching the `vibeguard.ts` convention
+- [x] AC2 — Listens via `ctx.event.subscribe({ signal })`; matches a curated retryable error-pattern list; excludes `MessageAbortedError`/`operation was aborted` + ESC latch via `session.interrupted`
+- [x] AC3 — On idle: `ctx.session.prompt("continue")` with exponential backoff (1s→8s cap), 10s cooldown, max 5 consecutive auto-continues; counter resets on a real user message
+- [x] AC4 — Env-configurable (`OPENCODE_AUTO_CONTINUE_*`), debug via `OPENCODE_AUTO_CONTINUE_DEBUG=1`, logging via `ctx.client.app.log()` only
+- [x] AC5 — Deploys via existing `deploy_plugins()` with zero setup.sh changes; README section with v2 status note
+- [x] AC6 — Out-of-scope recovery paths (busy-stall abort-first, tool-loop detection, tool-as-text scanning) documented as upgrade path in the plugin header
 
 ## Dependency & Consumer Map
 
@@ -71,10 +71,11 @@ No in-repo module consumes the plugin's exports besides its test — the sole ru
 
 ### Phase 4: Verification gate
 
-- [ ] **4.1** Run the gate: `node --test tests/test_auto_continue_plugin.test.ts`, plugin import smoke (`node -e "await import('./plugins/opencode-auto-continue-v2.ts')"`), and `bats tests/test_count_drift.bats`; fix any failure before commit.
+- [x] **4.1** Run the gate: `node --test tests/test_auto_continue_plugin.test.ts`, plugin import smoke (`node -e "await import('./plugins/opencode-auto-continue-v2.ts')"`), and `bats tests/test_count_drift.bats`; fix any failure before commit.
     — **Why:** repo has no tsc/eslint for plugin TS (verified: package.json scripts absent, no typescript in node_modules); CI is the authoritative type gate, the local gate is logic + loadability + count drift.
     — **Done when:** all three commands exit 0 in the worktree.
     — **Consumers affected:** none.
+    — **Done:** 12/12 tests pass, import smoke OK, count-drift OK; files: none (gate-only phase); fixes: none
 
 ## Technical Notes
 
