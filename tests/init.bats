@@ -208,3 +208,32 @@ EOC
   echo "$output" | grep -q "deprecated"
   [ -f "$HOME/.claude/skills/tdd-workflow-skill/SKILL.md" ]
 }
+
+# ---- #401: project-scope installs honor agent-overrides.json (project > global > tier) ----
+
+@test "project install honors a global agent-overrides.json pin (#401a)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME/.config/opencode"
+  echo '{"explorer-subagent": {"model": "test/global-pin"}}' > "$HOME/.config/opencode/agent-overrides.json"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  grep -q "^model: test/global-pin$" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
+}
+
+@test "project-level pin outranks the global pin (#401b)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME/.config/opencode"
+  echo '{"explorer-subagent": {"model": "test/global-pin"}}' > "$HOME/.config/opencode/agent-overrides.json"
+  mkdir -p "$TMP_PROJ/.opencode"
+  echo '{"explorer-subagent": {"model": "test/project-pin"}, "code-review-subagent": {"model": "test/other-pin"}}' > "$TMP_PROJ/.opencode/agent-overrides.json"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  grep -q "^model: test/project-pin$" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
+  ! grep -q "test/global-pin" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
+  ! grep -q "test/other-pin" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
+}
+
+@test "project install with no pins injects the tier default by value (#401c)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  grep -q "^model: zai-coding-plan/glm-5.3-flash$" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
+}

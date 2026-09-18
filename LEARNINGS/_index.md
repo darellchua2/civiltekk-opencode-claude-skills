@@ -116,9 +116,17 @@
 - **Summary**: Path moves (#381): anchor CI `npm pack` grep gates to package-root paths (substring matches false-green); config files consumed via search-path chains (vibeguard.ts) need bridge symlink / explicit COPY per runtime
 - **Date**: 2026-09-14
 
+### init.mjs agentModel ↔ resolve-models resolveAgent precedence parity
+
+- **Category**: convention
+- **File**: `conventions/agent-override-precedence-parity.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: agentModel must mirror resolveAgent at both override levels (project > global > tier), incl. throw-on-malformed-JSON; changes land in both files + fake-HOME bats per level
+- **Date**: 2026-09-19
+
 ---
 
-**Storage paths:**
 - Project-level: `LEARNINGS/` (this directory, git-committed)
 - User-level: `~/.config/opencode/learnings/` (personal, cross-project)
 - Searchable memory: `memory` tool (primary for quick retrieval)

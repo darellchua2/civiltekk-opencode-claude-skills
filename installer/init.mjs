@@ -273,9 +273,13 @@ async function tierToModel(tier, provider) {
   if (tier === "primary") return m.primary;
   return (m.tiers && m.tiers[tier]) || null;
 }
-// Per-agent pin beats tier resolution (mirrors resolve-models.mjs global
-// agent-overrides precedence — the project-level map is N/A at user scope).
-async function agentModel(stem, tier, provider) {
+// Per-agent pin beats tier resolution (mirrors resolve-models.mjs resolveAgent
+// precedence: project override > global override > tier model). projectOverrides
+// is the target project's .opencode/agent-overrides.json (read once by
+// writeInstall); null at user scope where the project map is N/A.
+async function agentModel(stem, tier, provider, projectOverrides = null) {
+  if (projectOverrides && projectOverrides[stem] && projectOverrides[stem].model)
+    return projectOverrides[stem].model;
   const ov = await readJsonMaybe(join(USER_OC, "agent-overrides.json"));
   if (ov && ov[stem] && ov[stem].model) return ov[stem].model;
   return tierToModel(tier, provider);
@@ -379,14 +383,15 @@ export async function writeInstall(sel, opts, reg, depMap) {
   // write agents + skills
   await mkdir(agentsDir, { recursive: true });
   await mkdir(skillsDir, { recursive: true });
-  const tierModels = {}; // tier -> model (cache)
+  const tierModels = {}; // tier -> model (cache; feeds the models.json artifact below)
+  const projectOverrides = await readJsonMaybe(join(ocDir, "agent-overrides.json")); // #401
   for (const a of plan.agents) {
     await mkdir(dirname(a.dst), { recursive: true });
     let content = await readFile(a.src, "utf8");
     const agentReg = reg.agents.find((x) => x.stem === a.stem);
     const tier = agentReg?.tier || "unassigned";
     if (!tierModels[tier]) tierModels[tier] = await tierToModel(tier, opts.provider);
-    content = injectModelLine(content, tierModels[tier]);
+    content = injectModelLine(content, await agentModel(a.stem, tier, opts.provider, projectOverrides));
     await writeFile(a.dst, content, "utf8");
   }
   for (const s of plan.skills) { await mkdir(dirname(s.dst), { recursive: true }); await cp(s.src, s.dst, { recursive: true, force: true }); }
