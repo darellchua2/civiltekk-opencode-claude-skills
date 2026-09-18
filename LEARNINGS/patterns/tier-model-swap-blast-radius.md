@@ -9,6 +9,7 @@
 5. SKILL prose that routes work to the tier: error-resolver-workflow, opencode-agent-creation (templates new agents — stale pin replicates), zai-vision-analysis
 6. Human docs tier tables: AGENTS.md, README.md
 7. **Hardcoded model echoes in deploy scripts** — e.g. `setup.sh --status` prints `Model: zai-coding-plan/glm-4.7` (line ~3793); grep `deploy/*.sh`, `*.ps1` for the old model id, not just JSON
+8. Value-pinned test assertions — `tests/init.bats` #401c asserts the fast-tier model by value (`zai-coding-plan/glm-5.3-flash`); a tier swap must update that line too (added by #401)
 **Rationale**: Config-driven resolution hides prose dependencies; a stale SKILL.md or script echo keeps routing/presenting the retired model after the JSON is correct.
 **Verification commands**:
 - `node deploy/build-registry.mjs --check` (registry drift)

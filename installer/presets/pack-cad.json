@@ -1,7 +1,7 @@
 {
-  "$comment": "Preset 'cad' for installer/init.mjs (--preset cad). Derived by /tmp/gen-presets.mjs from installer/registry.json; edit via the generator, not by hand.",
+  "$comment": "Preset 'cad' for installer/init.mjs (--preset cad). Derived from installer/registry.json (original /tmp/gen-presets.mjs generator retired); hand-edits must match the registry's cad-family skill set exactly.",
   "name": "cad",
-  "description": "CAD/engineering/hardware: cad-specialist orchestrating 14 CAD/engineering skills (STEP/STL/G-code/URDF/Civil 3D/Open3D).",
+  "description": "CAD/engineering/hardware: cad-specialist orchestrating 15 CAD/engineering skills (STEP/STL/G-code/URDF/Civil 3D/Open3D/drawing redraw).",
   "agents": [
     "cad-specialist-subagent"
   ],
@@ -19,7 +19,8 @@
     "cad-urdf-skill",
     "cad-viewer-skill",
     "civil-3d-skill",
-    "open3d-skill"
+    "open3d-skill",
+    "cad-redraw-skill"
   ],
   "mcps": []
 }
