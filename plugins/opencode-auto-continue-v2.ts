@@ -61,7 +61,9 @@ function envBool(value: string | undefined, fallback: boolean): boolean {
 }
 
 function envInt(value: string | undefined, fallback: number, min = 0): number {
-  const n = Number(String(value ?? '').trim());
+  const raw = String(value ?? '').trim();
+  if (raw === '') return fallback;
+  const n = Number(raw);
   if (!Number.isFinite(n) || n < min) return fallback;
   return Math.floor(n);
 }

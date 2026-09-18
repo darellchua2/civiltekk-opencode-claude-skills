@@ -55,10 +55,11 @@ No in-repo module consumes the plugin's exports besides its test — the sole ru
 
 ### Phase 2: Runnable check
 
-- [ ] **2.1** Add `tests/test_auto_continue_plugin.test.ts` using `node:test` + native type stripping, covering: exclusion patterns beat match patterns, ESC latch blocks until user message, backoff sequence and cap, consecutive-cap enforcement and user-message reset, config normalization defaults (AC2, AC3).
+- [x] **2.1** Add `tests/test_auto_continue_plugin.test.ts` using `node:test` + native type stripping, covering: exclusion patterns beat match patterns, ESC latch blocks until user message, backoff sequence and cap, consecutive-cap enforcement and user-message reset, config normalization defaults (AC2, AC3).
     — **Why:** the repo's only non-trivial logic in this change lives in the classifier and retry engine; one test file is the smallest check that fails if it breaks (no bats — no shell paths change).
     — **Done when:** `node --test tests/test_auto_continue_plugin.test.ts` exits 0.
     — **Consumers affected:** verification gate (4.1).
+    — **Done:** 12 tests incl. 4 fake-ctx runtime scenarios (retry-on-idle, ESC latch, cap+reset, non-retryable silence); files: tests/test_auto_continue_plugin.test.ts; fixes: envInt returned 0 for unset min-0 vars (throttleMs default) — empty-string guard added
 
 ### Phase 3: Docs
 
