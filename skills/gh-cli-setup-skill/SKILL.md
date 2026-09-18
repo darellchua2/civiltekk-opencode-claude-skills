@@ -1,10 +1,10 @@
 ---
 name: gh-cli-setup-skill
 description: >-
-  GitHub CLI missing or unauthenticated — per-OS install (brew/apt/dnf/
-  winget), gh auth login, auth verification, repo-scope check. Fallback for
-  ticket and PR flows when `command -v gh` fails. Triggers: gh not installed,
-  install github cli, gh auth login, gh setup.
+  GitHub CLI missing or unauthenticated — per-OS install
+  (brew/apt/dnf/winget), gh auth login, auth verification, repo-scope
+  check. Fallback for ticket and PR flows when `command -v gh` fails.
+  Triggers: gh not installed, install github cli, gh auth login, gh setup.
 license: Apache-2.0
 compatibility: opencode
 category: Git/Workflow
