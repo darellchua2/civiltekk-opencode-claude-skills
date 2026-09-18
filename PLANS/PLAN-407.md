@@ -65,18 +65,21 @@
     — **Done:** two entries removed from pack-business preset; JSON valid; files: installer/presets/pack-business.json; fixes: none
 
 ### Phase 3: Deletion, counts, registry (land together — no red intermediate commit)
-- [ ] **3.1** `git rm -r skills/grill-me-skill skills/grill-with-docs-skill`
+- [x] **3.1** `git rm -r skills/grill-me-skill skills/grill-with-docs-skill`
     — **Why:** both are pure routers with zero unique interview knowledge; keeping them guarantees drift. Placed here so the Phase 3 commit contains deletion + count re-pin + registry regen together (reviewer WARN: intermediate red commits make bisect guesswork)
     — **Done when:** both directories absent from `git ls-files`
     — **Consumers affected:** all swept in Phase 2; count sites re-pinned in 3.2
-- [ ] **3.2** Update root `README.md` (149 → 147 at four count sites; Skill Categories table is one row per category — edit the **Planning & Alignment** row: drop the two names from the cell, `(4)` → `(2)`, rewrite the grilling-skill cell description to the modes form; append migration-history note `Post-#407: −2 grill routers (merged into grilling-skill modes) → 147`) AND `opencode_app/README.md` line 30 (`149 skill directories` → `147`)
+    — **Done:** git rm of both router dirs; absent from git ls-files; files: skills/grill-me-skill/ skills/grill-with-docs-skill/ (deleted); fixes: none
+- [x] **3.2** Update root `README.md` (149 → 147 at four count sites; Skill Categories table is one row per category — edit the **Planning & Alignment** row: drop the two names from the cell, `(4)` → `(2)`, rewrite the grilling-skill cell description to the modes form; append migration-history note `Post-#407: −2 grill routers (merged into grilling-skill modes) → 147`) AND `opencode_app/README.md` line 30 (`149 skill directories` → `147`)
     — **Why:** BT-157 marks counts hand-maintained; `tests/test_markitdown_skill.bats:95-102` greps BOTH files against disk count — missing opencode_app leaves red CI and a wrong Docker-docs claim
     — **Done when:** no `149` skill-count hits remain in either README (`grep -n 149 README.md opencode_app/README.md` shows no skill-directory hits); Planning & Alignment row shows `(2)`
     — **Consumers affected:** README readers, doc-consistency checks, CI
-- [ ] **3.3** Run `node installer/build-registry.mjs` and verify `installer/registry.json` no longer contains the deleted skills
+    — **Done:** 149→147 at 4 root sites + migration-history line + Planning & Alignment row (4)→(2) + opencode_app/README.md:30; no 149 skill-count hits remain in either file; files: README.md opencode_app/README.md; fixes: none
+- [x] **3.3** Run `node installer/build-registry.mjs` and verify `installer/registry.json` no longer contains the deleted skills
     — **Why:** registry is generated — hand edits would be overwritten; AC requires regeneration + commit
     — **Done when:** build exits 0; `grep -c "grill-me-skill\|grill-with-docs-skill" installer/registry.json` → 0
     — **Consumers affected:** installer `add`, preset validation
+    — **Done:** build-registry regenerated (agents=34, skills=147); zero router refs in registry.json; files: installer/registry.json; fixes: none
 
 ### Phase 4: Verification gate
 - [ ] **4.1** Repo-wide sweep: `grep -rn "grill-me-skill\|grill-with-docs-skill"` excluding `_archived/`, `node_modules/`, `.git/`, and this PLAN file → zero hits; plus bare-fragment sweep (`grill-me`, `grill-with-docs`) for variable indirection. Note: `domain-modeling-skill` is NOT in this sweep — its zero-string rule is scoped to `skills/grilling-skill/SKILL.md` only (verified in 1.1)
