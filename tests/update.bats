@@ -83,6 +83,36 @@ EOF
   [ ! -d "${HOME}/.config/opencode/skills/ghost-skill" ]
 }
 
+@test "update: partial target missing + source changed re-copies and reports updated (#400)" {
+  # re-add at --target both so the entry has opencode + claude targets
+  $INIT add tdd-workflow-skill --target both --yes >/dev/null 2>&1
+  rm -rf "${HOME}/.claude/skills/tdd-workflow-skill"
+  cp "$SKILL_SRC" "${SKILL_SRC}.bats-bak"
+  echo "bats partial marker" >> "$SKILL_SRC"
+
+  # dry-run: JSON plan must show entry under updated + (claude) under missing
+  run $INIT update --dry-run
+  cp "${SKILL_SRC}.bats-bak" "$SKILL_SRC"
+  [ "$status" -eq 0 ]
+  echo "$output" | python3 -c "
+import json, sys
+plan = json.load(sys.stdin)
+assert plan['updated'] == ['tdd-workflow-skill'], f\"updated bucket: {plan['updated']}\"
+assert 'tdd-workflow-skill (claude)' in plan['missing'], f\"missing detail: {plan['missing']}\"
+"
+
+  # real run: report line counts it under updated; footer lists the missing target
+  echo "bats partial marker" >> "$SKILL_SRC"
+  run $INIT update
+  cp "${SKILL_SRC}.bats-bak" "$SKILL_SRC"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "updated 1"
+  echo "$output" | grep -q "missing: tdd-workflow-skill (claude)"
+  # the opencode target was re-copied with the mutation; claude stays absent
+  grep -q "bats partial marker" "${HOME}/.config/opencode/skills/tdd-workflow-skill/SKILL.md"
+  [ ! -d "${HOME}/.claude/skills/tdd-workflow-skill" ]
+}
+
 @test "update: legacy manifest without entries upgrades cleanly" {
   python3 - "$MANIFEST" <<'EOF'
 import json, sys
