@@ -116,18 +116,21 @@ Cross-module consumers exist (registry ← frontmatter, presets ← registry, ro
 
 ### Phase 4: Agent routing
 
-- [ ] **4.0** Read `LEARNINGS/conventions/task-delegate-permission-sync.md` and apply its 4-sync-surfaces + delegate-ceiling checklist to this phase before editing
+- [x] **4.0** Read `LEARNINGS/conventions/task-delegate-permission-sync.md` and apply its 4-sync-surfaces + delegate-ceiling checklist to this phase before editing
     — **Why:** the learning documents exactly this class of change (permission/task delegate edits) and its known blast radius
     — **Done when:** checklist items mapped to steps 4.1–4.3 in the phase notes
     — **Consumers affected:** all Phase 4 edits
-- [ ] **4.1** Edit `agents/cad-specialist-subagent.md`: add the `cad-redraw-skill` skill allow rule after the existing cad rules (order matters — last match wins), update the description count 14 → 15, add a routing line (source-DWG/PDF/image redraw → cad-redraw-skill; 3D solids → cad-generation-skill)
+    — **Done:** learning read; checklist mapped — this change touches permission.skill (not permission.task): surfaces = agent frontmatter rule, registry regen (rides commit), README:641 delegation row, agent body Purpose/Trigger prose; ceiling check clear (cad-specialist bash:allow runs scripts itself, no bash-denied delegate asked to diff/lint/commit); files: none; fixes: none
+- [x] **4.1** Edit `agents/cad-specialist-subagent.md`: add the `cad-redraw-skill` skill allow rule after the existing cad rules (order matters — last match wins), update the description count 14 → 15, add a routing line (source-DWG/PDF/image redraw → cad-redraw-skill; 3D solids → cad-generation-skill)
     — **Why:** the skill is subagent-only like the whole CAD family; without the allow rule and routing the skill is dead weight
     — **Done when:** grep shows 15 `action: skill` rules including `cad-redraw-skill`, description reads 15, routing line present; `node installer/build-registry.mjs` rerun so `--check` exits 0 (agent frontmatter is scanned into the registry — same per-commit invariant as step 1.1)
     — **Consumers affected:** opencode agent loader, registry frontmatter scan, pack-cad description
-- [ ] **4.2** Sweep `README.md` (Subagents table) and `deploy/setup.sh` / `deploy/setup.ps1` help text for hardcoded "14"/skill-count claims tied to cad-specialist and sync any found
+    — **Done:** allow rule added after open3d-skill (15 rules total), description 14→15 with redraw mention, Purpose bullet + 5 trigger phrases added to body; registry rebuilt in-commit (--check green); files: agents/cad-specialist-subagent.md, installer/registry.json; fixes: DWF→DXF typo caught and corrected in the new Purpose bullet pre-commit
+- [x] **4.2** Sweep `README.md` (Subagents table) and `deploy/setup.sh` / `deploy/setup.ps1` help text for hardcoded "14"/skill-count claims tied to cad-specialist and sync any found
     — **Why:** stale counts fail documentation-consistency checks and mislead `npx add` users
     — **Done when:** `grep -rnE "orchestrat(es|ing) 14" README.md deploy/` returns nothing (installer/ surfaces are owned by 5.2/5.4, which run after pack-cad lands)
     — **Consumers affected:** deploy users, doc-consistency gates
+    — **Done:** README preset row (266) 14→15 and Subagents row (641) 14→15 + cad-redraw appended to delegation list; setup.sh/ps1 verified count-free ("design orchestration" carries no number); sweep grep CLEAN; files: README.md; fixes: none
 
 ### Phase 5: Registry and docs sync
 

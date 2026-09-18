@@ -263,7 +263,7 @@ Not every project needs all 34 agents + 149 skills. <!-- count: hand-maintained 
 | `devops` | repo-ops + opentofu-explorer | 32 (release/IaC/JIRA) | codegraph | Git / infra / release |
 | `business` | startup-founder + ceo + discovery + requirements + technical-design | 36 (BD/pitch/planning) | — | BD / founder workflows |
 | `research` | autoresearch-{ml,code,research} + loop-operator | 12 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
-| `cad` | cad-specialist | 14 (CAD & Hardware Design) | — | CAD / robotics / hardware |
+| `cad` | cad-specialist | 15 (CAD & Hardware Design) | — | CAD / robotics / hardware |
 
 Member counts include transitive deps auto-pulled by the resolver (a preset's agent frontmatter `permissions` rules — `task`-action delegates and `skill`-action requirements). Run `opencode-init --expand <preset>` to see the exact resolved set.
 
@@ -638,7 +638,7 @@ This repository implements **skill modularization** with 149 skills organized ac
 | **image-analyzer-subagent** | Image analysis (native multimodal `zai-coding-plan/glm-5.3-flash`) | (built-in vision) | — |
 | **zai-media-subagent** | Media production: image/video generation, audio transcription, OCR via Z.AI PAYG skills; artifacts saved to disk, file paths returned | zai-image-generation, zai-video, zai-asr, zai-ocr | — |
 | **responsive-audit-subagent** | Responsive UI audit and fix | playwright-responsive-audit-skill | `explore`, `general`, `image-analyzer-subagent` |
-| **cad-specialist-subagent** | CAD, robotics, hardware design — orchestrates 14 CAD/engineering skills | cad-generation, cad-viewer, cad-step-parts, cad-dxf, cad-urdf, cad-srdf, cad-sdf, cad-sendcutsend, cad-gcode, cad-bambu-labs, cad-implicit, autodesk-aps-skill, civil-3d-skill, open3d-skill | — |
+| **cad-specialist-subagent** | CAD, robotics, hardware design — orchestrates 15 CAD/engineering skills | cad-generation, cad-viewer, cad-step-parts, cad-dxf, cad-urdf, cad-srdf, cad-sdf, cad-sendcutsend, cad-gcode, cad-bambu-labs, cad-implicit, autodesk-aps-skill, civil-3d-skill, open3d-skill, cad-redraw | — |
 | **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) | — |
 | **pptx-specialist-subagent** | PowerPoint presentations (read, create, edit, analyze) | pptx-generate-slide, pptx-generate-template, pptx-template-modifier | — |
 | **xlsx-specialist-subagent** | Spreadsheets (read, create, edit, analyze) | xlsx-specialist | — |
