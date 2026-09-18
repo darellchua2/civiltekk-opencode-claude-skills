@@ -9,7 +9,7 @@
 From ticket #400:
 
 - [x] bats case: multi-target entry, one target missing + one changed → `update` re-copies the changed target AND reports the entry under `updated`
-- [x] Report line reflects per-target outcomes without double-counting entries — entries with ≥1 present target land in exactly one of `updated`/`unchanged`; fully-missing entries report per-target `missing` only (ticket-sanctioned)
+- [x] Report line reflects per-target outcomes without double-counting entries — entries with no missing target land in exactly one of `updated`/`unchanged`; a partially-missing entry counts under `updated` iff a present target changed (its missing target stays in `missing` detail); a fully-missing entry reports per-target `missing` only (ticket-sanctioned)
 - [x] Full bats suite green; no behavior change to file operations (reporting only)
 
 ## Dependency & Consumer Map
