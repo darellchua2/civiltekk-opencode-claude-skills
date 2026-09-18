@@ -35,7 +35,7 @@
 
 ### Phase 1: Gate contract consolidation (AC1, AC2, AC3)
 
-- [x] **1.1** Rewrite `skills/verification-loop-skill/SKILL.md` as the canonical gate contract: command discovery order (package.json → Makefile → pyproject → README), gate sequence lint→typecheck→build→unit→e2e, scoped-lint rule ("zero NEW errors on changed files"), INCONCLUSIVE-is-not-pass verdict protocol, and gate-memo format `GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t/-/n.a>`.
+- [x] **1.1** Rewrite `skills/verification-loop-skill/SKILL.md` as the canonical gate contract: command discovery order (package.json → Makefile → pyproject → README), gate sequence lint→typecheck→build→unit→e2e, scoped-lint rule ("zero NEW errors on changed files"), INCONCLUSIVE-is-not-pass verdict protocol, and gate-memo format `GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t|-|n.a>`.
     — **Why:** every other pipeline surface defers to this file; it must land first.
     — **Done when:** contract file contains all five elements; its own restated generic checklists removed; references eval-harness-skill for scoring; preserves test-pinned invariants: `## Iteration Protocol (opt-in)` heading, `metadata.protocol: autoresearch-opt-in`, all autoresearch-core-skill citations, `DO NOT execute…` preamble exactly once with results.tsv tokens.
     — **Consumers affected:** all nodes pointing at it (1.2-1.6).
@@ -163,7 +163,7 @@
     — **Why:** AC6 and steps 4.1-4.5 cite this recipe; an untracked citation is a dangling reference for every future auditor.
     — **Done when:** file tracked on feat/409, content identical to the main-checkout copy.
     — **Consumers affected:** none.
-    — **Done:** LEARNINGS/patterns/skill-trim-verbatim-preservation.md tracked on feat/409 (committed 76b752b); files: LEARNINGS/patterns/skill-trim-verbatim-preservation.md; fixes: none
+    — **Done:** recipe file now tracked on feat/409 (initially claimed committed in 76b752b — that commit was the phase-commit learning; recipe added post-review); files: LEARNINGS/patterns/skill-trim-verbatim-preservation.md; fixes: 1 (code-review WARN: false Done-claim)
 - [x] **4.8** Run the full gate: `bats tests/` (suite), `node installer/build-registry.mjs` + commit if drifted.
     — **Why:** bats tests grep literal strings in skill bodies; trims can break them only detected at suite time.
     — **Done when:** suite green; registry committed.
@@ -196,7 +196,7 @@ AC1's ten gate-truth surfaces (ticket #409 audit): (1) verification-loop-skill �
 
 ### Memo surface definition (requirements relay ruling, Gap 2)
 
-`/run-plan` writes `GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t/-/n.a>` memos into the PLAN trace block after each green gate (1.2); at the PR boundary the memo check reads that trace block when a PLAN is in play, and in pipeline mode — where pr-workflow-subagent receives no PLAN path — the orchestrator's explicit green-gates assertion in the Task prompt counts as the memo, with 1.5's Step-10 edit making that assertion cite the final GATE line for the pushed SHA. Standalone runs with no memo for the current tree SHA run the gates — skipping on absent evidence is forbidden. pr-creation-workflow fills the PR body's existing Quality Checks slot (SKILL.md:41) from the memo/assertion so the SHA→green record survives into the PR for later re-run decisions; CI (`gh pr checks`) stays the only unconditional re-run.
+`/run-plan` writes `GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t|-|n.a>` memos into the PLAN trace block after each green gate (1.2); at the PR boundary the memo check reads that trace block when a PLAN is in play, and in pipeline mode — where pr-workflow-subagent receives no PLAN path — the orchestrator's explicit green-gates assertion in the Task prompt counts as the memo, with 1.5's Step-10 edit making that assertion cite the final GATE line for the pushed SHA. Standalone runs with no memo for the current tree SHA run the gates — skipping on absent evidence is forbidden. pr-creation-workflow fills the PR body's existing Quality Checks slot (SKILL.md:41) from the memo/assertion so the SHA→green record survives into the PR for later re-run decisions; CI (`gh pr checks`) stays the only unconditional re-run.
 
 ### Evidence- Evidence lines verified against origin/main @ 08f9d7b on 2026-09-19 (session review): plan-automation-loop:33 scoped-lint; nextjs-pr-workflow:240,247; pr-merge:79,83; git-issue-labeler 360 lines.
 - Repo gate reality: no lint/typecheck/build scripts configured (markdown + shell + .mjs repo); GATE.unit/e2e = `bats tests/`; build-equivalent = `node installer/build-registry.mjs`; lint-equivalent = `bash -n deploy/setup.sh` when touched. Gates that don't exist are reported INCONCLUSIVE, never skipped silently.
