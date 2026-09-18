@@ -117,8 +117,10 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 8. **Execute**: run `/run-plan PLANS/PLAN-${KEY}.md`
    (`plan-automation-loop-skill`) **inside the worktree** — always pass the
    explicit PLAN path, never rely on branch-name auto-detect. Plan review
-   happened upstream in Step 7 — the executor must not re-review. Per-phase
-   lint+build+test gate, commit + push per phase.
+   happened upstream in Step 7 — the executor must not re-review. Gate
+   sequence, pass semantics, and memo format come from
+   `verification-loop-skill` §The gate contract (this skill defines none of
+   them); the executor commits + pushes per phase and writes the gate memo.
 9. **Code review**: `code-review-subagent` has `bash: deny` — **you compute
    the diff** (`git diff origin/<base>...feat/<KEY>` and `--stat`) and embed
    it (file list + hunks) in the Task prompt. Fix findings: severity ≥
@@ -127,9 +129,12 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    **Bounded loop: max 2
    fix-and-re-review iterations** — exhaustion → halt per §Failure Policy.
 10. **PR + cleanup**: `pr-workflow-subagent` creates the PR **target
-    `<base>`** — the Task prompt MUST state gates are green (pipeline mode)
-    and instruct it to skip its steps 2 / 2.5 / 3 / 4: run-plan verified the
-    gate per phase, docstrings were filled before the gate, coverage badges
+    `<base>`** — the Task prompt MUST state gates are green by citing the
+    final `GATE <short-sha> …` memo line for the pushed SHA from the PLAN
+    trace block (that citation IS the pipeline-mode gate memo per
+    `verification-loop-skill` §Gate memo) and instruct it to skip its
+    steps 2 / 2.5 / 3 / 4: run-plan verified the gate per phase, docstrings
+    were filled before the gate, coverage badges
     stay out (README must not change after Step 9 review — CI carries the
     coverage signal), and the PLAN is ticked and committed; the CI gate
     below is the merge decision. The Task

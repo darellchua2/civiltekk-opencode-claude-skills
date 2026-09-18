@@ -18,7 +18,7 @@ Generate Next.js 16 tests by extending `test-generator-framework` (the core work
 
 Unit tests for Next.js 16 components/actions/API routes; E2E for routing and navigation.
 
-**Hard requirement:** all generated tests must pass `npm run test` before any PR — enforced downstream by `nextjs-pr-workflow`.
+**Hard requirement:** all generated tests must pass `npm run test` before any PR — enforced downstream by `pr-creation-workflow-skill` (gate contract: `verification-loop-skill`).
 
 ## Next.js 16 testing rules (the version-specific part)
 

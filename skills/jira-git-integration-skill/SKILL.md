@@ -1,6 +1,6 @@
 ---
 name: jira-git-integration-skill
-description: Generic JIRA + Git workflow utilities for ticket management, branch creation, and integration
+description: "JIRA-Git plumbing shared by other JIRA skills — branch naming from ticket keys, ticket-key extraction from branches and commits. Triggers: jira branch, ticket key from branch. Not for creating, labeling, or status-updating tickets (use ticket-creation-skill, jira-ticket-labeler-skill, jira-status-updater-skill)."
 license: Apache-2.0
 compatibility: opencode
 category: JIRA

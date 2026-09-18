@@ -40,6 +40,8 @@ A skill encodes only house-specific content; model-known textbook/vendor docs ar
 - Category A/B/E SKILL.md **> 300 lines** (E exempt when a `reference.md` sibling exists and SKILL.md ≤ 200)
 - Category C (house workflow) SKILL.md **> 600 lines** — workflows legitimately run long; this ceiling catches regrowth, not legitimacy
 - Any trimmed skill (contains a `> Removed 2026-09` marker) whose body re-adds spec re-quotation, vendor doc dumps, or example catalogs
+- **Description without boundary clause** — descriptions lacking a "not for X" / "use when" decision boundary; colliding families (lint, test-gen, ticket, grill) then route unpredictably
+- **Tutorial-fence density** — non-template skills with >12 code fences (template/reference skills whose fences ARE the payload are exempt)
 - `wc -l opencode_app/.opencode/skills/*/SKILL.md | sort -rn | head -20` — the standing top-20 bloat watchlist
 
 ## Redundancy & modularization
