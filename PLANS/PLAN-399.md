@@ -45,14 +45,16 @@ Cross-module contract: the two Step-10 surfaces form one behavioral pair; the tw
     — **Done:** old parenthetical removed; Step 10 now carries the pipeline-mode instruction (gates-green assertion + skip 2/2.5/4 + CI gate as merge decision); files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
 
 ### Phase 2: Fix read-only refactor delegation
-- [ ] **2.1** Change the Refactor / DRY row of the delegate matrix in `skills/plan-automation-loop-skill/SKILL.md` from `code-review-subagent` to "Handle directly" with the reason in-row (code-review-subagent is read-only: `edit`/`bash` deny; it reviews at pipeline Step 9)
+- [x] **2.1** Change the Refactor / DRY row of the delegate matrix in `skills/plan-automation-loop-skill/SKILL.md` from `code-review-subagent` to "Handle directly" with the reason in-row (code-review-subagent is read-only: `edit`/`bash` deny; it reviews at pipeline Step 9)
     — **Why:** the row assigns implementation work to an agent that cannot edit files or run commands, and double-spawns it against its Step 9 review role
     — **Done when:** the matrix row reads Handle directly with the read-only reason; no other row changes
     — **Consumers affected:** `/run-plan` executors; code-review-subagent invocations (now review-only)
-- [ ] **2.2** Apply the same fix to `skills/plan-execution-skill/SKILL.md`: Step 4 delegation list drops `code-review-subagent` for refactor/clean (→ handle directly, review-only note), and the Subagents line lists `testing-subagent` (tests) · `documentation-subagent` (docs) only, parent handles refactor/clean + build/deploy/git
+    — **Done:** matrix row reads Handle directly with the read-only reason in-row; no other row touched; files: skills/plan-automation-loop-skill/SKILL.md; fixes: none
+- [x] **2.2** Apply the same fix to `skills/plan-execution-skill/SKILL.md`: Step 4 delegation list drops `code-review-subagent` for refactor/clean (→ handle directly, review-only note), and the Subagents line lists `testing-subagent` (tests) · `documentation-subagent` (docs) only, parent handles refactor/clean + build/deploy/git
     — **Why:** the soft sibling carries the identical broken row; leaving it would resurrect the defect on the interactive path
     — **Done when:** Step 4 and the Subagents line contain no refactor/clean → code-review-subagent delegation; both siblings agree
     — **Consumers affected:** interactive phase-by-phase executors
+    — **Done:** Step 4 delegates refactor/clean to parent with review-only note; Subagents line lists testing + documentation only; siblings agree; files: skills/plan-execution-skill/SKILL.md; fixes: none
 
 ### Phase 3: Verification gate + no-drift proof
 - [ ] **3.1** Run `node installer/build-registry.mjs --check` in the worktree and prove zero drift

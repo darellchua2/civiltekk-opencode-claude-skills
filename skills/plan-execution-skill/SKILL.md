@@ -26,7 +26,7 @@ Executing a PLAN interactively/phase-by-phase without the full automation gate.
 
 **Step 3 — Current state:** first incomplete phase: `awk '/^### Phase/{phase=$0} /^- \[ \]/{print phase; exit}' "$PLAN_FILE"` (awk form is robust to 4-line atomic steps); next step = first `- [ ]`.
 
-**Step 4 — Execute:** (1) surface a step's consumers BEFORE mutating its target; (2) group related steps; (3) delegate — tests → `testing-subagent`, refactor/clean → `code-review-subagent`, docs → `documentation-subagent`, build/deploy → directly; (4) verify each step's `Done when` passes before `[x]` — "looks done" is not done.
+**Step 4 — Execute:** (1) surface a step's consumers BEFORE mutating its target; (2) group related steps; (3) delegate — tests → `testing-subagent`, docs → `documentation-subagent`; refactor/clean and build/deploy → directly (`code-review-subagent` is read-only — review only, not implementation); (4) verify each step's `Done when` passes before `[x]` — "looks done" is not done.
 
 **Step 5 — Auto-update per phase:** when all phase tasks complete + acceptance criteria met + tests pass → invoke `plan-updater-skill` (checkboxes + semantic commit), confirm applied, next phase.
 
@@ -36,7 +36,7 @@ Executing a PLAN interactively/phase-by-phase without the full automation gate.
 
 ## Subagents
 
-`testing-subagent` (tests) · `code-review-subagent` (refactor/review) · `documentation-subagent` (docs) — parent handles build/deploy/git.
+`testing-subagent` (tests) · `documentation-subagent` (docs) — parent handles refactor/clean and build/deploy/git; `code-review-subagent` is review-only (read-only permissions).
 
 ## Iteration Protocol (opt-in)
 
