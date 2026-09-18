@@ -95,7 +95,7 @@ upgraded.
 
 Drawing structure, not part structure. Minimum set for reconstructions:
 `LINEWORK`, `TEXT`, `BORDER`, `DIM`; optional `CENTER`, `CONSTRUCTION`,
-`HATCH`. Each entry: `{"name": "LINEWORK", "color": 7, "lintetype":
+`HATCH`. Each entry: `{"name": "LINEWORK", "color": 7, "linetype":
 "CONTINUOUS"}`. `geometry-only` output keeps `LINEWORK`/`CONSTRUCTION` and
 drops annotation layers.
 

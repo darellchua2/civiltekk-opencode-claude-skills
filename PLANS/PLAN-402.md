@@ -65,26 +65,31 @@ Cross-module consumers exist (registry ← frontmatter, presets ← registry, ro
 
 ### Phase 2: Core scripts (fingerprint, diff, spec-to-dxf, preview)
 
-- [ ] **2.1** Create `scripts/fingerprint.py`: DXF/DWG → `<prefix>-fingerprint.json` (entity counts by type/space/layer, layer table with colors/linetypes, block inventory, text/dim styles, annotation inventory, extents, DWG version/producer) + `<prefix>-redraw-prompt.md`; DWG handled via odafc → `dwg2dxf` → clear error naming the missing converter; include `--self-check` generating an in-memory ezdxf fixture and asserting fingerprint fields
+- [x] **2.1** Create `scripts/fingerprint.py`: DXF/DWG → `<prefix>-fingerprint.json` (entity counts by type/space/layer, layer table with colors/linetypes, block inventory, text/dim styles, annotation inventory, extents, DWG version/producer) + `<prefix>-redraw-prompt.md`; DWG handled via odafc → `dwg2dxf` → clear error naming the missing converter; include `--self-check` generating an in-memory ezdxf fixture and asserting fingerprint fields
     — **Why:** Mode A profiling is the entry point of the whole redraw flow and defines the JSON shape the diff gate consumes
     — **Done when:** `python scripts/fingerprint.py --self-check` exits 0; running on a fixture DXF emits both output files with all fingerprint sections populated
     — **Consumers affected:** `fingerprint_diff.py` (2.2), E2E smoke (2.5)
-- [ ] **2.2** Create `scripts/fingerprint_diff.py`: source vs target fingerprint → structured delta JSON + human summary; exit 0 only when required classes match (dims/leaders present in source but missing in target = failure); `--self-check` proving drift detection
+    — **Done:** fingerprint.py implemented (fingerprint JSON + redraw prompt; odafc→dwg2dxf→exit-2-with-hints DWG path); self-check PASS (verified independently); files: skills/cad-redraw-skill/scripts/fingerprint.py; fixes: none
+- [x] **2.2** Create `scripts/fingerprint_diff.py`: source vs target fingerprint → structured delta JSON + human summary; exit 0 only when required classes match (dims/leaders present in source but missing in target = failure); `--self-check` proving drift detection
     — **Why:** the fingerprint diff is the deterministic validation gate separating Mode A pass from fail
     — **Done when:** `--self-check` exits 0; identical fingerprints pass, a fixture with one removed dimension fails with a named delta
     — **Consumers affected:** SKILL.md Mode A validation step; E2E smoke (2.5)
-- [ ] **2.3** Create `scripts/spec_to_dxf.py`: JSON spec → ezdxf DXF (explicit units, layers from spec, LWPOLYLINE/CIRCLE/ARC/LINE/TEXT/MTEXT/DIMENSION) plus `--check-only --report` validation mode enforcing schema, unique IDs, positive dims, arithmetic constraints, evidence requirements per profile (strict-dimensioned requires units + anchors; no anchor → must be visual-trace/unitless, never silent mm); include `--geometry-only`; `--self-check` covering draw + reject paths
+    — **Done:** fingerprint_diff.py implemented (per-type/per-space counts, styles, dims/leaders failure semantics, tolerance, --json delta); self-check PASS; E2E: drift names `DIMENSION source=1 target=0`; files: skills/cad-redraw-skill/scripts/fingerprint_diff.py; fixes: none
+- [x] **2.3** Create `scripts/spec_to_dxf.py`: JSON spec → ezdxf DXF (explicit units, layers from spec, LWPOLYLINE/CIRCLE/ARC/LINE/TEXT/MTEXT/DIMENSION) plus `--check-only --report` validation mode enforcing schema, unique IDs, positive dims, arithmetic constraints, evidence requirements per profile (strict-dimensioned requires units + anchors; no anchor → must be visual-trace/unitless, never silent mm); include `--geometry-only`; `--self-check` covering draw + reject paths
     — **Why:** this is both the Mode C drawer and the spec validation gate; encoding the profile/evidence rules here is what makes evidence levels enforced rather than decorative
     — **Done when:** `--self-check` exits 0 (valid spec draws; invalid specs rejected: duplicate ID, negative dim, strict-dimensioned without units)
     — **Consumers affected:** SKILL.md Mode C steps 3–4; `render_preview.py` chain
-- [ ] **2.4** Create `scripts/render_preview.py`: DXF → PNG (+ optional PDF) via the ezdxf drawing add-on with matplotlib backend, deterministic extents; `--self-check` rendering the fixture
+    — **Done:** spec_to_dxf.py implemented (draw + --check-only; profile/evidence gates, 7 constraint kinds, geometry-only); self-check PASS rejecting duplicate_id/non_positive/profile codes; files: skills/cad-redraw-skill/scripts/spec_to_dxf.py; fixes: lintetype→linetype typo corrected in references/redraw-spec.md (subagent-caught doc defect, drawer accepts both)
+- [x] **2.4** Create `scripts/render_preview.py`: DXF → PNG (+ optional PDF) via the ezdxf drawing add-on with matplotlib backend, deterministic extents; `--self-check` rendering the fixture
     — **Why:** visual review and `compare_visual.py` need a deterministic raster of the CAD output, and the viewer handoff depends on it
     — **Done when:** `--self-check` exits 0 and produces a non-empty PNG
     — **Consumers affected:** SKILL.md handoff; `compare_visual.py` (3.2)
-- [ ] **2.5** Run the core E2E smoke in a scratch dir: fixture DXF → fingerprint → remove one dimension → diff fails → regenerate → diff passes → preview renders
+    — **Done:** render_preview.py implemented (matplotlib backend, deterministic 2200×1700 PNG + optional PDF, import-guarded); self-check PASS; files: skills/cad-redraw-skill/scripts/render_preview.py; fixes: none
+- [x] **2.5** Run the core E2E smoke in a scratch dir: fixture DXF → fingerprint → remove one dimension → diff fails → regenerate → diff passes → preview renders
     — **Why:** the ticket's E2E acceptance criterion is observable only when the whole core chain runs against real files
     — **Done when:** the scripted sequence produces exactly one failing diff then one passing diff plus a rendered PNG
     — **Consumers affected:** none (verification only)
+    — **Done:** smoke run twice (subagent /tmp/opencode/phase2-smoke + orchestrator /tmp/opencode/phase2-verify): identical diff exit 0, drifted diff exit 1 naming DIMENSION, preview.png non-empty; files: none (scratch only); fixes: none
 
 ### Phase 3: Image pipeline scripts
 
