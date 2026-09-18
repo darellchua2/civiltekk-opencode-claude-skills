@@ -8,10 +8,10 @@
 
 From ticket #412 (owner ruling: configurator repo — never clobber config it didn't write):
 
-- [ ] bats: hand-authored `.opencode/models.json` survives `add --project` (stderr `conflict (skipped, use --force)` warning; content byte-identical)
-- [ ] bats: `--force` overwrites it and the rewritten manifest claims it (`modelsPath`)
-- [ ] bats: a previously-generated `models.json` re-installs silently (idempotent, no warning)
-- [ ] Gate mirrors the adjacent `opencode.json` gate byte-for-byte in pattern (existsSync + prevManifest claim + `--force`); no content comparison, no new heuristics
+- [x] bats: hand-authored `.opencode/models.json` survives `add --project` (stderr `conflict (skipped, use --force)` warning; content byte-identical)
+- [x] bats: `--force` overwrites it and the rewritten manifest claims it (`modelsPath`)
+- [x] bats: a previously-generated `models.json` re-installs silently (idempotent, no warning)
+- [x] Gate mirrors the adjacent `opencode.json` gate byte-for-byte in pattern (existsSync + prevManifest claim + `--force`); no content comparison, no new heuristics
 
 ## Dependency & Consumer Map
 
@@ -24,11 +24,11 @@ From ticket #412 (owner ruling: configurator repo — never clobber config it di
 
 ### Phase 1: Conflict gate + bats
 
-- [ ] **1.1** `writeInstall`: wrap the models.json write in the same gate shape as `opencode.json` (:400-404) — `modelsConflict = existsSync(modelsFile) && !(prevManifest.modelsPath === modelsFile)`; on conflict + `!force` print the identical `conflict (skipped, use --force)` stderr line with `relative(project, modelsFile)` and skip the write; write when absent, `--force`, or prevManifest claims the path. Move the `usedTiers`/`modelsMap` construction inside the write branch (dead on skip). `models:` summary line unchanged (the path is still the project's models file either way)
+- [x] **1.1** `writeInstall`: wrap the models.json write in the same gate shape as `opencode.json` (:400-404) — `modelsConflict = existsSync(modelsFile) && !(prevManifest.modelsPath === modelsFile)`; on conflict + `!force` print the identical `conflict (skipped, use --force)` stderr line with `relative(project, modelsFile)` and skip the write; write when absent, `--force`, or prevManifest claims the path. Move the `usedTiers`/`modelsMap` construction inside the write branch (dead on skip). `models:` summary line unchanged (the path is still the project's models file either way)
     — **Why:** The write at :412 is unconditional today — a hand-authored tier map is silently destroyed on every project install, violating the owner's no-clobber ruling and inconsistent with the ocFile gate directly above.
     — **Done when:** `node --check`; the three bats scenarios below pass.
     — **Consumers affected:** `resolve-models.mjs --project-map` (now sees a surviving hand-authored map — intended semantics); summary output unchanged.
-- [ ] **1.2** `tests/init.bats`: three cases, fixture `add explorer-subagent --project "$TMP_PROJ" --yes` with fake HOME (same idiom as #401 cases) — (a) seed `$TMP_PROJ/.opencode/models.json` with `{"tiers": {"fast": "hand/authored"}}`, install, assert stderr contains `conflict (skipped, use --force)` + `models.json`, file still contains `hand/authored` and not the default tier id; (b) rerun with `--force`, assert file carries the generated `$comment` and `$TMP_PROJ/.opencode/.opencode-init.manifest.json` `modelsPath` equals the file path; (c) install twice (no seed), second run's output contains no `conflict (skipped` and the file still has the generated tier value
+- [x] **1.2** `tests/init.bats`: three cases, fixture `add explorer-subagent --project "$TMP_PROJ" --yes` with fake HOME (same idiom as #401 cases) — (a) seed `$TMP_PROJ/.opencode/models.json` with `{"tiers": {"fast": "hand/authored"}}`, install, assert stderr contains `conflict (skipped, use --force)` + `models.json`, file still contains `hand/authored` and not the default tier id; (b) rerun with `--force`, assert file carries the generated `$comment` and `$TMP_PROJ/.opencode/.opencode-init.manifest.json` `modelsPath` equals the file path; (c) install twice (no seed), second run's output contains no `conflict (skipped` and the file still has the generated tier value
     — **Why:** The ticket's acceptance is executable proof at all three gate outcomes (skip / force-claim / idempotent rewrite).
     — **Done when:** `bats tests/init.bats` green (28 cases).
     — **Consumers affected:** CI.

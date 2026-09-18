@@ -237,3 +237,35 @@ EOC
   $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
   grep -q "^model: zai-coding-plan/glm-5.3-flash$" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
 }
+
+# ---- #412: project models.json is conflict-gated like opencode.json (no clobber) ----
+
+@test "hand-authored models.json survives project install with a --force hint (#412a)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME" "$TMP_PROJ/.opencode"
+  echo '{"tiers": {"fast": "hand/authored"}}' > "$TMP_PROJ/.opencode/models.json"
+  run $INIT add explorer-subagent --project "$TMP_PROJ" --yes
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "conflict (skipped, use --force).*models.json"
+  grep -q "hand/authored" "$TMP_PROJ/.opencode/models.json"
+  ! grep -q "glm-5.3-flash" "$TMP_PROJ/.opencode/models.json"
+}
+
+@test "--force overwrites models.json and the manifest claims it (#412b)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME" "$TMP_PROJ/.opencode"
+  echo '{"tiers": {"fast": "hand/authored"}}' > "$TMP_PROJ/.opencode/models.json"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes --force >/dev/null 2>&1
+  grep -q '"\$comment"' "$TMP_PROJ/.opencode/models.json"
+  grep -q '"modelsPath"' "$TMP_PROJ/.opencode/.opencode-init.manifest.json"
+}
+
+@test "previously-generated models.json re-installs silently (#412c)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  run $INIT add explorer-subagent --project "$TMP_PROJ" --yes
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"conflict (skipped"* ]]
+  grep -q "glm-5.3-flash" "$TMP_PROJ/.opencode/models.json"
+}
