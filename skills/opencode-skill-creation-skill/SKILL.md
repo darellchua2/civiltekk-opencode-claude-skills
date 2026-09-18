@@ -42,11 +42,9 @@ Unknown frontmatter fields are ignored by OpenCode. After ANY frontmatter change
 
 ## Content structure
 
-Unknown frontmatter fields are ignored by OpenCode. `category` is installer-registry-only (required by this repo's tooling). After any frontmatter change, run `node installer/build-registry.mjs` and commit `registry.json`.
-
-## Content structure
-
 Minimum: `## What I do` (3–7 capability bullets), `## When to use me` (specific scenarios + not-for boundaries). Everything else only if it carries house signal. Skills live at root `skills/<name>/SKILL.md` (source of truth — never deployed copies, never through the `opencode_app/.opencode/` symlink bridge).
+
+**Body sections must be one of**: decision rules, boundaries (use-for / not-for), commands, templates, edge cases, workflow contracts. Worked examples: max 1 per genuinely non-obvious concept, none for stdlib-level knowledge — a modern model knows GoF patterns, pytest syntax, and Dockerfile idioms; it does not know your house rules. Descriptions carry capability + decision boundary ("not for X") + 3–6 trigger phrases; no API-name keyword stuffing.
 
 ## Skill permissions (v2)
 

@@ -1,6 +1,6 @@
 ---
 name: language-linting-skill
-description: Multi-language linting — Python Ruff, JS/TS ESLint, Java Checkstyle/PMD/SpotBugs, C# dotnet format/Roslyn/StyleCop — extending linting-workflow with per-language rules, configs, and error guidance
+description: "Per-language linting rules reference — Python Ruff, JS/TS ESLint, Java Checkstyle/PMD/SpotBugs, C# dotnet format/Roslyn/StyleCop: rules, configs, error guidance. Triggers: ruff rules, eslint config, checkstyle. Loaded by linting-workflow-skill and linting-subagent (the executor); gate semantics live in verification-loop-skill."
 license: Apache-2.0
 compatibility: opencode
 category: Language-Specific

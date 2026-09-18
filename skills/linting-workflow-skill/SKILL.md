@@ -1,6 +1,6 @@
 ---
 name: linting-workflow-skill
-description: Generic linting workflow for multiple languages with auto-fix and error resolution
+description: "Lint execution workflow — detect configs, run linters, auto-fix, resolve errors across languages. Triggers: lint, auto-fix lint. Per-language rules and configs: language-linting-skill; executor agent: linting-subagent. Gate sequence and pass semantics: verification-loop-skill."
 license: Apache-2.0
 compatibility: opencode
 metadata:

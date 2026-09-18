@@ -76,11 +76,11 @@ For auto-fixable failures:
 
 | Failure Type | Auto-Fix Action |
 |-------------|----------------|
-| Lint errors | Run linter with --fix, review changes, commit |
-| Type errors | Fix type annotations or casts |
-| Test failures | Read test output, fix code or update test if test is wrong |
-| Build errors | Fix missing imports, syntax errors |
-| Format errors | Run formatter, commit |
+| Lint errors | Run linter with --fix, review changes, commit as `fix(lint): <summary>` |
+| Type errors | Fix type annotations or casts, commit as `fix(types): <summary>` |
+| Test failures | Read test output, fix code or update test if test is wrong, commit as `fix(test): <summary>` |
+| Build errors | Fix missing imports, syntax errors, commit as `fix(build): <summary>` |
+| Format errors | Run formatter, commit as `style: <summary>` (style-only commit — never mixed with logic) |
 
 ### Not Auto-Fixable (Report and Stop)
 

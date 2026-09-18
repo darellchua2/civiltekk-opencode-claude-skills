@@ -28,6 +28,10 @@ After adding tests; before PR (feeds `pr-creation-workflow`'s quality-checks sec
 
 Edge cases: zero coverage → badge `0%` red + a note, never skip the update; no coverage config → note it and stop (never add config unrequested); threshold violated → badge updates anyway + failure reported to the caller.
 
+## PR badge comment (absorbed from the deleted nextjs-pr-workflow-skill)
+
+When a caller asks for coverage on a PR (standalone path only): post the badge + percentage as a PR comment (`gh pr comment <num> --body "…badge + Coverage: N%"`) — never mutate the README at that stage. In pipeline mode this is skipped entirely: README must not change after code review; CI carries the coverage signal.
+
 ## Iteration Protocol (opt-in)
 
 **DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.

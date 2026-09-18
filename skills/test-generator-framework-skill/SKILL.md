@@ -1,6 +1,6 @@
 ---
 name: test-generator-framework-skill
-description: Generic test generation framework supporting multiple languages and testing frameworks
+description: "Test-generation framework reference (language/framework matrix, patterns) loaded by python-pytest-creator-skill, nextjs-unit-test-creator-skill, and testing-subagent. Triggers: test generator, generate tests. Not for running or fixing tests."
 license: Apache-2.0
 compatibility: opencode
 metadata:

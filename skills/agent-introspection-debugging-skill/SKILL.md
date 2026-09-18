@@ -8,287 +8,91 @@ category: Agent Optimization
 
 ## What I do
 
-I systematically diagnose why agents, skills, or subagents aren't producing expected output:
+Systematically diagnose why agents, skills, or subagents misbehave: configuration validation → permission audit → context/behavior analysis → specific fix recommendations.
 
-1. **Configuration Validation**: Verify agent/skill files are correctly formatted and loadable
-2. **Permission Auditing**: Check tool access permissions match the agent's needs
-3. **Context Analysis**: Identify context-related issues (too much, too little, missing references)
-4. **Behavioral Diagnosis**: Trace why an agent makes unexpected decisions
-5. **Fix Recommendations**: Provide specific, actionable fixes for diagnosed issues
+**Trigger phrases**: "debug agent", "why is the agent not working", "agent introspection", "skill not triggering", "agent ignoring instructions", "fix agent behavior", "diagnose subagent".
 
-## When to use me
-
-Use this skill when:
-- An agent or subagent produces unexpected or wrong output
-- A skill doesn't trigger when it should
-- A subagent fails to use tools you expected it to use
-- An agent ignores instructions from AGENTS.md or its own .md file
-- An MCP tool isn't being called when it should be
-- You want to understand why an agent chose a particular approach
-- A skill loads but its workflow isn't being followed
-
-**Trigger phrases**:
-- "debug agent"
-- "why is the agent not working"
-- "agent introspection"
-- "skill not triggering"
-- "agent ignoring instructions"
-- "fix agent behavior"
-- "diagnose subagent"
-
-## Core Workflow
-
-### Step 1: Identify the Problem
-
-Clarify what's wrong:
+## Step 1: Symptom → Likely Cause
 
 | Symptom | Category | Likely Cause |
 |---------|----------|-------------|
 | Agent doesn't spawn | Config | Missing .md file, wrong name, permission issue |
-| Agent spawns but does nothing | Permissions | Tools denied, no skill access, step limit too low |
-| Agent produces wrong output | Behavior | Missing context, conflicting instructions, model limitations |
-| Agent ignores AGENTS.md | Routing | AGENTS.md not loaded, routing rules override |
-| Skill doesn't trigger | Discovery | Skill name mismatch, trigger not matched, skill not installed |
-| Agent can't use tools | Permissions | Tool not in permission allowlist |
-| Agent loops or repeats | Behavior | Missing termination condition, unclear task prompt |
-| MCP tools not called | Discovery | MCP server not configured, tool name unknown to agent |
+| Spawns but does nothing | Permissions | Tools denied, no skill access, step limit too low |
+| Wrong output | Behavior | Missing context, conflicting instructions, model limits |
+| Ignores AGENTS.md | Routing | AGENTS.md not loaded, routing rules override |
+| Skill doesn't trigger | Discovery | Name mismatch, trigger phrases missing, not installed |
+| Can't use tools | Permissions | Tool not in `permissions` allowlist |
+| Loops or repeats | Behavior | Missing termination condition, unclear success criteria |
+| MCP tools not called | Discovery | Server not configured, tool unknown to agent |
 
-### Step 2: Validate Configuration
+## Step 2: Configuration Checklist
 
-Check the agent/skill file structure:
+**Agent (`agents/<name>.md`)**: file exists · `description` present and <50 words (always in Task context) · `mode` set · `model` valid · `steps` set (10-25) · `permissions` rules array present (v2 shape) · YAML parses · body is valid markdown.
 
-```markdown
-## Configuration Checklist
+**Skill (`skills/<name>/SKILL.md`)**: directory name == frontmatter `name` exactly · `description` present · `license` + `compatibility` present · required sections present ("What I do", "When to use me", workflow) · YAML parses.
 
-### Agent (.md file in agents/)
-- [ ] File exists at `agents/<name>.md`
-- [ ] YAML frontmatter has `description` field (required)
-- [ ] `description` is under 50 words (loaded into Task tool context)
-- [ ] `mode` field is set (usually `subagent`)
-- [ ] `model` field is set to valid model ID
-- [ ] `steps` field is set (recommended: 10-25)
-- [ ] `permission` block exists with tool access rules
-- [ ] No YAML syntax errors (check indentation, quoting)
-- [ ] File is valid markdown after frontmatter
+## Step 3: Permission Audit
 
-### Skill (SKILL.md in skills/<name>/)
-- [ ] Directory exists at `skills/<name>/`
-- [ ] SKILL.md file exists inside the directory
-- [ ] YAML frontmatter has `name` field matching directory name exactly
-- [ ] YAML frontmatter has `description` field (under 200 chars)
-- [ ] `license` and `compatibility` fields present
-- [ ] `metadata.audience` and `metadata.workflow` set
-- [ ] Required sections present: "What I do", "When to use me", "Core Workflow"
-- [ ] No YAML syntax errors
-```
+For each needed tool: allowed in `permissions`? Any `deny` overriding it? `task` delegation targets allowed? For each loaded skill: allowed via `action: skill` rule? Directory exists with valid SKILL.md? Name case-exact?
 
-### Step 3: Audit Permissions
-
-Verify the agent can access what it needs:
-
-```markdown
-## Permission Audit
-
-### Tool Access
-For each tool the agent needs:
-- Is the tool listed in `permission` with `allow`?
-- Is there a `deny` rule that overrides it?
-- If using `task` delegation, are target subagents allowed?
-
-### Skill Access
-For each skill the agent loads:
-- Is the skill listed in `permission.skill` with `allow`?
-- Does the skill directory exist with a valid SKILL.md?
-- Is the skill name correct (case-sensitive, hyphenated)?
-
-### Common Permission Issues
 | Issue | Symptom | Fix |
 |-------|---------|-----|
-| Missing `read: allow` | Agent can't read files | Add `read: allow` to permission block |
-| Missing `glob: allow` | Agent can't find files | Add `glob: allow` to permission block |
-| Missing `task` delegation | Agent can't spawn subagents | Add allowed subagent names to `permission.task` |
-| `edit: deny` but needs to edit | Agent reads but never modifies | Change to `edit: allow` |
-| `bash: deny` for build agents | Agent can't run commands | Change to `bash: allow` with caution |
-| Skill name mismatch | Agent can't load skill | Match exact skill directory name |
-```
+| Missing `read` allow | Can't read files | Add `{action: read, effect: allow}` |
+| Missing `glob` allow | Can't find files | Add glob allow rule |
+| Missing `task` targets | Can't spawn subagents | Allow the subagent names (action: task) |
+| `edit: deny` but must edit | Reads, never modifies | Allow edit (scoped to task paths) |
+| `bash: deny` on build agent | Can't run commands | Allow bash with caution |
+| Skill name mismatch | Skill won't load | Match exact directory name |
 
-### Step 4: Analyze Behavior
+## Step 4: Behavior Analysis
 
-Trace why the agent makes unexpected decisions:
+- **Context loading**: is AGENTS.md loaded? Right routing table entries? Agent .md used as system prompt?
+- **Skill discovery**: do trigger phrases match how the user asks? Is the description selective enough?
+- **Task prompt quality**: specific? Enough context (paths, requirements)? Return format stated? CodeGraph guidance included when `.codegraph/` exists?
+- **Model selection**: model appropriate for complexity? Available in current config?
 
-#### 4a. Check Context Loading
-- Is AGENTS.md being loaded for the project?
-- Are the right instructions being picked up from AGENTS.md routing tables?
-- Is the agent's own .md file being used as the system prompt?
-
-#### 4b. Check Skill Discovery
-- Does the skill name match the trigger phrase?
-- Is the skill description clear enough for the primary agent to select it?
-- Is the skill in the correct directory with correct naming?
-
-#### 4c. Check Task Prompt Quality
-When spawning a subagent, is the Task prompt:
-- Specific about what to do?
-- Providing enough context (file paths, requirements)?
-- Setting clear expectations for the return format?
-- Including CodeGraph guidance if `.codegraph/` exists?
-
-#### 4d. Check Model Selection
-- Is the `model` field appropriate for the task complexity?
-- Is the model available in the current OpenCode configuration?
-- Would a different model produce better results?
-
-### Step 5: Diagnose and Fix
-
-Generate a diagnosis report:
+## Step 5: Diagnosis Report (output contract)
 
 ```markdown
-## Diagnosis Report
-
-**Agent/Skill**: [name]
-**Symptom**: [what's wrong]
-**Root Cause**: [diagnosed cause]
-**Confidence**: [high/medium/low]
+**Agent/Skill**: <name> · **Symptom**: <what's wrong> · **Root Cause**: <cause> · **Confidence**: h/m/l
 
 ### Evidence
-1. [Finding 1 — e.g., "Agent .md file has read: deny but needs to read files"]
-2. [Finding 2 — e.g., "Task prompt doesn't mention CodeGraph availability"]
-3. [Finding 3 — e.g., "Permission.skill missing required skill name"]
+1. <finding, e.g. "permissions denies edit but the task requires writes">
 
 ### Recommended Fix
-[Specific, actionable fix — e.g., "Add `read: allow` and `glob: allow` to agent's permission block"]
+<specific, actionable>
 
 ### Verification
-[How to confirm the fix works — e.g., "Re-run the agent with a test prompt and verify it reads files"]
+<how to confirm the fix works>
 ```
 
-## Common Problem Patterns
+## Common Patterns (cause → fix)
 
-### Pattern: Agent Produces Generic Output
+- **Generic output** → Task prompt too vague: add file paths, stack, specific requirements
+- **Can't find files** → read/glob denied: add allow rules
+- **Ignores skills** → skill missing from `permissions` skill rules, or name mismatch (case-sensitive, `-skill` suffix)
+- **Loops forever** → no return contract: add explicit completion criteria to the agent .md
+- **Never uses CodeGraph** → no `.codegraph/` or prompt doesn't mention it: `codegraph init -i` + prompt guidance
+- **Skill never triggers** → trigger phrases absent from description/When-to-use: add them
+- **Irrelevant subagent output** → constrain the Task prompt: specific paths, function names, output format
+- **MCP tools not called** → server not in `opencode.json` or tool unknown: check config; follow the MCP Availability Guard
 
-**Cause**: Task prompt is too vague; agent lacks project-specific context.
-**Fix**: Include file paths, technology stack, and specific requirements in the Task prompt.
+## Debugging Efficiency
 
-### Pattern: Agent Can't Find Files
+Config first (most common), permissions second (quick win), behavior last. One change at a time, re-test after each. Compare against a working agent/skill as reference. Persist fixes as learnings.
 
-**Cause**: `glob: deny` or `read: deny` in permission block.
-**Fix**: Add `glob: allow` and `read: allow` to permissions.
+## Integration
 
-### Pattern: Agent Ignores Skills
-
-**Cause**: Skill not in `permission.skill` allowlist, or skill name doesn't match directory.
-**Fix**: Verify skill names match exactly (case-sensitive, with `-skill` suffix).
-
-### Pattern: Agent Loops Repeatedly
-
-**Cause**: Missing termination condition in agent instructions; unclear success criteria.
-**Fix**: Add explicit "return contract" with clear completion criteria to the agent .md file.
-
-### Pattern: Agent Doesn't Use CodeGraph
-
-**Cause**: `.codegraph/` doesn't exist in project, or Task prompt doesn't mention CodeGraph.
-**Fix**: Initialize CodeGraph (`codegraph init -i`) and include CodeGraph guidance in Task prompts.
-
-### Pattern: Skill Doesn't Trigger
-
-**Cause**: Primary agent doesn't know when to load the skill; trigger phrases not in skill description.
-**Fix**: Ensure skill description clearly states when to use it; add trigger phrases to "When to use me" section.
-
-### Pattern: Subagent Returns Irrelevant Output
-
-**Cause**: Task prompt not specific enough; subagent exploring wrong area.
-**Fix**: Constrain the Task prompt with specific file paths, function names, and expected output format.
-
-### Pattern: MCP Tools Not Called
-
-**Cause**: MCP server not configured in `opencode.json`, or agent doesn't know the tool exists.
-**Fix**: Check `opencode_app/opencode.json` → `mcpServers` section for the expected server.
-
-## Diagnostic Tools
-
-| Tool | Purpose | When to Use |
-|------|---------|------------|
-| `glob` | Find agent/skill files | Verifying file existence |
-| `read` | Read agent .md or SKILL.md content | Checking configuration, permissions |
-| `grep` | Search for tool references, permission rules | Finding why tools aren't accessible |
-| `codegraph_search` | Find symbol definitions agents reference | Verifying agent references valid code |
-
-## Integration with Other Skills
-
-| Skill | Integration |
-|-------|-------------|
-| `context-budget-skill` | Budget audit may reveal agent is consuming too much context |
-| `continuous-learning-skill` | Store debugging findings as anti-patterns for future reference |
-| `eval-harness-skill` | Evaluate whether fix improved agent output quality |
-| `opencode-skills-maintainer-skill` | Validate skill format after fixing issues |
-| `opencode-agent-creation-skill` | Reference agent creation best practices when fixing agents |
-
-## Best Practices
-
-### Preventing Agent Issues
-- Always set `steps` limit (recommended: 10-25)
-- Always include a return contract in agent .md files
-- Test new agents with a simple prompt before complex tasks
-- Keep agent descriptions under 50 words (loaded into Task tool always)
-- Use `permission.skill` to give agents access to domain knowledge
-
-### Preventing Skill Issues
-- Match skill directory name exactly in YAML `name` field
-- Include clear trigger phrases in "When to use me" section
-- Test skills by loading them explicitly before relying on auto-discovery
-- Keep skill descriptions specific (helps primary agent select the right skill)
-
-### Debugging Efficiency
-- Start with configuration validation (most common issues)
-- Check permissions before analyzing behavior (quick win)
-- Compare against working agents/skills as reference
-- Make one change at a time and re-test
-- Document fixes as learnings for future debugging
-
-## Example Usage
-
-### Debug a subagent that won't edit files
-
-```
-"The repo-ops-specialist-subagent reads files but never edits them"
-```
-
-The skill will:
-1. Read `repo-ops-specialist-subagent.md` configuration
-2. Check `permission.edit` field
-3. Diagnose: likely `edit: deny` in permission block
-4. Recommend: change to `edit: allow`
-5. Provide exact edit to make
-
-### Debug a skill that doesn't trigger
-
-```
-"The search-first-skill never gets loaded when I ask about libraries"
-```
-
-The skill will:
-1. Verify skill directory and SKILL.md exist
-2. Check skill description for relevant trigger phrases
-3. Verify the skill name matches directory name exactly
-4. Diagnose: likely missing trigger phrases or unclear description
-5. Recommend: add "library" and "find existing" to trigger phrases
-
-### Debug an agent that produces generic output
-
-```
-"The architecture-review-subagent gives generic advice instead of specific feedback"
-```
-
-The skill will:
-1. Read agent configuration and Task prompt pattern
-2. Check if CodeGraph tools are referenced
-3. Check if project-specific context is being passed
-4. Diagnose: likely Task prompt lacks file paths and project context
-5. Recommend: include CodeGraph guidance and specific file references in Task prompt
+- `context-budget-skill` — context bloat is a diagnosis outcome
+- `opencode-skills-maintainer-skill` — post-fix format validation
+- `opencode-agent-creation-skill` / `opencode-skill-creation-skill` — authoring rules referenced when fixing
+- `continuous-learning-skill` — store diagnosed anti-patterns
 
 ## References
 
-- `opencode-agent-creation-skill` - Agent creation best practices
-- `opencode-skill-creation-skill` - Skill creation best practices
-- `opencode-skills-maintainer-skill` - Skill format validation
-- `continuous-learning-skill` - Store debugging patterns
+- `opencode-agent-creation-skill` — agent authoring best practices
+- `opencode-skill-creation-skill` — skill authoring best practices
+- `opencode-skills-maintainer-skill` — skill format validation
+- `continuous-learning-skill` — debugging-pattern storage
+
+> **Removal note (2026-09-19, #409 trim per LEARNINGS #383 recipe):** dropped the three worked debugging examples, Best Practices prose (compressed into "Debugging Efficiency"), verbose checklist markdown, and the `metadata.audience`/`metadata.workflow` checklist item (deliberate — the v2 frontmatter contract reserves metadata sub-keys `protocol`/`pattern` only). Also corrected legacy v1 `permission`-block references to the v2 `permissions` rules array (post-#380 shape). Kept verbatim: frontmatter, symptom table, permission-issue table, output contract, pattern list.

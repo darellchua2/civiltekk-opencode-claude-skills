@@ -10,254 +10,47 @@ category: Agent Optimization
 
 ## What I do
 
-I provide a structured evaluation framework to assess code, skills, and implementations:
+Structured evaluation framework: define measurable criteria → run checks → score 0-10 per criterion → report pass/fail vs thresholds → suggest improvements for failures. Unlike `verification-loop-skill` (gate execution), this skill owns **scoring rubrics and thresholds**.
 
-1. **Define Evaluation Criteria**: Establish measurable quality benchmarks for code or skill output
-2. **Execute Evaluations**: Run automated checks against defined criteria with scoring
-3. **Score Results**: Generate quantitative scores with qualitative feedback
-4. **Identify Gaps**: Highlight areas below threshold with specific improvement suggestions
-5. **Track Progress**: Compare scores across iterations to measure improvement
+**Trigger phrases**: "evaluate this code", "run eval", "score this implementation", "quality check", "benchmark against criteria".
 
-## When to use me
+## Default Criteria (0-10 each, thresholds customizable per run)
 
-Use this skill when:
-- You want to evaluate the quality of generated code against best practices
-- You need to assess if a skill or agent is producing correct, high-quality output
-- You want to benchmark code quality before and after refactoring
-- You need to verify that implementation meets acceptance criteria
-- You want to establish quality gates for PRs or deployments
+| Criterion | Threshold | Key questions |
+|-----------|-----------|---------------|
+| Correctness | 7 | Does it do what it should? Edge cases? Error paths? |
+| Code Quality | 7 | Conventions, readability, abstractions without over-engineering |
+| Test Coverage | 7 | Tests present? Edge cases covered? Maintainable? |
+| Performance | 6 | Efficient algorithms, no wasted computation, caching where applicable |
+| Security | 7 | Input validation, no injection, proper authn/authz |
 
-**Trigger phrases**:
-- "evaluate this code"
-- "run eval"
-- "score this implementation"
-- "quality check"
-- "benchmark against criteria"
+Score ranges: 9-10 excellent · 7-8 good · 5-6 adequate · 3-4 below standard · 1-2 poor · 0 failed. Overall = sum + percentage; verdict from thresholds.
 
-## Core Workflow
+## Scope Variants
 
-### Step 1: Define Evaluation Criteria
+Single file · module/directory · skill output (`skill:<name>`) · PR diff (`pr:<num>`) · acceptance criteria (`issue:<num>`).
 
-Establish what "good" looks like for the evaluation target:
+## Workflow
 
-```markdown
-## Evaluation Criteria
+1. **Define criteria** for the target (use defaults, add domain-specific ones). Criteria must be measurable ("functions under 20 lines", not "clean code") and consistent across comparable runs.
+2. **Execute**: static analysis (lint, types, complexity) → pattern/anti-pattern checks → test run + coverage → score each criterion → gap analysis.
+3. **Report**: per-criterion table (score / threshold / status) + overall + per-failure findings with concrete fix suggestions (priority, effort, expected impact).
+4. **Gate semantics**: evaluations can gate PRs — a failed critical criterion blocks merge. Judge trends across runs, not absolute scores; note exceptions when a criterion doesn't apply.
 
-### Correctness (0-10)
-- Does the code do what it's supposed to do?
-- Are edge cases handled?
-- Are error paths covered?
+Criteria starters: code quality — naming per language convention, function ≤20 lines, cyclomatic <10, no silent catches, DRY. Skill effectiveness — task completion, output production-readiness, consistency, graceful failure, integration. Acceptance criteria — each criterion checked with evidence, no partial completions, no regressions.
 
-### Code Quality (0-10)
-- Follows language/framework conventions?
-- Clean, readable, maintainable?
-- Proper abstractions without over-engineering?
+## Integration
 
-### Test Coverage (0-10)
-- Are tests present and comprehensive?
-- Do tests cover edge cases?
-- Are tests maintainable?
-
-### Performance (0-10)
-- Efficient algorithms and data structures?
-- No unnecessary computations?
-- Proper caching where applicable?
-
-### Security (0-10)
-- Input validation?
-- No injection vulnerabilities?
-- Proper auth/authz?
-```
-
-### Step 2: Configure Evaluation Scope
-
-Define what to evaluate:
-
-| Scope | Description | Example |
-|-------|-------------|---------|
-| **Single File** | Evaluate one file | `eval src/auth/login.ts` |
-| **Module** | Evaluate a directory/module | `eval src/auth/` |
-| **Skill Output** | Evaluate what a skill produces | `eval skill:tdd-workflow` |
-| **PR Diff** | Evaluate changes in a PR | `eval pr:42` |
-| **Acceptance Criteria** | Check against issue requirements | `eval issue:150` |
-
-### Step 3: Execute Evaluation
-
-Run the evaluation checks:
-
-1. **Static Analysis**: Lint, type-check, complexity metrics
-2. **Pattern Analysis**: Check against known patterns and anti-patterns
-3. **Test Execution**: Run tests and analyze coverage
-4. **Criteria Matching**: Score each criterion against the defined rubric
-5. **Gap Analysis**: Identify specific areas below threshold
-
-### Step 4: Generate Report
-
-Produce a structured evaluation report:
-
-```markdown
-## Evaluation Report
-
-**Target**: src/auth/login.ts
-**Date**: 2024-01-25
-**Evaluator**: eval-harness
-
-### Summary
-| Criterion | Score | Threshold | Status |
-|-----------|-------|-----------|--------|
-| Correctness | 8/10 | 7/10 | PASS |
-| Code Quality | 7/10 | 7/10 | PASS |
-| Test Coverage | 5/10 | 7/10 | FAIL |
-| Performance | 9/10 | 6/10 | PASS |
-| Security | 6/10 | 7/10 | FAIL |
-
-### Overall: 35/50 (70%) — NEEDS IMPROVEMENT
-
-### Detailed Findings
-
-#### Test Coverage (5/10) — FAIL
-- Missing: Error path tests for network failures
-- Missing: Edge case test for expired tokens
-- Suggestion: Add tests for `handleAuthError()` failure cases
-
-#### Security (6/10) — FAIL
-- Issue: Password not hashed before comparison (line 42)
-- Issue: Session token stored in localStorage (vulnerable to XSS)
-- Suggestion: Use httpOnly cookies for session management
-```
-
-### Step 5: Suggest Improvements
-
-For each failing criterion, provide actionable improvements:
-
-- **Priority**: Critical / High / Medium / Low
-- **Effort**: Estimated effort to fix
-- **Impact**: Expected score improvement
-- **Guidance**: Specific steps to fix
-
-## Evaluation Templates
-
-### Code Quality Evaluation
-
-```markdown
-## Criteria
-- Naming conventions (snake_case, camelCase per language)
-- Function length (max 20 lines recommended)
-- Class size (max 200 lines recommended)
-- Complexity (cyclomatic < 10)
-- Duplication (DRY principle)
-- Error handling (no silent catches)
-```
-
-### Skill Effectiveness Evaluation
-
-```markdown
-## Criteria
-- Task completion (does it achieve the goal?)
-- Output quality (is the result production-ready?)
-- Consistency (same input → same quality output?)
-- Edge case handling (does it fail gracefully?)
-- Integration (works with other skills/agents?)
-```
-
-### Acceptance Criteria Evaluation
-
-```markdown
-## Criteria (from issue/plan)
-- Each acceptance criterion checked off
-- Evidence provided for each check
-- No partial completions
-- No regressions introduced
-```
-
-## Integration with Other Skills
-
-| Skill | Integration |
-|-------|-------------|
-| `verification-loop` | Eval provides criteria, verification enforces them continuously |
-| `continuous-learning` | Eval results feed into learning (what patterns score well) |
-| `strategic-compact` | Compact preserves evaluation results for context |
-| `linting-workflow` | Eval incorporates lint results as a sub-criterion |
-| `code-smells` | Eval uses code smell detection as quality signals |
-| `solid-principles` | Eval checks SOLID compliance as code quality criterion |
-
-## Scoring Guidelines
-
-### Score Ranges
-
-| Range | Label | Description |
-|-------|-------|-------------|
-| 9-10 | Excellent | Production-ready, exemplary implementation |
-| 7-8 | Good | Solid work, minor improvements possible |
-| 5-6 | Adequate | Functional but needs improvement |
-| 3-4 | Below Standard | Significant issues, needs rework |
-| 1-2 | Poor | Major problems, needs complete rewrite |
-| 0 | Failed | Does not meet minimum requirements |
-
-### Threshold Defaults
-
-| Criterion | Default Threshold |
-|-----------|-------------------|
-| Correctness | 7/10 |
-| Code Quality | 7/10 |
-| Test Coverage | 7/10 |
-| Performance | 6/10 |
-| Security | 7/10 |
-
-Thresholds can be customized per project or per evaluation run.
-
-## Best Practices
-
-### Defining Good Criteria
-- Make criteria **measurable**: use numbers, not subjective terms
-- Make criteria **specific**: "Functions under 20 lines" not "Clean code"
-- Make criteria **relevant**: only evaluate what matters for the context
-- Make criteria **consistent**: same criteria across similar evaluations
-
-### Running Evaluations
-- Run evaluations **iteratively**: evaluate, fix, re-evaluate
-- Compare scores **across runs**: track improvement over time
-- Use evaluations **as gates**: don't merge PRs that fail evaluation
-- Document **exceptions**: if a criterion doesn't apply, note why
-
-### Interpreting Results
-- Focus on **trends**, not absolute scores
-- Prioritize **failing criteria** over improving passing ones
-- Consider **context**: a prototype doesn't need production quality
-- Balance **speed and quality**: don't over-optimize scores
-
-## Example Usage
-
-### Evaluate a module before PR
-
-```
-"Run eval on src/auth/ before I create the PR"
-```
-
-The skill will:
-1. Define criteria based on module purpose
-2. Run static analysis, pattern checks, test coverage
-3. Score each criterion
-4. Generate report with pass/fail and suggestions
-5. Block PR creation if any critical criterion fails
-
-### Evaluate skill output quality
-
-```
-"Evaluate the output of tdd-workflow skill"
-```
-
-The skill will:
-1. Define skill effectiveness criteria
-2. Analyze recent skill output
-3. Score consistency, completeness, quality
-4. Suggest skill improvements
+- `verification-loop-skill` — canonical gate contract; eval supplies scoring rubrics, not gate execution
+- `continuous-learning-skill` — learn which patterns score well
+- `strategic-compact-skill` — compact preserves eval results
+- `linting-workflow-skill` / `code-smells-skill` / `solid-principles-skill` — signals feeding the quality criterion
 
 ## References
 
-- `verification-loop` - Continuous verification during implementation
-- `continuous-learning` - Learn from evaluation results
-- `strategic-compact` - Preserve eval context during compaction
+- `verification-loop-skill` — gates and verification during implementation
+- `continuous-learning-skill` — learning from evaluation results
+- `strategic-compact-skill` — preserving eval context
 
 ## Iteration Protocol (opt-in)
 
@@ -282,3 +75,5 @@ When `AUTORESEARCH_PROTOCOL=1`:
 ### Max iterations
 - Default: 25 iterations
 - Hard cap: 100 (explicit `Iterations: unlimited` overrides)
+
+> **Removal note (2026-09-19, #409 trim per LEARNINGS #383 recipe):** dropped the worked criteria/report markdown examples, the evaluation-templates section (compressed to criteria starters), the Example Usage section, and Best Practices prose (compressed into the workflow). Kept verbatim: frontmatter, criteria/threshold/score tables, workflow contract, Iteration Protocol section.

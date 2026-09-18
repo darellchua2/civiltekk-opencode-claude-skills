@@ -1,6 +1,6 @@
 ---
 name: plan-execution-skill
-description: Execute PLAN.md phases with automatic progress tracking. Parses plan, executes tasks sequentially, and auto-invokes plan-updater after each phase completion.
+description: "Soft PLAN.md execution — delegates per step (testing-subagent, code-review-subagent, documentation-subagent) and ticks progress. Triggers: execute plan, implement plan phases. For hard gated execution (per-phase verification gate, auto commit+push): plan-automation-loop-skill."
 license: Apache-2.0
 compatibility: opencode
 metadata:
