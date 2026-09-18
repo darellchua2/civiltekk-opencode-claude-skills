@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.4.0](https://github.com/darellchua2/opencode-config-template/compare/v9.3.2...v9.4.0) (2026-09-18)
+
+### Features
+
+* **plugins:** implement Phase 1 — opencode-auto-continue-v2 core ([95de8de](https://github.com/darellchua2/opencode-config-template/commit/95de8de94ee6803b2f34ac3c86d3ddb2fdeb25a5))
+
+### Bug Fixes
+
+* **plugins:** address code review — rejection safety, own-send guard, test hardening ([358f6d3](https://github.com/darellchua2/opencode-config-template/commit/358f6d330c6beebac6d5bd33926a9ba33640f5ec))
+* **plugins:** round-2 review — per-session own-send guard + coverage notes ([f44861e](https://github.com/darellchua2/opencode-config-template/commit/f44861ec909c312334c7600f8c8f01141aacc9a4))
+
+### Documentation
+
+* **plan:** add PLAN-418.md for [#418](https://github.com/darellchua2/opencode-config-template/issues/418) ([2e2876c](https://github.com/darellchua2/opencode-config-template/commit/2e2876cdc35a8c29dee30c67c6b03cea755cc3b6))
+* **plan:** trace Phase 4 — gate green, all ACs verified ([91e4440](https://github.com/darellchua2/opencode-config-template/commit/91e44409aaa32f19e735c21489a146418ea9db36))
+* **readme:** implement Phase 3 — auto-continue-v2 plugin section ([11559cd](https://github.com/darellchua2/opencode-config-template/commit/11559cda64df3d4a7d47ac237b5361025df3780a))
+
 ## [9.3.2](https://github.com/darellchua2/opencode-config-template/compare/v9.3.1...v9.3.2) (2026-09-18)
 
 ### Code Refactoring
