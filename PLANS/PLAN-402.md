@@ -134,26 +134,31 @@ Cross-module consumers exist (registry ← frontmatter, presets ← registry, ro
 
 ### Phase 5: Registry and docs sync
 
-- [ ] **5.1** Run `node installer/build-registry.mjs` and verify `installer/registry.json` lists `cad-redraw-skill` with correct frontmatter-derived metadata; run `node installer/build-registry.mjs --check` as the drift guard. `docs/registry.json` is out of scope: gitignored copy emitted by `installer/build-site.mjs` at release (release.yml) from the installer registry — never committed, never hand-generated
+- [x] **5.1** Run `node installer/build-registry.mjs` and verify `installer/registry.json` lists `cad-redraw-skill` with correct frontmatter-derived metadata; run `node installer/build-registry.mjs --check` as the drift guard. `docs/registry.json` is out of scope: gitignored copy emitted by `installer/build-site.mjs` at release (release.yml) from the installer registry — never committed, never hand-generated
     — **Why:** AGENTS.md mandates the registry rebuild after any frontmatter change, and `--check` makes the done-when CI-verifiable; asserting the gitignored docs copy would be an unachievable check
     — **Done when:** `installer/registry.json` contains the skill and `--check` exits 0
     — **Consumers affected:** preset derivation (5.2), doc totals (5.3)
-- [ ] **5.2** Hand-edit `installer/presets/pack-cad.json` (verified: the `/tmp/gen-presets.mjs` generator no longer exists and no generator lives in `installer/`): skills array to 15 entries including `cad-redraw-skill`, description count 14 → 15; verify array contents exactly match the registry's cad-family skill set
+    — **Done:** registry --check green (agents=34, skills=150, no drift; rebuild already rode phases 1+4 per the BT-157 deviation); docs/registry.json confirmed untouched; files: none this step (registry.json landed in 1.1/4.1); fixes: none
+- [x] **5.2** Hand-edit `installer/presets/pack-cad.json` (verified: the `/tmp/gen-presets.mjs` generator no longer exists and no generator lives in `installer/`): skills array to 15 entries including `cad-redraw-skill`, description count 14 → 15; verify array contents exactly match the registry's cad-family skill set
     — **Why:** `init.mjs --preset cad` must install the new skill; the derivation source is the freshly rebuilt registry, and the hand-edit path is pre-authorized by the file's own `$comment` fallback and PLAN risk #3
     — **Done when:** pack-cad.json lists 15 skills including `cad-redraw-skill`, description reads 15, and the array equals the registry's cad set
     — **Consumers affected:** installer preset users
-- [ ] **5.3** Update the doc count surfaces: `README.md` CAD & Hardware Design row (~598: count 14 → 15, add `cad-redraw-skill` + blurb), README preset-table row (~266: `15 (CAD & Hardware Design)`), the four hand-maintained totals in README.md (~15, ~250, ~409, ~566: "149 skill directories" → 150), and `opencode_app/README.md` (~30: 149 → 150); agents stay 34, categories stay 24
+    — **Done:** pack-cad.json skills array = 15 incl. cad-redraw-skill, description 14→15, $comment updated to reflect retired generator; verified 15/15 names present in registry and JSON valid; files: installer/presets/pack-cad.json; fixes: none
+- [x] **5.3** Update the doc count surfaces: `README.md` CAD & Hardware Design row (~598: count 14 → 15, add `cad-redraw-skill` + blurb), README preset-table row (~266: `15 (CAD & Hardware Design)`), the four hand-maintained totals in README.md (~15, ~250, ~409, ~566: "149 skill directories" → 150), and `opencode_app/README.md` (~30: 149 → 150); agents stay 34, categories stay 24
     — **Why:** these are number-keyed bare counts (two without BT-157 markers) that no name-keyed sweep can flag; house precedent PLAN-GIT-364 §4.1 bumps totals in-ticket
     — **Done when:** `grep -rn "149 skill" README.md opencode_app/README.md` returns nothing, all five sites read 150, and the preset row reads `15 (CAD & Hardware Design)`
     — **Consumers affected:** doc-consistency checks, humans, installer users
-- [ ] **5.4** Run the documentation-sync-workflow pass (or equivalent manual sweep) across `deploy/setup.sh`, `deploy/setup.ps1`, `opencode_app/README.md`, and banner text for any remaining stale CAD counts or missing listing
+    — **Done:** four README totals 149→150 (lines 15/250/409/566), opencode_app/README.md total 149→150, migration changelog chain appended (Post-#402 → **150**), CAD row 15 + cad-redraw-skill + blurb; files: README.md, opencode_app/README.md; fixes: none
+- [x] **5.4** Run the documentation-sync-workflow pass (or equivalent manual sweep) across `deploy/setup.sh`, `deploy/setup.ps1`, `opencode_app/README.md`, and banner text for any remaining stale CAD counts or missing listing
     — **Why:** the sync workflow is the house gate catching orphan references the targeted edits miss
     — **Done when:** full number- and verb-keyed sweep `grep -rnE "orchestrat(es|ing) 14|149 skill" README.md deploy/ installer/ opencode_app/` returns nothing and the workflow reports zero drift for cad-redraw-skill surfaces
     — **Consumers affected:** all doc surfaces
-- [ ] **5.5** Run full verification gates: `ruff check` + `ruff format --check` on the new scripts (fallback `python -m py_compile` if ruff absent), `bats tests/`, all script `--self-check`s, and the Phase 2 E2E smoke; fix any red
+    — **Done:** equivalent manual sweep per step wording — full number+verb-keyed grep CLEAN (`orchestrat(es|ing) 14|149 skill` over README.md deploy/ installer/ opencode_app/); setup.sh/ps1 verified count-free; files: none; fixes: none
+- [x] **5.5** Run full verification gates: `ruff check` + `ruff format --check` on the new scripts (fallback `python -m py_compile` if ruff absent), `bats tests/`, all script `--self-check`s, and the Phase 2 E2E smoke; fix any red
     — **Why:** the ticket's final acceptance criteria are the gates, and the pipeline PR cannot open on red
     — **Done when:** ruff (or compile fallback), bats, self-checks, and smoke all exit 0
     — **Consumers affected:** PR CI (Step 10), code review
+    — **Done:** ruff check+format green (7 scripts), 7/7 self-checks PASS, full bats suite 331 tests exit 0, E2E smoke re-run PASS; files: none; fixes: none
 
 ## Technical Notes
 
