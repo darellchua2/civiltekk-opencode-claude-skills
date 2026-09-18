@@ -43,6 +43,9 @@ def load_drawing(path: Path):
     except FileNotFoundError:
         print(f"DXF file not found: {path}", file=sys.stderr)
         sys.exit(1)
+    except IOError as exc:
+        print(f"cannot read DXF '{path}': {exc}", file=sys.stderr)
+        sys.exit(1)
     except ezdxf.DXFError as exc:
         print(f"invalid DXF '{path}': {exc}", file=sys.stderr)
         sys.exit(1)

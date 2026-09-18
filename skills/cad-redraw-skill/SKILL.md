@@ -147,12 +147,14 @@ actually run, evidence-level summary, assumptions, and the disposition.
 
 ## DWG input/output
 
-DXF is the default deliverable — AutoCAD, FreeCAD, BricsCAD, and every
-downstream tool in this repo read it natively. DWG is supported through
-external converters with automatic fallback; see `references/linux-toolchain.md`
-for install guidance, converter precedence, fidelity reporting, and the
+DWG is an input format only. `fingerprint.py` reads `.dwg` sources through
+the external converter chain (ODA File Converter via `odafc`, then LibreDWG
+`dwg2dxf`) with automatic fallback; see `references/linux-toolchain.md` for
+install guidance, converter precedence, fidelity reporting, and the
 degradation caveats (proxy objects, SHX text, annotative dimensions, dynamic
-blocks) that are inherent to leaving AutoCAD.
+blocks). No bundled script writes DWG — every deliverable this skill produces
+is DXF. When a DWG file is mandatory, produce and validate the DXF first,
+then convert DXF→DWG externally (e.g., ODA File Converter).
 
 ## Runtime requirements
 

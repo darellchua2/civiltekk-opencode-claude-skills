@@ -182,9 +182,14 @@ def compare(
             None if mean_distance is None else round(mean_distance, 3)
         ),
     }
-    (out_dir / "metrics.json").write_text(
-        json.dumps(metrics, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
+    metrics_path = out_dir / "metrics.json"
+    try:
+        metrics_path.write_text(
+            json.dumps(metrics, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
+    except OSError as exc:
+        print(f"cannot write metrics '{metrics_path}': {exc}", file=sys.stderr)
+        sys.exit(1)
     return metrics
 
 

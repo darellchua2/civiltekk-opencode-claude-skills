@@ -456,7 +456,13 @@ def main(argv: list[str] | None = None) -> int:
     fp = build_fingerprint(
         doc, source.name, "dxf" if source.suffix.lower() == ".dxf" else "dwg", converter
     )
-    json_path, prompt_path = write_outputs(fp, build_prompt(fp), Path(args.output))
+    try:
+        json_path, prompt_path = write_outputs(fp, build_prompt(fp), Path(args.output))
+    except OSError as exc:
+        print(
+            f"cannot write fingerprint outputs '{args.output}': {exc}", file=sys.stderr
+        )
+        return 1
     print(f"fingerprint: {json_path}")
     print(f"redraw prompt: {prompt_path}")
     print(

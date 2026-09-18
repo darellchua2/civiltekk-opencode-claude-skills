@@ -6,6 +6,7 @@ import copy
 import json
 import math
 import re
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -484,6 +485,8 @@ def _validate_constraints(
                             f"(deltas {['%.6g' % d for d in deltas]})",
                         )
                     )
+            elif len(points) == len(refs):
+                skip(f"spacing needs at least 3 references (got {len(refs)})")
         elif kind in ("parallel", "aligned"):
             refs = constraint.get("of") or []
             lines = []
@@ -507,42 +510,56 @@ def _validate_constraints(
             if len(lines) == len(refs) == 2:
                 directions, origins = [], []
                 for line in lines:
-                    start = _point(line["geometry"].get("start"))
-                    end = _point(line["geometry"].get("end"))
+                    geometry = line.get("geometry") or {}
+                    start = _point(geometry.get("start"))
+                    end = _point(geometry.get("end"))
+                    if start is None or end is None:
+                        skip(f"cannot read start/end points of '{line.get('id')}'")
+                        directions = []
+                        break
                     length = math.dist(start, end)
+                    if length <= TOLERANCE:
+                        skip(f"'{line.get('id')}' is zero-length")
+                        directions = []
+                        break
                     directions.append(
                         ((end[0] - start[0]) / length, (end[1] - start[1]) / length)
                     )
                     origins.append(start)
-                cross = (
-                    directions[0][0] * directions[1][1]
-                    - directions[0][1] * directions[1][0]
-                )
-                if abs(cross) > TOLERANCE:
-                    errors.append(
-                        _error(
-                            "constraint",
-                            cid,
-                            f"constraint '{cid}': lines are not parallel (cross {cross:.3g})",
-                        )
+                if len(directions) == 2:
+                    cross = (
+                        directions[0][0] * directions[1][1]
+                        - directions[0][1] * directions[1][0]
                     )
-                elif kind == "aligned":
-                    offset_vector = (
-                        origins[1][0] - origins[0][0],
-                        origins[1][1] - origins[0][1],
-                    )
-                    offset_cross = (
-                        offset_vector[0] * directions[0][1]
-                        - offset_vector[1] * directions[0][0]
-                    )
-                    if abs(offset_cross) > TOLERANCE:
+                    if abs(cross) > TOLERANCE:
                         errors.append(
                             _error(
                                 "constraint",
                                 cid,
-                                f"constraint '{cid}': lines are parallel but not aligned",
+                                f"constraint '{cid}': lines are not parallel"
+                                f" (cross {cross:.3g})",
                             )
                         )
+                    elif kind == "aligned":
+                        offset_vector = (
+                            origins[1][0] - origins[0][0],
+                            origins[1][1] - origins[0][1],
+                        )
+                        offset_cross = (
+                            offset_vector[0] * directions[0][1]
+                            - offset_vector[1] * directions[0][0]
+                        )
+                        if abs(offset_cross) > TOLERANCE:
+                            errors.append(
+                                _error(
+                                    "constraint",
+                                    cid,
+                                    f"constraint '{cid}': lines are parallel"
+                                    " but not aligned",
+                                )
+                            )
+            elif len(lines) == len(refs):
+                skip(f"{kind} needs exactly 2 line references (got {len(refs)})")
     return errors, warnings
 
 
@@ -761,7 +778,7 @@ def draw_spec(spec: dict, output: Path, geometry_only: bool = False) -> list[str
         doc.layers.add(
             name,
             color=layer.get("color", 7),
-            linetype=layer.get("linetype", layer.get("lintetype", "CONTINUOUS")),
+            linetype=layer.get("linetype") or "CONTINUOUS",
         )
     msp = doc.modelspace()
     dropped: list[str] = []
@@ -829,19 +846,19 @@ def draw_spec(spec: dict, output: Path, geometry_only: bool = False) -> list[str
 
 
 def load_spec(path: Path) -> dict:
-    """Load and parse the spec JSON; exit 2 with a named error on environment failure."""
+    """Load and parse the spec JSON; exit 1 with a named error on bad input."""
     try:
         with open(path, encoding="utf-8") as fh:
             return json.load(fh)
     except FileNotFoundError:
         print(f"spec file not found: {path}", file=sys.stderr)
-        sys.exit(2)
+        sys.exit(1)
     except json.JSONDecodeError as exc:
         print(f"invalid spec JSON '{path}': {exc}", file=sys.stderr)
-        sys.exit(2)
+        sys.exit(1)
     except OSError as exc:
         print(f"cannot read spec '{path}': {exc}", file=sys.stderr)
-        sys.exit(2)
+        sys.exit(1)
 
 
 def format_report(report: dict) -> str:
@@ -864,7 +881,11 @@ def format_report(report: dict) -> str:
 def emit_report(report: dict, path: Path | None) -> None:
     """Write the full report JSON to path, or dump it to stdout when no path is given."""
     if path is not None:
-        path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        try:
+            path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        except OSError as exc:
+            print(f"cannot write report '{path}': {exc}", file=sys.stderr)
+            sys.exit(1)
     else:
         print(json.dumps(report, indent=2))
     print(format_report(report))
@@ -1064,6 +1085,45 @@ def self_check() -> int:
             "profile" in codes,
             f"strict-dimensioned + unitless blocked (codes: {sorted(codes)})",
         )
+
+        malformed = copy.deepcopy(spec)
+        malformed["entities"][0]["geometry"].pop("end")
+        result = validate_spec(malformed)
+        _require(result["valid"] is False, "malformed geometry fails validation")
+        _require(
+            any(w["entity"] == "c6" for w in result["warnings"]),
+            "parallel over a line without geometry.end skips with a warning",
+        )
+        zero_length = copy.deepcopy(spec)
+        zero_length["entities"][0]["geometry"]["end"] = [0, 0]
+        result = validate_spec(zero_length)
+        _require(
+            any(w["entity"] == "c6" for w in result["warnings"]),
+            "parallel over a zero-length line skips with a warning",
+        )
+        with tempfile.TemporaryDirectory(prefix="spec-selfcheck-cli-") as tmp:
+            spec_path = Path(tmp) / "malformed-spec.json"
+            spec_path.write_text(json.dumps(malformed), encoding="utf-8")
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    "--spec",
+                    str(spec_path),
+                    "--check-only",
+                ],
+                capture_output=True,
+                text=True,
+            )
+        _require(proc.returncode == 1, "malformed spec exits 1")
+        _require(
+            "Traceback" not in proc.stderr + proc.stdout,
+            "malformed spec reports without a traceback",
+        )
+        _require(
+            "error [schema]" in proc.stdout and "warning [constraint]" in proc.stdout,
+            "malformed spec prints a named report",
+        )
     except AssertionError as exc:
         print(str(exc), file=sys.stderr)
         return 1
@@ -1075,7 +1135,7 @@ def main(argv: list[str] | None = None) -> int:
     """CLI entry: validate (--check-only) and/or draw (--output) a redraw spec."""
     parser = argparse.ArgumentParser(
         description="Validate a redraw spec (references/redraw-spec.md) and draw it to a DXF. "
-        "Exit 0 valid/drawn, 1 invalid spec, 2 environment error."
+        "Exit 0 valid/drawn, 1 bad input or invalid spec, 2 environment error."
     )
     parser.add_argument("--spec", help="redraw spec JSON file")
     parser.add_argument("--output", help="output DXF path (draw mode)")
@@ -1121,12 +1181,17 @@ def main(argv: list[str] | None = None) -> int:
         print(f"draw failed for '{output}': {exc}", file=sys.stderr)
         return 2
     if args.report:
-        Path(args.report).write_text(
-            json.dumps(report, indent=2) + "\n", encoding="utf-8"
-        )
-    drawn = report["evidence_counts"]
+        try:
+            Path(args.report).write_text(
+                json.dumps(report, indent=2) + "\n", encoding="utf-8"
+            )
+        except OSError as exc:
+            print(f"cannot write report '{args.report}': {exc}", file=sys.stderr)
+            return 1
+    total = sum(report["evidence_counts"].values())
+    drawn = total - len(dropped)
     print(
-        f"drew {sum(drawn.values())} entities"
+        f"drew {drawn} of {total} entities"
         f"{' (dropped ' + str(len(dropped)) + ' annotation entities)' if dropped else ''}"
         f" -> {output}"
     )

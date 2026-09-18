@@ -63,3 +63,11 @@ Every run reports: files produced, checks actually run (never "validated"
 in the abstract), fingerprint-diff result, evidence-level counts
 (`known/scaled/inferred/unreadable`), assumptions, warnings, and the
 disposition with its trigger.
+
+## Visual comparison anchors
+
+`compare_visual.py --anchors` reads `anchors.json` with the schema:
+`{"view": <str>, "model": "affine"|"homography", "correspondences":
+[{"source_px": [x, y], "cad_px": [x, y]}, ...]}`. Minimum pairs: 2 for
+affine, 4 for homography. Anchors register the preview onto the source image
+for visual comparison only — they never establish dimensional scale.

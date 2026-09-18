@@ -46,7 +46,7 @@ def sha256_file(path: Path) -> str:
 
 
 def read_image(path: Path) -> dict:
-    """Decode an image into RGB pixels plus DPI metadata; exit 2 when unreadable."""
+    """Decode an image into RGB pixels plus DPI metadata; exit 1 when unreadable."""
     try:
         with Image.open(path) as img:
             img.load()
@@ -54,10 +54,10 @@ def read_image(path: Path) -> dict:
             rgb = np.asarray(img.convert("RGB"), dtype=np.uint8)
     except FileNotFoundError:
         print(f"image file not found: {path}", file=sys.stderr)
-        sys.exit(2)
+        sys.exit(1)
     except Exception as exc:  # PIL raises many error types on corrupt input
         print(f"cannot read image '{path}': {exc}", file=sys.stderr)
-        sys.exit(2)
+        sys.exit(1)
     return {"rgb": rgb, "dpi": info.get("dpi")}
 
 
@@ -303,7 +303,7 @@ def self_check() -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI entry. Exit 0 analyzed (blockers live in the report), 2 unreadable/env."""
+    """CLI entry. Exit 0 analyzed (blockers live in the report), 1 unreadable, 2 env."""
     parser = argparse.ArgumentParser(
         description=(
             "Preflight a raster source for Mode C: hash, resolution, blur, contrast,"
