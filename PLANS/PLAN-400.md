@@ -8,9 +8,9 @@
 
 From ticket #400:
 
-- [ ] bats case: multi-target entry, one target missing + one changed → `update` re-copies the changed target AND reports the entry under `updated`
-- [ ] Report line reflects per-target outcomes without double-counting entries — entries with ≥1 present target land in exactly one of `updated`/`unchanged`; fully-missing entries report per-target `missing` only (ticket-sanctioned)
-- [ ] Full bats suite green; no behavior change to file operations (reporting only)
+- [x] bats case: multi-target entry, one target missing + one changed → `update` re-copies the changed target AND reports the entry under `updated`
+- [x] Report line reflects per-target outcomes without double-counting entries — entries with ≥1 present target land in exactly one of `updated`/`unchanged`; fully-missing entries report per-target `missing` only (ticket-sanctioned)
+- [x] Full bats suite green; no behavior change to file operations (reporting only)
 
 ## Dependency & Consumer Map
 
@@ -22,12 +22,12 @@ From ticket #400:
 
 ### Phase 1: Per-target classification + bats
 
-- [ ] **1.1** `cmdUpdate`: replace the entry-level `touched`/`missingHere` flags with per-target counting — `updatedTargets` (targets whose hash changed) and `missingTargets` (count); entry classified: `plan.updated` if any target updated, else `plan.unchanged` if no target missing, else fully-missing (already listed per-target in `plan.missing` as `name (target)`, counted there). A partially-missing entry that updated counts ONLY under `updated`; its missing target remains in the `missing` detail list. No file-operation changes — the write path already handles each target independently
+- [x] **1.1** `cmdUpdate`: replace the entry-level `touched`/`missingHere` flags with per-target counting — `updatedTargets` (targets whose hash changed) and `missingTargets` (count); entry classified: `plan.updated` if any target updated, else `plan.unchanged` if no target missing, else fully-missing (already listed per-target in `plan.missing` as `name (target)`, counted there). A partially-missing entry that updated counts ONLY under `updated`; its missing target remains in the `missing` detail list. No file-operation changes — the write path already handles each target independently
     — **Why:** CR-6: an entry with one changed + one missing target is reported solely under `missing` although its changed target was re-copied, understating what `update` did.
     — **Done when:** `node --check`; fake-HOME scenario: install `--target both` → remove claude dir → mutate source → `update` prints `updated 1 · ...`, JSON plan has the entry under `updated` and `name (claude)` under `missing`.
     — **Consumers affected:** `update` report line, dry-run JSON, `tests/update.bats`.
 
-- [ ] **1.2** `tests/update.bats`: new case — `add tdd-workflow-skill --target both --yes`; `rm -rf` the claude dir; append a mutation marker to the source (cp backup/restore discipline + teardown fallback); run `update --dry-run` (assert JSON plan: entry under `updated`, `tdd-workflow-skill (claude)` under `missing`, claude dir still absent); then run a real `update` (assert report line `updated 1` and the stderr footer `missing: tdd-workflow-skill (claude)`); assert the opencode copy carries the mutation and the claude dir stays absent
+- [x] **1.2** `tests/update.bats`: new case — `add tdd-workflow-skill --target both --yes`; `rm -rf` the claude dir; append a mutation marker to the source (cp backup/restore discipline + teardown fallback); run `update --dry-run` (assert JSON plan: entry under `updated`, `tdd-workflow-skill (claude)` under `missing`, claude dir still absent); then run a real `update` (assert report line `updated 1` and the stderr footer `missing: tdd-workflow-skill (claude)`); assert the opencode copy carries the mutation and the claude dir stays absent
     — **Why:** The ticket's acceptance is an executable proof of exactly this scenario; the real run prints no JSON, so the plan requires both a dry-run pass (JSON) and a real pass (report line + footer) (REQ-1).
     — **Done when:** `bats tests/update.bats` green (7 cases).
     — **Consumers affected:** CI.

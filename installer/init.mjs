@@ -922,8 +922,8 @@ async function cmdUpdate(args, opts) {
       continue;
     }
 
-    let touched = false, missingHere = false;
-    let wouldContent = null; // agent: the full would-write file content
+    let touched = false, wouldContent = null; // agent: the full would-write file content
+    let missingTargets = 0;
     for (const target of Object.keys(ent.targets)) {
       let wouldHash = null, installedPath = null;
       if (ent.type === "agent") {
@@ -944,7 +944,7 @@ async function cmdUpdate(args, opts) {
             rel === "SKILL.md" ? Buffer.from(stripModelLine(buf.toString("utf8")), "utf8") : buf);
         }
       }
-      if (!existsSync(installedPath)) { plan.missing.push(`${name} (${target})`); missingHere = true; continue; }
+      if (!existsSync(installedPath)) { plan.missing.push(`${name} (${target})`); missingTargets++; continue; }
       if (wouldHash === ent.targets[target]) continue;
       if (!dry) {
         if (ent.type === "agent") {
@@ -964,8 +964,12 @@ async function cmdUpdate(args, opts) {
       }
       touched = true;
     }
-    if (missingHere) continue;
-    plan[touched ? "updated" : "unchanged"].push(name);
+    // Per-target outcome roll-up (#400): an entry that updated ANY target
+    // counts as updated (even if another target is missing — that target is
+    // already listed in plan.missing); fully-missing entries report per-target
+    // only; otherwise unchanged.
+    if (touched) plan.updated.push(name);
+    else if (missingTargets === 0) plan.unchanged.push(name);
   }
 
   if (dry) {
