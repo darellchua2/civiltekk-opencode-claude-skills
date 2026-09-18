@@ -10,6 +10,7 @@
     "documentation-consistency-skill",
     "documentation-sync-workflow-skill",
     "email-drafter-skill",
+    "gh-cli-setup-skill",
     "git-branch-workflow-setup-skill",
     "git-compact-commits-skill",
     "git-semantic-commits-skill",

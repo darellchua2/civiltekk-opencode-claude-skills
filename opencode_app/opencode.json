@@ -122,6 +122,11 @@
         },
         {
             "action": "skill",
+            "resource": "gh-cli-setup-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
             "resource": "grilling-skill",
             "effect": "allow"
         },

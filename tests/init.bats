@@ -208,3 +208,90 @@ EOC
   echo "$output" | grep -q "deprecated"
   [ -f "$HOME/.claude/skills/tdd-workflow-skill/SKILL.md" ]
 }
+
+# ---- #401: project-scope installs honor agent-overrides.json (project > global > tier) ----
+
+@test "project install honors a global agent-overrides.json pin (#401a)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME/.config/opencode"
+  echo '{"explorer-subagent": {"model": "test/global-pin"}}' > "$HOME/.config/opencode/agent-overrides.json"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  grep -q "^model: test/global-pin$" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
+}
+
+@test "project-level pin outranks the global pin (#401b)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME/.config/opencode"
+  echo '{"explorer-subagent": {"model": "test/global-pin"}}' > "$HOME/.config/opencode/agent-overrides.json"
+  mkdir -p "$TMP_PROJ/.opencode"
+  echo '{"explorer-subagent": {"model": "test/project-pin"}, "code-review-subagent": {"model": "test/other-pin"}}' > "$TMP_PROJ/.opencode/agent-overrides.json"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  grep -q "^model: test/project-pin$" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
+  ! grep -q "test/global-pin" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
+  ! grep -q "test/other-pin" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
+}
+
+@test "project install with no pins injects the tier default by value (#401c)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  grep -q "^model: zai-coding-plan/glm-5.3-flash$" "$TMP_PROJ/.opencode/agents/explorer-subagent.md"
+}
+
+# ---- #412: project models.json is conflict-gated like opencode.json (no clobber) ----
+
+@test "hand-authored models.json survives project install with a --force hint (#412a)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME" "$TMP_PROJ/.opencode"
+  echo '{"tiers": {"fast": "hand/authored"}}' > "$TMP_PROJ/.opencode/models.json"
+  run $INIT add explorer-subagent --project "$TMP_PROJ" --yes
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "conflict (skipped, use --force).*models.json"
+  grep -q "hand/authored" "$TMP_PROJ/.opencode/models.json"
+  ! grep -q "glm-5.3-flash" "$TMP_PROJ/.opencode/models.json"
+}
+
+@test "--force overwrites models.json and the manifest claims it (#412b)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME" "$TMP_PROJ/.opencode"
+  echo '{"tiers": {"fast": "hand/authored"}}' > "$TMP_PROJ/.opencode/models.json"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes --force >/dev/null 2>&1
+  grep -q '"\$comment"' "$TMP_PROJ/.opencode/models.json"
+  [ "$(jq_get "d['modelsPath']" < "$TMP_PROJ/.opencode/.opencode-init.manifest.json")" = "$TMP_PROJ/.opencode/models.json" ]
+}
+
+@test "previously-generated models.json re-installs silently (#412c)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  run $INIT add explorer-subagent --project "$TMP_PROJ" --yes
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"conflict (skipped"* ]]
+  grep -q "glm-5.3-flash" "$TMP_PROJ/.opencode/models.json"
+}
+
+@test "hand-authored models.json keeps protection across re-installs (#412d)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME" "$TMP_PROJ/.opencode"
+  echo '{"tiers": {"fast": "hand/authored"}}' > "$TMP_PROJ/.opencode/models.json"
+  # run 1: warn + skip; manifest must NOT claim the file (claim only what we wrote)
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  [ "$(jq_get "d.get('modelsPath')" < "$TMP_PROJ/.opencode/.opencode-init.manifest.json")" = "None" ]
+  # run 2: warning repeats, file still intact — no silent clobber
+  run $INIT add code-review-subagent --project "$TMP_PROJ" --yes
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "conflict (skipped, use --force).*models.json"
+  grep -q "hand/authored" "$TMP_PROJ/.opencode/models.json"
+}
+
+@test "hand-authored opencode.json survives re-installs too (configPath twin, #412)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME" "$TMP_PROJ/.opencode"
+  echo '{"mcp": {"myserver": {"type": "local", "command": ["echo"]}}}' > "$TMP_PROJ/.opencode/opencode.json"
+  $INIT add explorer-subagent --project "$TMP_PROJ" --yes >/dev/null 2>&1
+  run $INIT add code-review-subagent --project "$TMP_PROJ" --yes
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "conflict (skipped, use --force).*opencode.json"
+  grep -q "myserver" "$TMP_PROJ/.opencode/opencode.json"
+  [ "$(jq_get "d.get('configPath')" < "$TMP_PROJ/.opencode/.opencode-init.manifest.json")" = "None" ]
+}

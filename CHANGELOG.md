@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.3.0](https://github.com/darellchua2/opencode-config-template/compare/v9.2.1...v9.3.0) (2026-09-18)
+
+### Features
+
+* **skills:** ticket/PR attribution + gh-cli fallback ([#404](https://github.com/darellchua2/opencode-config-template/issues/404)) ([#415](https://github.com/darellchua2/opencode-config-template/issues/415)) ([b7c81ac](https://github.com/darellchua2/opencode-config-template/commit/b7c81ac8a7d283cf2a45c70cfd160655af8630ea))
+
+### Documentation
+
+* **learnings:** commit local memory backlog (8 entries + index + evidence update) ([ec82ca8](https://github.com/darellchua2/opencode-config-template/commit/ec82ca86b6e39058a84cb1290e11ad825b4682ae)), closes [383/#385-era](https://github.com/383/opencode-config-template/issues/385-era) [#383](https://github.com/darellchua2/opencode-config-template/issues/383)
+
+## [9.2.1](https://github.com/darellchua2/opencode-config-template/compare/v9.2.0...v9.2.1) (2026-09-18)
+
+### Bug Fixes
+
+* **init:** conflict-gate project models.json like opencode.json ([#412](https://github.com/darellchua2/opencode-config-template/issues/412)) ([#413](https://github.com/darellchua2/opencode-config-template/issues/413)) ([30784da](https://github.com/darellchua2/opencode-config-template/commit/30784dae55f79f527116dd4d7d272a58f4b59697))
+
+## [9.2.0](https://github.com/darellchua2/opencode-config-template/compare/v9.1.3...v9.2.0) (2026-09-18)
+
+### Features
+
+* **agents:** route dwg/image redraw to cad-redraw-skill ([01dd772](https://github.com/darellchua2/opencode-config-template/commit/01dd772cc591978df71b37f578bf2c8dc6ea6f22))
+* **skills:** add cad-redraw fingerprint and spec-to-dxf scripts ([0f14c74](https://github.com/darellchua2/opencode-config-template/commit/0f14c74863c00fc14ec03a9473a219e6e15bd87e))
+* **skills:** add cad-redraw image pipeline scripts ([751fe4c](https://github.com/darellchua2/opencode-config-template/commit/751fe4c50f7157efb1acfd3d96173f0473105082))
+* **skills:** add cad-redraw-skill contract and references ([16acdec](https://github.com/darellchua2/opencode-config-template/commit/16acdec655ce6c3021d7681b20870cc77f1086f3))
+
+### Bug Fixes
+
+* **skills:** close re-review residuals in cad-redraw loaders ([507099d](https://github.com/darellchua2/opencode-config-template/commit/507099dec50c8ab9c232f708ee42ce4a235642ed))
+* **skills:** harden cad-redraw validators per code review ([8bc684b](https://github.com/darellchua2/opencode-config-template/commit/8bc684b1246be3d8d786e8388002eb79ead9cc0c))
+
+### Documentation
+
+* **learnings:** capture skill-add count blast radius and docs-registry artifact ([8e39ad7](https://github.com/darellchua2/opencode-config-template/commit/8e39ad71495aaeb28a0a696d364aa253ab1701c2))
+* **learnings:** capture validator-crash anti-pattern from [#402](https://github.com/darellchua2/opencode-config-template/issues/402) review ([081210f](https://github.com/darellchua2/opencode-config-template/commit/081210f8d003a204e2f755e7078885671284adb2))
+* **plan:** add PLAN-402.md for [#402](https://github.com/darellchua2/opencode-config-template/issues/402) ([ecb2a16](https://github.com/darellchua2/opencode-config-template/commit/ecb2a16f43165225c3ceab93e184b6ef195f4872))
+* **plan:** amend PLAN-402.md per architecture review ([7dce1b3](https://github.com/darellchua2/opencode-config-template/commit/7dce1b3417b6bce323ec31cef38f99310fbf7f7b))
+* **plan:** ride registry rebuild with phases 1 and 4 (BT-157 per-commit invariant) ([e6602a9](https://github.com/darellchua2/opencode-config-template/commit/e6602a9cd28013002a17cc699997d8b04fab3013))
+* **plan:** tick PLAN-402 acceptance criteria ([99694ab](https://github.com/darellchua2/opencode-config-template/commit/99694ab4520b7251bb435458fdff4994b7a56500))
+* **skills:** fill missing helper docstrings in spec_to_dxf ([476f8da](https://github.com/darellchua2/opencode-config-template/commit/476f8da4800f9b903b3a2f94e057e622993299bb))
+
+## [9.1.3](https://github.com/darellchua2/opencode-config-template/compare/v9.1.2...v9.1.3) (2026-09-18)
+
+### Bug Fixes
+
+* **installer:** project-scope installs honor agent-overrides.json ([#401](https://github.com/darellchua2/opencode-config-template/issues/401)) ([#410](https://github.com/darellchua2/opencode-config-template/issues/410)) ([889e7a7](https://github.com/darellchua2/opencode-config-template/commit/889e7a7fcbdd94607d1cf159563e62d7b88cabe9))
+
 ## [9.1.2](https://github.com/darellchua2/opencode-config-template/compare/v9.1.1...v9.1.2) (2026-09-18)
 
 ### Bug Fixes

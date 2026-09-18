@@ -121,6 +121,8 @@ for label in "${!LABELS[@]}"; do
 done
 ```
 
+> **Intended behavior (not accidental):** this step seeds the fixed 16-label taxonomy into any repo it runs in — that is the design. The fixed set is the consistent baseline across repos (`gh label list` existence check → `gh label create` for missing). Existing custom repo labels coexist untouched: no migration, no conflict handling, no per-repo taxonomy adoption.
+
 ### Step 2: Analyze Issue Content
 
 ```bash
