@@ -13,7 +13,7 @@
 - [x] `restart-opencode-pm2.sh` replaced with `restart-opencode-docker.sh` (compose-based, with health checks)
 - [x] Host `.env` sets `OPENCODE_PORT=4096` so the `opencode-ha.civiltekk.com` proxy works unchanged
 - [ ] Container healthy: `/api/command` registers the goal command; TS plugins load (vibeguard, auto-continue, learnings-autoinject)
-- [ ] No "sanctioned: symlink bridge" paragraphs or live bridge path references remain in `AGENTS.md`, `README.md`, `opencode_app/`, `skills/`, `agents/`
+- [x] No "sanctioned: symlink bridge" paragraphs or live bridge path references remain in `AGENTS.md`, `README.md`, `opencode_app/`, `skills/`, `agents/`
 - [ ] Local endpoint (4096) and public endpoint return 200
 
 ## Dependency & Consumer Map
@@ -78,30 +78,35 @@
 
 ### Phase 3: Docs + consumer sweep
 
-- [ ] **3.1** Root `AGENTS.md` §Source of Truth: drop the "(A symlink bridge under `opencode_app/.opencode/` serves the local pm2 runtime only — sanctioned: symlink bridge.)" parenthetical
+- [x] **3.1** Root `AGENTS.md` §Source of Truth: drop the "(A symlink bridge under `opencode_app/.opencode/` serves the local pm2 runtime only — sanctioned: symlink bridge.)" parenthetical
     — **Why:** the sanctioned exception is gone; leaving it teaches future sessions a dead mechanism
     — **Done when:** `grep -n "symlink bridge" AGENTS.md` returns nothing
     — **Consumers affected:** every future session
+    — **Done:** bridge parenthetical dropped from §Source of Truth; files: AGENTS.md; fixes: none
 
-- [ ] **3.2** `opencode_app/AGENTS.md`: rewrite the bridge sentences (container-load line and the two "in a local checkout the same path is a sanctioned symlink bridge" clauses) to describe COPY-at-build sourcing only
+- [x] **3.2** `opencode_app/AGENTS.md`: rewrite the bridge sentences (container-load line and the two "in a local checkout the same path is a sanctioned symlink bridge" clauses) to describe COPY-at-build sourcing only
     — **Why:** same dead-mechanism removal, scoped doc
     — **Done when:** `grep -n "symlink" opencode_app/AGENTS.md` returns nothing; the agents/skills loading sentences describe the build-time COPY
     — **Consumers affected:** opencode_app-scoped sessions
+    — **Done:** both loading sentences now describe build-time COPY only; files: opencode_app/AGENTS.md; fixes: none
 
-- [ ] **3.3** `opencode_app/README.md`: remove the bridge tree entry, the symlink/Windows-materialization paragraph, and the `.dockerignore` "symlink bridge" mention; remove the `restart-opencode-pm2.sh` local-serving mention (:32 — dead after 2.2); fix or drop the LibreOffice claim (:180/:184 — no libreoffice exists in the Dockerfile); document the 3-stage build layout and the `OPENCODE_VERSION` pin surfaces, naming `.env.example` as the source of the host `.env` pin
+- [x] **3.3** `opencode_app/README.md`: remove the bridge tree entry, the symlink/Windows-materialization paragraph, and the `.dockerignore` "symlink bridge" mention; remove the `restart-opencode-pm2.sh` local-serving mention (:32 — dead after 2.2); fix or drop the LibreOffice claim (:180/:184 — no libreoffice exists in the Dockerfile); document the 3-stage build layout and the `OPENCODE_VERSION` pin surfaces, naming `.env.example` as the source of the host `.env` pin
     — **Why:** the operator-facing doc must describe the image people now build; the pin-surface note prevents the exact "bumped only one surface" trap this ticket fixes; the LibreOffice and pm2 mentions are dead references of the same class
     — **Done when:** `grep -n "symlink" opencode_app/README.md` returns nothing; `grep -n "pm2" opencode_app/README.md` returns nothing; the README names the three stages and lists all pin surfaces including `.env.example`
     — **Consumers affected:** operators/users
+    — **Done:** bridge tree+Windows paragraph replaced, build bullet documents 3 stages + 3 pin surfaces incl .env.example, security bullet and LibreOffice claim corrected, pm2 mention gone; files: opencode_app/README.md; fixes: restored the house-required '146 skill directories' count literal after test_count_drift flagged its removal (bats 308)
 
-- [ ] **3.4** Strip live bridge references from skills and agents (body-only edits, no frontmatter changes — frontmatter edits would force a `build-registry.mjs` rebuild): `skills/opencode-skills-maintainer-skill/SKILL.md` (`:17` → root `skills/`; `:25` → `cd skills`; `:45` → `wc -l skills/*/SKILL.md | sort -rn | head -20`), `skills/opencode-skill-creation-skill/SKILL.md:45` (delete the `opencode_app/.opencode/` symlink-bridge clause, keep "never deployed copies"), `agents/opencode-tooling-subagent.md:104` (delete the sanctioned-symlink-bridge clause, keep "deployed to user space")
+- [x] **3.4** Strip live bridge references from skills and agents (body-only edits, no frontmatter changes — frontmatter edits would force a `build-registry.mjs` rebuild): `skills/opencode-skills-maintainer-skill/SKILL.md` (`:17` → root `skills/`; `:25` → `cd skills`; `:45` → `wc -l skills/*/SKILL.md | sort -rn | head -20`), `skills/opencode-skill-creation-skill/SKILL.md:45` (delete the `opencode_app/.opencode/` symlink-bridge clause, keep "never deployed copies"), `agents/opencode-tooling-subagent.md:104` (delete the sanctioned-symlink-bridge clause, keep "deployed to user space")
     — **Why:** these are present-tense instructions (one is a live `cd` command) that hard-fail the moment 2.1 lands; body-only edits keep registry/count invariants untouched
     — **Done when:** `grep -rn "opencode_app/.opencode" skills/ agents/` returns nothing; `grep -rn "symlink bridge" skills/ agents/` returns nothing
     — **Consumers affected:** sessions running skill audits, skill creation, and tooling/config work
+    — **Done:** maintainer :17/:25/:45 repointed to root skills/, creation :45 clause deleted, tooling :104 clause deleted — body-only, no frontmatter touched; files: skills/opencode-skills-maintainer-skill/SKILL.md, skills/opencode-skill-creation-skill/SKILL.md, agents/opencode-tooling-subagent.md; fixes: none
 
-- [ ] **3.5** Run the reference gate, two patterns: (a) path — `grep -rnE 'opencode_app[/\\]\.opencode' README.md AGENTS.md opencode_app/ skills/ agents/ .dockerignore docker-compose.yml .env.example restart-opencode-docker.sh`; (b) prose — `grep -rn "symlink bridge" AGENTS.md README.md opencode_app/ skills/ agents/` (do NOT gate on bare `sanctioned` — false positive at `skills/markitdown-mcp-skill/SKILL.md:64`, the markitdown enablement flow). Both return nothing outside `PLANS/`, `LEARNINGS/`, `docs/`, `research/` (historical)
+- [x] **3.5** Run the reference gate, two patterns: (a) path — `grep -rnE 'opencode_app[/\\]\.opencode' README.md AGENTS.md opencode_app/ skills/ agents/ .dockerignore docker-compose.yml .env.example restart-opencode-docker.sh`; (b) prose — `grep -rn "symlink bridge" AGENTS.md README.md opencode_app/ skills/ agents/` (do NOT gate on bare `sanctioned` — false positive at `skills/markitdown-mcp-skill/SKILL.md:64`, the markitdown enablement flow). Both return nothing outside `PLANS/`, `LEARNINGS/`, `docs/`, `research/` (historical)
     — **Why:** house grep gate (PLAN-381 lineage) proving no live references to the deleted bridge paths remain — the prose pattern exists because `agents/opencode-tooling-subagent.md` mentions the bridge without a literal path, and a path-only gate would pass green over it
     — **Done when:** both greps return empty
     — **Consumers affected:** none (verification only)
+    — **Done:** path gate (9 surfaces) and prose gate both return empty; files: none (verification); fixes: none
 
 ### Phase 4: End-to-end cutover + verification
 
@@ -161,3 +166,4 @@ None. No `blocked-by:` tickets.
 
 - Phase 1 (1.1–1.3): GATE a14eee2 lint=n.a typecheck=n.a build=t unit=t e2e=n.a — compose build green; smokes: opencode v2.0.8, pandas 3.0.6 in venv, 34/147/8 content entries; bats 334/334 ok
 - Phase 2 (2.1–2.3): GATE e804701 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bridge + pm2 script removed, bash -n clean, host .env at 2.0.8/4096; bats 334/334 ok
+- Phase 3 (3.1–3.5): GATE PENDING lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — two-pattern reference gate empty on 9 surfaces; bats 334/334 ok after restoring the enforced 146-count literal

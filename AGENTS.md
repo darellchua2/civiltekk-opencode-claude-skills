@@ -11,7 +11,7 @@ Multi-mode OpenCode configurator:
 
 ## Source of Truth
 
-The root `skills/` and `agents/` dirs are the **single source** for skills and agents. (A symlink bridge under `opencode_app/.opencode/` serves the local pm2 runtime only — sanctioned: symlink bridge.) Never edit deployed `~/.config/opencode/` copies — edit source, then redeploy.
+The root `skills/` and `agents/` dirs are the **single source** for skills and agents. Never edit deployed `~/.config/opencode/` copies — edit source, then redeploy.
 
 ## Secret Masking
 

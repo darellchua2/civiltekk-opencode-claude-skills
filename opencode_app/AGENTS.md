@@ -19,11 +19,11 @@ This is a **containerized OpenCode instance** running as a web endpoint. Key dif
 
 ## Available Agents
 
-Agents are loaded from `.opencode/agents/` — in the container image these are COPY'd from the repository root `agents/` directory at build time; in a local checkout the same path is a sanctioned symlink bridge to the root content.
+Agents are loaded from `.opencode/agents/` — COPY'd from the repository root `agents/` directory into the image at build time.
 
 ## Available Skills
 
-Skills are loaded from `.opencode/skills/` — in the container image these are COPY'd from the repository root `skills/` directory at build time; in a local checkout the same path is a sanctioned symlink bridge to the root content.
+Skills are loaded from `.opencode/skills/` — COPY'd from the repository root `skills/` directory into the image at build time.
 
 ## Branch Workflow Setup Signal
 
