@@ -97,10 +97,11 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
     — **Done:** section added after Source of Truth with all four statements + the declared modifier→slide exception rule; files: AGENTS.md; fixes: none
 
 ### Phase 5: Isolation guard test
-- [ ] **5.1** Create `tests/test_skill_isolation.bats`: (a) no file under `skills/**` computes a path escaping its skill dir (`../_common`, `parent.parent.parent`/`parents[2]` `_common` resolution, `.opencode/skills/_common`, sibling `*-skill` path references in code — except the declared allowlisted `pptx-template-modifier-skill → pptx-generate-slide-skill` edge); (b) the three vendored `scripts/_common` trees are pairwise byte-identical (`diff -r`)
+- [x] **5.1** Create `tests/test_skill_isolation.bats`: (a) no file under `skills/**` computes a path escaping its skill dir (`../_common`, `parent.parent.parent`/`parents[2]` `_common` resolution, `.opencode/skills/_common`, sibling `*-skill` path references in code — except the declared allowlisted `pptx-template-modifier-skill → pptx-generate-slide-skill` edge); (b) the three vendored `scripts/_common` trees are pairwise byte-identical (`diff -r`)
     — **Why:** the contract needs a mechanical gate or it decays with the next skill addition (AC5, AC2 regression cover).
     — **Done when:** `bats tests/test_skill_isolation.bats` green.
     — **Consumers affected:** local test suite, future authors.
+    — **Done:** 4 guards shipped; sibling scan scoped to runtime carriers (SKILL.md + *.py) after it correctly flagged slide's design-doc file-tree diagram as prose-only; mutation canary proves each test fails on exactly its own violation class (M1 shared-common→test1, M2 py-sibling→test3, M3 drift→test4, M4 SKILL.md-sibling→test3); files: tests/test_skill_isolation.bats; fixes: sibling-scan scope (docs/** prose excluded — diagram false positive)
 
 ### Phase 6: Full verification gates
 - [ ] **6.1** Run all three pptx skills' pytest suites standalone (`python3 -m pytest` from each `scripts/` dir) and the full bats suite (`bats tests/`)
@@ -138,4 +139,5 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
 - Phase 2 (2.1–2.5): GATE 8ea7258 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — slide pytest 529 passed/9 skipped (incl. vendored 23), modifier 120 passed, full bats 341/341 ok; vendored trees pairwise identical after cleanup; PLAN amended pre-commit (6f4132e) to declare modifier→slide handoff
 - Phase 3 (3.1): GATE c7a4d0e lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — repo-wide grep zero `skills/_common` refs (excl. PLANS/.git); full bats suite 341/341 ok
 - Phase 4 (4.1): GATE 832e73b lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — full bats suite 341/341 ok; section verified present with all four contract statements + exception rule
+- Phase 5 (5.1): GATE 1c568b1 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — guard 4/4 ok; mutation canary (4 planted violations → each caught by exactly its test); full bats suite 345/345 ok
 
