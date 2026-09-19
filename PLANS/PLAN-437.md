@@ -52,30 +52,35 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
     — **Done:** created `scripts/` dir + vendored tree; `diff -r` vs 1.1/1.2 empty; files: `skills/pptx-generate-template-skill/scripts/_common/`; fixes: none
 
 ### Phase 2: Rewire all path resolutions to the in-skill vendored copy
-- [ ] **2.1** In `pptx-generate-slide-skill`: change `_COMMON_SCRIPTS` in `scripts/ppt_builder.py`, `scripts/tests/conftest.py`, and any `_common` path computation in `scripts/tests/test_common_invariants.py`, `test_fingerprint_resolution.py`, `test_multipass_render_merge.py`, `test_render_contract.py` from the `parent.parent.parent / "_common" / "scripts"` sibling escape to `Path(__file__)-relative own-dir "scripts/_common"`; repoint the C1 invariant (vendored `_common` must not import back into `ppt_builder`) and supersede PLAN-GIT-72 comments (note: per-skill vendoring per #437)
+- [x] **2.1** In `pptx-generate-slide-skill`: change `_COMMON_SCRIPTS` in `scripts/ppt_builder.py`, `scripts/tests/conftest.py`, and any `_common` path computation in `scripts/tests/test_common_invariants.py`, `test_fingerprint_resolution.py`, `test_multipass_render_merge.py`, `test_render_contract.py` from the `parent.parent.parent / "_common" / "scripts"` sibling escape to `Path(__file__)-relative own-dir "scripts/_common"`; repoint the C1 invariant (vendored `_common` must not import back into `ppt_builder`) and supersede PLAN-GIT-72 comments (note: per-skill vendoring per #437)
     — **Why:** the vendored copy replaces the sibling escape; every `sys.path` must resolve inside the skill or imports fail at runtime (AC1/AC2).
     — **Done when:** `grep -rn '_common' skills/pptx-generate-slide-skill` shows only own-dir `scripts/_common` refs, and `python3 -m pytest` passes from `skills/pptx-generate-slide-skill/scripts`.
     — **Consumers affected:** slide engine runtime, slide pytest suite.
+    — **Done:** rewired ppt_builder.py + conftest.py + test_multipass_render_merge.py path escapes; test_common_invariants docstring re-scoped (locator was already import-relative); fingerprint/render tests carry prose-only mentions (remain accurate); vendored-copy resolution proven via `layout_contract.__file__`; files: scripts/ppt_builder.py, scripts/tests/{conftest,test_common_invariants,test_multipass_render_merge}.py; fixes: none
 
-- [ ] **2.2** In `pptx-template-modifier-skill`: same rewire in `scripts/constraint_checker.py`, `designer_promoter.py`, `layout_creator.py`, `master_cloner.py`, `state_machine.py`, `scripts/tests/conftest.py`, and any test file resolving `_common` (`test_master_cloner.py`, `test_masterless_guards.py`, `test_master_background.py`)
+- [x] **2.2** In `pptx-template-modifier-skill`: same rewire in `scripts/constraint_checker.py`, `designer_promoter.py`, `layout_creator.py`, `master_cloner.py`, `state_machine.py`, `scripts/tests/conftest.py`, and any test file resolving `_common` (`test_master_cloner.py`, `test_masterless_guards.py`, `test_master_background.py`)
     — **Why:** identical sibling-escape pattern via `parents[2] / "_common" / "scripts"`.
     — **Done when:** own-dir-only refs remain; pytest passes from `skills/pptx-template-modifier-skill/scripts`.
     — **Consumers affected:** modifier scripts runtime, modifier pytest suite.
+    — **Done:** rewired 4 scripts (layout_creator, state_machine, constraint_checker, master_cloner — designer_promoter had no own bootstrap), conftest.py, test_master_cloner.py, test_masterless_guards.py; pytest 120 passed; files: scripts/{constraint_checker,layout_creator,master_cloner,state_machine}.py, scripts/tests/{conftest,test_master_cloner,test_masterless_guards}.py; fixes: none
 
-- [ ] **2.3** In `pptx-generate-template-skill/SKILL.md`: replace all 7 `_common` references (5× `sys.path.insert(0,'.opencode/skills/_common/scripts')`, the engine-location prose at line 40, the engine reference at line 233) with `.opencode/skills/pptx-generate-template-skill/scripts/_common` and the vendored layout
+- [x] **2.3** In `pptx-generate-template-skill/SKILL.md`: replace all 7 `_common` references (5× `sys.path.insert(0,'.opencode/skills/_common/scripts')`, the engine-location prose at line 40, the engine reference at line 233) with `.opencode/skills/pptx-generate-template-skill/scripts/_common` and the vendored layout
     — **Why:** the SKILL.md is the runtime instruction the deployed agent executes; a stale path breaks the skill for every `npx add` user.
     — **Done when:** `grep -c '_common' SKILL.md` refs all point at the skill's own dir; no `.opencode/skills/_common` remains.
     — **Consumers affected:** agent runtime on end-user machines.
+    — **Done:** 5 sys.path lines + engine prose + engine-path reference now point at own scripts/_common; files: SKILL.md; fixes: none
 
-- [ ] **2.4** Update `agents/pptx-specialist-subagent.md` `_common` references to the per-skill vendored layout
+- [x] **2.4** Update `agents/pptx-specialist-subagent.md` `_common` references to the per-skill vendored layout
     — **Why:** the subagent routes pptx work and describes where the engine lives; stale docs misroute future edits back to a deleted dir.
     — **Done when:** no `skills/_common` reference remains in `agents/`.
     — **Consumers affected:** pptx-specialist-subagent.
+    — **Done:** 4 sys.path lines repointed per driving skill (template-check→generate-template's copy, render stages→slide's, modifier flow→modifier's); files: agents/pptx-specialist-subagent.md; fixes: none
 
-- [ ] **2.5** Declare the modifier→slide handoff: add a Prerequisites section to `pptx-template-modifier-skill/SKILL.md` naming `pptx-generate-slide-skill` with its `npx … add` install command (the fill engine import at line 66 is an intentional capability split, kept per #437); delete dead `_REPO_ROOT = _SCRIPT_DIR.parents[3]` escape in slide `ppt_builder.py` (computed, never used)
+- [x] **2.5** Declare the modifier→slide handoff: add a Prerequisites section to `pptx-template-modifier-skill/SKILL.md` naming `pptx-generate-slide-skill` with its `npx … add` install command (the fill engine import at line 66 is an intentional capability split, kept per #437); delete dead `_REPO_ROOT = _SCRIPT_DIR.parents[3]` escape in slide `ppt_builder.py` (computed, never used)
     — **Why:** Phase 2 re-audit found deploy-path sibling refs (`\.opencode/skills/<sibling>/scripts`) the original `../`-relative audit grep missed; the split stays intentional, so it must be declared for `npx add` users and pinned in the Phase 5 allowlist rather than silently banned or silently kept.
     — **Done when:** modifier SKILL.md carries the prerequisite + install hint; `_REPO_ROOT` gone; the only sibling path refs under `skills/` are the declared modifier→slide ones.
     — **Consumers affected:** modifier skill end users (install guidance), slide ppt_builder (dead line removed), Phase 5 guard (allowlist source).
+    — **Done:** Prerequisites block added naming pptx-generate-slide-skill + npx install command; `_REPO_ROOT` deleted from ppt_builder.py; dead `_SKILLS/_REPO_ROOT/_FILLER_SCRIPTS` lines removed identically from all 3 vendored test_master_repairer.py copies (pairwise identity re-proven); sibling-path grep shows only the 2 declared modifier→slide refs; files: pptx-template-modifier-skill/SKILL.md, pptx-generate-slide-skill/scripts/ppt_builder.py, 3× scripts/_common/tests/test_master_repairer.py; fixes: none
 
 ### Phase 3: Delete the shared package
 - [ ] **3.1** `git rm -r skills/_common`
@@ -128,4 +133,5 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
 ## Gate Log
 
 - Phase 1 (1.1–1.3): GATE 2c04437 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — full bats suite 341/341 ok exit 0; pairwise `diff -r` of the three vendored trees empty; lint/typecheck/build: none configured (no scripts/Makefile manifests)
+- Phase 2 (2.1–2.5): GATE 8ea7258 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — slide pytest 529 passed/9 skipped (incl. vendored 23), modifier 120 passed, full bats 341/341 ok; vendored trees pairwise identical after cleanup; PLAN amended pre-commit (6f4132e) to declare modifier→slide handoff
 
