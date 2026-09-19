@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.8.0](https://github.com/darellchua2/opencode-config-template/compare/v9.7.0...v9.8.0) (2026-09-19)
+
+### Features
+
+* **skills:** implement Phase 1 — to_dwg.py ODA writer with guard-first contract ([4f5cbf8](https://github.com/darellchua2/opencode-config-template/commit/4f5cbf82dea31c7c82f6c4624fc1d41119d34514))
+
+### Bug Fixes
+
+* **skills:** apply review findings — real odafc.convert API, guarded output paths ([74139b4](https://github.com/darellchua2/opencode-config-template/commit/74139b42677b80a28373310f47d04861445d508c))
+
+### Documentation
+
+* **plan:** add PLAN-414.md for [#414](https://github.com/darellchua2/opencode-config-template/issues/414) ([381aefc](https://github.com/darellchua2/opencode-config-template/commit/381aefc8c1c5c1bb5442902fc1f5aec8b7e850c1))
+* **plan:** implement Phase 3 — verification gate green, tick ACs ([711cd4e](https://github.com/darellchua2/opencode-config-template/commit/711cd4e21980e59d0c5824f39246e3b7a8a651b7))
+* **skills:** apply review round-2 — PLAN iteration note, Mode R carve-out, DISPLAY note ([6ccafea](https://github.com/darellchua2/opencode-config-template/commit/6ccafea799887a8e1760771ffbcec79c824b69d1))
+* **skills:** implement Phase 2 — DWG deliverable wording + toolchain writer path ([8dd0ceb](https://github.com/darellchua2/opencode-config-template/commit/8dd0ceb10808d5313bf06ae23ad47609bc6e21fc))
+
 ## [9.7.0](https://github.com/darellchua2/opencode-config-template/compare/v9.6.0...v9.7.0) (2026-09-19)
 
 ### Features
