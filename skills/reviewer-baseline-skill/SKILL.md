@@ -36,7 +36,7 @@ content.
 
 ## Mandatory Post-Review Learning Gate
 
-**Blocking gate, not optional.** Before returning your result, run this triage on every review run — every Critical/Major/Minor finding AND every positive observation. Goal: detect anti-patterns and decide, via explicit rubric, whether each finding persists to `LEARNINGS/`.
+**Blocking gate, not optional.** Before returning your result, run this triage on every review run — every Critical/Major/Minor finding AND every positive observation. Goal: detect anti-patterns and decide, via explicit rubric, whether each finding qualifies as a `LEARNINGS candidates:` report entry (the orchestrator persists it — reviewers never write).
 
 ### Step 1 — Finding triage (every run)
 
@@ -52,16 +52,16 @@ Classify each item into exactly one category:
 
 Anti-pattern detection is first-class: actively scan with the domain-specific anti-pattern skills your agent file names (the agent file owns which skills those are).
 
-### Step 2 — Dedup check (before writing)
+### Step 2 — Dedup check (before emitting)
 
 1. `memory(mode: "search", query: "<finding keyword>", scope: "project")` — primary store
 2. `glob` for `LEARNINGS/**/*.md` and skim titles
 
 If a match exists: do not duplicate — bump the existing entry's confidence (per the `continuous-learning` instinct model) and add the new file:line as evidence.
 
-### Step 3 — Write criteria (decision rubric)
+### Step 3 — Candidate criteria (decision rubric)
 
-Persist to `LEARNINGS/<category>/<slug>.md` when **ANY** hold:
+Qualify a finding for the `LEARNINGS candidates:` report block when **ANY** hold:
 
 - Anti-pattern found in 3+ files/components (systemic — high signal)
 - The finding would change future review or dev behavior
@@ -69,16 +69,18 @@ Persist to `LEARNINGS/<category>/<slug>.md` when **ANY** hold:
 
 **Skip when:** trivial or obvious, already covered in standard language/framework docs, or a Step 2 duplicate.
 
-### Step 4 — Always persist the LEARNINGS file
+### Step 4 — Return candidates as report content, never writes
 
-Every qualifying finding is written to `LEARNINGS/` (permitted by `edit: LEARNINGS/**` where your
-agent frontmatter grants it). Keep entries tight: title + 2–6 line body with `file:line` evidence
-and a confidence score. The manifest plugin surfaces them next session; the `memory` tool's plugin
-has no v2 release, so markdown is the store.
+Reviewers have **no write access** — an `edit` deny covers all paths in your frontmatter, and your
+cwd may be the session checkout (base branch), so any write would land on the wrong tree. Emit each
+qualifying finding in your report's `LEARNINGS candidates:` block instead — one entry per finding:
+Category / File (suggested `LEARNINGS/<category>/<slug>.md`) / Confidence / Scope / Summary
+(title + 2–6 line body with `file:line` evidence) / Date. The orchestrator writes the files,
+appends the `_index.md` entries, and commits them.
 
 ### Step 5 — Report
 
-Tally entries saved by category and surface in the Return Contract `Output` line (e.g. `learning entries saved: 2 anti-patterns, 1 convention`). If zero qualified, report `learning entries saved: 0`.
+Tally candidates by category and surface in the Return Contract `Output` line (e.g. `LEARNINGS candidates: 2 anti-patterns, 1 convention`). If zero qualified, report `LEARNINGS candidates: 0`.
 
 ## Web lookups
 

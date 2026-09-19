@@ -52,6 +52,12 @@ file without its `_index.md` entry.
     — **Consumers affected:** CI
     — **Done:** tests/test_reviewer_no_writes.bats: 2 tests (existence + no-edit-allow), quote-shape safe; fixes: none
 
+- [x] **1.5** `skills/reviewer-baseline-skill/SKILL.md`: flip the Mandatory Post-Review Learning Gate to the return-as-content contract (Steps 3-5 rewritten: candidate rubric qualifies report entries; Step 4 = emit `LEARNINGS candidates:` block, never write; Step 5 tally wording)
+    — **Why:** the baseline gate is a BLOCKING instruction layer ordering reviewers to persist files — found during diff prep; leaving it gives reviewers contradictory orders (skill says write, permissions deny, contract says return)
+    — **Done when:** no "persist/entries saved" phrasing remains in the gate; Steps 3-5 carry the candidates-block contract
+    — **Consumers affected:** every reviewer loading the baseline skill (all four reviewer agents)
+    — **Done:** gate Steps 3-5 rewritten to candidates-block contract; zero "persist/entries saved" phrasing left in the gate; arch-reviewer Output line flipped too; fixes: none
+
 ### Phase 2: generated artifact + gates
 - [x] **2.1** `node installer/build-registry.mjs` regen; verify the diff is exactly the two edited agents' entries
     — **Why:** generated-artifact doctrine — frontmatter changed, registry must follow
@@ -64,3 +70,4 @@ file without its `_index.md` entry.
     — **Consumers affected:** CI
     — **Done:** full bats 353/353 (351 prior + 2 new); fixes: none
 GATE 69ee3cc lint=- typecheck=- build=- unit=t e2e=n.a.
+GATE 4fbc712 lint=- typecheck=- build=- unit=t e2e=n.a.

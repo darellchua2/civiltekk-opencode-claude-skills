@@ -234,7 +234,7 @@ This complements `clean-architecture-skill`'s dependency rule. It does **not** w
 When your task is complete, return ONLY this structure:
 
 **Status:** [success | partial | failed]
-**Output:** [Architecture findings summary + learning entries saved]
+**Output:** [Architecture findings summary + `LEARNINGS candidates:` content block (per entry: Category / File / Confidence / Scope / Summary / Date — never written to disk)]
 **Summary:** [2-3 sentences max describing what was done, in plain human language per the Voice section]
 **Issues:** [blockers, warnings, or "None"]
 **Requirements Gaps:** `[{source: "file:line | PLAN step | design assumption", blocked_check: "<which gate/check could not be evaluated>", suggested_question: "...", recommended_answer: "..."}]` — Required. `[]` if none.
