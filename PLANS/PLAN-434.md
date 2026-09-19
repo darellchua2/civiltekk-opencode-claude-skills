@@ -136,3 +136,4 @@ None — #404 and #409 are merged; base main @ 5274dff2 already contains both.
 - **Pointer strands** (a § reference whose target heading changed) — mitigated by 1.2–1.5 heading freeze + 4.1 repo-wide sweep.
 - **Over-trim** (removing a genuinely unique detail with the policy copy) — mitigated by per-step "keep" lists (endpoint lines, token URL, `:192` self-ref) and review at Step 7/9.
 - **Count drift false alarm** — mitigated by 4.2 registry `--check` before bats.
+GATE b7adc49 lint=- typecheck=- build=- unit=t e2e=n.a.
