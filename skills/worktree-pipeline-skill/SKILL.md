@@ -80,6 +80,19 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    even when the ticket is in this repo**. `<root>` is
    `$WORKTREE_PIPELINE_ROOT` when set, else `<main-repo>/../worktrees/`.
    Pre-flight `git worktree list` for stale `<KEY>` entries.
+   **CodeGraph index (conditional)**: iff `<main-repo>/.codegraph` exists,
+   run `git -C <root>/<KEY> check-ignore -q .codegraph/` first — exit 0
+   (ignored on the ticket branch) → run `npx @colbymchenry/codegraph init -i`
+   **inside the new worktree** (before Step 5; 5–60s, index gitignored);
+   exit 1 → skip init entirely with a one-line note (".codegraph/ not
+   ignored in target repo — skipping init to keep commits clean") and
+   continue on the rg/grep fallback; CLI absent or init failure → one-line
+   soft-skip note and continue on rg/grep. No `.codegraph/` in the main
+   checkout → skip silently. Never write ignore entries (tracked
+   `.gitignore` edits stage into per-phase commits; per-worktree
+   `info/exclude` is not honored by linked worktrees). Never symlink the
+   main checkout's `.codegraph/` into the worktree — the index reflects the
+   main checkout's branch state and paths (sharing undocumented).
 5. **Re-validate**: cross-check the ticket description once more against the
    latest `origin/<base>` content **in the worktree**; if stale, update the
    ticket and note deltas before proceeding.
