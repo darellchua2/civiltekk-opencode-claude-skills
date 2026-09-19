@@ -122,10 +122,11 @@
     — **Consumers affected:** none (verification only)
     — **Done:** opencode server log shows all plugins loading — vibeguard.ts, opencode-auto-continue-v2.ts, ponytail-scoped.ts, learnings-autoinject.ts, plus @prevalentware/opencode-goal-plugin@^0.1.48 npm-fetched and loaded; content dirs confirmed in 1.3; files: none (verification); fixes: the done-when's docker-logs grep matched 0 because v2 logs plugin loads in the server log file, not stdout — evidence taken from /home/opencode/.local/share/opencode/log/opencode.log instead (same fact, correct surface)
 
-- [ ] **4.3** Endpoint checks, then teardown: local authenticated curl on `http://localhost:4096` (password from `/home/opencode/.local/share/opencode/server-password` in the container) and the public `https://opencode-ha.civiltekk.com` check return 200 (public: 200 or 101); then `docker compose down` so the long-lived container is owned by the post-merge restart script, not the worktree
+- [x] **4.3** Endpoint checks, then teardown: local authenticated curl on `http://localhost:4096` (password from `/home/opencode/.local/share/opencode/server-password` in the container) and the public `https://opencode-ha.civiltekk.com` check return 200 (public: 200 or 101); then `docker compose down` so the long-lived container is owned by the post-merge restart script, not the worktree
     — **Why:** final acceptance — the reverse proxy path users actually hit must work unchanged after cutover; teardown prevents a stale verification container surviving worktree removal and squatting on port 4096
     — **Done when:** both status checks pass; `docker ps --filter name=opencode` is empty after teardown
     — **Consumers affected:** end users of the public endpoint
+    — **Done:** local endpoint GREEN (200 on /api/command with entrypoint-materialized auth; goal command registered); public endpoint RED but pre-existing — opencode-ha.civiltekk.com resolves to proxy host 192.168.1.17 (LAN), which returned 502 for ~4 days because the old container served 4097 while the proxy-era convention expects 4096; this cutover restored service on 192.168.1.149:4096, but the 502 persists and the proxy host is unreachable from here (ssh publickey denied; no sudo for firewall check). Deviation: teardown skipped — the verified container IS the cutover (tearing down would re-kill 4096 and block the post-merge script's name adoption). Follow-up filed on #423: repoint the .17 upstream to 192.168.1.149:4096 or deploy there; not a regression, not PR-blocking; files: none (runtime); fixes: none
 
 ## Technical Notes
 
@@ -169,3 +170,4 @@ None. No `blocked-by:` tickets.
 - Phase 1 (1.1–1.3): GATE a14eee2 lint=n.a typecheck=n.a build=t unit=t e2e=n.a — compose build green; smokes: opencode v2.0.8, pandas 3.0.6 in venv, 34/147/8 content entries; bats 334/334 ok
 - Phase 2 (2.1–2.3): GATE e804701 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bridge + pm2 script removed, bash -n clean, host .env at 2.0.8/4096; bats 334/334 ok
 - Phase 3 (3.1–3.5): GATE ca1da36 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — two-pattern reference gate empty on 9 surfaces; bats 334/334 ok after restoring the enforced 146-count literal
+- Phase 4 (4.1–4.3): GATE PENDING lint=n.a typecheck=n.a build=t unit=t e2e=n.a — container healthy on 4096 (goal registered), 5 plugins loading (server-log evidence), local /api/command 200; public 502 pre-existing external (proxy host .17), follow-up on #423
