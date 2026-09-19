@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.10.0](https://github.com/darellchua2/opencode-config-template/compare/v9.9.0...v9.10.0) (2026-09-19)
+
+### Features
+
+* **installer:** implement Phases 1-3 — requiresSkills auto-install edge ([cc26cb4](https://github.com/darellchua2/opencode-config-template/commit/cc26cb49a94bf6e4a81edafe33aef6dd9d1e717a))
+
+### Bug Fixes
+
+* **installer:** review fixes — stale docs prose, bat comment/pin polish, impliesMcp pin ([0a9c245](https://github.com/darellchua2/opencode-config-template/commit/0a9c2456a0eaa10690ba031fc772b23996ea5433)), closes [#439](https://github.com/darellchua2/opencode-config-template/issues/439)
+
+### Documentation
+
+* **plan:** add PLAN-439.md for [#439](https://github.com/darellchua2/opencode-config-template/issues/439) ([6034375](https://github.com/darellchua2/opencode-config-template/commit/6034375bed777202a1c1b362299458620b47a147))
+* **plan:** trace code-review round 1 (0a9c245) — loop closed ([7916721](https://github.com/darellchua2/opencode-config-template/commit/7916721b14b9f831d7584bbd86b309ef36bffc67))
+* **plan:** trace Phases 1-4 (cc26cb4) — PLAN-439 complete ([935330b](https://github.com/darellchua2/opencode-config-template/commit/935330b66ef8f87bba15af6c294a9c9bac3de39a))
+
 ## [9.9.0](https://github.com/darellchua2/opencode-config-template/compare/v9.8.4...v9.9.0) (2026-09-19)
 
 ### Features
