@@ -789,7 +789,10 @@ The setup scripts automatically:
 
 ### Template Files
 
-This repository includes inline default configurations in all setup scripts. No external template files are required.
+Setup configurations are inline in the deploy scripts. One opt-in external template ships
+for downstream repos: [installer/templates/api-quality/](installer/templates/api-quality/) —
+a Redocly lint ruleset + pre-commit hook that enforces OpenAPI authoring quality
+(see its README for adoption).
 
 
 ## Testing & Development
