@@ -7,7 +7,7 @@
 ## Acceptance Criteria
 
 - [ ] AC1: Each pptx skill's pytest suite passes from its own directory only (no `_common` outside the skill dir on the path)
-- [ ] AC2: No file under `skills/` references `_common` or sibling skill paths (only the skill's own vendored `scripts/_common` is permitted)
+- [ ] AC2: No file under `skills/` references `_common` or sibling skill paths, except (a) each skill's own vendored `scripts/_common` and (b) the single declared handoff `pptx-template-modifier-skill → pptx-generate-slide-skill` (documented prerequisite + guard allowlist)
 - [ ] AC3: `skills/_common/` deleted
 - [ ] AC4: AGENTS.md "Skill Isolation Contract" section exists and states duplication is intentional
 - [ ] AC5: `tests/test_skill_isolation.bats` green, including pairwise-identity check on the three vendored copies
@@ -23,6 +23,7 @@
 | `pptx-generate-template-skill/scripts/_common/` (new vendored) | Phase 1 copy | SKILL.md inline-Python instructions (agent runtime) | low |
 | Path-resolution lines in the files above | Phase 1 | Agent runtime (`sys.path` bootstrap), pytest collection | med (missed file = ImportError at runtime) |
 | `agents/pptx-specialist-subagent.md` | Phase 1 | pptx-specialist agent routing docs | low |
+| `pptx-template-modifier-skill → pptx-generate-slide-skill` (declared handoff: modifier extends template, slide engine fills) | — (intentional capability split, kept per #437) | modifier SKILL.md runtime step, modifier tests (`_FILLER_SCRIPTS`) | med (guard allowlist pins it to exactly this edge) |
 | `AGENTS.md` (new section) | — | Repo agents, human reviewers | low |
 | `tests/test_skill_isolation.bats` (new) | Phases 1–3 (asserts their end state) | Local bats run; future skill authors | low |
 | `installer/registry.json` | — (must NOT change: no frontmatter edits) | installer/init.mjs | low (gate verifies zero diff) |
@@ -71,6 +72,11 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
     — **Done when:** no `skills/_common` reference remains in `agents/`.
     — **Consumers affected:** pptx-specialist-subagent.
 
+- [ ] **2.5** Declare the modifier→slide handoff: add a Prerequisites section to `pptx-template-modifier-skill/SKILL.md` naming `pptx-generate-slide-skill` with its `npx … add` install command (the fill engine import at line 66 is an intentional capability split, kept per #437); delete dead `_REPO_ROOT = _SCRIPT_DIR.parents[3]` escape in slide `ppt_builder.py` (computed, never used)
+    — **Why:** Phase 2 re-audit found deploy-path sibling refs (`\.opencode/skills/<sibling>/scripts`) the original `../`-relative audit grep missed; the split stays intentional, so it must be declared for `npx add` users and pinned in the Phase 5 allowlist rather than silently banned or silently kept.
+    — **Done when:** modifier SKILL.md carries the prerequisite + install hint; `_REPO_ROOT` gone; the only sibling path refs under `skills/` are the declared modifier→slide ones.
+    — **Consumers affected:** modifier skill end users (install guidance), slide ppt_builder (dead line removed), Phase 5 guard (allowlist source).
+
 ### Phase 3: Delete the shared package
 - [ ] **3.1** `git rm -r skills/_common`
     — **Why:** with three vendored copies live, the shared dir is dead code whose existence invites new sibling escapes (AC3); drift is now policed by the Phase 5 identity check instead of a shared source.
@@ -84,7 +90,7 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
     — **Consumers affected:** repo agents, human reviewers, future skill authors.
 
 ### Phase 5: Isolation guard test
-- [ ] **5.1** Create `tests/test_skill_isolation.bats`: (a) no file under `skills/**` computes a path escaping its skill dir (`../_common`, `parent.parent.parent`/`parents[2]` `_common` resolution, `.opencode/skills/_common`, sibling `*-skill` path references in code/SKILL.md); (b) the three vendored `scripts/_common` trees are pairwise byte-identical (`diff -r`)
+- [ ] **5.1** Create `tests/test_skill_isolation.bats`: (a) no file under `skills/**` computes a path escaping its skill dir (`../_common`, `parent.parent.parent`/`parents[2]` `_common` resolution, `.opencode/skills/_common`, sibling `*-skill` path references in code — except the declared allowlisted `pptx-template-modifier-skill → pptx-generate-slide-skill` edge); (b) the three vendored `scripts/_common` trees are pairwise byte-identical (`diff -r`)
     — **Why:** the contract needs a mechanical gate or it decays with the next skill addition (AC5, AC2 regression cover).
     — **Done when:** `bats tests/test_skill_isolation.bats` green.
     — **Consumers affected:** local test suite, future authors.
@@ -117,6 +123,7 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
 - **Vendored copies drift after future fixes**: Phase 5 byte-identity check fails loudly; AGENTS.md §Skill Isolation Contract documents the fix-once-copy-thrice rule.
 - **C1 invariant test semantic change** (`_common` must not import back into `ppt_builder`): repointed at the vendored copy in 2.1 — still meaningful, now scoped per skill.
 - **Hidden consumers of `skills/_common` outside skills/ and agents/**: repo-wide grep in 3.1 done-when; only `agents/pptx-specialist-subagent.md` found in audit.
+- **Audit blind spot (found in Phase 2)**: the original audit grepped `../`-relative sibling refs only and missed deploy-path strings (`.opencode/skills/<sibling>/scripts`). Re-audit via `grep -rn "skills/[a-z0-9-]*-skill" skills/ --include='*'` covers both; the modifier→slide handoff it surfaced is declared (2.5), not banned.
 
 ## Gate Log
 
