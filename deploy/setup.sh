@@ -2449,6 +2449,15 @@ setup_config() {
         log_warn "Stale legacy config.json found (ignored by OpenCode v2); renamed to config.json.legacy-ignored"
     fi
 
+    # Park a coexisting opencode.jsonc: OpenCode v2 docs define no .json vs
+    # .jsonc tie-break when both live in one directory, so a leftover sibling
+    # has undefined precedence. Guard on BOTH files present — a jsonc-only
+    # machine keeps its sole live config. run_cmd keeps --dry-run preview-only.
+    if [ -f "$CONFIG_FILE" ] && [ -f "${CONFIG_DIR}/opencode.jsonc" ]; then
+        run_cmd mv "${CONFIG_DIR}/opencode.jsonc" "${CONFIG_DIR}/opencode.jsonc.legacy-ignored"
+        log_warn "Stale opencode.jsonc found (undefined precedence vs opencode.json); renamed to opencode.jsonc.legacy-ignored"
+    fi
+
     # Check if the config already exists
     if [ -f "$CONFIG_FILE" ]; then
         echo ""
@@ -2481,6 +2490,14 @@ setup_config() {
         if [ -f "$SOURCE_CONFIG" ]; then
             run_cmd cp "$SOURCE_CONFIG" "$CONFIG_FILE"
             log_success "opencode.json copied successfully (from ${SOURCE_CONFIG})"
+
+            # Park a jsonc that now coexists with the freshly copied config
+            # (jsonc-only machine that accepted the copy): exactly one live
+            # config must remain. Same both-exist + dry-run-safe form as above.
+            if [ -f "$CONFIG_FILE" ] && [ -f "${CONFIG_DIR}/opencode.jsonc" ]; then
+                run_cmd mv "${CONFIG_DIR}/opencode.jsonc" "${CONFIG_DIR}/opencode.jsonc.legacy-ignored"
+                log_warn "opencode.jsonc coexisted after config copy; renamed to opencode.jsonc.legacy-ignored"
+            fi
 
             # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
             # Best-effort — non-fatal on offline/pip-missing.
