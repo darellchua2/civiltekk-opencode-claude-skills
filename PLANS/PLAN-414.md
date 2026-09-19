@@ -41,14 +41,16 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 2: skill documentation
 
-- [ ] **2.1** Update the deliverable wording in `skills/cad-redraw-skill/SKILL.md` (~L155-157): replace "No bundled script writes DWG" with DWG output available via `scripts/to_dwg.py` when ODA File Converter is installed; DXF remains the default deliverable.
+- [x] **2.1** Update the deliverable wording in `skills/cad-redraw-skill/SKILL.md` (~L155-157): replace "No bundled script writes DWG" with DWG output available via `scripts/to_dwg.py` when ODA File Converter is installed; DXF remains the default deliverable.
     — **Why:** The current wording is factually wrong the moment 1.1 lands; users following Mode flows must learn the DWG path exists and when it applies.
     — **Done when:** The section names `scripts/to_dwg.py`, states the ODA requirement, and keeps DXF as the default deliverable.
     — **Consumers affected:** Skill users; no code consumers.
-- [ ] **2.2** Update `skills/cad-redraw-skill/references/linux-toolchain.md`: add the writer path (`scripts/to_dwg.py` via `ezdxf.addons.odafc.writefile`) to the ODA entry and an explicit LibreDWG-write-is-out-of-scope note (read path only).
+    — **Done:** "DWG input/output" section now names scripts/to_dwg.py, the ODA requirement, and DXF-as-default; files: skills/cad-redraw-skill/SKILL.md; fixes: none
+- [x] **2.2** Update `skills/cad-redraw-skill/references/linux-toolchain.md`: add the writer path (`scripts/to_dwg.py` via `ezdxf.addons.odafc.writefile`) to the ODA entry and an explicit LibreDWG-write-is-out-of-scope note (read path only).
     — **Why:** The toolchain reference is where Linux users decide their converter chain; without the writer path and the LibreDWG scope note they will attempt unsupported writes.
     — **Done when:** The ODA entry names the writer script and the LibreDWG entry states write support is out of scope.
     — **Consumers affected:** Skill users on Linux; no code consumers.
+    — **Done:** ODA entry names to_dwg.py + writefile + --version default; LibreDWG entry states write out-of-scope, DWG writing via ODA only; files: skills/cad-redraw-skill/references/linux-toolchain.md; fixes: none
 
 ### Phase 3: verification gate
 

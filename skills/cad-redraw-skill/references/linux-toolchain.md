@@ -10,15 +10,20 @@ one — every DWG path degrades gracefully.
 and **report which converter ran and at what fidelity**:
 
 1. **ODA File Converter** (via `ezdxf.addons.odafc`) — best coverage,
-   including recent DWG versions and version downgrade on export.
+   including recent DWG versions and version downgrade on export. This is
+   also the write path: `scripts/to_dwg.py` converts DXF→DWG through
+   `odafc.writefile` with a `--version` flag (default ACAD2018).
    - Install: download the Linux `.deb`/`.rpm`/`.tgz` from the Open Design
      Alliance (opendesign.com, free download, closed source).
    - Headless servers: it is a GUI-linked Qt binary — export
      `QT_QPA_PLATFORM=offscreen` (or run under `xvfb-run`) before invoking.
+     `to_dwg.py` sets this default itself.
 2. **LibreDWG** (`dwg2dxf`, open source) — read path only, no install
    hassle (`apt install libredwg-tools` on Debian/Ubuntu). Coverage of older
    DWG releases is solid; the newest formats may fail or degrade — the
-   version/producer is recorded in the fingerprint either way.
+   version/producer is recorded in the fingerprint either way. LibreDWG
+   write support is incomplete and explicitly out of scope for this skill:
+   DWG writing goes through ODA only.
 3. **No converter** — fail with a named error and the install hint above.
    No traceback, no partial output.
 
