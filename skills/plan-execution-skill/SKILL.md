@@ -23,7 +23,7 @@ I execute PLAN.md files phase-by-phase in one of three modes. Pick the mode from
 
 | Invocation | Mode | Behavior |
 |------------|------|----------|
-| `/run-plan PLAN-*.md`, `/goal "load plan-execution-skill and implement PLAN-*.md"`, "fully implement the plan", "run the plan end-to-end", "automation loop" | `--gate` (default) | Hard verification gate between phases: implement, gate, bounded fix-on-fail, tick + `— Done:` traceability, one atomic commit + push per phase |
+| `/run-plan PLAN-*.md`, `/goal "load plan-execution-skill and implement PLAN-*.md"`, "fully implement the plan", "run the plan end-to-end", "automation loop" | `--gate` (default for `/run-plan`) | Hard verification gate between phases: implement, gate, bounded fix-on-fail, tick + `— Done:` traceability, one atomic commit + push per phase |
 | "execute plan", "implement plan phases" (interactive) | `--soft` | Sequential phase execution with delegation and progress ticks — no hard gate, no auto-commit |
 | "update plan", "sync plan", "update PLAN.md", "mark plan progress" | `--update` | Detect the branch's PLAN and sync checkboxes to actual progress; commit |
 
@@ -178,6 +178,8 @@ This is the reusable primitive `worktree-pipeline-skill` §6d atomicity self-che
 | `verification-loop-skill` | Canonical gate contract + memo format — `--gate` defers there |
 | `git-semantic-commits-skill` | Commit formats for `--gate` (4f) and `--update` (step 6) |
 | `ticket-creation-skill` | A resolved plan feeds ticket creation upstream |
+| `error-resolver-workflow-skill` | Gate-red diagnosis during `--gate` fix-on-fail |
+| `tdd-workflow-skill` | `--gate` 4b mandates tests for new code before the gate |
 | `strategic-compact-skill` | PLAN.md files are natural compaction anchors |
 
 ## Iteration Protocol (opt-in)
