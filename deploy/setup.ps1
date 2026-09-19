@@ -97,6 +97,7 @@ $ConfigDir = Join-Path $HOME ".config\opencode"
 # OpenCode v2 only discovers opencode.json / opencode.jsonc — never config.json.
 $ConfigFile = Join-Path $ConfigDir "opencode.json"
 $LegacyConfigFile = Join-Path $ConfigDir "config.json"
+$JsoncConfigFile = Join-Path $ConfigDir "opencode.jsonc"
 $SkillsDir = Join-Path $ConfigDir "skills"
 $AgentsSrcDir = Join-Path $RepoDir "agents"
 $AgentsDestDir = Join-Path $ConfigDir "agents"
@@ -1661,6 +1662,18 @@ function Update-OpenCodeCLI {
 # SETUP: Configuration Deployment
 ################################################################################
 
+function Park-JsoncSibling {
+    # Park a coexisting opencode.jsonc (#432): no documented .json/.jsonc
+    # tie-break within one directory. Guard on BOTH files so a jsonc-only
+    # machine keeps its sole live config; DryRun stays preview-only. Called
+    # from the config phase and after an apply-mode resolver run so every run
+    # that writes opencode.json ends with exactly one live config.
+    if ((Test-Path $ConfigFile) -and (Test-Path $JsoncConfigFile)) {
+        if (-not $DryRun) { Move-Item $JsoncConfigFile "$JsoncConfigFile.legacy-ignored" -Force }
+        Write-LogWarn "Stale opencode.jsonc found (undefined precedence vs opencode.json); renamed to opencode.jsonc.legacy-ignored"
+    }
+}
+
 function Set-Configuration {
     Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
@@ -1716,6 +1729,9 @@ function Set-Configuration {
         Write-LogWarn "Stale legacy config.json renamed to config.json.legacy-ignored (ignored by OpenCode v2)"
     }
 
+    # Park a coexisting opencode.jsonc (#432) — both-exist + DryRun-safe helper.
+    Park-JsoncSibling
+
     if (Test-Path $ConfigFile) {
         Write-Host ""
         Write-LogWarn "opencode.json already exists at $ConfigFile"
@@ -1749,6 +1765,10 @@ function Set-Configuration {
         if (Test-Path $configSrc) {
             if (-not $DryRun) { Copy-Item $configSrc $ConfigFile -Force }
             Write-LogSuccess "opencode.json copied successfully (from $SourceConfig)"
+
+            # Copied config may now coexist with a jsonc (accepted copy on a
+            # jsonc-only machine): restore the one-live-config end state.
+            Park-JsoncSibling
 
             # Deploy vibeguard secret-masking config (PLAN-GIT-315).
             $vgSrc = Join-Path $RepoDir "plugins/vibeguard.config.json"
@@ -1846,6 +1866,12 @@ function Invoke-Resolver {
     if (Test-Path $ProviderModelsFile) { $resolverArgs += @("--provider-models", $ProviderModelsFile) }
     if ($DryRun) { $resolverArgs += "--dry-run" }
     & node $ResolverScript @resolverArgs
+    # An apply-mode resolver write can create opencode.json beside a live
+    # jsonc (decline-copy path, -ModelsOnly/-Migrate): park it here so every
+    # run that writes the config ends with exactly one live config (#432).
+    if (-not $DryRun -and $LASTEXITCODE -eq 0) {
+        Park-JsoncSibling
+    }
 }
 
 # Provider-pack merger (#268): deep-merges selected pack partials into the

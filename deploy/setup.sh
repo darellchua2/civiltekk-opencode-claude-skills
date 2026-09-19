@@ -2402,6 +2402,19 @@ update_opencode_cli() {
 }
 
 # Setup configuration file
+# Park a coexisting opencode.jsonc (#432): OpenCode v2 docs define no .json vs
+# .jsonc tie-break when both live in one directory, so a leftover sibling has
+# undefined precedence. Guard on BOTH files present — a jsonc-only machine
+# keeps its sole live config. run_cmd keeps --dry-run preview-only. Called
+# from the config phase and after an apply-mode resolver run, so every run
+# that writes opencode.json ends with exactly one live config.
+park_jsonc_sibling() {
+    if [ -f "$CONFIG_FILE" ] && [ -f "${CONFIG_DIR}/opencode.jsonc" ]; then
+        run_cmd mv "${CONFIG_DIR}/opencode.jsonc" "${CONFIG_DIR}/opencode.jsonc.legacy-ignored"
+        log_warn "Stale opencode.jsonc found (undefined precedence vs opencode.json); renamed to opencode.jsonc.legacy-ignored"
+    fi
+}
+
 setup_config() {
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -2449,6 +2462,9 @@ setup_config() {
         log_warn "Stale legacy config.json found (ignored by OpenCode v2); renamed to config.json.legacy-ignored"
     fi
 
+    # Park a coexisting opencode.jsonc (#432) — both-exist + dry-run-safe helper.
+    park_jsonc_sibling
+
     # Check if the config already exists
     if [ -f "$CONFIG_FILE" ]; then
         echo ""
@@ -2481,6 +2497,10 @@ setup_config() {
         if [ -f "$SOURCE_CONFIG" ]; then
             run_cmd cp "$SOURCE_CONFIG" "$CONFIG_FILE"
             log_success "opencode.json copied successfully (from ${SOURCE_CONFIG})"
+
+            # Copied config may now coexist with a jsonc (accepted copy on a
+            # jsonc-only machine): restore the one-live-config end state.
+            park_jsonc_sibling
 
             # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
             # Best-effort — non-fatal on offline/pip-missing.
@@ -3002,6 +3022,15 @@ run_resolver() {
         --state "$RESOLVED_SIDECAR" \
         $dry_arg \
         $extra_args
+    local resolver_rc=$?
+    # An apply-mode resolver write can create opencode.json beside a live
+    # jsonc (decline-copy path, --models-only/--migrate-only): park it here so
+    # every run that writes the config ends with exactly one live config
+    # (#432). Dry-run stages to the preview dir and moves nothing.
+    if [ "$resolver_rc" -eq 0 ] && [ "$DRY_RUN" != true ]; then
+        park_jsonc_sibling
+    fi
+    return "$resolver_rc"
 }
 
 # Run the provider-pack merger (PLAN #268): deep-merges selected pack partials
