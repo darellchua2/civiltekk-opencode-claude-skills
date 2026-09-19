@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.9.0](https://github.com/darellchua2/opencode-config-template/compare/v9.8.4...v9.9.0) (2026-09-19)
+
+### Features
+
+* **skills:** implement Phase 1 — vendor _common engine into pptx trio ([2c04437](https://github.com/darellchua2/opencode-config-template/commit/2c04437db03eb378cb27728066a66359caca1302))
+
+### Bug Fixes
+
+* **skills:** code-review fixes — guard false-negatives, contract wording, dead code ([d95d28a](https://github.com/darellchua2/opencode-config-template/commit/d95d28a59383114aad40db511194f66e312b57bc))
+* **skills:** review round 2 — fence spans for SKILL.md escapes, Path()-join, pipe guards ([f348b68](https://github.com/darellchua2/opencode-config-template/commit/f348b68acd469fca8b1aa1d637f9542efaa1f082)), closes [#437](https://github.com/darellchua2/opencode-config-template/issues/437)
+
+### Code Refactoring
+
+* **skills:** implement Phase 2 — rewire pptx family to per-skill vendored engine ([8ea7258](https://github.com/darellchua2/opencode-config-template/commit/8ea7258ba54bb9b54a50695a4fc80ea6a1ac43ec)), closes [#437](https://github.com/darellchua2/opencode-config-template/issues/437)
+* **skills:** implement Phase 3 — delete shared skills/_common package ([c7a4d0e](https://github.com/darellchua2/opencode-config-template/commit/c7a4d0ee94fc82f57930310b4841f9247d4c49cf))
+
+### Documentation
+
+* **agents-md:** implement Phase 4 — add Skill Isolation Contract ([832e73b](https://github.com/darellchua2/opencode-config-template/commit/832e73bc1f1cc06bfc1dff32c5aa9b535ade7264))
+* **plan:** add PLAN-437.md for [#437](https://github.com/darellchua2/opencode-config-template/issues/437) ([724a833](https://github.com/darellchua2/opencode-config-template/commit/724a8331287407d171931a2366edaf7cd55487a7))
+* **plan:** amend PLAN-437 — declare modifier-to-slide handoff, cover deploy-path refs ([6f4132e](https://github.com/darellchua2/opencode-config-template/commit/6f4132e8a456974eaaca4a1192d269da64f7c1de))
+* **plan:** trace code-review round 1 (d95d28a) ([7fec84b](https://github.com/darellchua2/opencode-config-template/commit/7fec84b480792b3902a141c74a1de8a6291ed40d))
+* **plan:** trace code-review round 2 (f348b68) — review loop closed ([afe183b](https://github.com/darellchua2/opencode-config-template/commit/afe183b01b81f9502df56445bb8efe1ebb51c364))
+* **plan:** trace Phase 1 (2c04437) ([b1a0303](https://github.com/darellchua2/opencode-config-template/commit/b1a030358da6b70457d6b3c56a09be47b8e0c25b))
+* **plan:** trace Phase 2 (8ea7258) ([0ca4a3d](https://github.com/darellchua2/opencode-config-template/commit/0ca4a3d4c1c2cbe01e32a03ec1bdd708997bd08f))
+* **plan:** trace Phase 3 (c7a4d0e) ([338cc2d](https://github.com/darellchua2/opencode-config-template/commit/338cc2da47a5cacc4a4743da26876206e04b1049))
+* **plan:** trace Phase 4 (832e73b) ([6e7d921](https://github.com/darellchua2/opencode-config-template/commit/6e7d92123d7a4adccb9fe2e3e05628679258d67e))
+* **plan:** trace Phase 5 (1c568b1) ([f122a62](https://github.com/darellchua2/opencode-config-template/commit/f122a62e05b4c8b844703c6ed5271358d4adc42f))
+* **plan:** trace Phase 6 — PLAN-437 complete, all ACs verified ([84d716f](https://github.com/darellchua2/opencode-config-template/commit/84d716f64d2f67bfcd7a49e2501c4ef18c456469))
+
 ## [9.8.4](https://github.com/darellchua2/opencode-config-template/compare/v9.8.3...v9.8.4) (2026-09-19)
 
 ### Bug Fixes
