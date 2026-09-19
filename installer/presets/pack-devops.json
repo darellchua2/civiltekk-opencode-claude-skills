@@ -31,7 +31,6 @@
     "opentofu-provider-setup-skill",
     "opentofu-provisioning-workflow-skill",
     "plan-execution-skill",
-    "plan-updater-skill",
     "pr-creation-workflow-skill",
     "pr-merge-workflow-skill",
     "search-first-skill",

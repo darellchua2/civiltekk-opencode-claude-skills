@@ -17,7 +17,7 @@ category: Git/Workflow
 I run the **full ticket-to-merged-PR pipeline**, one ticket at a time, each in
 its own **git worktree** so the main working tree stays free. I am the
 orchestrator: heavy knowledge lives in the skills/subagents I drive
-(`ticket-creation-skill` for new tickets, `plan-automation-loop-skill` for
+(`ticket-creation-skill` for new tickets, `plan-execution-skill` --gate for
 execution, `pr-workflow-subagent` for the PR) — I own sequencing, PLAN
 authoring, worktree lifecycle, and re-validation.
 
@@ -45,7 +45,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   `feat/<KEY>` branch + worktree names, then stop before Step 2. Read-only:
   no writes, no branch/worktree/remote mutations.
 - **Dependency preflight (per-skill installs)**: hard deps — skill
-  `plan-automation-loop-skill` (Step 8), agents `code-review-subagent`
+  `plan-execution-skill` --gate (Step 8), agents `code-review-subagent`
   (Step 9) and `pr-workflow-subagent` (Step 10). Any missing → abort
   (`failed`) with the install hint
   `npx github:darellchua2/opencode-config-template add <name>`. Soft deps
@@ -115,7 +115,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    PLAN; re-review only when findings were structural. Zero selected
    reviewers → skip delegation entirely.
 8. **Execute**: run `/run-plan PLANS/PLAN-${KEY}.md`
-   (`plan-automation-loop-skill`) **inside the worktree** — always pass the
+   (`plan-execution-skill` --gate) **inside the worktree** — always pass the
    explicit PLAN path, never rely on branch-name auto-detect. Plan review
    happened upstream in Step 7 — the executor must not re-review. Gate
    sequence, pass semantics, and memo format come from

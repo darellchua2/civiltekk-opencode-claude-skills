@@ -33,7 +33,7 @@ permissions:
     resource: tdd-workflow-skill
     effect: allow
   - action: skill
-    resource: plan-updater-skill
+    resource: plan-execution-skill
     effect: allow
 category: meta
 ---
@@ -95,7 +95,7 @@ Workflow:
 3. Guide minimal implementation
 4. Assist with refactoring
 5. Suggest next test cases
-6. Update branch-specific PLAN.md (invoke plan-updater skill)
+6. Update branch-specific PLAN.md (invoke plan-execution-skill in --update mode)
 
 ## Test Strategy Selection
 

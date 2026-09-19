@@ -27,7 +27,7 @@ After adding/removing skills or agents; before PR; after bulk changes; during pl
 | `thorough` | all categories | pre-PR, bulk changes |
 | `targeted` | one PLAN file, all categories | during execution |
 
-**Related:** `documentation-sync-workflow-skill` (count-sync procedure when adding skills/agents) · `plan-updater-skill` (checkbox commits).
+**Related:** `documentation-sync-workflow-skill` (count-sync procedure when adding skills/agents) · `plan-execution-skill` (--update; checkbox commits).
 
 ## Category 1 — Cross-file count sync
 

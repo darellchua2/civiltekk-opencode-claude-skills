@@ -83,9 +83,6 @@ permissions:
     resource: documentation-consistency-skill
     effect: allow
   - action: skill
-    resource: plan-updater-skill
-    effect: allow
-  - action: skill
     resource: plan-execution-skill
     effect: allow
   - action: skill
@@ -164,7 +161,7 @@ Load these skills to apply the correct standards and conventions:
 - **changelog-python-cliff**: Generate changelogs via git-cliff with PEP 440 versioning
 - **documentation-sync-workflow**: Keep docs synchronized when adding skills/subagents
 - **documentation-consistency**: Audit documentation consistency across files
-- **plan-updater / plan-execution**: Track and execute PLAN.md phases
+- **plan-execution** (`--update` / `--soft`): Track and execute PLAN.md phases
 
 > **JIRA skills MCP dependency:** `jira-git-integration`, `jira-status-updater`, `jira-ticket-labeler`, and the JIRA branch of `ticket-creation`/`git-issue-updater` require the `atlassian` MCP server, which is **disabled by default** (opt-in). If `atlassian_*` tools are absent from your tool list, do NOT attempt them — each of those skills carries its own MCP Availability Guard (enable via `opencode-repo-setup-skill` next session, REST fallback, or skip + report). GitHub-side operations are unaffected.
 

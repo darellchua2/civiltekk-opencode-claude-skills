@@ -44,7 +44,7 @@ GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t|-|n.a>
 
 | Surface | Role under this contract |
 |---------|--------------------------|
-| `plan-automation-loop-skill` | Runs the gate per PLAN phase; writes the memo |
+| `plan-execution-skill` (--gate) | Runs the gate per PLAN phase; writes the memo |
 | `pr-creation-workflow-skill` | PR-boundary memo check; fills the PR Quality Checks slot from memo/assertion |
 | `worktree-pipeline-skill` | Sequences phases; its green assertion cites the final GATE line for the pushed SHA |
 | `pr-workflow-subagent` | Executes PR checks via this contract; owns no command table |
@@ -62,7 +62,7 @@ Beyond the gate, verify implementations against acceptance criteria: parse crite
 - `eval-harness-skill` — score-based evaluation rubrics
 - `error-resolver-workflow-skill` — failure diagnosis when a gate goes red
 - `git-semantic-commits-skill` — commit discipline the gate protects
-- `plan-updater-skill` — PLAN progress ticks
+- `plan-execution-skill` (--update) — PLAN progress ticks
 
 ## Iteration Protocol (opt-in)
 
