@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.4.1](https://github.com/darellchua2/opencode-config-template/compare/v9.4.0...v9.4.1) (2026-09-19)
+
+### Bug Fixes
+
+* **skills:** commit regenerated registry + apply review notes (gate default qualifier, integration rows) ([e6ac9d5](https://github.com/darellchua2/opencode-config-template/commit/e6ac9d58b97a4692aa0bab2fc8f5e0b563ff08b8))
+
+### Code Refactoring
+
+* **skills:** implement Phase 1 — plan-execution-skill becomes the consolidated executor (--soft/--gate/--update) ([eed0f3b](https://github.com/darellchua2/opencode-config-template/commit/eed0f3bf6f2cb0f710847fb60907c12022aa7b11))
+* **skills:** implement Phase 2 — sweep execution-sibling references, re-pin lean 44, re-point /run-plan template ([c74714c](https://github.com/darellchua2/opencode-config-template/commit/c74714c34bf3bbcb993a56f917de2980abb011fa))
+* **skills:** implement Phases 3-4 — delete execution siblings, regenerate registry, gates green ([4cf96e8](https://github.com/darellchua2/opencode-config-template/commit/4cf96e8da7aa1066807cbc93876cb250287ebc65))
+
+### Documentation
+
+* **learnings:** index global-in-flight-guard anti-pattern entry ([14743a0](https://github.com/darellchua2/opencode-config-template/commit/14743a0fddbfa488e96859b08aad968cbc6a636f))
+* **plan:** add PLAN-408.md for [#408](https://github.com/darellchua2/opencode-config-template/issues/408) ([f1ac727](https://github.com/darellchua2/opencode-config-template/commit/f1ac7276f23cb9e51f235e54226ad511f4aa7b71))
+* **plan:** apply review findings to PLAN-408 (lean 44, /run-plan template, sweep exemptions) ([0f23c31](https://github.com/darellchua2/opencode-config-template/commit/0f23c312b7eec50ce360e711c86907f3dd0a8040))
+* **plan:** trace Phases 1-2 (per-step Done lines) ([db91039](https://github.com/darellchua2/opencode-config-template/commit/db910392c37bdfbafb0a88f665d1e5533b9d7ced))
+
 ## [9.4.0](https://github.com/darellchua2/opencode-config-template/compare/v9.3.2...v9.4.0) (2026-09-18)
 
 ### Features
