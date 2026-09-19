@@ -170,4 +170,4 @@ None. No `blocked-by:` tickets.
 - Phase 1 (1.1–1.3): GATE a14eee2 lint=n.a typecheck=n.a build=t unit=t e2e=n.a — compose build green; smokes: opencode v2.0.8, pandas 3.0.6 in venv, 34/147/8 content entries; bats 334/334 ok
 - Phase 2 (2.1–2.3): GATE e804701 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bridge + pm2 script removed, bash -n clean, host .env at 2.0.8/4096; bats 334/334 ok
 - Phase 3 (3.1–3.5): GATE ca1da36 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — two-pattern reference gate empty on 9 surfaces; bats 334/334 ok after restoring the enforced 146-count literal
-- Phase 4 (4.1–4.3): GATE PENDING lint=n.a typecheck=n.a build=t unit=t e2e=n.a — container healthy on 4096 (goal registered), 5 plugins loading (server-log evidence), local /api/command 200; public 502 pre-existing external (proxy host .17), follow-up on #423
+- Phase 4 (4.1–4.3): GATE 6e15024 lint=n.a typecheck=n.a build=t unit=t e2e=n.a — container healthy on 4096 (goal registered), 5 plugins loading (server-log evidence), local /api/command 200; public 502 pre-existing external (proxy host .17), follow-up on #423
