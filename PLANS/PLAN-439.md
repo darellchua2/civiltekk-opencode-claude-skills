@@ -83,6 +83,8 @@ Cross-module consumers beyond `installer/init.mjs` + tests: **none**. The skills
 
 - Phases 1–4 (1.1–4.1): GATE cc26cb4 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — test_requires_skills 5/5, full bats 351/351, registry rebuild content-identical, dry-run + --no-deps + MCP-hint regression verified via CLI; lint/typecheck/build: none configured
 
+- Code review round 1 (0a9c245): 0 BLOCK / 1 WARN / 5 NOTE. WARN fixed — AGENTS.md:10/:18 'single skill' / 'exactly one directory' prose went stale the moment requiresSkills landed (rule-added-example-stale); README UX flow E2 added. NOTEs fixed: bats comment aligned, `! grep -q` clarity, test 5 extended to pin impliesMcp ⊆ mcp.servers keys. NOTEs skipped with rationale: unknown-edge warning test (DEPMAP_FILE not injectable; closure Set-shape covered by agent-path parity), transitive "required by <agent>" phrasing (cosmetic), update backfill of pre-#439 installs (outside ticket ACs). Reviewer confirmed: no third flattened-depMap consumer exists (exhaustive 27-hit grep); agent installs requiring the modifier are healed for free by the closure. Learning persisted: conventions/derived-consistency-pins.md. Loop closed after 1 round — fixes were docs/test polish, non-structural.
+
 ## Risks & Mitigation
 
 - **Missed depMap indexing site** (MCP hints vanish): 1.2's done-when greps for direct indexing; existing markitdown/docling bats suites cover the warn path.
