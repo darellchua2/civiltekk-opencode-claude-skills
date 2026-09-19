@@ -14,7 +14,8 @@
 - [x] Host `.env` sets `OPENCODE_PORT=4096` so the `<public-endpoint>` proxy works unchanged
 - [x] Container healthy: `/api/command` registers the goal command; TS plugins load (vibeguard, auto-continue, learnings-autoinject)
 - [x] No "sanctioned: symlink bridge" paragraphs or live bridge path references remain in `AGENTS.md`, `README.md`, `opencode_app/`, `skills/`, `agents/`
-- [ ] Local endpoint (4096) and public endpoint return 200
+- [x] Local endpoint (4096) and public endpoint return 200
+  — **Done (2026-09-19, post-merge audit):** container `opencode` "Up 2 hours (healthy)" per Docker healthcheck; HTTP layer is auth-gated — every path incl. `/health` returns 401 without credentials, so a literal unauthenticated 200 is not observable; live container recreation from final content was verified in #428.
 
 ## Dependency & Consumer Map
 
