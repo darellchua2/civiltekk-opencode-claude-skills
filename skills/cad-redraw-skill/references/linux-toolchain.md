@@ -12,7 +12,9 @@ and **report which converter ran and at what fidelity**:
 1. **ODA File Converter** (via `ezdxf.addons.odafc`) — best coverage,
    including recent DWG versions and version downgrade on export. This is
    also the write path: `scripts/to_dwg.py` converts DXF→DWG through
-   `odafc.writefile` with a `--version` flag (default ACAD2018).
+   `odafc.convert` with a `--version` flag (default ACAD2018). Converter
+   failure while ODA is present is a bad-input (exit 1) condition, not an
+   environment one.
    - Install: download the Linux `.deb`/`.rpm`/`.tgz` from the Open Design
      Alliance (opendesign.com, free download, closed source).
    - Headless servers: it is a GUI-linked Qt binary — export

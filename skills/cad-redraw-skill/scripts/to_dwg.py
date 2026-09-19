@@ -38,8 +38,8 @@ def _converter_available() -> bool:
     return shutil.which("ODAFileConverter") is not None
 
 
-def _check_input(source: Path, output: Path) -> int | None:
-    """Return a contract exit code for bad-input conditions, else None."""
+def _check_paths(source: Path, output: Path) -> int | None:
+    """Return a contract exit code for bad-input path conditions, else None."""
     if not source.is_file():
         return _fail(1, f"input DXF not found: {source}")
     if not os.access(source, os.R_OK):
@@ -52,24 +52,27 @@ def _check_input(source: Path, output: Path) -> int | None:
 
 
 def _convert(source: Path, output: Path, version: str) -> int:
-    """Run the ODA conversion into a tempdir and move the DWG to output."""
+    """Convert DXF to DWG via odafc.convert; exit 2 env, exit 1 bad content."""
     try:
         import ezdxf.addons.odafc as odafc
     except ImportError:
         return _fail(2, EZDXF_HINT)
-    # Convert beside a same-stem DXF copy: odafc.writefile derives the DWG name.
-    with tempfile.TemporaryDirectory(prefix="to-dwg-") as tmp:
-        staged = Path(tmp) / f"{output.stem}.dxf"
-        shutil.copyfile(source, staged)
-        try:
-            odafc.writefile(staged, version=version)
-        except Exception as exc:  # ODA failures are environment errors
-            return _fail(2, f"ODA conversion failed: {exc}")
-        produced = Path(tmp) / f"{output.stem}.dwg"
-        if not produced.is_file() or produced.stat().st_size == 0:
-            return _fail(2, "ODA conversion produced no DWG output")
+    try:
         output.parent.mkdir(parents=True, exist_ok=True)
-        shutil.move(str(produced), output)
+    except OSError as exc:
+        return _fail(2, f"cannot create output directory: {exc}")
+    try:
+        odafc.convert(str(source), str(output), version=version)
+    except odafc.ODAFCNotInstalledError:
+        return _fail(2, ODA_HINT)
+    except odafc.ODAFCError:
+        # With ODA present, a converter rejection is a content-validity signal.
+        return _fail(1, "invalid or unsupported DXF content (rejected by converter)")
+    except Exception as exc:  # unexpected failure is an environment error
+        return _fail(2, f"ODA conversion failed: {exc}")
+    # ezdxf's convert() swallows the produced-nothing case upstream — check it.
+    if not output.is_file() or output.stat().st_size == 0:
+        return _fail(2, "ODA conversion produced no DWG output")
     print(
         f"to_dwg: wrote {output} ({output.stat().st_size} bytes) "
         f"via ODA File Converter, target version {version}"
@@ -80,32 +83,39 @@ def _convert(source: Path, output: Path, version: str) -> int:
 def self_check() -> int:
     """Prove the guard paths always; prove a real round-trip only when ODA exists."""
     tmp = Path(tempfile.mkdtemp(prefix="to-dwg-selfcheck-"))
-    missing = tmp / "missing.dxf"
-    source = tmp / "src.dxf"
-    out = tmp / "out.dwg"
-    _require(_check_input(missing, out) == 1, "missing input exits 1")
-    source.write_text("0\nSECTION\n2\nHEADER\n0\nENDSEC\n0\nEOF\n")
-    _require(_check_input(source, source) == 1, "output == source exits 1")
-    existing = tmp / "exists.dwg"
-    existing.write_text("stale")
-    _require(_check_input(source, existing) == 1, "existing output exits 1")
-    _require(_check_input(source, out) is None, "clean input passes the guards")
-    if _converter_available():
-        try:
-            import ezdxf
-
+    try:
+        missing = tmp / "missing.dxf"
+        source = tmp / "src.dxf"
+        out = tmp / "out.dwg"
+        _require(_check_paths(missing, out) == 1, "missing input exits 1")
+        source.write_text("0\nSECTION\n2\nHEADER\n0\nENDSEC\n0\nEOF\n")
+        _require(_check_paths(source, source) == 1, "output == source exits 1")
+        existing = tmp / "exists.dwg"
+        existing.write_text("stale")
+        _require(_check_paths(source, existing) == 1, "existing output exits 1")
+        _require(_check_paths(source, out) is None, "clean input passes the guards")
+        if _converter_available():
+            try:
+                import ezdxf
+            except ImportError:
+                print(f"to_dwg: {EZDXF_HINT}", file=sys.stderr)
+                return 1
             doc = ezdxf.new()
             doc.saveas(source)
             code = _convert(source, out, "ACAD2018")
             _require(code == 0, "conversion exits 0 with ODA present")
             _require(out.is_file() and out.stat().st_size > 0, "DWG written, non-empty")
-        finally:
-            shutil.rmtree(tmp, ignore_errors=True)
-        print("to_dwg self-check: PASS")
-    else:
+            print("to_dwg self-check: PASS")
+        else:
+            print(
+                "SKIPPED: ODA File Converter not detected — guard paths verified only"
+            )
+        return 0
+    except AssertionError as exc:
+        print(f"to_dwg: {exc}", file=sys.stderr)
+        return 1
+    finally:
         shutil.rmtree(tmp, ignore_errors=True)
-        print("SKIPPED: ODA File Converter not detected — guard paths verified only")
-    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -137,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     source = Path(args.input)
     output = Path(args.output)
-    bad_input = _check_input(source, output)
+    bad_input = _check_paths(source, output)
     if bad_input is not None:
         return bad_input
     if not _converter_available():

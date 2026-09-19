@@ -147,7 +147,9 @@ actually run, evidence-level summary, assumptions, and the disposition.
 
 ## DWG input/output
 
-DWG is an input format only. `fingerprint.py` reads `.dwg` sources through
+DWG works as both input and output: input is read through the external
+converter chain below; output is written by `scripts/to_dwg.py` when the ODA
+File Converter is installed. `fingerprint.py` reads `.dwg` sources through
 the external converter chain (ODA File Converter via `odafc`, then LibreDWG
 `dwg2dxf`) with automatic fallback; see `references/linux-toolchain.md` for
 install guidance, converter precedence, fidelity reporting, and the
