@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.5.1](https://github.com/darellchua2/opencode-config-template/compare/v9.5.0...v9.5.1) (2026-09-19)
+
+### Bug Fixes
+
+* **skills:** title-prefix parity in example, verbatim Jira labels; learnings ([5a9fad7](https://github.com/darellchua2/opencode-config-template/commit/5a9fad797630f0772f419f97c1f174a9280020f2))
+
 ## [9.5.0](https://github.com/darellchua2/opencode-config-template/compare/v9.4.1...v9.5.0) (2026-09-19)
 
 ### Features
