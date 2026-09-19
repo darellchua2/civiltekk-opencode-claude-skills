@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.6.0](https://github.com/darellchua2/opencode-config-template/compare/v9.5.1...v9.6.0) (2026-09-19)
+
+### Features
+
+* **docker:** consolidate runtime — 3-stage image, v2.0.8 pin, drop pm2 bridge ([#428](https://github.com/darellchua2/opencode-config-template/issues/428)) ([0f49c5e](https://github.com/darellchua2/opencode-config-template/commit/0f49c5e1179c182f23bb94f6b52a2b5fa237a1be)), closes [#423](https://github.com/darellchua2/opencode-config-template/issues/423)
+
 ## [9.5.1](https://github.com/darellchua2/opencode-config-template/compare/v9.5.0...v9.5.1) (2026-09-19)
 
 ### Bug Fixes
