@@ -268,11 +268,7 @@ done
 ## Common Issues
 
 ### GitHub CLI Missing or Not Authenticated
-- Missing (`command -v gh` fails): load `gh-cli-setup-skill`, then continue.
-- Not authenticated:
-```bash
-gh auth login && gh auth status
-```
+- Missing (`command -v gh` fails) or unauthenticated (`gh auth status` fails): load `gh-cli-setup-skill`, then continue.
 
 ### Cannot Create JIRA Ticket
 - Verify project key is correct and user has create permissions

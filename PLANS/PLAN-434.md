@@ -93,10 +93,11 @@ Accepted agent-local restatements (review ruling, Mode R): `agents/pr-workflow-s
 
 ### Phase 3: gh-cli fallback — single statement
 
-- [ ] **3.1** `skills/ticket-creation-skill/SKILL.md`: keep the §Prerequisites pointer sentence as the single statement; §Common Issues "GitHub CLI Missing or Not Authenticated" drops the duplicated explanation and the inline `gh auth login && gh auth status` block, keeping only the load-`gh-cli-setup-skill` pointer; subsection heading `### GitHub CLI Missing or Not Authenticated` stays verbatim (gh-cli-setup:17 pins §Common Issues); no other change to the Example Usage section (rule-added-example-stale sweep: confirm the example teaches no gh-auth inline flow)
+- [x] **3.1** `skills/ticket-creation-skill/SKILL.md`: keep the §Prerequisites pointer sentence as the single statement; §Common Issues "GitHub CLI Missing or Not Authenticated" drops the duplicated explanation and the inline `gh auth login && gh auth status` block, keeping only the load-`gh-cli-setup-skill` pointer; subsection heading `### GitHub CLI Missing or Not Authenticated` stays verbatim (gh-cli-setup:17 pins §Common Issues); no other change to the Example Usage section (rule-added-example-stale sweep: confirm the example teaches no gh-auth inline flow)
     — **Why:** AC3 — `gh-cli-setup-skill` owns install/auth; two restatements in one file is the drift the ticket exists to remove. Mode R ruling on record: state checks (`gh auth status`) may remain; auth flows (`gh auth login`) may not
     — **Done when:** exactly one fallback statement in the file; `grep -n 'gh auth login' skills/ticket-creation-skill/SKILL.md` returns nothing (the `:296` checklist `gh auth status` intentionally survives — it is a state check); example section still coherent
     — **Consumers affected:** none (gh-cli-setup-skill:18 references pr-creation step 6, not this section)
+    — **Done:** Common Issues section reduced to single gh-cli-setup-skill pointer (state check kept per Mode R); gh auth login grep clean; heading verbatim; fixes: none
 
 ### Phase 4: Gates + pointer audit + learning
 
@@ -140,3 +141,4 @@ None — #404 and #409 are merged; base main @ 5274dff2 already contains both.
 - **Count drift false alarm** — mitigated by 4.2 registry `--check` before bats.
 GATE b7adc49 lint=- typecheck=- build=- unit=t e2e=n.a.
 GATE 0e19269 lint=- typecheck=- build=- unit=t e2e=n.a.
+GATE b798738 lint=- typecheck=- build=- unit=t e2e=n.a.
