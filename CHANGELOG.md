@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.8.1](https://github.com/darellchua2/opencode-config-template/compare/v9.8.0...v9.8.1) (2026-09-19)
+
+### Bug Fixes
+
+* **repo:** redact deployment-specific details — IPs, hostname, printer IP ([#430](https://github.com/darellchua2/opencode-config-template/issues/430)) ([e197229](https://github.com/darellchua2/opencode-config-template/commit/e1972294f8ec6452a9d3fc0bad41ed07c1e9b669))
+
 ## [9.8.0](https://github.com/darellchua2/opencode-config-template/compare/v9.7.0...v9.8.0) (2026-09-19)
 
 ### Features
