@@ -101,7 +101,7 @@ Conclude `--docs` sessions with a summary: terms added/changed, ADRs created (if
 
 ## PLAN emission (`--plan` mode)
 
-After convergence, emit `PLANS/PLAN-GIT-{issue}.md` (or `PLANS/PLAN-{KEY}.md` for non-GitHub keys) in the canonical contract the execution skills parse:
+After convergence, emit `PLANS/PLAN-GIT-{issue}.md` (or `PLANS/PLAN-{KEY}.md` for non-GitHub keys) in the canonical contract `plan-execution-skill` parses (`--soft`/`--gate`):
 
 ```markdown
 # PLAN: <title>
