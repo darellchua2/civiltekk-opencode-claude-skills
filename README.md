@@ -399,7 +399,7 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 
 #### Skill Profiles — deploy-time primary visibility (#333)
 
-Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (102 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 44 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session at ~90 tokens/description).
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (103 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 44 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session at ~90 tokens/description).
 
 ```bash
 ./deploy/setup.sh                                # default: lean (44 primary-visible skills)
