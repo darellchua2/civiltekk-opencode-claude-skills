@@ -160,4 +160,4 @@ None. No `blocked-by:` tickets.
 ## Execution Trace
 
 - Phase 1 (1.1–1.3): GATE a14eee2 lint=n.a typecheck=n.a build=t unit=t e2e=n.a — compose build green; smokes: opencode v2.0.8, pandas 3.0.6 in venv, 34/147/8 content entries; bats 334/334 ok
-- Phase 2 (2.1–2.3): GATE PENDING lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bridge + pm2 script removed, bash -n clean, host .env at 2.0.8/4096; bats 334/334 ok
+- Phase 2 (2.1–2.3): GATE e804701 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bridge + pm2 script removed, bash -n clean, host .env at 2.0.8/4096; bats 334/334 ok
