@@ -223,6 +223,15 @@
 - **Summary**: Step 7 selects reviewers by blast-radius only; uiux gained a required Requirements Gaps field; surfaced gaps relay to requirements-specialist Mode R; Step 1 preflight guards per-skill installs
 - **Date**: 2026-09-18
 
+### Case-sensitive grep gates false-green on file-tree prose
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/case-sensitive-grep-gates-false-green.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #423 review: PLAN-423 3.5 gate read green while README.md:32 still said "Symlink bridge" — case-sensitive prose grep missed the capital, and the line-anchored path pattern can't match ASCII trees that split parent/child across lines; use grep -i plus bare child-name patterns for tree blocks
+- **Date**: 2026-09-19
+
 ---
 
 - Project-level: `LEARNINGS/` (this directory, git-committed)

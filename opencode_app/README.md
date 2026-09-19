@@ -149,7 +149,7 @@ See the main `README.md` for full details on MCP tools, supported languages, and
 
 ## markitdown MCP (PLAN-GIT-262)
 
-The privacy-hardened `markitdown` MCP launcher is **baked into the Docker image at build time** via `/opt/python-env/bin/pip install /app/mcp-servers/markitdown-local-mcp` (Dockerfile line 71). The `markitdown-local-mcp` binary lands in `/opt/python-env/bin`, which is already on `PATH` via the `ENV PATH="/opt/python-env/bin:${PATH}"` directive (Dockerfile line 33) — no entrypoint changes needed.
+The privacy-hardened `markitdown` MCP launcher is **baked into the Docker image at build time** in the Dockerfile's `python-deps` stage: the source is COPY'd to `/tmp/markitdown-local-mcp` and installed with the rest of the pip floors into `/opt/python-env`. The `markitdown-local-mcp` binary lands in `/opt/python-env/bin`, which is first on `PATH` in the runtime stage — no entrypoint changes needed.
 
 The server ships as `disabled: true` (opt-in). To enable inside the container, edit `opencode_app/opencode.json` and set `mcp.servers.markitdown.disabled` to `false`, then rebuild.
 

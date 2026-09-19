@@ -16,11 +16,26 @@
 #
 set -euo pipefail
 
-cd "$HOME/VSCODE/opencode-config-template"
+# Self-locating: works on any host that clones the repo, no hardcoded path.
+cd "$(dirname "$(readlink -f "$0")")"
+
+# Stash BEFORE checkout so a dirty feature branch can't abort the flow, and
+# remember whether a stash exists so the pop below can fail loud.
+STASHED=0
+if [ -n "$(git status --porcelain)" ]; then
+  git stash -q && STASHED=1
+fi
+
 git checkout main
-git stash
-git pull
-git stash pop 2>/dev/null || true
+git pull --ff-only
+
+if [ "$STASHED" -eq 1 ]; then
+  if ! git stash pop; then
+    echo "ERROR: stash pop conflict — stashed changes are intact (git stash list)."
+    echo "Resolve manually before redeploying; refusing to build from a conflicted tree."
+    exit 1
+  fi
+fi
 
 docker compose up -d --build
 
