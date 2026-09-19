@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.13.0](https://github.com/darellchua2/opencode-config-template/compare/v9.12.0...v9.13.0) (2026-09-19)
+
+### Features
+
+* **skills:** add github-runners-setup-skill for gated self-hosted runner setup ([#361](https://github.com/darellchua2/opencode-config-template/issues/361)) ([e1901c3](https://github.com/darellchua2/opencode-config-template/commit/e1901c35a583d693bc6ec3994bc0dc9352c4ec30))
+
+### Documentation
+
+* **skills:** apply [#361](https://github.com/darellchua2/opencode-config-template/issues/361) review — dispatcher pagination idiom, PAT visibility, exact scope grep, checksum ([37d2f38](https://github.com/darellchua2/opencode-config-template/commit/37d2f38ffb32a3ac865ebcfb254bd386a5be6072))
+
 ## [9.12.0](https://github.com/darellchua2/opencode-config-template/compare/v9.11.0...v9.12.0) (2026-09-19)
 
 ### Features
