@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.8.3](https://github.com/darellchua2/opencode-config-template/compare/v9.8.2...v9.8.3) (2026-09-19)
+
+### Bug Fixes
+
+* **skills:** standardize continuous-learning-skill on scope user (was global) ([70905cd](https://github.com/darellchua2/opencode-config-template/commit/70905cd9d7d41b9c199b1c88eeb0f0c90ebd0d74))
+
 ## [9.8.2](https://github.com/darellchua2/opencode-config-template/compare/v9.8.1...v9.8.2) (2026-09-19)
 
 ### Bug Fixes
