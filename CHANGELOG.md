@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.7.0](https://github.com/darellchua2/opencode-config-template/compare/v9.6.0...v9.7.0) (2026-09-19)
+
+### Features
+
+* **agents:** uiux-reviewer hybrid vision policy — native-first, delegate on failure ([#372](https://github.com/darellchua2/opencode-config-template/issues/372)) ([6a1fc35](https://github.com/darellchua2/opencode-config-template/commit/6a1fc35e073791fad90d288933b49f654221e2c5))
+* **skills:** uiux-review QA gate accepts native multimodal evidence ([#372](https://github.com/darellchua2/opencode-config-template/issues/372)) ([6108fee](https://github.com/darellchua2/opencode-config-template/commit/6108feee75ee79168467e00415a7ee764508ca38))
+* **tiers:** move uiux-reviewer-subagent to vision tier ([#372](https://github.com/darellchua2/opencode-config-template/issues/372)) ([21f0f1f](https://github.com/darellchua2/opencode-config-template/commit/21f0f1f9f81a11825655c5e1133a5c55b5e3bd21))
+
+### Documentation
+
+* **learnings:** merge-resolved JSON duplicate keys pass lenient gates ([8e72061](https://github.com/darellchua2/opencode-config-template/commit/8e72061522575cde6151190ff21b0bc834f6cd01))
+* **plan:** add PLAN-372.md for [#372](https://github.com/darellchua2/opencode-config-template/issues/372) ([08b959c](https://github.com/darellchua2/opencode-config-template/commit/08b959c69662f921ae43186c43abcfc125746eda))
+* **plan:** address plan-review findings for [#372](https://github.com/darellchua2/opencode-config-template/issues/372) ([45fb79c](https://github.com/darellchua2/opencode-config-template/commit/45fb79ce2febe59fe0d9dd9899c9283fa3300522))
+* **plan:** sync Phase 2/4 step checkboxes ([#372](https://github.com/darellchua2/opencode-config-template/issues/372)) ([d8c8357](https://github.com/darellchua2/opencode-config-template/commit/d8c83572c069a20a43449587cce8ab8488f1d95e))
+* **readme:** add uiux-reviewer to vision-tier blockquote; fix fallback phrasing ([#372](https://github.com/darellchua2/opencode-config-template/issues/372)) ([70509a2](https://github.com/darellchua2/opencode-config-template/commit/70509a22e999ab920857e26d59d41e2b96c5e3f2))
+* **tiers:** sync tier tables and agent-creation template for uiux vision move ([#372](https://github.com/darellchua2/opencode-config-template/issues/372)) ([d08ccbb](https://github.com/darellchua2/opencode-config-template/commit/d08ccbba3cdd05f2aba391f52367254b60bc53e1))
+
 ## [9.6.0](https://github.com/darellchua2/opencode-config-template/compare/v9.5.1...v9.6.0) (2026-09-19)
 
 ### Features
