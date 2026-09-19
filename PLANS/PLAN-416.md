@@ -46,14 +46,16 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 3: Verification gate
 
-- [ ] **3.1** Assert scope discipline: `git diff` shows changes only in `skills/worktree-pipeline-skill/SKILL.md` and no frontmatter lines (`---`-delimited block at file top); grep asserts the Phase 1 "Done when" markers are present.
+- [x] **3.1** Assert scope discipline: `git diff` shows changes only in `skills/worktree-pipeline-skill/SKILL.md` and no frontmatter lines (`---`-delimited block at file top); grep asserts the Phase 1 "Done when" markers are present.
     — **Why:** Acceptance criterion 4 requires frontmatter to be untouched (count syncs and registry rebuild hinge on it); asserting it in the gate prevents silent drift.
     — **Done when:** Diff scope assertion and all grep assertions exit 0.
     — **Consumers affected:** `installer/registry.json`, `deploy/skill-profiles.json`, `README.md` — proven unchanged.
-- [ ] **3.2** Run the CI-equivalent checks: `node installer/build-registry.mjs --check` must exit 0 (plain runs rewrite `registry.json` with a fresh `generatedAt` timestamp — `--check` is the drift guard, per the `docs-registry-is-build-site-artifact` learning); run the bats suite (`tests/`, vendored `tests/lib/bats-core` if present, system bats otherwise) — at minimum `test_count_drift.bats`, `test_mcp_count_consistency.bats`, `skill_profiles.bats`; run the full suite if the runner is available.
+    — **Done:** Diff vs origin/main = exactly SKILL.md + PLAN-416.md + the LEARNINGS file; frontmatter byte-identical; 7/7 content markers present; files: none changed by this step (assertion only); fixes: none
+- [x] **3.2** Run the CI-equivalent checks: `node installer/build-registry.mjs --check` must exit 0 (plain runs rewrite `registry.json` with a fresh `generatedAt` timestamp — `--check` is the drift guard, per the `docs-registry-is-build-site-artifact` learning); run the bats suite (`tests/`, vendored `tests/lib/bats-core` if present, system bats otherwise) — at minimum `test_count_drift.bats`, `test_mcp_count_consistency.bats`, `skill_profiles.bats`; run the full suite if the runner is available.
     — **Why:** These are the exact PR-gate checks in `.github/workflows/release.yml`; the change must be proven green locally before the Step 10 CI gate. The `--check` flag matters: a plain registry run always churns `generatedAt`, making a literal "zero diff" gate impossible and risking timestamp churn in the PR.
     — **Done when:** `build-registry.mjs --check` exits 0 and the selected bats tests exit 0.
     — **Consumers affected:** CI (release.yml) — confidence that the PR gate passes on first run.
+    — **Done:** `--check` exits 0; full bats suite (system bats) 340 ok / 0 failed — exceeds the three-file minimum; files: none changed by this step (verification only); fixes: none
 
 ## Technical Notes
 
