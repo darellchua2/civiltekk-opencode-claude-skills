@@ -6,11 +6,11 @@
 
 ## Acceptance Criteria
 
-- [ ] AC1 — Attribution rule stated in exactly one skill; pr-creation points to it
-- [ ] AC2 — MCP guard policy text lives only in `jira-git-integration-skill`; the other 4 copies are pointer + endpoint line; existing `§MCP Availability Guard` pointers still resolve
-- [ ] AC3 — gh-cli fallback stated once in `ticket-creation-skill`, no inline auth commands
-- [ ] AC4 — `node installer/build-registry.mjs` exit 0, `--check` no drift, bats suite green
-- [ ] AC5 — No skill/agent count changes (bodies only — no adds/removes)
+- [x] AC1 — Attribution rule stated in exactly one skill; pr-creation points to it
+- [x] AC2 — MCP guard policy text lives only in `jira-git-integration-skill`; the other 4 copies are pointer + endpoint line; existing `§MCP Availability Guard` pointers still resolve
+- [x] AC3 — gh-cli fallback stated once in `ticket-creation-skill`, no inline auth commands
+- [x] AC4 — `node installer/build-registry.mjs` exit 0, `--check` no drift, bats suite green
+- [x] AC5 — No skill/agent count changes (bodies only — no adds/removes)
 
 ## Dependency & Consumer Map
 
@@ -101,25 +101,29 @@ Accepted agent-local restatements (review ruling, Mode R): `agents/pr-workflow-s
 
 ### Phase 4: Gates + pointer audit + learning
 
-- [ ] **4.1** Pointer-resolution audit: `grep -rn '§MCP Availability Guard\|§Attribution' skills/ agents/` — every reference's target heading exists verbatim in the target file (heading-rename-syncs-quoted-pointers); plus `grep -rn '_edge/tenant_info' skills/` (excluding `_archived/`) returns exactly one hit (jira-git-integration); plus the §-sigil blind spot sweep — `grep -rn 'MCP Availability Guard' agents/ skills/` catches bare-name references (repo-ops:166 must be §-form after 1.7; `agent-introspection-debugging-skill:78`'s vague ref is accepted one-hop — Technical Notes names the home)
+- [x] **4.1** Pointer-resolution audit: `grep -rn '§MCP Availability Guard\|§Attribution' skills/ agents/` — every reference's target heading exists verbatim in the target file (heading-rename-syncs-quoted-pointers); plus `grep -rn '_edge/tenant_info' skills/` (excluding `_archived/`) returns exactly one hit (jira-git-integration); plus the §-sigil blind spot sweep — `grep -rn 'MCP Availability Guard' agents/ skills/` catches bare-name references (repo-ops:166 must be §-form after 1.7; `agent-introspection-debugging-skill:78`'s vague ref is accepted one-hop — Technical Notes names the home)
     — **Why:** AC2's "pointers still resolve" is checkable only by sweeping every quoted § pointer repo-wide; the §-less references evade a sigil-only grep (Mode R flagged)
     — **Done when:** audit prints zero broken references; single tenant_info hit confirmed; every bare-name guard reference is either §-form or explicitly accepted in Technical Notes
     — **Consumers affected:** all §-pointer consumers (verification only, no edits)
+    — **Done:** 11 §-refs swept: all targets exist verbatim; tenant_info single-hit; bare-name hits are headings/self-refs/accepted (introspection:78, pr-workflow-subagent:122); fixes: none
 
-- [ ] **4.2** Registry gates: `node installer/build-registry.mjs` exit 0; `--check` reports no drift
+- [x] **4.2** Registry gates: `node installer/build-registry.mjs` exit 0; `--check` reports no drift
     — **Why:** AC4 front half + AC5 — body-only edits must leave counts and registry untouched
     — **Done when:** both commands exit 0; registry diff empty
     — **Consumers affected:** installer/registry consumers (no-op expected)
+    — **Done:** registry regen no-op (0 churn lines); --check exit 0; fixes: none
 
-- [ ] **4.3** Bats suite: run the full bats suite (locate via `ls installer/tests/*.bats tests/*.bats 2>/dev/null` or repo docs); all tests pass
+- [x] **4.3** Bats suite: run the full bats suite (locate via `ls installer/tests/*.bats tests/*.bats 2>/dev/null` or repo docs); all tests pass
     — **Why:** AC4 back half — count-drift and structure tests pin the surfaces this PLAN touches
     — **Done when:** suite green, zero failures
     — **Consumers affected:** none (verification only)
+    — **Done:** full bats suite green; fixes: none
 
-- [ ] **4.4** Capture one LEARNINGS entry (decision: MCP Availability Guard single-homed at jira-git-integration-skill; per-skill copies are pointer + endpoint, heading frozen)
+- [x] **4.4** Capture one LEARNINGS entry (decision: MCP Availability Guard single-homed at jira-git-integration-skill; per-skill copies are pointer + endpoint, heading frozen)
     — **Why:** memory-hygiene contract — one 2-line add per non-trivial decision
     — **Done when:** `LEARNINGS/decisions/` (or `conventions/`) file added, ≤2 lines of body
     — **Consumers affected:** future guard edits route to one file
+    — **Done:** LEARNINGS/decisions/mcp-guard-single-homed.md added (2-line body); fixes: none
 
 ## Technical Notes
 
@@ -142,3 +146,4 @@ None — #404 and #409 are merged; base main @ 5274dff2 already contains both.
 GATE b7adc49 lint=- typecheck=- build=- unit=t e2e=n.a.
 GATE 0e19269 lint=- typecheck=- build=- unit=t e2e=n.a.
 GATE b798738 lint=- typecheck=- build=- unit=t e2e=n.a.
+GATE 37e5651 lint=- typecheck=- build=- unit=t e2e=n.a.
