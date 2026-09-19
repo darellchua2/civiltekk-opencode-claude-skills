@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.5.0](https://github.com/darellchua2/opencode-config-template/compare/v9.4.1...v9.5.0) (2026-09-19)
+
+### Features
+
+* **issues:** add canonical issue form templates and repo-level forms ([5cadb01](https://github.com/darellchua2/opencode-config-template/commit/5cadb01c14e5e54a716f3fabdca0d764157d05f4))
+* **skills:** agent ticket intake — classify, collect, validate, preview, submit ([facdbee](https://github.com/darellchua2/opencode-config-template/commit/facdbee03d3b5c46cb1b769a06329c81a4aad81f))
+* **skills:** per-repo issue-template scaffold offer in setup skill ([6db2fe7](https://github.com/darellchua2/opencode-config-template/commit/6db2fe74deb6a3fe4c79d1d580b676d850fc6849))
+
+### Bug Fixes
+
+* **skills:** apply code-review findings to ticket/setup skills ([655fbab](https://github.com/darellchua2/opencode-config-template/commit/655fbab2a4ac9cb2c8380c8d39c69ac37fe54452))
+
+### Documentation
+
+* **learnings:** add consolidation learnings from [#407](https://github.com/darellchua2/opencode-config-template/issues/407)/[#408](https://github.com/darellchua2/opencode-config-template/issues/408) reviews ([a48f934](https://github.com/darellchua2/opencode-config-template/commit/a48f934300d85a6d87122287e4a8240d1bcf4ae1)), closes [#422](https://github.com/darellchua2/opencode-config-template/issues/422)
+* **learnings:** bats errexit loop fail-fast (from [#417](https://github.com/darellchua2/opencode-config-template/issues/417) review) ([3753732](https://github.com/darellchua2/opencode-config-template/commit/37537321c4ca691dd90ca4097ecc6dccb25571e4))
+* **learnings:** build-registry plain run churns generatedAt ([d11495f](https://github.com/darellchua2/opencode-config-template/commit/d11495fa8a74064a5c7c3097e9ae967e42e7e56e))
+* **plan:** add PLAN-416.md for [#416](https://github.com/darellchua2/opencode-config-template/issues/416) ([2554cf8](https://github.com/darellchua2/opencode-config-template/commit/2554cf86fd74f541314c5ae215b3a2c55db917a0))
+* **plan:** add PLAN-417.md for [#417](https://github.com/darellchua2/opencode-config-template/issues/417) ([d0517e6](https://github.com/darellchua2/opencode-config-template/commit/d0517e6d693e5dd903e6b701465c74c7b711742b))
+* **plan:** apply architecture review findings to PLAN-417 ([dc6dc1a](https://github.com/darellchua2/opencode-config-template/commit/dc6dc1a6dd7bf11062cb3df80fc9eb5cc115b440))
+* **plan:** apply PLAN-416 review findings ([#416](https://github.com/darellchua2/opencode-config-template/issues/416)) ([ac49827](https://github.com/darellchua2/opencode-config-template/commit/ac49827e124d0f6cc1ceb46bc67037f68e39abd9))
+* **plan:** implement Phase 3 — verification gate green ([6e1cb57](https://github.com/darellchua2/opencode-config-template/commit/6e1cb574703b90a189745e08fddab8c7dce3e579))
+* **plan:** tick PLAN-416 acceptance criteria — all phases green ([2b78f9a](https://github.com/darellchua2/opencode-config-template/commit/2b78f9a8ad98164882782680d44350719ebeffcd))
+* **skill:** disposition non-0/1 check-ignore exits as soft-skip ([cf20b23](https://github.com/darellchua2/opencode-config-template/commit/cf20b231cde3a2aa032947e6c016eb811b4d30f8))
+* **skill:** implement Phase 1 — conditional CodeGraph init in Step 4 ([458f3ee](https://github.com/darellchua2/opencode-config-template/commit/458f3ee9cfacae0bc8c7a9b72f5a19552cf74612))
+* **skill:** implement Phase 2 — CodeGraph guarantee line ([daa6e40](https://github.com/darellchua2/opencode-config-template/commit/daa6e40e9c547d003832397c88bdf01418d362b7))
+
 ## [9.4.1](https://github.com/darellchua2/opencode-config-template/compare/v9.4.0...v9.4.1) (2026-09-19)
 
 ### Bug Fixes
