@@ -11,7 +11,9 @@
 #      (the image HEALTHCHECK authenticates with the entrypoint-materialized
 #      password; the compose healthcheck additionally asserts goal-plugin
 #      presence via /api/command)
-#   2. Public endpoint:  GET https://opencode-ha.civiltekk.com -> expects 200/101
+#   2. Public endpoint (opt-in): GET ${PUBLIC_ENDPOINT_URL} -> expects 200/101.
+#      Export PUBLIC_ENDPOINT_URL in the environment (or .env) to enable;
+#      unset = check skipped, deployment stays deployment-agnostic.
 # On failure, recent container logs are printed.
 #
 set -euo pipefail
@@ -62,10 +64,14 @@ fi
 
 echo "OpenCode container is healthy."
 
-echo "Checking opencode-ha.civiltekk.com..."
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://opencode-ha.civiltekk.com)
-if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 101 ]; then
-  echo "opencode-ha.civiltekk.com is reachable (HTTP $HTTP_CODE)"
+if [ -n "${PUBLIC_ENDPOINT_URL:-}" ]; then
+  echo "Checking public endpoint ${PUBLIC_ENDPOINT_URL}..."
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${PUBLIC_ENDPOINT_URL}")
+  if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 101 ]; then
+    echo "Public endpoint is reachable (HTTP $HTTP_CODE)"
+  else
+    echo "Warning: public endpoint returned HTTP $HTTP_CODE"
+  fi
 else
-  echo "Warning: opencode-ha.civiltekk.com returned HTTP $HTTP_CODE"
+  echo "PUBLIC_ENDPOINT_URL unset — skipping public-endpoint check"
 fi
