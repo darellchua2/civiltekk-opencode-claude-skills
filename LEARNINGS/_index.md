@@ -223,6 +223,15 @@
 - **Summary**: checkStrictAllowlist on `add --all`/`update` prints 100+ misleading warning lines against the default lean profile — gate per-item advisories to partial selections
 - **Date**: 2026-09-17
 
+### Normative rule added, in-file example left stale
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/rule-added-example-stale.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: when a commit adds or changes a skill rule, sweep the same file's Example Usage of that flow — stale examples are the strongest signal teaching agents the deprecated behavior
+- **Date**: 2026-09-19
+
 ### Adaptive review drops proactive requirements review; gaps flow via Mode R relay
 
 - **Category**: decision

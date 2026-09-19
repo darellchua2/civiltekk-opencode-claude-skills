@@ -137,7 +137,7 @@ Per-tool routing rules live at PROJECT level, not user level — this skill appe
 
 **Jira templates** (marker `<!-- opencode:jira-templates -->`) — offer appended when the repo is Jira-centric (detection table's Jira signal) and accepted:
 
-> Jira ticket descriptions follow the type templates — Bug: Problem description / Steps to Reproduce / Expected vs Actual / Environment / Logs / References (mirrors the canonical GitHub bug body). Story: "As a… I want… so that…" + acceptance-criteria checklist. Task: Context / Acceptance Criteria / Scope. Run the intake from `ticket-creation-skill` first (classify → collect required fields → validate → preview); never leave a Jira description empty.
+> Jira ticket descriptions follow the type templates — Bug: Problem description / Steps to reproduce / Expected vs Actual / Environment / Logs / References (mirrors the canonical GitHub bug body). Story: "As a… I want… so that…" + acceptance-criteria checklist. Task: Context / Acceptance Criteria / Scope. Run the intake from `ticket-creation-skill` first (classify → collect required fields → validate → preview); never leave a Jira description empty.
 
 > GitHub repos get real form files via the issue-template scaffold above; Jira has no repo-file equivalent, so this rule block is the agent-side application path.
 

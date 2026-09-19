@@ -18,7 +18,7 @@ failures without tripping errexit, and `!`-prefixed commands are exempt.
 Do not flag multi-iteration assertion loops as silently-passing unless a
 subshell, `run`, `|| true`, or a pipe actually swallows the status (e.g.
 `cmd | grep -q` masks `cmd`'s exit, not grep's). Verified against
-`tests/test_issue_template_byte_identity.bats` (loops at :16/:22/:29) —
+`tests/test_issue_template_byte_identity.bats` (loops at :15/:25/:32) —
 fail-fast by construction; the repo-wide idiom
 (`test_autoresearch_protocol.bats:35` etc., mid-test `[ ]` assertions in
 `test_count_drift.bats`) relies on the same semantics.
