@@ -18,10 +18,10 @@ HANDOFF_TARGET="pptx-generate-slide-skill"
 
 @test "skill_isolation_no_shared_common_references" {
   # Catches both repo paths (skills/_common/...) and deploy strings
-  # (.opencode/skills/_common/...). Runtime carriers: skills + agent docs.
-  # tests/ is excluded (this file's own comments name the banned string).
-  # -eq 1: grep exit 2 (error) must fail the test, not false-green it.
-  run grep -rn "skills/_common" skills/ agents/ \
+  # (.opencode/skills/_common/...). Runtime carriers: skills + agent docs +
+  # top-level docs. tests/ is excluded (this file's own comments name the
+  # banned string). -eq 1: grep exit 2 (error) must fail, not false-green.
+  run grep -rn "skills/_common" skills/ agents/ README.md MIGRATION.md \
     --exclude-dir=__pycache__ --exclude-dir=.pytest_cache
   [ "$status" -eq 1 ]
 }
@@ -37,6 +37,24 @@ HANDOFF_TARGET="pptx-generate-slide-skill"
 import re, sys
 from pathlib import Path
 
+fence_re = re.compile(r"```.*?```", re.S)
+tick_re = re.compile(r"```")
+
+def carrier_spans(p, text):
+    "Runtime-carrier char spans: whole .py files; fenced blocks in SKILL.md."
+    if p.suffix == ".py":
+        return [(0, len(text))]
+    if p.name == "SKILL.md":
+        spans = [f.span() for f in fence_re.finditer(text)]
+        last = spans[-1][1] if spans else 0
+        # GitHub renders an unclosed trailing fence to EOF — that tail is a
+        # runtime carrier too, not a silent skip.
+        trailing = [m.start() for m in tick_re.finditer(text, last)]
+        if trailing:
+            spans.append((trailing[0], len(text)))
+        return spans
+    return []
+
 pat = re.compile(
     r"parents\[([2-9]|[1-9][0-9]+)\]"
     r"|parent\.parent\.parent"
@@ -45,7 +63,7 @@ pat = re.compile(
 )
 offenders = []
 for p in sorted(Path("skills").rglob("*")):
-    if not p.is_file() or p.suffix != ".py":
+    if not p.is_file():
         continue
     parts = p.parts
     if parts[1].startswith("_"):
@@ -56,7 +74,10 @@ for p in sorted(Path("skills").rglob("*")):
         text = p.read_text(encoding="utf-8")
     except (UnicodeDecodeError, ValueError):
         continue
+    spans = carrier_spans(p, text)
     for m in pat.finditer(text):
+        if not any(s <= m.start() < e for s, e in spans):
+            continue
         line = text.count("\n", 0, m.start()) + 1
         offenders.append(f"{p}:{line}: {m.group(0)!r}")
 if offenders:
@@ -93,9 +114,28 @@ def names(own):
 
 ref_re = re.compile(
     r"opencode/skills/([a-z0-9_-]+)/|(?<!\w)skills/([a-z0-9_-]+)/"
-    r'|"([a-z0-9_-]+)"\s*/\s*"scripts"'
+    r'|"([a-z0-9_-]+)"\s*\)?\s*/\s*"scripts"'
 )
 fence_re = re.compile(r"```.*?```", re.S)
+tick_re = re.compile(r"```")
+
+def carrier_spans(p, text):
+    "Runtime-carrier char spans: whole .py files; fenced blocks in SKILL.md."
+    if p.suffix == ".py":
+        return [(0, len(text))]
+    if p.name == "SKILL.md":
+        # Only fenced code blocks are runtime instructions; prose/links
+        # (attribution URLs, credits tables — keep those in prose above the
+        # fence, never inside fence comments) are documentation.
+        spans = [f.span() for f in fence_re.finditer(text)]
+        last = spans[-1][1] if spans else 0
+        # GitHub renders an unclosed trailing fence to EOF — carrier too.
+        trailing = [m.start() for m in tick_re.finditer(text, last)]
+        if trailing:
+            spans.append((trailing[0], len(text)))
+        return spans
+    return []
+
 violations = []
 for p in sorted(root.rglob("*")):
     if not p.is_file():
@@ -109,15 +149,8 @@ for p in sorted(root.rglob("*")):
         text = p.read_text(encoding="utf-8")
     except (UnicodeDecodeError, ValueError):
         continue  # binary payload — not a path reference carrier
-    if p.suffix == ".py":
-        spans = [(0, len(text))]           # whole file is runtime carrier
-    elif p.name == "SKILL.md":
-        # Only fenced code blocks are runtime instructions; prose/links
-        # (attribution URLs, credits tables) are documentation.
-        spans = [f.span() for f in fence_re.finditer(text)]
-    else:
-        continue
     own = parts[1]
+    spans = carrier_spans(p, text)
     for m in ref_re.finditer(text):
         if not any(s <= m.start() < e for s, e in spans):
             continue
@@ -158,6 +191,9 @@ PYEOF
 @test "skill_isolation_no_new_underscore_prefixed_shared_dirs" {
   # AGENTS.md §Skill Isolation Contract bans new shared `_`-prefixed dirs.
   # Legacy allowlist: _archived (pre-existing, not shipped via npx add).
+  # Pre-assert: a missing skills/ dir would make the pipeline exit 1 on empty
+  # input and false-green the test (pipes swallow the ls failure).
+  [ -d skills ] || fail "skills/ directory missing"
   run bash -c "ls skills/ | grep '^_' | grep -v -x '_archived'"
   [ "$status" -ne 0 ]
 }
