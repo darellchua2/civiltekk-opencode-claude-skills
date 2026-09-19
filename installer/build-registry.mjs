@@ -259,7 +259,7 @@ async function build() {
   console.log(`wrote ${OUT_FILE} (agents=${agents.length}, skills=${skills.length})`);
 
   // fixture sanity: spot-check 5 agents (Phase 1.3 requirement)
-  const spot = ["code-review-subagent", "architecture-review-subagent", "explorer-subagent", "startup-founder-primary-agent", "tdd-subagent"];
+  const spot = ["code-review-subagent", "architecture-review-subagent", "explorer-subagent", "startup-founder-subagent", "tdd-subagent"];
   for (const s of spot) {
     const a = agents.find((x) => x.stem === s);
     if (!a) { console.error(`fixture FAIL: ${s} not found`); process.exit(1); }

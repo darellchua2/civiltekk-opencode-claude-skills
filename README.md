@@ -610,8 +610,8 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 |-------|---------|-------------|
 | **build** | Default agent for general tasks | Full access to all tools and subagents |
 | **plan** | Read-only planning and analysis | `task`, `read`, `glob`, `grep` only (no write/execute) |
-| **startup-founder-primary-agent** | Business docs - reports, quotations, spreadsheets, presentations | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
-| **office-document-primary-agent** | Office document specialist: Word, PowerPoint, Excel | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
+| **startup-founder-subagent** | Business docs - reports, quotations, spreadsheets, presentations | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
+| **office-document-router-subagent** | Office document specialist: Word, PowerPoint, Excel | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
 
 #### Subagents
 
