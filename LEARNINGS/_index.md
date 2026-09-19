@@ -232,6 +232,15 @@
 - **Summary**: #423 review: PLAN-423 3.5 gate read green while README.md:32 still said "Symlink bridge" — case-sensitive prose grep missed the capital, and the line-anchored path pattern can't match ASCII trees that split parent/child across lines; use grep -i plus bare child-name patterns for tree blocks
 - **Date**: 2026-09-19
 
+### `git stash` exits 0 on nothing-to-save — porcelain-gated STASHED flags lie
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/git-stash-nothing-to-save-exit-zero.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #423 fix round: `git status --porcelain` counts untracked files as dirty but `git stash` (no -u) stashes nothing and still exits 0 — a STASHED flag set from porcelain + exit code goes true with no stash created, and the later pop fails on an empty stash; gate on `--untracked-files=no` or compare the refs/stash rev before/after
+- **Date**: 2026-09-19
+
 ---
 
 - Project-level: `LEARNINGS/` (this directory, git-committed)

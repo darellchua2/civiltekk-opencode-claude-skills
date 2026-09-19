@@ -22,7 +22,7 @@ cd "$(dirname "$(readlink -f "$0")")"
 # Stash BEFORE checkout so a dirty feature branch can't abort the flow, and
 # remember whether a stash exists so the pop below can fail loud.
 STASHED=0
-if [ -n "$(git status --porcelain)" ]; then
+if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
   git stash -q && STASHED=1
 fi
 
