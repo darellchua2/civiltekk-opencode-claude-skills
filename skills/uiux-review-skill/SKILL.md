@@ -62,7 +62,7 @@ Findings missing any of these are not included in the report. This prevents hall
 
 Before synthesis, every finding is checked:
 1. Does it have an evidence reference? → If no, **reject**
-2. Is the evidence from `image-analyzer-subagent` (for screenshots) or direct code inspection (for source)? → If screenshot interpreted inline, **reject**
+2. Is the evidence vision-derived — a native multimodal read by the reviewer, `image-analyzer-subagent` output (for screenshots), or direct code inspection (for source)? → Visual claims with NO vision-derived backing (fabricated or code-inferred pixel claims), **reject**
 3. Is the severity assignment consistent with the rubric? → If inconsistent, **reclassify**
 
 Only findings passing all three checks reach the report.

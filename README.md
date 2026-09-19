@@ -104,11 +104,13 @@ Override files (precedence highest-first; see `MIGRATION.md`):
 | `~/.config/opencode/models.json` | tier map, global (written by `--provider`) |
 | `installer/models.default.json` | Z.AI defaults |
 
-> **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` + `zai-media-subagent` run on
+> **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` + `uiux-reviewer-subagent` +
+> `zai-media-subagent` run on
 > `zai-coding-plan/glm-5.3-flash` (native multimodal — image/video/pdf input, 1M ctx), natively
 > mapped by models.dev under the `zai-coding-plan` subscription. They see images/screenshots
-> directly (no external vision API). When native perception is unavailable, the agents'
-> embedded inline fallback recipe calls `glm-5v-turbo` (pay-as-you-go `zai` provider — a
+> directly (no external vision API). When native perception is unavailable, they fall back to the
+> inline recipe embedded in `image-analyzer-subagent`, calling `glm-5v-turbo` (pay-as-you-go
+> `zai` provider — a
 > different model) via direct API. Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY`
 > (auto-injected in Docker via `docker-entrypoint.sh`). See `AGENTS.md` § Subagent Model Tiering.
 

@@ -37,14 +37,14 @@ Tiers live in `installer/agent-tiers.json`; models are resolved at deploy time f
 | Tier | Default (Z.AI) | Use for |
 |------|----------------|---------|
 | `primary` | `glm-5.3` (1M ctx) | Primary session only — never for subagents. |
-| `reasoning` | `glm-5.3` (200k) | Correctness-critical: reviewers (code/architecture/language/uiux), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, opencode-v2-migration, technical-design-specialist, discovery-specialist, requirements-specialist, autoresearch-ml, autoresearch-code |
+| `reasoning` | `glm-5.3` (200k) | Correctness-critical: reviewers (code/architecture/language), repo-ops-specialist, tdd, opentofu-explorer, loop-operator, opencode-tooling, opencode-v2-migration, technical-design-specialist, discovery-specialist, requirements-specialist, autoresearch-ml, autoresearch-code |
 | `fast` | `glm-5.3-flash` (1M) | Exploratory/low-impact: explorer, testing, nextjs/cad/office-docs specialists, document creators, pr-workflow, autoresearch-research |
 | `docs` | `glm-5.3-flash` (1M) | documentation, linting, coverage |
-| `vision` | `glm-5.3-flash` (1M) | Native multimodal (image/video/pdf): `image-analyzer-subagent` + `error-resolver-subagent` (see fallback below) |
+| `vision` | `glm-5.3-flash` (1M) | Native multimodal (image/video/pdf): `image-analyzer-subagent` + `error-resolver-subagent` + `uiux-reviewer-subagent` (see fallback below) |
 
 Pick by purpose: correctness-critical → `reasoning`; exploratory → `fast`; docs/lint → `docs`; image perception → `vision`.
 
-**Vision fallback:** when native perception is unavailable ("model does not support image input", text-only session), image-analyzer and error-resolver fall back to the inline bash recipe embedded in `image-analyzer-subagent`, calling the Z.AI vision API directly at `glm-5v-turbo` — a different model from the native `glm-5.3-flash` (coding-plan endpoint preferred, PAAS fallback; requires `ZAI_API_KEY`). Free `glm-4.6v-flash` is a cost-constrained option, not the default.
+**Vision fallback:** when native perception is unavailable ("model does not support image input", text-only session), image-analyzer, error-resolver, and uiux-reviewer fall back to the inline bash recipe embedded in `image-analyzer-subagent`, calling the Z.AI vision API directly at `glm-5v-turbo` — a different model from the native `glm-5.3-flash` (coding-plan endpoint preferred, PAAS fallback; requires `ZAI_API_KEY`). Free `glm-4.6v-flash` is a cost-constrained option, not the default.
 
 **Resolution precedence (highest wins):** project `.opencode/agent-overrides.json` > global `~/.config/opencode/agent-overrides.json` > project `.opencode/models.json` > global `~/.config/opencode/models.json` > `installer/models.default.json`. Swap provider: `setup.sh --provider <p>`; mix per tier: `setup.sh --mix` (stored in `models.json`, re-resolve with `--models-only`); per-agent pin: global `agent-overrides.json`. Built-ins `explore`→`fast` and `general`→`reasoning` are patched in `opencode.json`, not the tier registry.
 
