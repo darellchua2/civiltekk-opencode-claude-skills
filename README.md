@@ -216,6 +216,9 @@ npx github:darellchua2/opencode-config-template add my-custom-skill --permit
 # E. Skill needs an MCP — prints snippet, never auto-merges
 npx github:darellchua2/opencode-config-template add markitdown-mcp-skill
 
+# E2. Skill declares a skill prerequisite — auto-installs it (stderr notice; --no-deps opts out)
+npx github:darellchua2/opencode-config-template add pptx-template-modifier-skill
+
 # F. Project scope (full-service)
 npx github:darellchua2/opencode-config-template add nextjs-specialist-subagent --project
 
