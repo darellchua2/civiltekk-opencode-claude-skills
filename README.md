@@ -776,6 +776,7 @@ The setup scripts automatically:
 - Copies `deploy/.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
 - Copies `skills/` folder to `~/.config/opencode/skills/`
 - Copies `opencode_app/opencode.json` to `~/.config/opencode/opencode.json` (single source of truth — model resolver patches primary/explore/general in-place during deploy; OpenCode v2 only reads `opencode.json`/`opencode.jsonc`, never `config.json`)
+- Parks a coexisting `opencode.jsonc` as `opencode.jsonc.legacy-ignored` (data preserved, never deleted): v2 defines no `.json`/`.jsonc` precedence within one directory, so the park fires only when `opencode.json` is or becomes present — a jsonc-only setup that declines the copy keeps its live config. Note: `--rollback` restores prior state and can undo a park.
 - Backs up existing files before overwriting
 
 ### Environment Variable Persistence
