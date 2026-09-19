@@ -34,7 +34,7 @@
 #
 # OPTIONS:
 #   -h, --help          Show detailed help with all options and examples
-#   -q, --quick         Quick setup: copy config.json + AGENTS.md + skills/ folder
+#   -q, --quick         Quick setup: copy opencode.json + AGENTS.md + skills/ folder
 #   -s, --skills-only   Skills-only: deploy skills/ folder (validates opencode-ai installed)
 #   -d, --dry-run       Preview all actions without making changes
 #   -y, --yes           Auto-accept all prompts (non-interactive mode)
@@ -80,13 +80,15 @@ fi
 # This is a configuration template repository (no package.json required)
 LOG_FILE="${HOME}/.opencode-setup.log"
 CONFIG_DIR="${HOME}/.config/opencode"
-CONFIG_FILE="${CONFIG_DIR}/config.json"
+# OpenCode v2 only discovers opencode.json / opencode.jsonc — never config.json.
+CONFIG_FILE="${CONFIG_DIR}/opencode.json"
+LEGACY_CONFIG_FILE="${CONFIG_DIR}/config.json"
 SKILLS_DIR="${CONFIG_DIR}/skills"
-AGENTS_SRC_DIR="${REPO_DIR}/opencode_app/.opencode/agents"
+AGENTS_SRC_DIR="${REPO_DIR}/agents"
 AGENTS_DEST_DIR="${CONFIG_DIR}/agents"
 # Repo-owned plugins (auto-loaded by opencode from this dir). Mirrors the
 # agents/skills deploy pattern. Currently: opencode-skill-counter-sync.
-PLUGINS_SRC_DIR="${REPO_DIR}/opencode_app/.opencode/plugins"
+PLUGINS_SRC_DIR="${REPO_DIR}/plugins"
 PLUGINS_DEST_DIR="${CONFIG_DIR}/plugins"
 BACKUP_DIR="${HOME}/.opencode-backup-$(date +%Y%m%d_%H%M%S)"
 LAST_UPDATE_CHECK="${CONFIG_DIR}/.last-update-check"
@@ -94,15 +96,16 @@ UPDATE_LOG="${CONFIG_DIR}/update.log"
 
 # v2.0 model resolution (tier-based, provider-agnostic)
 DEPLOY_DIR="${REPO_DIR}/deploy"
-RESOLVER_SCRIPT="${DEPLOY_DIR}/resolve-models.mjs"
+INSTALLER_DIR="${REPO_DIR}/installer"
+RESOLVER_SCRIPT="${INSTALLER_DIR}/resolve-models.mjs"
 MERGE_PACKS_SCRIPT="${DEPLOY_DIR}/merge-packs.mjs"
 PACKS_DIR="${DEPLOY_DIR}/packs"
 APPLY_SKILL_PROFILE_SCRIPT="${DEPLOY_DIR}/apply-skill-profile.mjs"
 SKILL_PROFILES_FILE="${DEPLOY_DIR}/skill-profiles.json"
 TUI_SCRIPT="${DEPLOY_DIR}/tui.mjs"
-AGENT_TIERS="${DEPLOY_DIR}/agent-tiers.json"
-MODELS_DEFAULT_MAP="${DEPLOY_DIR}/models.default.json"
-PROVIDER_PRESETS="${DEPLOY_DIR}/provider-presets.json"
+AGENT_TIERS="${INSTALLER_DIR}/agent-tiers.json"
+MODELS_DEFAULT_MAP="${INSTALLER_DIR}/models.default.json"
+PROVIDER_PRESETS="${INSTALLER_DIR}/provider-presets.json"
 # Global user overrides (~/.config/opencode/)
 USER_MODELS_MAP="${CONFIG_DIR}/models.json"
 USER_OVERRIDES="${CONFIG_DIR}/agent-overrides.json"
@@ -342,7 +345,7 @@ FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
 ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,docling,chrome-devtools)
-SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 45 skills; full = shipped 104 verbatim)
+SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 46 skills; full = shipped 105 verbatim)
 ENABLE_LOCAL_LLM=false   # --enable-local-llm (gemma-4-E4B via llama.cpp, requires NVIDIA GPU)
 ENABLE_VLLM=false        # --enable-vllm (vLLM Docker server, requires >12GB VRAM)
 
@@ -511,12 +514,12 @@ USAGE:
                           3. nvm installation/update
                           4. Node.js v24 installation
                           5. opencode-ai installation
-                          6. config.json deployment
+                          6. opencode.json deployment
                           7. skills/ deployment
                           8. Environment variable persistence
 
   --quick                 Copy config files only                Already have
-                          1. config.json → ~/.config/opencode/  dependencies installed
+                          1. opencode.json → ~/.config/opencode/  dependencies installed
                           2. AGENTS.md → ~/.config/opencode/
                           3. skills/* → ~/.config/opencode/skills/
                           (Skips all dependency checks)
@@ -575,22 +578,20 @@ USAGE:
                           primary/reasoning/fast/docs/vision, e.g. vision on OpenAI)
 
   PROVIDER PACKS (deploy-time MCP toggle):
-    --enable-pack <csv>   Enable provider pack(s) — flips mcp.<server>.enabled
-                          and sets permission "<ns>*": "allow" for the named
-                          packs. Available
+    --enable-pack <csv>   Enable provider pack(s) — flips mcp.servers.<server>.disabled
+                          and appends v2 permissions-array allow rules for the
+                          named packs. Available
                           packs: autodesk, markitdown, nextjs, docling, chrome-devtools
                           (comma-separated, e.g. --enable-pack autodesk,markitdown).
                           No-op if omitted; default state of every pack is OFF.
-                          Plugin pack: voice — installs @renjfk/opencode-voice into
-                          tui.json (local speech-to-text via whisper.cpp + sox; also
-                          installs host prereqs; macOS/Linux only).
 
   SKILL PROFILE (deploy-time primary visibility):
     --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
-                           config's permission.skill to 45 primary-visible
+                           config's skill permissions (permissions array) to 46
+                           primary-visible
                            skills + "*": "deny" (subagents unaffected — they
                            self-scope via frontmatter allows); full deploys the
-                           shipped 104-allow allowlist verbatim.
+                           shipped 107-allow allowlist verbatim.
 
   LOCAL LLM (gemma-4-E4B via llama.cpp in Docker):
     --enable-local-llm   Install local LLM inference server. Requires NVIDIA GPU,
@@ -623,7 +624,6 @@ USAGE:
     ./setup.sh --enable-pack autodesk             # Enable all 4 Autodesk MCP servers
     ./setup.sh --enable-pack autodesk,markitdown   # Enable multiple packs
     ./setup.sh --quick --enable-pack markitdown   # Combine with other modes
-    ./setup.sh --enable-pack voice                 # Plugin pack: local speech-to-text (whisper.cpp)
 
   Model resolution + skill profile:
     ./setup.sh --provider anthropic -y            # Deploy with Anthropic models
@@ -665,7 +665,7 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   AGENTS ($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents")):
+   AGENTS ($(count_agents "${REPO_DIR}/agents")):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -721,9 +721,9 @@ USAGE:
       not shipped in the base config — added wholesale via
       ./setup.sh --enable-pack autodesk (revit, model-data, fusion, help)
 
-    SKILLS ($(count_skills "${REPO_DIR}/opencode_app/.opencode/skills")):
+    SKILLS ($(count_skills "${REPO_DIR}/skills")):
 
-$(print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills")
+$(print_skill_categories "${REPO_DIR}/skills")
 
      Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> "prompt"' to invoke a skill
@@ -754,7 +754,7 @@ $(print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills")
                             FILE LOCATIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  Configuration:        ~/.config/opencode/config.json
+  Configuration:        ~/.config/opencode/opencode.json
   Agents config:        ~/.config/opencode/AGENTS.md
   Skills directory:     ~/.config/opencode/skills/
   Learnings directory:  ~/.config/opencode/learnings/
@@ -886,7 +886,7 @@ parse_arguments() {
                 # Accept any value including "" (empty = no-op, handled by
                 # merge-packs.mjs). Only error if no following token at all.
                 if [ $# -lt 2 ]; then
-                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,docling,chrome-devtools,voice)"
+                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,docling,chrome-devtools)"
                     exit 1
                 fi
                 ENABLE_PACK="$2"
@@ -1444,16 +1444,22 @@ extract_backup_archive() {
 
 # Restore files from a backup directory into $CONFIG_DIR.
 # Handles both backup layouts:
-#   - flat files (config.json, AGENTS.md) + subdirs (skills/, skills-backup/, agents-backup/)
-#   - update backups (config.json, AGENTS.md, skills/, agents/)
+#   - flat files (opencode.json, AGENTS.md) + subdirs (skills/, skills-backup/, agents-backup/)
+#   - update backups (opencode.json, AGENTS.md, skills/, agents/)
+# Pre-v2.1 backups stored the config as config.json — restored under the new
+# name, since OpenCode v2 only discovers opencode.json(c).
 restore_from_dir() {
     local src_dir="$1"
 
-    # Restore config.json
-    if [ -f "${src_dir}/config.json" ]; then
+    # Restore opencode.json
+    if [ -f "${src_dir}/opencode.json" ]; then
         mkdir -p "$CONFIG_DIR"
-        cp -f "${src_dir}/config.json" "${CONFIG_DIR}/config.json"
-        log_info "Restored: config.json"
+        cp -f "${src_dir}/opencode.json" "${CONFIG_DIR}/opencode.json"
+        log_info "Restored: opencode.json"
+    elif [ -f "${src_dir}/config.json" ]; then
+        mkdir -p "$CONFIG_DIR"
+        cp -f "${src_dir}/config.json" "${CONFIG_DIR}/opencode.json"
+        log_info "Restored: opencode.json (from legacy config.json backup)"
     fi
 
     # Restore AGENTS.md
@@ -1485,14 +1491,14 @@ restore_from_dir() {
         log_info "Restored: agents/ (from agents-backup/)"
     fi
 
-    # Restore any other top-level files (*.json, *.md) that aren't config.json/AGENTS.md
+    # Restore any other top-level files (*.json, *.md) that aren't opencode.json/AGENTS.md
     for f in "${src_dir}"/*; do
         [ -e "$f" ] || continue
         local fname
         fname=$(basename "$f")
         # Skip already-handled and known subdirs
         case "$fname" in
-            config.json|AGENTS.md|skills|skills-backup|agents|agents-backup) continue ;;
+            config.json|opencode.json|AGENTS.md|skills|skills-backup|agents|agents-backup) continue ;;
         esac
         # Only restore regular files (skip shell configs etc. — those go to $HOME)
         if [ -f "$f" ]; then
@@ -1517,7 +1523,7 @@ create_pre_rollback_backup() {
     log_info "Creating pre-rollback safety backup..."
 
     if [ -f "$CONFIG_FILE" ]; then
-        cp -f "$CONFIG_FILE" "${pre_dir}/config.json"
+        cp -f "$CONFIG_FILE" "${pre_dir}/opencode.json"
     fi
     if [ -f "${CONFIG_DIR}/AGENTS.md" ]; then
         cp -f "${CONFIG_DIR}/AGENTS.md" "${pre_dir}/AGENTS.md"
@@ -2431,13 +2437,25 @@ setup_config() {
         log_warn ".AGENTS.md not found in ${SCRIPT_DIR}"
     fi
 
-    # Check if config.json already exists
+    # Migrate legacy deploy: setup.sh used to deploy the config as config.json,
+    # which OpenCode v2 never reads (it only discovers opencode.json(c)). Adopt
+    # the legacy file as the live config so the preservation logic below applies
+    # to it; if both exist, park the stale legacy copy instead of deleting it.
+    if [ ! -f "$CONFIG_FILE" ] && [ -f "$LEGACY_CONFIG_FILE" ]; then
+        mv "$LEGACY_CONFIG_FILE" "$CONFIG_FILE"
+        log_info "Migrated legacy config.json -> opencode.json (OpenCode v2 only reads opencode.json|opencode.jsonc)"
+    elif [ -f "$CONFIG_FILE" ] && [ -f "$LEGACY_CONFIG_FILE" ]; then
+        mv "$LEGACY_CONFIG_FILE" "${LEGACY_CONFIG_FILE}.legacy-ignored"
+        log_warn "Stale legacy config.json found (ignored by OpenCode v2); renamed to config.json.legacy-ignored"
+    fi
+
+    # Check if the config already exists
     if [ -f "$CONFIG_FILE" ]; then
         echo ""
-        log_warn "config.json already exists at ${CONFIG_FILE}"
+        log_warn "opencode.json already exists at ${CONFIG_FILE}"
 
         if ! prompt_yes_no "Do you want to overwrite it?" "n"; then
-            log_info "Skipping config.json copy. Existing configuration preserved."
+            log_info "Skipping config copy. Existing configuration preserved."
             SKIP_CONFIG_COPY=true
             return 0
         fi
@@ -2446,14 +2464,14 @@ setup_config() {
         create_backup "$CONFIG_FILE"
     else
         # Config doesn't exist, prompt to copy
-        if ! prompt_yes_no "Copy config.json to ${CONFIG_DIR}/?" "y"; then
-            log_info "Skipping config.json copy"
+        if ! prompt_yes_no "Copy opencode.json to ${CONFIG_DIR}/?" "y"; then
+            log_info "Skipping config copy"
             SKIP_CONFIG_COPY=true
             return 0
         fi
     fi
 
-    # Copy config.json from the single source of truth (opencode_app/opencode.json).
+    # Copy the config from the single source of truth (opencode_app/opencode.json).
     # Historically this copied deploy/config.json, but maintaining a duplicate
     # caused drift (see PLAN-BT-74 Phase 12.2). The resolver (run later in
     # deploy_agents) patches this file in-place for explore/general models (and
@@ -2462,7 +2480,7 @@ setup_config() {
     if [ "$SKIP_CONFIG_COPY" != true ]; then
         if [ -f "$SOURCE_CONFIG" ]; then
             run_cmd cp "$SOURCE_CONFIG" "$CONFIG_FILE"
-            log_success "config.json copied successfully (from ${SOURCE_CONFIG})"
+            log_success "opencode.json copied successfully (from ${SOURCE_CONFIG})"
 
             # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
             # Best-effort — non-fatal on offline/pip-missing.
@@ -2472,13 +2490,8 @@ setup_config() {
             # Heavy (~3-4 GB) — only runs when explicitly opted in.
             install_docling
 
-            # Voice plugin pack (issue #356): interactive opt-in + host prereqs
-            # (sox, whisper-cli, whisper model). tui.json merge happens later
-            # in run_pack_merger. Best-effort — non-fatal.
-            install_voice
-
             # Deploy vibeguard secret-masking config (PLAN-GIT-315).
-            local vg_src="${REPO_DIR}/opencode_app/.opencode/vibeguard.config.json"
+            local vg_src="${REPO_DIR}/plugins/vibeguard.config.json"
             if [ -f "$vg_src" ]; then
                 run_cmd cp "$vg_src" "${CONFIG_DIR}/vibeguard.config.json"
                 log_success "vibeguard.config.json deployed (secret masking active)"
@@ -2486,70 +2499,31 @@ setup_config() {
             fi
 
             echo ""
-        echo "✓ Configured $(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") agents:"
+        echo "✓ Configured $(count_agents "${REPO_DIR}/agents") agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - zai-media-subagent - Media production: image/video gen, ASR, OCR (delegated)"
         echo "    - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-        echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 6)) more agents"
+        echo "    - ... and $(($(count_agents "${REPO_DIR}/agents") - 6)) more agents"
             echo ""
              echo "✓ Configured MCP servers:"
              echo "    Auto-start: codegraph, web-reader, web-search"
               echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
               echo "    Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
-              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools|voice>"
+              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools>"
             echo ""
         else
-            log_error "config.json source not found: ${SOURCE_CONFIG}"
+            log_error "opencode.json source not found: ${SOURCE_CONFIG}"
             return 1
         fi
     fi
 
-    # Setup skills directory
-    echo ""
-    log_info "Setting up skills directory..."
-
-    # Create skills directory
+    # Skills deploy moved to the single install path (#379): deploy_content()
+    # (invoked from deploy_agents, after migration) installs skills + agents via
+    # the installer CLI — manifest-tracked. Only the directory is ensured here.
     run_cmd mkdir -p "$SKILLS_DIR"
-    log_info "Created ${SKILLS_DIR} directory"
-
-    # Check if skills folder exists in script directory
-    if [ -d "${REPO_DIR}/opencode_app/.opencode/skills" ]; then
-        # Check if skills directory already has content
-        if [ -d "${SKILLS_DIR}" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
-            log_warn "Skills directory already contains files"
-
-            if prompt_yes_no "Do you want to overwrite existing skills?" "n"; then
-                # Backup existing skills
-                if [ -d "${BACKUP_DIR}" ]; then
-                    run_cmd cp -r "$SKILLS_DIR" "${BACKUP_DIR}/skills-backup"
-                    log_info "Backed up existing skills to ${BACKUP_DIR}/skills-backup"
-                fi
-            else
-                log_info "Skipping skills deployment. Existing skills preserved."
-                return 0
-            fi
-        fi
-
-        # Copy skills folder (excluding _archived)
-        if command -v rsync &> /dev/null; then
-            run_cmd rsync -av --exclude='_archived' "${REPO_DIR}/opencode_app/.opencode/skills/" "${SKILLS_DIR}/"
-        else
-            # Fallback: copy all except _archived
-            mkdir -p "${SKILLS_DIR}"
-            for item in "${REPO_DIR}/opencode_app/.opencode/skills"/*; do
-                item_name=$(basename "$item")
-                if [[ "$item_name" != "_archived" ]]; then
-                    cp -r "$item" "${SKILLS_DIR}/"
-                fi
-            done
-        fi
-        log_success "Skills copied successfully to ${SKILLS_DIR}"
-    else
-        log_warn "skills/ folder not found in ${REPO_DIR}/opencode_app/.opencode/skills"
-    fi
 
     return 0
 }
@@ -2572,9 +2546,12 @@ install_local_mcp_launchers() {
     echo ""
     log_info "Installing local MCP launchers..."
 
-    # Idempotency: skip the network round-trip when already installed
-    # (mirrors install_docling/install_voice best-effort style).
-    if python3 -m pip show markitdown-local-mcp >/dev/null 2>&1; then
+    # Idempotency: skip the network round-trip when already installed AND
+    # importable — `pip show` alone hides broken installs (e.g. the mcp SDK
+    # dependency missing), which surfaces later as "MCP error -32000:
+    # Connection closed" when the launcher crashes on import.
+    if python3 -m pip show markitdown-local-mcp >/dev/null 2>&1 \
+        && python3 -c "from markitdown_local_mcp.__main__ import main" >/dev/null 2>&1; then
         log_success "markitdown-local-mcp already installed — skipping pip install"
         return 0
     fi
@@ -2651,319 +2628,21 @@ install_docling() {
         return 0
     fi
 
+    # PEP 668 (externally-managed-environment, Debian 12+/Ubuntu 23.04+)
+    # blocks plain `pip install --user` — retry once with
+    # --break-system-packages; --user keeps it isolated to ~/.local.
     log_info "pip install --user docling-mcp[local]"
-    if python3 -m pip install --user --no-warn-script-location "docling-mcp[local]" >/dev/null 2>&1; then
+    local pip_err
+    pip_err="$(mktemp)"
+    if python3 -m pip install --user --no-warn-script-location "docling-mcp[local]" >/dev/null 2>"$pip_err" \
+        || { grep -q "externally-managed-environment" "$pip_err" \
+            && python3 -m pip install --user --break-system-packages --no-warn-script-location "docling-mcp[local]" >/dev/null 2>>"$pip_err"; }; then
+        rm -f "$pip_err"
         log_success "docling-mcp installed"
         log_info "NOTE: first 'docling convert' will download ~hundreds of MB of models from huggingface.co (cached thereafter)."
     else
-        log_warn "pip install failed for docling-mcp (offline or OOM?). The pack is opt-in — OpenCode will work without it. Re-run setup when online to enable."
+        log_warn "pip install failed for docling-mcp (offline, OOM, or PEP 668?). The pack is opt-in — OpenCode will work without it. Re-run setup when online to enable."
     fi
-}
-
-# Best-effort ROCm install assist for Ubuntu/Debian (opt-in from install_voice).
-# Picks the latest amdgpu-install .deb from AMD's repo index (no pinned version
-# to rot), installs the HIP libraries whisper.cpp builds against, then re-runs
-# detection on the next setup run. Never fatal — prints the manual path on failure.
-install_rocm_linux() {
-    if [ ! -r /etc/os-release ] || ! command_exists apt-get; then
-        log_warn "ROCm auto-install supports Ubuntu/Debian only — follow https://rocm.docs.amd.com for your distro."
-        return 0
-    fi
-    . /etc/os-release
-    local codename="${VERSION_CODENAME:-}"
-    case "$codename" in
-        focal|jammy|noble) ;;
-        *)
-            log_warn "Unsupported distro codename '${codename}' for the AMD apt repo — follow https://rocm.docs.amd.com."
-            return 0
-            ;;
-    esac
-    local base_url="https://repo.radeon.com/amdgpu-install/latest/ubuntu/${codename}/"
-    local deb_name
-    deb_name="$(curl -fsSL "$base_url" | grep -oE 'amdgpu-install[^"]*\.deb' | head -1)"
-    if [ -z "$deb_name" ]; then
-        log_warn "Could not read AMD repo index — follow https://rocm.docs.amd.com (Quick start: install amdgpu-install, then 'sudo apt install rocm-hip-libraries rocminfo')."
-        return 0
-    fi
-    if curl -fL -o "/tmp/${deb_name}" "${base_url}${deb_name}" \
-        && sudo apt-get install -y "/tmp/${deb_name}" \
-        && sudo apt-get update \
-        && sudo apt-get install -y rocm-hip-libraries rocminfo; then
-        sudo usermod -aG video,render "$USER" 2>/dev/null || true
-        log_success "ROCm HIP libraries installed — log out/in (group change) and re-run setup for the HIP whisper build."
-    else
-        log_warn "ROCm install failed — follow https://rocm.docs.amd.com, or 'sudo apt install vulkan-tools libvulkan-dev glslc' for the light Vulkan path, then re-run setup."
-    fi
-}
-
-# Voice plugin pack (--enable-pack voice, issue #356): host prereqs for
-# @renjfk/opencode-voice — local speech-to-text via whisper.cpp + sox.
-# The tui.json plugin entry itself is merged by run_pack_merger (pack-voice.json
-# "tui" key). Mirrors install_docling: opt-in, best-effort, never fatal.
-# Prereq install is macOS/Linux only (plugin documents no Windows build).
-# Interactive note: when the pack was NOT passed via --enable-pack, offer it
-# once here (prompt_yes_no auto-answers "n" under -y, printing the how-to).
-install_voice() {
-    if ! echo "$ENABLE_PACK" | grep -qw "voice"; then
-        # Skills-only mode never reaches run_pack_merger (tui merge) — don't
-        # offer an enable that wouldn't take effect there.
-        if [ "$SKILLS_ONLY" = true ]; then
-            return 0
-        fi
-        if prompt_yes_no "Enable the voice plugin (local speech-to-text via whisper.cpp)?" "n"; then
-            ENABLE_PACK="${ENABLE_PACK:+${ENABLE_PACK},}voice"
-            log_info "Voice pack enabled: ${ENABLE_PACK}"
-        else
-            log_info "Voice plugin skipped. Enable later with: ./setup.sh --enable-pack voice"
-            return 0
-        fi
-    fi
-
-    echo ""
-    log_info "Voice plugin: checking speech-to-text prereqs (@renjfk/opencode-voice)..."
-
-    local os
-    os="$(uname -s)"
-
-    # sox — microphone capture
-    if command_exists sox; then
-        log_success "sox found"
-    elif [ "$os" = "Darwin" ]; then
-        log_info "Installing sox via Homebrew..."
-        if brew install sox >/dev/null 2>&1; then
-            log_success "sox installed"
-        else
-            log_warn "brew install sox failed — install it manually and re-run setup."
-        fi
-    else
-        if prompt_yes_no "Install sox + PulseAudio tools for microphone capture? (apt, needs sudo)" "y"; then
-            log_info "Installing sox via apt..."
-            if sudo apt-get update -qq && sudo apt-get install -y sox libsox-fmt-pulse pulseaudio-utils; then
-                log_success "sox installed"
-            else
-                log_warn "apt install failed — install manually: sudo apt install sox libsox-fmt-pulse pulseaudio-utils"
-            fi
-        else
-            log_warn "sox not found (required for microphone capture). Install with:"
-            echo "    sudo apt install sox libsox-fmt-pulse pulseaudio-utils"
-        fi
-    fi
-
-    # Linux mic readiness (capture goes through PulseAudio/PipeWire; empty
-    # recordings almost always mean no default source or a muted one).
-    if [ "$os" != "Darwin" ] && command_exists pactl; then
-        local mic_src
-        mic_src="$(pactl get-default-source 2>/dev/null || true)"
-        if [ -z "$mic_src" ]; then
-            log_warn "No default PulseAudio source — pick one with /stt-mic in opencode, or:"
-            echo "    pactl list short sources            # available inputs"
-            echo "    pactl set-default-source <name>     # set your mic"
-        elif pactl get-source-mute "$mic_src" 2>/dev/null | grep -q "Mute: yes"; then
-            log_warn "Mic '${mic_src}' is muted — fix: pactl set-source-mute @DEFAULT_SOURCE@ 0"
-        else
-            log_success "Mic ready (PulseAudio source: ${mic_src})"
-            if [ "$(pactl list short sources 2>/dev/null | grep -c 'input')" -gt 1 ]; then
-                log_info "Multiple inputs found — if a recording comes back empty, run /stt-mic in opencode to switch sources (webcam mics can be silent while onboard ones work)."
-            fi
-        fi
-    fi
-
-    # GPU auto-detect (always, even when whisper-cli is already installed —
-    # the result also picks the suggested whisper model below).
-    # Priority: Metal > NVIDIA CUDA > AMD ROCm > AMD NPU > Intel OpenVINO > Vulkan > CPU.
-    # CUDA arch comes from the GPU itself (compute_cap) — no table to rot.
-    # AMD: ROCm/HIP when the (heavy) toolkit is installed, else Vulkan —
-    # the light path (libvulkan + glslc, also works for Intel GPUs).
-    local cmake_flags="-DCMAKE_BUILD_TYPE=Release -DWHISPER_BUILD_TESTS=OFF"
-    local build_kind="CPU"
-    local gpu_backend=""   # metal | cuda | rocm | vitisai | openvino | vulkan
-    local cuda_arch=""
-    if [ "$os" = "Darwin" ]; then
-        build_kind="Metal"
-        gpu_backend="metal"
-    elif command_exists nvidia-smi && command_exists nvcc; then
-            local compute_cap
-            compute_cap="$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader 2>/dev/null | head -1 | tr -d ' .')"
-            if [ -n "$compute_cap" ]; then
-                cmake_flags="-DCMAKE_BUILD_TYPE=Release -DGGML_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=${compute_cap} -DWHISPER_BUILD_TESTS=OFF"
-                build_kind="CUDA (arch ${compute_cap})"
-                gpu_backend="cuda"
-                cuda_arch="${compute_cap}"
-                log_info "NVIDIA GPU + CUDA toolkit detected — will build whisper.cpp with CUDA."
-            fi
-        elif command_exists nvidia-smi; then
-            log_warn "NVIDIA GPU detected but nvcc (CUDA toolkit) not found — building CPU-only. Install CUDA for ~100x faster transcription, then re-run setup."
-        elif command_exists rocminfo || command_exists hipcc; then
-            local gfx
-            gfx="$(rocminfo 2>/dev/null | grep -o 'gfx[0-9a-z]*' | head -1)"
-            if [ -n "$gfx" ]; then
-                cmake_flags="-DCMAKE_BUILD_TYPE=Release -DGGML_HIP=ON -DGPU_TARGETS=${gfx} -DWHISPER_BUILD_TESTS=OFF"
-                build_kind="ROCm/HIP (${gfx})"
-                gpu_backend="rocm"
-                log_info "AMD GPU + ROCm detected — will build whisper.cpp with HIP (${gfx})."
-            fi
-        elif command_exists xrt-smi && xrt-smi examine 2>/dev/null | grep -qiE 'ryzen|npu'; then
-            # AMD Ryzen AI NPU via VitisAI (upstream whisper.cpp, Linux: Ubuntu 24.04).
-            # Needs XRT (kernel driver, xrt-smi) + FlexML runtime (flexmlrt) sourced;
-            # the .rai encoder cache is fetched after the build.
-            cmake_flags="-DCMAKE_BUILD_TYPE=Release -DWHISPER_VITISAI=1 -DWHISPER_BUILD_TESTS=OFF"
-            build_kind="AMD NPU (VitisAI)"
-            gpu_backend="vitisai"
-            log_info "AMD Ryzen AI NPU detected — will build whisper.cpp with VitisAI NPU offload."
-            log_warn "Source the runtimes before building: 'source /opt/xilinx/xrt/setup.sh' and the flexmlrt setup.sh (releases: https://github.com/lemonade-sdk/whisper.cpp-rocm/releases/tag/deps)."
-        elif [ -c /dev/accel/accel0 ] \
-            || { command_exists lspci && lspci -nn 2>/dev/null | grep -qiE 'Intel.*(Graphics|UHD|Iris|NPU|Co-processor)'; }; then
-            # Intel GPU/NPU via the OpenVINO encoder (whisper-cli -oved, default GPU).
-            # NPU device is broken on Linux (ggml-org/whisper.cpp#2929) — target the iGPU.
-            if [ -d /opt/intel/openvino* ] 2>/dev/null || ls /opt/intel/openvino*/setupvars.sh >/dev/null 2>&1; then
-                cmake_flags="-DCMAKE_BUILD_TYPE=Release -DWHISPER_OPENVINO=ON -DWHISPER_BUILD_TESTS=OFF"
-                build_kind="OpenVINO (Intel iGPU)"
-                gpu_backend="openvino"
-                log_info "Intel GPU/NPU + OpenVINO runtime detected — will build whisper.cpp with the OpenVINO encoder."
-                log_warn "The NPU device fails on Linux (whisper.cpp#2929) — pick the encoder device at runtime: '-oved CPU' always works, '-oved GPU' uses the Arc iGPU (faster)."
-            else
-                log_warn "Intel GPU/NPU detected but no OpenVINO runtime in /opt/intel — install it (https://docs.openvino.ai/install, archive), source setupvars.sh, and re-run setup."
-            fi
-        elif command_exists vulkaninfo && command_exists glslc; then
-            cmake_flags="-DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=ON -DWHISPER_BUILD_TESTS=OFF"
-            build_kind="Vulkan"
-            gpu_backend="vulkan"
-            log_info "Vulkan toolchain detected — will build whisper.cpp with Vulkan (AMD/Intel GPUs)."
-        fi
-
-    # whisper-cli — local transcription
-    if command_exists whisper-cli; then
-        log_success "whisper-cli found (build mode: ${build_kind})"
-    elif [ "$os" = "Darwin" ]; then
-        log_info "Installing whisper-cpp via Homebrew (Metal enabled on Apple Silicon)..."
-        if brew install whisper-cpp >/dev/null 2>&1; then
-            log_success "whisper-cli installed"
-        else
-            log_warn "brew install whisper-cpp failed — install it manually and re-run setup."
-        fi
-    else
-        # whisper-cli is not packaged for Linux — offer the source build
-        # (~2-5 min; needs git, cmake, build-essential; sudo for the symlink).
-        log_warn "whisper-cli not found (not packaged for Linux — build from source, ~2-5 min)."
-
-        # Build prerequisites — cmake is not preinstalled on many Ubuntu images.
-        if ! command_exists cmake || ! command_exists git; then
-            if prompt_yes_no "Install whisper.cpp build prerequisites (build-essential, cmake) via apt?" "y"; then
-                if sudo apt-get update -qq && sudo apt-get install -y build-essential cmake; then
-                    log_success "Build prerequisites installed"
-                else
-                    log_warn "apt install failed — install manually: sudo apt install build-essential cmake"
-                fi
-            fi
-        fi
-        if [ "$gpu_backend" = "cuda" ] && ! command_exists nvcc; then
-            log_warn "CUDA build needs nvcc — install with: sudo apt install nvidia-cuda-toolkit (~2-3 GB), or re-run and pick a CPU build."
-        fi
-        if [ -z "$gpu_backend" ] && command_exists lspci \
-            && lspci -nn 2>/dev/null | grep -qiE 'radeon|\bAMD\b|\bATI\b'; then
-            log_warn "AMD GPU detected but no usable GPU toolkit found — building CPU-only."
-            echo "    Lightest fix (Vulkan, a few MB): sudo apt install vulkan-tools libvulkan-dev glslc"
-            echo "    Full ROCm toolkit (HIP build, multi-GB): https://rocm.docs.amd.com — then re-run setup."
-            echo "    NPU note: whisper.cpp ships NPU paths — AMD Ryzen AI 300/400 via VitisAI (auto-selected when xrt-smi + NPU are present; needs XRT + FlexML runtimes), Intel Core Ultra via OpenVINO on the Arc iGPU (NPU device broken on Linux, whisper.cpp#2929)."
-            echo "      No-build alternatives (plugin sttEndpoint): Lemonade Server (AMD NPU, https://lemonade-server.ai) or OpenVINO Model Server (https://docs.openvino.ai/2025/model-server/ovms_demos_audio.html) — both serve OpenAI-compatible /audio/transcriptions."
-            if prompt_yes_no "Install the ROCm stack now? (multi-GB download, Ubuntu/Debian via AMD apt repo)" "n"; then
-                install_rocm_linux
-            fi
-        fi
-        log_info "whisper.cpp build mode: ${build_kind}"
-
-        if prompt_yes_no "Build whisper.cpp from source now? (needs git, cmake, build-essential, sudo for symlink)" "n"; then
-            git clone https://github.com/ggml-org/whisper.cpp ~/opt/whisper.cpp 2>/dev/null || true
-            if cmake -B ~/opt/whisper.cpp/build -S ~/opt/whisper.cpp \
-                    $cmake_flags \
-                && cmake --build ~/opt/whisper.cpp/build -j --target whisper-cli \
-                && sudo ln -sf ~/opt/whisper.cpp/build/bin/whisper-cli /usr/local/bin/whisper-cli; then
-                log_success "whisper-cli built and linked"
-            else
-                log_warn "whisper.cpp build failed — build manually (see README, Voice plugin pack)."
-            fi
-        else
-            echo "    Build later:"
-            echo "      git clone https://github.com/ggml-org/whisper.cpp ~/opt/whisper.cpp"
-            echo "      cmake -B ~/opt/whisper.cpp/build -S ~/opt/whisper.cpp $cmake_flags"
-            echo "      cmake --build ~/opt/whisper.cpp/build -j --target whisper-cli"
-            echo "      sudo ln -sf ~/opt/whisper.cpp/build/bin/whisper-cli /usr/local/bin/whisper-cli"
-        fi
-    fi
-
-    # Whisper model — recommend a build-backend + model-size combination from
-    # the detected profile (encode speed is the constraint, not accuracy):
-    #   Metal / modern CUDA (arch >= 80)  -> large-v3-turbo q5_0, real-time
-    #   older CUDA (arch < 80)            -> medium q5_0, balanced
-    #   AMD ROCm / Vulkan                 -> large-v3-turbo q5_0, near real-time
-    #   AMD NPU (VitisAI)                 -> base (prebuilt .rai encoder caches)
-    #   Intel OpenVINO (iGPU)             -> medium, balanced
-    #   CPU-only                          -> small q5_1 (large = 15-30 s/clip)
-    local model_dir="${HOME}/.local/share/whisper-cpp"
-    local recommended_model="ggml-small-q5_1"
-    local recommend_reason="CPU-only build: large models take ~15-30 s per 4 s clip — small stays usable"
-    if [ "$os" = "Darwin" ]; then
-        recommended_model="ggml-large-v3-turbo-q5_0"
-        recommend_reason="Metal on Apple Silicon transcribes large-v3-turbo in ~sub-second"
-    elif [ -n "$cuda_arch" ]; then
-        if [ "$cuda_arch" -ge 80 ] 2>/dev/null; then
-            recommended_model="ggml-large-v3-turbo-q5_0"
-            recommend_reason="GPU encode ~100-300 ms per 4 s clip — large-v3-turbo is real-time"
-        else
-            recommended_model="ggml-medium-q5_0"
-            recommend_reason="older GPU (arch ${cuda_arch}): medium balances accuracy and speed"
-        fi
-    elif [ "$gpu_backend" = "rocm" ] || [ "$gpu_backend" = "vulkan" ]; then
-        recommended_model="ggml-large-v3-turbo-q5_0"
-        recommend_reason="AMD GPU encode (${gpu_backend}) handles large-v3-turbo near real-time"
-    elif [ "$gpu_backend" = "vitisai" ]; then
-        recommended_model="ggml-base"
-        recommend_reason="NPU encoder offload via VitisAI — prebuilt .rai caches exist for a limited model set (--list)"
-    elif [ "$gpu_backend" = "openvino" ]; then
-        recommended_model="ggml-medium-q5_0"
-        recommend_reason="Intel iGPU via OpenVINO — medium balances accuracy and speed"
-    fi
-    log_info "Suggested combination: ${build_kind} + ${recommended_model} — ${recommend_reason}"
-    if ls "${model_dir}"/ggml-*.bin >/dev/null 2>&1; then
-        log_success "Whisper model found in ${model_dir} (switch anytime with /stt-model)"
-    elif prompt_yes_no "Download recommended whisper model ${recommended_model}?" "y"; then
-        mkdir -p "$model_dir"
-        if curl -fL -o "${model_dir}/${recommended_model}.bin" \
-            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/${recommended_model}.bin" \
-            && [ -s "${model_dir}/${recommended_model}.bin" ]; then
-            log_success "Whisper model downloaded to ${model_dir}"
-        else
-            rm -f "${model_dir}/${recommended_model}.bin"
-            log_warn "Model download failed — download manually (see README, Voice plugin pack)."
-        fi
-    else
-        echo "    Download later: see README 'Voice plugin pack' section."
-    fi
-    echo "    Other sizes: ggml-base-q5_1 (~60 MB, fastest) | ggml-small-q5_1 (~180 MB) | ggml-medium-q5_0 (~500 MB) | ggml-large-v3-turbo-q5_0 (~550 MB, best) — download any, switch with /stt-model."
-
-    # NPU/OpenVINO encoder extras — both need per-model assets beside the ggml bin.
-    local model_name="${recommended_model#ggml-}"
-    if [ "$gpu_backend" = "vitisai" ] && [ -f "${model_dir}/${recommended_model}.bin" ] && [ -d ~/opt/whisper.cpp ]; then
-        log_info "Fetching VitisAI NPU encoder cache (${model_name})..."
-        (cd ~/opt/whisper.cpp && sh models/download-vitisai-model.sh "$model_name") \
-            || log_warn "VitisAI encoder cache download failed — run 'sh models/download-vitisai-model.sh ${model_name}' in ~/opt/whisper.cpp (list: --list)."
-    elif [ "$gpu_backend" = "openvino" ] && [ -f "${model_dir}/${recommended_model}.bin" ] && [ -d ~/opt/whisper.cpp ] && command_exists python3; then
-        log_info "Converting the whisper encoder to OpenVINO IR (${model_name})..."
-        python3 -m pip install --user -q -r ~/opt/whisper.cpp/models/convert-whisper-to-openvino-requirements.txt 2>/dev/null || true
-        if python3 ~/opt/whisper.cpp/models/convert-whisper-to-openvino.py --output "${model_dir}/${recommended_model}-encoder-openvino"; then
-            log_success "OpenVINO encoder ready — '-oved GPU' runs it on the Intel iGPU, '-oved CPU' (or no flag) stays on CPU"
-        else
-            log_warn "OpenVINO encoder conversion failed — run it manually (see whisper.cpp README, OpenVINO Support)."
-        fi
-    fi
-
-    # Piper TTS is optional (text-to-speech); STT works without it.
-    if ! command_exists piper; then
-        log_info "Optional TTS not installed (piper) — recording/transcription works without it. To also speak responses aloud:"
-        echo "    uv tool install piper-tts   # or: pip install --user piper-tts"
-    fi
-
-    log_success "Voice plugin prereq check complete. In OpenCode: ctrl+r records (leader+r = transcribe+submit); /stt-mic picks the microphone."
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -3267,7 +2946,7 @@ setup_vllm() {
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Run the model resolver: injects concrete models into deployed agent .md files
-# and patches config.json (explore + general always; primary only if
+# and patches opencode.json (explore + general always; primary only if
 # --provider/--mix chosen — local deploys omit a baked-in primary). Honors
 # global/project overrides + provider preset. Preserve-edits via sidecar unless
 # --force.
@@ -3275,6 +2954,14 @@ run_resolver() {
     if [ ! -f "$RESOLVER_SCRIPT" ]; then
         log_error "Resolver not found: $RESOLVER_SCRIPT"
         return 1
+    fi
+
+    # #379 single install path: when RESOLVER_CONFIG_ONLY=true the call omits the
+    # agents args — the installer CLI (deploy_content) owns agent-file writing.
+    # --models-only / --migrate-only / lift-only keep the full resolver behavior.
+    local agents_args=""
+    if [ "${RESOLVER_CONFIG_ONLY:-false}" != "true" ]; then
+        agents_args="--agents-src ${AGENTS_SRC_DIR} --agents-dest ${AGENTS_DEST_DIR}"
     fi
 
     local extra_args=""
@@ -3287,8 +2974,8 @@ run_resolver() {
     # Deploy-time exposed-model guard (#281): fail-fast if a tier/source pin
     # references a model its provider doesn't serve. Guarded by file presence so
     # older deploys without provider-models.json are unaffected.
-    if [ -f "${DEPLOY_DIR}/provider-models.json" ]; then
-        extra_args="$extra_args --provider-models ${DEPLOY_DIR}/provider-models.json"
+    if [ -f "${INSTALLER_DIR}/provider-models.json" ]; then
+        extra_args="$extra_args --provider-models ${INSTALLER_DIR}/provider-models.json"
     fi
 
     local project_map_arg=""
@@ -3303,8 +2990,7 @@ run_resolver() {
     fi
 
     node "$RESOLVER_SCRIPT" \
-        --agents-src "$AGENTS_SRC_DIR" \
-        --agents-dest "$AGENTS_DEST_DIR" \
+        $agents_args \
         --tiers "$AGENT_TIERS" \
         --default-map "$MODELS_DEFAULT_MAP" \
         --user-map "$USER_MODELS_MAP" \
@@ -3343,10 +3029,8 @@ run_pack_merger() {
     fi
 
     local target_config="$CONFIG_FILE"
-    local target_tui="${CONFIG_DIR}/tui.json"
     if [ "$DRY_RUN" = true ]; then
         target_config="${DRY_RUN_PREVIEW_DIR}/opencode.json"
-        target_tui="${DRY_RUN_PREVIEW_DIR}/tui.json"
         if [ ! -f "$target_config" ]; then
             log_error "Dry-run preview config not found: ${target_config}"
             log_error "The resolver must run first to stage the preview. Aborting pack merge."
@@ -3363,7 +3047,6 @@ run_pack_merger() {
     log_info "Applying provider packs: ${ENABLE_PACK}"
     node "$MERGE_PACKS_SCRIPT" \
         --config "$target_config" \
-        --tui-config "$target_tui" \
         --packs-dir "$PACKS_DIR" \
         --packs "$ENABLE_PACK"
     local rc=$?
@@ -3374,7 +3057,7 @@ run_pack_merger() {
 
     # Install-on-enable: markitdown's Python launcher is pip-installed, not
     # baked into the target config — without this the enabled server fails to
-    # spawn. Mirrors install_docling/install_voice gating. Skipped in dry-run
+    # spawn. Mirrors install_docling gating. Skipped in dry-run
     # (nothing real is deployed) and when the pack wasn't requested.
     # grep -qw (not anchored) is safe: validate_enable_pack fail-fast restricts
     # --enable-pack to real pack names, so no 'markitdown2' false positives.
@@ -3484,7 +3167,7 @@ run_migration() {
         if [ -d "$AGENTS_DEST_DIR" ] && [ "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
             log_info "[DRY-RUN] Would back up agents -> ${BACKUP_DIR}/agents-backup"
         fi
-        [ -f "$CONFIG_FILE" ] && log_info "[DRY-RUN] Would back up config.json"
+        [ -f "$CONFIG_FILE" ] && log_info "[DRY-RUN] Would back up opencode.json"
     else
         if [ -d "$AGENTS_DEST_DIR" ] && [ "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
             mkdir -p "$BACKUP_DIR"
@@ -3512,9 +3195,9 @@ run_migration() {
 # PLUGIN DEPLOYMENT
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Copy repo-owned plugins (opencode_app/.opencode/plugins/*) into the global
+# Copy repo-owned plugins (plugins/*) into the global
 # plugins dir so opencode auto-loads them. Mirrors the skills deploy pattern.
-# These are NOT npm packages (those live in opencode.json `plugin[]`); they are
+# These are NOT npm packages (those live in opencode.json `plugins[]`); they are
 # local TS plugins auto-discovered from ~/.config/opencode/plugins/.
 deploy_plugins() {
     echo ""
@@ -3551,10 +3234,11 @@ deploy_plugins() {
 # ─────────────────────────────────────────────────────────────────────────────
 # AGENT DEPLOYMENT (v2.0 — resolver-driven)
 # ─────────────────────────────────────────────────────────────────────────────
-# Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
-# of the DEPLOYED config (never the source opencode_app/opencode.json).
-#   lean (default) -> 45 primary-visible skills + "*": "deny"
-#   full           -> verified no-op (shipped 104-allow allowlist stays verbatim)
+# Apply the skill profile (GIT-333): rewrites ONLY the skill rules
+# (action:"skill") inside the permissions array of the DEPLOYED config
+# (never the source opencode_app/opencode.json).
+#   lean (default) -> 44 primary-visible skills + "*": "deny"
+#   full           -> verified no-op (shipped 107-allow allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
 # stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
 run_skill_profile() {
@@ -3590,6 +3274,49 @@ run_skill_profile() {
     return 0
 }
 
+# Single install path (#379): all content installs flow through the installer
+# CLI so every deploy is manifest-tracked (update/remove work after this).
+# Snapshots existing content first — the old prompt-default-no overwrite gate
+# is replaced by an explicit backup-then-force-copy contract.
+deploy_content() {
+    echo ""
+    log_info "Deploying content via installer CLI (manifest-tracked)..."
+
+    if ! command_exists node; then
+        log_error "Node.js is required by the installer CLI."
+        return 1
+    fi
+
+    # Pre-overwrite snapshot (ARCH-4): preserve user edits before force-copy.
+    # Unconditional mkdir — BACKUP_DIR may not exist yet on --yes redeploy (the
+    # config-overwrite prompt auto-declines, so create_backup never ran).
+    local content_backup="${BACKUP_DIR}/content-backup"
+    if [ -d "$SKILLS_DIR" ] && [ -n "$(ls -A "$SKILLS_DIR" 2>/dev/null)" ]; then
+        run_cmd mkdir -p "$content_backup"
+        run_cmd cp -r "$SKILLS_DIR" "${content_backup}/skills"
+        log_info "Snapshotted existing skills to ${content_backup}/skills"
+    fi
+    if [ -d "$AGENTS_DEST_DIR" ] && [ -n "$(ls -A "$AGENTS_DEST_DIR" 2>/dev/null)" ]; then
+        run_cmd mkdir -p "$content_backup"
+        run_cmd cp -r "$AGENTS_DEST_DIR" "${content_backup}/agents"
+        log_info "Snapshotted existing agents to ${content_backup}/agents"
+    fi
+
+    local provider_arg=""
+    [ -n "$PROVIDER" ] && provider_arg="--provider ${PROVIDER}"
+    local dry_arg=""
+    [ "$DRY_RUN" = true ] && dry_arg="--dry-run"
+
+    node "${INSTALLER_DIR}/init.mjs" add --all --yes $provider_arg $dry_arg
+    local rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "installer CLI failed (exit ${rc})"
+        return "$rc"
+    fi
+    log_success "Content deployed ($(count_agents "${REPO_DIR}/agents") agents / $(count_skills "${REPO_DIR}/skills") skills, manifest-tracked)"
+    return 0
+}
+
 deploy_agents() {
     echo ""
     log_info "Setting up agents (v2.0 model resolution)..."
@@ -3612,9 +3339,21 @@ deploy_agents() {
     # Migration (detect pre-v2, backup, lift customizations) before resolve
     run_migration
 
-    # Resolve + inject concrete models from tiers/overrides/presets
+    # Single install path (#379): content (agents + skills) installs through the
+    # installer CLI — manifest-tracked, hashed, update-able. Runs AFTER migration
+    # (lift must see pre-overwrite agents) and BEFORE the resolver (which now
+    # resolves config only; the CLI injects models with the same precedence).
+    deploy_content
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+        log_error "Content deployment failed (exit ${rc})"
+        return 1
+    fi
+
+    # Resolve + inject concrete models into the CONFIG (explore/general, primary).
+    # Config-only call since #379 — agent files are written by deploy_content.
     log_info "Resolving agent models..."
-    run_resolver
+    RESOLVER_CONFIG_ONLY=true run_resolver
     local rc=$?
     if [ "$rc" -ne 0 ]; then
         log_error "Model resolution failed (exit ${rc})"
@@ -3917,7 +3656,7 @@ create_backup_before_update() {
 
     # Backup config
     if [ -f "$CONFIG_FILE" ]; then
-        cp "$CONFIG_FILE" "${backup_dir}/config.json"
+        cp "$CONFIG_FILE" "${backup_dir}/opencode.json"
         log_info "Backed up: ${CONFIG_FILE}"
     fi
 
@@ -4135,25 +3874,25 @@ print_summary() {
         echo "✗ opencode-ai: Not installed"
     fi
 
-    # config.json status
+    # opencode.json status
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ config.json: Copied to ${CONFIG_DIR}/"
-        primary_model=$(node -pe "JSON.parse(require('fs').readFileSync('${REPO_DIR}/deploy/models.default.json','utf8')).primary" 2>/dev/null || echo "zai-coding-plan/glm-5.3")
+        echo "✓ opencode.json: Copied to ${CONFIG_DIR}/"
+        primary_model=$(node -pe "JSON.parse(require('fs').readFileSync('${REPO_DIR}/installer/models.default.json','utf8')).primary" 2>/dev/null || echo "zai-coding-plan/glm-5.3")
         echo "    - Model: ${primary_model}"
         echo "    - Default agent: build"
     else
-        echo "✗ config.json: Not copied"
+        echo "✗ opencode.json: Not copied"
     fi
 
     # Agents configured
     if [ -f "$CONFIG_FILE" ]; then
-        echo "✓ Configured $(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") agents:"
+        echo "✓ Configured $(count_agents "${REPO_DIR}/agents") agents:"
         echo "    - build (default) - Full-featured coding agent"
         echo "    - plan - Planning agent (read-only)"
         echo "    - explore - Codebase exploration and analysis"
         echo "    - image-analyzer-subagent - Image/screenshot analysis"
         echo "    - zai-media-subagent - Media production: image/video gen, ASR, OCR (delegated)"
-        echo "    - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 5)) more agents"
+        echo "    - ... and $(($(count_agents "${REPO_DIR}/agents") - 5)) more agents"
     fi
 
     # MCP servers configured
@@ -4178,7 +3917,7 @@ print_summary() {
     if [ -d "$SKILLS_DIR" ] && [ "$(ls -A "${SKILLS_DIR}" 2>/dev/null)" ]; then
         local skill_count=$(count_skills "${SKILLS_DIR}")
         echo "✓ skills: ${skill_count} skills deployed to ${SKILLS_DIR}/"
-        echo "✓ skill profile: ${SKILL_PROFILE} (primary-visible skills in permission.skill)"
+        echo "✓ skill profile: ${SKILL_PROFILE} (primary-visible skills in skill permissions)"
         print_skill_categories "${SKILLS_DIR}"
 
     else
@@ -4232,23 +3971,23 @@ print_next_steps() {
     echo "                        🚀 Quick Start"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "🤖 Agents ($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents")):"
+    echo "🤖 Agents ($(count_agents "${REPO_DIR}/agents")):"
     echo "  - build (default) - Full-featured coding agent"
     echo "  - plan - Planning agent (read-only)"
     echo "  - explore - Fast codebase exploration and analysis"
     echo "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     echo "  - zai-media-subagent - Media production: image/video gen, ASR, OCR (delegated)"
     echo "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    echo "  - ... and $(($(count_agents "${REPO_DIR}/opencode_app/.opencode/agents") - 6)) more agents"
+    echo "  - ... and $(($(count_agents "${REPO_DIR}/agents") - 6)) more agents"
     echo ""
     echo "  Usage: opencode --agent <name> \"prompt\""
     echo "         opencode \"prompt\" (uses build)"
      echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      echo "                     📦 $(count_skills "${REPO_DIR}/opencode_app/.opencode/skills") Skills Available"
+      echo "                     📦 $(count_skills "${REPO_DIR}/skills") Skills Available"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
      echo ""
-     print_skill_categories "${REPO_DIR}/opencode_app/.opencode/skills"
+     print_skill_categories "${REPO_DIR}/skills"
      echo ""
     echo "  Run 'opencode --list-skills' for detailed descriptions"
     echo "  Run 'opencode --skill <name> \"prompt\"' to use a skill"
@@ -4282,12 +4021,12 @@ print_next_steps() {
 ################################################################################
 
 # Setup the opencode-init symlink (project-scoped selective installer CLI).
-# Symlinks <repo>/deploy/init.mjs -> ~/.local/bin/opencode-init so the CLI is on
+# Symlinks <repo>/installer/init.mjs -> ~/.local/bin/opencode-init so the CLI is on
 # PATH and invocable from any project (the LLM uses it via the routing rule in
 # AGENTS.md). Idempotent: refreshes a stale link, skips a correct one. Additive —
 # does not touch any other setup.sh behavior.
 setup_opencode_init_symlink() {
-    local init_src="${REPO_DIR}/deploy/init.mjs"
+    local init_src="${REPO_DIR}/installer/init.mjs"
     if [ ! -f "$init_src" ]; then
         log_warn "opencode-init source not found at ${init_src}; skipping symlink"
         return 0
@@ -4360,7 +4099,14 @@ main() {
             exit 1
         fi
         setup_model_provider || true
-        run_resolver
+        # Config via resolver; agent files via the manifest path — update's
+        # written-hash comparison propagates tier/override changes (#379).
+        RESOLVER_CONFIG_ONLY=true run_resolver
+        node "${INSTALLER_DIR}/init.mjs" update ${PROVIDER:+--provider ${PROVIDER}}
+        rc=$?
+        if [ "$rc" -ne 0 ]; then
+            log_warn "manifest update skipped (exit ${rc}) — pre-#379 installs: one full ./deploy/setup.sh run adopts the manifest"
+        fi
         echo ""
         echo "Model resolution complete!"
         exit 0
@@ -4456,7 +4202,7 @@ main() {
         case "$setup_option" in
             1)
                 echo ""
-                log_info "Quick Setup: Copy config.json and skills only"
+                log_info "Quick Setup: Copy opencode.json and skills only"
                 QUICK_SETUP=true
                 ;;
             2)
@@ -4516,7 +4262,7 @@ main() {
         setup_opencode || true
     else
         if [ "$QUICK_SETUP" = true ]; then
-            log_info "Running quick setup: config.json and skills deployment only"
+            log_info "Running quick setup: opencode.json and skills deployment only"
         fi
     fi
 

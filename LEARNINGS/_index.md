@@ -17,6 +17,33 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### bats test bodies run under errexit — for-loop assertions are fail-fast
+
+- **Category**: solution
+- **File**: `solutions/bats-errexit-loop-failfast.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: bats-core runs test bodies under `set -e` — a failing grep/cmp inside a for-loop aborts the test immediately; do not flag multi-iteration assertion loops as false-pass (#417 review false positive)
+- **Date**: 2026-09-19
+
+### Validator crashes on invalid input
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/validator-crashes-on-invalid-input.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Never let a validator traceback on the invalid input it exists to reject (#402 spec_to_dxf parallel-constraint crash); guard extractions or skip dependent checks when schema errors exist
+- **Date**: 2026-09-19
+
+### Global in-flight guard bleeds across sessions
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/global-in-flight-guard-cross-session-bleed.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Scope hook-suppression/in-flight guards to the affected entity (per-session Set), never a global counter — a send in flight for session A must not swallow a real user message in session B (#418 auto-continue review round 2)
+- **Date**: 2026-09-19
+
 ### opencode.json // comments break CI
 
 - **Category**: anti-pattern
@@ -41,8 +68,35 @@
 - **File**: `solutions/plugin-needs-command-block.md`
 - **Confidence**: 0.9
 - **Scope**: project
-- **Summary**: opencode-goal-plugin requires BOTH plugin array entry AND command.goal config block — removing either breaks /goal
+- **Summary**: v1-only rule (SUPERSEDED for v2, #382): v1 opencode-goal-plugin needed BOTH plugin array entry AND command.goal block; the v2 rescoped @prevalentware/opencode-goal-plugin self-registers /goal, /pause_goal, /resume_goal — no commands block on v2
 - **Date**: 2026-07-26
+
+### Re-adopt goal mode as @prevalentware/opencode-goal-plugin (v2), caret-pinned
+
+- **Category**: decision
+- **File**: `decisions/goal-plugin-v2-readoption.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: plugins: ["@prevalentware/opencode-goal-plugin@^0.1.48"] — caret pin (v1 breakage was v1-only versions under v2 runtime, not pinning), no options (secure defaults), no commands.goal block; wejick/opencode-goal rejected; Docker inert until #387
+- **Date**: 2026-09-14
+
+### Docker v1 binary silently ignores the v2 `plugins` key
+
+- **Category**: solution
+- **File**: `solutions/docker-v1-binary-ignores-v2-plugins-key.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: The container's v1 opencode binary ignores the v2-native plugins key with NO warning — v2 plugin additions need a runtime-presence assertion or an explicit Docker descope (#387); build green ≠ plugin loaded. RESOLVED by #387: @opencode/cli v2 binary + authenticated healthcheck asserting goal presence
+- **Date**: 2026-09-14
+
+### Doc claims about runtime enforcement must match plugin defaults
+
+- **Category**: convention
+- **File**: `conventions/doc-claims-match-plugin-defaults.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Document only the enforcement a plugin's ACTIVE defaults provide (option-gated features get an inline "only when configured") — #382 review caught "enforces token/duration limits" claimed while both budgets ship unset
+- **Date**: 2026-09-15
 
 ### Redocly `operation-description` is OFF by default in `recommended`
 
@@ -80,9 +134,133 @@
 - **Summary**: Task-delegate allow-list changes sync 4 surfaces (frontmatter, registry regen, README row, agent-body note); delegation step wording must respect the delegate's own permission ceiling (bash:deny → parent owns diff/lint/commit)
 - **Date**: 2026-08-27
 
+### path-move restructure: anchor CI tarball gates, verify search-path consumers
+
+- **Category**: solution
+- **File**: `solutions/path-move-ci-gate-anchoring.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Path moves (#381): anchor CI `npm pack` grep gates to package-root paths (substring matches false-green); config files consumed via search-path chains (vibeguard.ts) need bridge symlink / explicit COPY per runtime
+- **Date**: 2026-09-14
+
+### init.mjs agentModel ↔ resolve-models resolveAgent precedence parity
+
+- **Category**: convention
+- **File**: `conventions/agent-override-precedence-parity.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: agentModel must mirror resolveAgent at both override levels (project > global > tier), incl. throw-on-malformed-JSON; changes land in both files + fake-HOME bats per level
+- **Date**: 2026-09-19
+### Unexpanded `$(cat …)` in subagent prompt + cwd on wrong branch
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/unexpanded-cat-embedding-wrong-branch-cwd.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #383 review spawn delivered literal `$(cat …)` (never expanded) while the subagent's clone sat on main without the feat/383 ref — read-only tools returned the pre-trim side; embed real `git show` output or run the reviewer in the branch worktree
+- **Date**: 2026-09-17
+
+### Literal-only stale-path greps miss variable indirection
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/literal-only-path-sweep-misses-variable-indirection.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: Path-move sweeps grepping only literal `deploy/<file>` miss `${DEPLOY_DIR}/<file>` forms — #378's setup.sh:3008 provider-models guard silently skipped post-move while all PLAN grep gates read 0; sweep the variables that resolve into the moved dir, not just literal paths
+- **Date**: 2026-09-15
+
+### Verified-stamp docs must cite every actionable claim
+
+- **Category**: convention
+- **File**: `conventions/verified-doc-claims-need-citations.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: In docs stamped "Verified against <source>", every command/env var/field path must trace to that source or carry an inference label at EACH occurrence — #385 review caught unlabeled cache-inference restated under "Why v2 dropped pruning", uncited `OPENCODE_DISABLE_AUTOCOMPACT`/`opencode stats`, and `session.warming` (actual key: top-level `warming`)
+- **Date**: 2026-09-15
+
+### Skill-content trim with verbatim preservation (#383 recipe)
+
+- **Category**: pattern
+- **File**: `patterns/skill-trim-verbatim-preservation.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: 93% SKILL.md trim recipe — frontmatter byte-identical, Learning entries verbatim, external anchors + live workflow contracts intact, dated removal-note blockquote, compose-don't-duplicate pointers
+- **Date**: 2026-09-17
+
+### bats structure pin: grep line-ordering test for shell call ordering
+
+- **Category**: pattern
+- **File**: `patterns/bats-structure-pin-call-order.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Pin call order in big shell scripts with bats grep line-number assertions (mig < deploy_content < config-only resolver) + negative grep of the removed pattern — #379's ordering rule regression net
+- **Date**: 2026-09-17
+
+### Safety snapshot gated on a side-effect-created directory
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/conditional-backup-dead-path.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: deploy_content's content-backup gate `[ -d "$BACKUP_DIR" ]` is dead in `--yes` redeploys (config-overwrite prompt auto-accepts default n → no create_backup) — snapshots must mkdir their own target
+- **Date**: 2026-09-17
+
+### Legacy manifest upgrades must probe every on-disk target
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/legacy-upgrade-target-probe.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: #379 legacy entries synthesis hashes opencode targets only — claude-target installs silently stop being updated/pruned; probe every target dir when upgrading manifests
+- **Date**: 2026-09-17
+
+### Advisory visibility checks must not run at full-catalog scale
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/advisory-check-full-catalog-noise.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: checkStrictAllowlist on `add --all`/`update` prints 100+ misleading warning lines against the default lean profile — gate per-item advisories to partial selections
+- **Date**: 2026-09-17
+
+### Normative rule added, in-file example left stale
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/rule-added-example-stale.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: when a commit adds or changes a skill rule, sweep the same file's Example Usage of that flow — stale examples are the strongest signal teaching agents the deprecated behavior
+- **Date**: 2026-09-19
+
+### Adaptive review drops proactive requirements review; gaps flow via Mode R relay
+
+- **Category**: decision
+- **File**: `decisions/adaptive-review-requirements-relay.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Step 7 selects reviewers by blast-radius only; uiux gained a required Requirements Gaps field; surfaced gaps relay to requirements-specialist Mode R; Step 1 preflight guards per-skill installs
+- **Date**: 2026-09-18
+
+### Case-sensitive grep gates false-green on file-tree prose
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/case-sensitive-grep-gates-false-green.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #423 review: PLAN-423 3.5 gate read green while README.md:32 still said "Symlink bridge" — case-sensitive prose grep missed the capital, and the line-anchored path pattern can't match ASCII trees that split parent/child across lines; use grep -i plus bare child-name patterns for tree blocks
+- **Date**: 2026-09-19
+
+### `git stash` exits 0 on nothing-to-save — porcelain-gated STASHED flags lie
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/git-stash-nothing-to-save-exit-zero.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #423 fix round: `git status --porcelain` counts untracked files as dirty but `git stash` (no -u) stashes nothing and still exits 0 — a STASHED flag set from porcelain + exit code goes true with no stash created, and the later pop fails on an empty stash; gate on `--untracked-files=no` or compare the refs/stash rev before/after
+- **Date**: 2026-09-19
+
 ---
 
-**Storage paths:**
 - Project-level: `LEARNINGS/` (this directory, git-committed)
 - User-level: `~/.config/opencode/learnings/` (personal, cross-project)
 - Searchable memory: `memory` tool (primary for quick retrieval)

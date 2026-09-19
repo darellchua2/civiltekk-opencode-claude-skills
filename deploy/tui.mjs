@@ -2,8 +2,8 @@
 // deploy/tui.mjs
 //
 // Zero-dependency interactive terminal UI dispatcher for the v2.0 model system.
-// The primitives + flows live in deploy/tui-primitives.mjs (extracted so other
-// tools like deploy/init.mjs can import them WITHOUT triggering this dispatch,
+// The primitives + flows live in installer/tui-primitives.mjs (extracted so other
+// tools like installer/init.mjs can import them WITHOUT triggering this dispatch,
 // which calls process.exit on run).
 //
 // Flows (first positional arg):
@@ -16,7 +16,7 @@
 
 import {
   parseArgs, flowProviderPicker, flowMigrationReview, flowOverrideEditor, flowTierEditor,
-} from "./tui-primitives.mjs";
+} from "../installer/tui-primitives.mjs";
 
 const flow = process.argv[2];
 const parsed = parseArgs(process.argv.slice(3));

@@ -10,7 +10,7 @@
 # assertion) to satisfy bats' parser while still covering all 30 skills
 # (7 + 8 + 15) × 3 assertions + 1 reference-existence test = 91 cases.
 
-SKILLS_DIR="opencode_app/.opencode/skills"
+SKILLS_DIR="skills"
 CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
 
 # =============================================================================
@@ -479,23 +479,6 @@ CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
 }
 @test "tier3_nextjs-unit-test-creator_cites_iteration_safety" {
   skill_md="$SKILLS_DIR/nextjs-unit-test-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
-}
-
-# --- nextjs-pr-workflow ---
-@test "tier3_nextjs-pr-workflow_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/nextjs-pr-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
-}
-@test "tier3_nextjs-pr-workflow_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/nextjs-pr-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
-}
-@test "tier3_nextjs-pr-workflow_cites_iteration_safety" {
-  skill_md="$SKILLS_DIR/nextjs-pr-workflow-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
 }

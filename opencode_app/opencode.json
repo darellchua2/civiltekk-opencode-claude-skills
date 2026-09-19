@@ -1,186 +1,622 @@
 {
     "$schema": "https://opencode.ai/config.json",
     "default_agent": "build",
-    "subagent_depth": 3,
-    "plugin": [
-        "@franlol/opencode-md-table-formatter@0.0.6",
-        "@tarquinen/opencode-dcp@3.1.15",
-        "opencode-superlocalmemory@0.1.2",
-        "@mohak34/opencode-notifier@0.2.8",
-        "opencode-pty@0.3.6",
-        "opencode-vibeguard@0.1.0",
-        "opencode-gemini-auth@1.4.15",
-        "opencode-goal-plugin@0.8.1",
-        "@nick-vi/opencode-type-inject@1.5.2",
-        "@bastiangx/opencode-unmoji@1.0.0",
-        "opencode-scheduler@1.3.0"
+    "experimental": {
+        "subagent_depth": 3
+    },
+    "permissions": [
+        {
+            "action": "read",
+            "resource": "mcp:*",
+            "effect": "deny"
+        },
+        {
+            "action": "read",
+            "resource": "*.env",
+            "effect": "deny"
+        },
+        {
+            "action": "read",
+            "resource": "*.env.*",
+            "effect": "deny"
+        },
+        {
+            "action": "read",
+            "resource": "*.env.example",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "*",
+            "effect": "deny"
+        },
+        {
+            "action": "skill",
+            "resource": "zai-image-generation-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "zai-video-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "zai-asr-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "zai-ocr-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "unslop-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "technical-writing-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "blast-radius-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "ponytail-audit-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "ponytail-review-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "ponytail-debt-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "openapi-contract-adherence-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "markitdown-mcp-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "docling-mcp-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "git-branch-workflow-setup-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "git-semantic-commits-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "documentation-sync-workflow-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "email-drafter-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "ticket-creation-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "gh-cli-setup-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "grilling-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "linting-workflow-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "wireframer-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "vision-creation-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "srs-creation-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "brd-creation-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "technical-design-creation-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "domain-modeling-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "research-paper-generation-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "horseshoe-paper-writing-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "git-compact-commits-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "git-issue-labeler-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "git-issue-updater-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "jira-git-integration-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "jira-status-updater-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "jira-ticket-labeler-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "plan-execution-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "pr-creation-workflow-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "pr-merge-workflow-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "semantic-release-convention-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "version-bump-standard-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "worktree-pipeline-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "wayfinder-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "opencode-agent-creation-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "opencode-repo-setup-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "opencode-skill-creation-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "opencode-skills-maintainer-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "opencode-v2-migration-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "agent-introspection-debugging-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "documentation-consistency-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "context-budget-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "strategic-compact-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "continuous-learning-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "verification-loop-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "eval-harness-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "clean-code-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "clean-architecture-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "solid-principles-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "design-patterns-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "code-smells-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "complexity-management-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "object-design-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "search-first-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "security-audit-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "performance-optimization-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "nextjs-devtools-mcp-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "ascii-diagram-creator-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "mermaid-diagram-creator-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "api-design-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "authentication-authorization-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "database-migration-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "docker-containerization-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "logging-observability-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "tdd-workflow-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "deprecated-code-cleanup-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "error-resolver-workflow-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "docx-creation-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "pdf-specialist-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "xlsx-specialist-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "construction-bd-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "startup-business-docs-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "startup-pitch-deck-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "python-packaging-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "python-backend-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "language-linting-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "typescript-dry-principle-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "monorepo-management-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "threejs-nextjs-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "frontend-design-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "accessibility-a11y-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "changelog-python-cliff-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "fastapi-pydantic-orm-patterns-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "aws-iac-safety-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "react-hooks-antipatterns-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "react-render-antipatterns-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "gsap-core",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "gsap-timeline",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "gsap-scrolltrigger",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "gsap-plugins",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "gsap-utils",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "gsap-react",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "gsap-performance",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "gsap-frameworks",
+            "effect": "allow"
+        },
+        {
+            "action": "codegraph*",
+            "resource": "*",
+            "effect": "allow"
+        },
+        {
+            "action": "atlassian*",
+            "resource": "*",
+            "effect": "allow"
+        },
+        {
+            "action": "markitdown*",
+            "resource": "*",
+            "effect": "deny"
+        },
+        {
+            "action": "docling*",
+            "resource": "*",
+            "effect": "deny"
+        },
+        {
+            "action": "zai-web-reader*",
+            "resource": "*",
+            "effect": "allow"
+        },
+        {
+            "action": "zai-web-search*",
+            "resource": "*",
+            "effect": "allow"
+        },
+        {
+            "action": "next-devtools*",
+            "resource": "*",
+            "effect": "deny"
+        }
+    ],
+    "plugins": [
+        "@prevalentware/opencode-goal-plugin@^0.1.48"
     ],
     "instructions": [
         "AGENTS.md"
     ],
-    "attachment": {
+    "media": {
         "image": {
             "max_width": 6000,
             "max_height": 6000,
             "max_base64_bytes": 7000000
         }
     },
-    "permission": {
-        "read": {
-            "mcp:*": "deny",
-            "*.env": "deny",
-            "*.env.*": "deny",
-            "*.env.example": "allow"
-        },
-        "skill": {
-            "*": "deny",
-            "zai-image-generation-skill": "allow",
-            "zai-video-skill": "allow",
-            "zai-asr-skill": "allow",
-            "zai-ocr-skill": "allow",
-            "unslop-skill": "allow",
-            "technical-writing-skill": "allow",
-            "blast-radius-skill": "allow",
-            "ponytail-audit-skill": "allow",
-            "ponytail-review-skill": "allow",
-            "ponytail-debt-skill": "allow",
-            "openapi-contract-adherence-skill": "allow",
-            "markitdown-mcp-skill": "allow",
-            "docling-mcp-skill": "allow",
-            "git-branch-workflow-setup-skill": "allow",
-            "git-semantic-commits-skill": "allow",
-            "documentation-sync-workflow-skill": "allow",
-            "email-drafter-skill": "allow",
-            "ticket-creation-skill": "allow",
-            "grilling-skill": "allow",
-            "linting-workflow-skill": "allow",
-            "grill-me-skill": "allow",
-            "grill-with-docs-skill": "allow",
-            "wireframer-skill": "allow",
-            "vision-creation-skill": "allow",
-            "srs-creation-skill": "allow",
-            "brd-creation-skill": "allow",
-            "technical-design-creation-skill": "allow",
-            "domain-modeling-skill": "allow",
-            "research-paper-generation-skill": "allow",
-            "horseshoe-paper-writing-skill": "allow",
-            "git-compact-commits-skill": "allow",
-            "git-issue-labeler-skill": "allow",
-            "git-issue-updater-skill": "allow",
-            "jira-git-integration-skill": "allow",
-            "jira-status-updater-skill": "allow",
-            "jira-ticket-labeler-skill": "allow",
-            "plan-execution-skill": "allow",
-            "plan-automation-loop-skill": "allow",
-            "plan-updater-skill": "allow",
-            "pr-creation-workflow-skill": "allow",
-            "pr-merge-workflow-skill": "allow",
-            "nextjs-pr-workflow-skill": "allow",
-            "semantic-release-convention-skill": "allow",
-            "version-bump-standard-skill": "allow",
-            "worktree-pipeline-skill": "allow",
-            "wayfinder-skill": "allow",
-            "opencode-agent-creation-skill": "allow",
-            "opencode-repo-setup-skill": "allow",
-            "opencode-skill-creation-skill": "allow",
-            "opencode-skills-maintainer-skill": "allow",
-            "agent-introspection-debugging-skill": "allow",
-            "documentation-consistency-skill": "allow",
-            "context-budget-skill": "allow",
-            "strategic-compact-skill": "allow",
-            "continuous-learning-skill": "allow",
-            "verification-loop-skill": "allow",
-            "eval-harness-skill": "allow",
-            "clean-code-skill": "allow",
-            "clean-architecture-skill": "allow",
-            "solid-principles-skill": "allow",
-            "design-patterns-skill": "allow",
-            "code-smells-skill": "allow",
-            "complexity-management-skill": "allow",
-            "object-design-skill": "allow",
-            "search-first-skill": "allow",
-            "security-audit-skill": "allow",
-            "performance-optimization-skill": "allow",
-            "nextjs-devtools-mcp-skill": "allow",
-            "ascii-diagram-creator-skill": "allow",
-            "mermaid-diagram-creator-skill": "allow",
-            "api-design-skill": "allow",
-            "authentication-authorization-skill": "allow",
-            "database-migration-skill": "allow",
-            "docker-containerization-skill": "allow",
-            "logging-observability-skill": "allow",
-            "tdd-workflow-skill": "allow",
-            "deprecated-code-cleanup-skill": "allow",
-            "error-resolver-workflow-skill": "allow",
-            "docx-creation-skill": "allow",
-            "pdf-specialist-skill": "allow",
-            "xlsx-specialist-skill": "allow",
-            "construction-bd-skill": "allow",
-            "startup-business-docs-skill": "allow",
-            "startup-pitch-deck-skill": "allow",
-            "python-packaging-skill": "allow",
-            "python-backend-skill": "allow",
-            "language-linting-skill": "allow",
-            "typescript-dry-principle-skill": "allow",
-            "monorepo-management-skill": "allow",
-            "threejs-nextjs-skill": "allow",
-            "frontend-design-skill": "allow",
-            "accessibility-a11y-skill": "allow",
-            "changelog-python-cliff-skill": "allow",
-            "fastapi-pydantic-orm-patterns-skill": "allow",
-            "aws-iac-safety-skill": "allow",
-            "react-hooks-antipatterns-skill": "allow",
-            "react-render-antipatterns-skill": "allow",
-            "gsap-core": "allow",
-            "gsap-timeline": "allow",
-            "gsap-scrolltrigger": "allow",
-            "gsap-plugins": "allow",
-            "gsap-utils": "allow",
-            "gsap-react": "allow",
-            "gsap-performance": "allow",
-            "gsap-frameworks": "allow"
-        },
-        "codegraph*": "allow",
-        "atlassian*": "allow",
-        "markitdown*": "deny",
-        "docling*": "deny",
-        "zai-web-reader*": "allow",
-        "zai-web-search*": "allow",
-        "next-devtools*": "deny"
-    },
-    "command": {
-        "goal": {
-            "description": "Set a session-scoped goal and auto-continue until complete.",
-            "template": "$ARGUMENTS",
-            "agent": "build"
-        },
+    "commands": {
         "run-plan": {
-            "description": "Fully-automated plan execution loop \u2014 implement PLAN*.md phase-by-phase (lint+build+test+e2e gate, then commit + push per phase). Deliberate trigger; /goal stays generic.",
-            "template": "Load the skill `plan-automation-loop-skill` and run it to fully implement the plan file given as the argument: $ARGUMENTS",
+            "description": "Fully-automated plan execution loop — implement PLAN*.md phase-by-phase (lint+build+test+e2e gate, then commit + push per phase). Deliberate trigger; soft guardrails — for long hands-off runs prefer the runtime-guarded /goal path (@prevalentware/opencode-goal-plugin, user-space; Docker awaits #387).",
+            "template": "Load the skill `plan-execution-skill` in --gate mode and run it to fully implement the plan file given as the argument: $ARGUMENTS",
             "agent": "build"
         },
         "create-ticket": {
-            "description": "Create a structured GitHub issue or JIRA ticket \u2014 platform detection, structured description, labels, sub-issues. Ticket only: no branch/PLAN/execution (use /run-worktree-pipeline for that).",
+            "description": "Create a structured GitHub issue or JIRA ticket — platform detection, structured description, labels, sub-issues. Ticket only: no branch/PLAN/execution (use /run-worktree-pipeline for that).",
             "template": "Load the skill `ticket-creation-skill` and run it with the arguments: $ARGUMENTS",
             "agent": "build"
         },
         "run-worktree-pipeline": {
-            "description": "Tracker-ticket-to-merged-PR pipeline via git worktrees \u2014 sync, plan, adaptive review, /run-plan, code review, PR merge. Usage: /run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>",
+            "description": "Tracker-ticket-to-merged-PR pipeline via git worktrees — sync, plan, adaptive review (requirements-gap relay), /run-plan, code review, PR merge. Usage: /run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>",
             "template": "Load the skill `worktree-pipeline-skill` and run it with the arguments: $ARGUMENTS",
             "agent": "build"
         }
     },
-    "provider": {
+    "providers": {
         "local-llm": {
-            "npm": "@ai-sdk/openai-compatible",
+            "package": "aisdk:@ai-sdk/openai-compatible",
             "name": "Local LLM (llama.cpp)",
-            "options": {
+            "settings": {
                 "baseURL": "http://127.0.0.1:17851/v1"
             },
             "models": {
                 "local/gemma-4-E4B-q4_0": {
                     "name": "gemma-4-E4B (local q4_0)",
-                    "modalities": {
+                    "capabilities": {
                         "input": [
                             "text",
                             "image"
@@ -190,15 +626,15 @@
             }
         },
         "vllm": {
-            "npm": "@ai-sdk/openai-compatible",
+            "package": "aisdk:@ai-sdk/openai-compatible",
             "name": "Local LLM (vLLM)",
-            "options": {
+            "settings": {
                 "baseURL": "http://127.0.0.1:17852/v1"
             },
             "models": {
                 "local/nemotron-3-nano": {
                     "name": "Nemotron-3-Nano-4B-FP8 (vLLM)",
-                    "modalities": {
+                    "capabilities": {
                         "input": [
                             "text"
                         ]
@@ -211,9 +647,9 @@
             }
         },
         "ollama": {
-            "npm": "@ai-sdk/openai-compatible",
+            "package": "aisdk:@ai-sdk/openai-compatible",
             "name": "Ollama (local)",
-            "options": {
+            "settings": {
                 "baseURL": "http://localhost:11434/v1"
             },
             "models": {
@@ -227,29 +663,17 @@
             }
         },
         "zai-custom": {
-            "npm": "@ai-sdk/openai-compatible",
+            "package": "aisdk:@ai-sdk/openai-compatible",
             "name": "Z.AI Coding Plan (Custom)",
-            "options": {
+            "settings": {
                 "baseURL": "https://api.z.ai/api/coding/paas/v4",
                 "apiKey": "{env:ZAI_API_KEY}"
             },
             "models": {
                 "glm-5.3-flash": {
                     "name": "GLM-5.3 Flash (Custom)",
-                    "attachment": true,
-                    "reasoning": true,
-                    "tool_call": true,
-                    "cost": {
-                        "input": 0,
-                        "output": 0,
-                        "cache_read": 0,
-                        "cache_write": 0
-                    },
-                    "limit": {
-                        "context": 1000000,
-                        "output": 131072
-                    },
-                    "modalities": {
+                    "capabilities": {
+                        "tools": true,
                         "input": [
                             "text",
                             "image"
@@ -257,155 +681,196 @@
                         "output": [
                             "text"
                         ]
-                    }
-                },
-                "glm-5.3": {
-                    "name": "GLM-5.3 (Custom)",
-                    "reasoning": true,
-                    "tool_call": true,
+                    },
                     "cost": {
                         "input": 0,
                         "output": 0,
-                        "cache_read": 0,
-                        "cache_write": 0
+                        "cache": {
+                            "read": 0,
+                            "write": 0
+                        }
                     },
                     "limit": {
                         "context": 1000000,
                         "output": 131072
-                    },
-                    "modalities": {
+                    }
+                },
+                "glm-5.3": {
+                    "name": "GLM-5.3 (Custom)",
+                    "capabilities": {
+                        "tools": true,
                         "input": [
                             "text"
                         ],
                         "output": [
                             "text"
                         ]
+                    },
+                    "cost": {
+                        "input": 0,
+                        "output": 0,
+                        "cache": {
+                            "read": 0,
+                            "write": 0
+                        }
+                    },
+                    "limit": {
+                        "context": 1000000,
+                        "output": 131072
                     }
                 }
             }
         }
     },
     "mcp": {
-        "codegraph": {
-            "type": "local",
-            "command": [
-                "npx",
-                "-y",
-                "@colbymchenry/codegraph",
-                "serve",
-                "--mcp"
-            ],
-            "enabled": true
-        },
-        "atlassian": {
-            "type": "local",
-            "command": [
-                "npx",
-                "-y",
-                "mcp-remote",
-                "https://mcp.atlassian.com/v1/mcp"
-            ],
-            "enabled": false
-        },
-        "zai-web-reader": {
-            "type": "remote",
-            "url": "https://api.z.ai/api/mcp/web_reader/mcp",
-            "headers": {
-                "Authorization": "Bearer {env:ZAI_API_KEY}"
+        "servers": {
+            "codegraph": {
+                "type": "local",
+                "command": [
+                    "npx",
+                    "-y",
+                    "@colbymchenry/codegraph",
+                    "serve",
+                    "--mcp"
+                ],
+                "disabled": false
             },
-            "enabled": true
-        },
-        "zai-web-search": {
-            "type": "remote",
-            "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
-            "headers": {
-                "Authorization": "Bearer {env:ZAI_API_KEY}"
+            "atlassian": {
+                "type": "local",
+                "command": [
+                    "npx",
+                    "-y",
+                    "mcp-remote",
+                    "https://mcp.atlassian.com/v1/mcp"
+                ],
+                "disabled": true
             },
-            "enabled": true
-        },
-        "next-devtools": {
-            "type": "local",
-            "command": [
-                "npx",
-                "-y",
-                "next-devtools-mcp@latest"
-            ],
-            "environment": {
-                "NEXT_TELEMETRY_DISABLED": "1"
+            "zai-web-reader": {
+                "type": "remote",
+                "url": "https://api.z.ai/api/mcp/web_reader/mcp",
+                "headers": {
+                    "Authorization": "Bearer {env:ZAI_API_KEY}"
+                },
+                "disabled": false
             },
-            "enabled": false
-        },
-        "markitdown": {
-            "type": "local",
-            "command": [
-                "markitdown-local-mcp"
-            ],
-            "environment": {
-                "MARKITDOWN_ENABLE_PLUGINS": "false"
+            "zai-web-search": {
+                "type": "remote",
+                "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
+                "headers": {
+                    "Authorization": "Bearer {env:ZAI_API_KEY}"
+                },
+                "disabled": false
             },
-            "enabled": false
-        },
-        "docling": {
-            "type": "local",
-            "command": [
-                "docling-mcp-server"
-            ],
-            "environment": {
-                "DOCLING_CONVERSION_MODE": "local"
+            "next-devtools": {
+                "type": "local",
+                "command": [
+                    "npx",
+                    "-y",
+                    "next-devtools-mcp@latest"
+                ],
+                "environment": {
+                    "NEXT_TELEMETRY_DISABLED": "1"
+                },
+                "disabled": true
             },
-            "enabled": false
-        },
-        "chrome-devtools": {
-            "type": "local",
-            "command": [
-                "npx",
-                "-y",
-                "chrome-devtools-mcp@latest",
-                "--no-usage-statistics",
-                "--no-performance-crux",
-                "--redact-network-headers",
-                "--isolated"
-            ],
-            "environment": {
-                "CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS": "1"
+            "markitdown": {
+                "type": "local",
+                "command": [
+                    "markitdown-local-mcp"
+                ],
+                "environment": {
+                    "MARKITDOWN_ENABLE_PLUGINS": "false"
+                },
+                "disabled": true
             },
-            "enabled": false
+            "docling": {
+                "type": "local",
+                "command": [
+                    "docling-mcp-server",
+                    "--transport",
+                    "stdio"
+                ],
+                "environment": {
+                    "DOCLING_CONVERSION_MODE": "local"
+                },
+                "disabled": true
+            },
+            "chrome-devtools": {
+                "type": "local",
+                "command": [
+                    "npx",
+                    "-y",
+                    "chrome-devtools-mcp@latest",
+                    "--no-usage-statistics",
+                    "--no-performance-crux",
+                    "--redact-network-headers",
+                    "--isolated"
+                ],
+                "environment": {
+                    "CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS": "1"
+                },
+                "disabled": true
+            }
         }
     },
-    "agent": {
+    "agents": {
         "build": {
-            "permission": {
-                "task": {
-                    "*": "allow"
+            "permissions": [
+                {
+                    "action": "subagent",
+                    "resource": "*",
+                    "effect": "allow"
                 }
-            }
+            ]
         },
         "plan": {
-            "permission": {
-                "edit": "ask",
-                "bash": "ask",
-                "task": {
-                    "*": "allow"
+            "permissions": [
+                {
+                    "action": "edit",
+                    "resource": "*",
+                    "effect": "ask"
+                },
+                {
+                    "action": "shell",
+                    "resource": "*",
+                    "effect": "ask"
+                },
+                {
+                    "action": "subagent",
+                    "resource": "*",
+                    "effect": "allow"
                 }
-            }
+            ]
         },
         "explore": {
             "model": "zai-coding-plan/glm-5.3-flash",
-            "permission": {
-                "read": {
-                    "*": "allow",
-                    "mcp:*": "deny"
+            "permissions": [
+                {
+                    "action": "read",
+                    "resource": "*",
+                    "effect": "allow"
+                },
+                {
+                    "action": "read",
+                    "resource": "mcp:*",
+                    "effect": "deny"
                 }
-            }
+            ]
         },
         "general": {
             "model": "zai-coding-plan/glm-5.3",
-            "permission": {
-                "read": {
-                    "*": "allow",
-                    "mcp:*": "deny"
+            "permissions": [
+                {
+                    "action": "read",
+                    "resource": "*",
+                    "effect": "allow"
+                },
+                {
+                    "action": "read",
+                    "resource": "mcp:*",
+                    "effect": "deny"
                 }
-            }
+            ]
         }
     }
 }

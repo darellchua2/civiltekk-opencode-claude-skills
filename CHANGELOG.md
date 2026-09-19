@@ -2,6 +2,350 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.6.0](https://github.com/darellchua2/opencode-config-template/compare/v9.5.1...v9.6.0) (2026-09-19)
+
+### Features
+
+* **docker:** consolidate runtime — 3-stage image, v2.0.8 pin, drop pm2 bridge ([#428](https://github.com/darellchua2/opencode-config-template/issues/428)) ([0f49c5e](https://github.com/darellchua2/opencode-config-template/commit/0f49c5e1179c182f23bb94f6b52a2b5fa237a1be)), closes [#423](https://github.com/darellchua2/opencode-config-template/issues/423)
+
+## [9.5.1](https://github.com/darellchua2/opencode-config-template/compare/v9.5.0...v9.5.1) (2026-09-19)
+
+### Bug Fixes
+
+* **skills:** title-prefix parity in example, verbatim Jira labels; learnings ([5a9fad7](https://github.com/darellchua2/opencode-config-template/commit/5a9fad797630f0772f419f97c1f174a9280020f2))
+
+## [9.5.0](https://github.com/darellchua2/opencode-config-template/compare/v9.4.1...v9.5.0) (2026-09-19)
+
+### Features
+
+* **issues:** add canonical issue form templates and repo-level forms ([5cadb01](https://github.com/darellchua2/opencode-config-template/commit/5cadb01c14e5e54a716f3fabdca0d764157d05f4))
+* **skills:** agent ticket intake — classify, collect, validate, preview, submit ([facdbee](https://github.com/darellchua2/opencode-config-template/commit/facdbee03d3b5c46cb1b769a06329c81a4aad81f))
+* **skills:** per-repo issue-template scaffold offer in setup skill ([6db2fe7](https://github.com/darellchua2/opencode-config-template/commit/6db2fe74deb6a3fe4c79d1d580b676d850fc6849))
+
+### Bug Fixes
+
+* **skills:** apply code-review findings to ticket/setup skills ([655fbab](https://github.com/darellchua2/opencode-config-template/commit/655fbab2a4ac9cb2c8380c8d39c69ac37fe54452))
+
+### Documentation
+
+* **learnings:** add consolidation learnings from [#407](https://github.com/darellchua2/opencode-config-template/issues/407)/[#408](https://github.com/darellchua2/opencode-config-template/issues/408) reviews ([a48f934](https://github.com/darellchua2/opencode-config-template/commit/a48f934300d85a6d87122287e4a8240d1bcf4ae1)), closes [#422](https://github.com/darellchua2/opencode-config-template/issues/422)
+* **learnings:** bats errexit loop fail-fast (from [#417](https://github.com/darellchua2/opencode-config-template/issues/417) review) ([3753732](https://github.com/darellchua2/opencode-config-template/commit/37537321c4ca691dd90ca4097ecc6dccb25571e4))
+* **learnings:** build-registry plain run churns generatedAt ([d11495f](https://github.com/darellchua2/opencode-config-template/commit/d11495fa8a74064a5c7c3097e9ae967e42e7e56e))
+* **plan:** add PLAN-416.md for [#416](https://github.com/darellchua2/opencode-config-template/issues/416) ([2554cf8](https://github.com/darellchua2/opencode-config-template/commit/2554cf86fd74f541314c5ae215b3a2c55db917a0))
+* **plan:** add PLAN-417.md for [#417](https://github.com/darellchua2/opencode-config-template/issues/417) ([d0517e6](https://github.com/darellchua2/opencode-config-template/commit/d0517e6d693e5dd903e6b701465c74c7b711742b))
+* **plan:** apply architecture review findings to PLAN-417 ([dc6dc1a](https://github.com/darellchua2/opencode-config-template/commit/dc6dc1a6dd7bf11062cb3df80fc9eb5cc115b440))
+* **plan:** apply PLAN-416 review findings ([#416](https://github.com/darellchua2/opencode-config-template/issues/416)) ([ac49827](https://github.com/darellchua2/opencode-config-template/commit/ac49827e124d0f6cc1ceb46bc67037f68e39abd9))
+* **plan:** implement Phase 3 — verification gate green ([6e1cb57](https://github.com/darellchua2/opencode-config-template/commit/6e1cb574703b90a189745e08fddab8c7dce3e579))
+* **plan:** tick PLAN-416 acceptance criteria — all phases green ([2b78f9a](https://github.com/darellchua2/opencode-config-template/commit/2b78f9a8ad98164882782680d44350719ebeffcd))
+* **skill:** disposition non-0/1 check-ignore exits as soft-skip ([cf20b23](https://github.com/darellchua2/opencode-config-template/commit/cf20b231cde3a2aa032947e6c016eb811b4d30f8))
+* **skill:** implement Phase 1 — conditional CodeGraph init in Step 4 ([458f3ee](https://github.com/darellchua2/opencode-config-template/commit/458f3ee9cfacae0bc8c7a9b72f5a19552cf74612))
+* **skill:** implement Phase 2 — CodeGraph guarantee line ([daa6e40](https://github.com/darellchua2/opencode-config-template/commit/daa6e40e9c547d003832397c88bdf01418d362b7))
+
+## [9.4.1](https://github.com/darellchua2/opencode-config-template/compare/v9.4.0...v9.4.1) (2026-09-19)
+
+### Bug Fixes
+
+* **skills:** commit regenerated registry + apply review notes (gate default qualifier, integration rows) ([e6ac9d5](https://github.com/darellchua2/opencode-config-template/commit/e6ac9d58b97a4692aa0bab2fc8f5e0b563ff08b8))
+
+### Code Refactoring
+
+* **skills:** implement Phase 1 — plan-execution-skill becomes the consolidated executor (--soft/--gate/--update) ([eed0f3b](https://github.com/darellchua2/opencode-config-template/commit/eed0f3bf6f2cb0f710847fb60907c12022aa7b11))
+* **skills:** implement Phase 2 — sweep execution-sibling references, re-pin lean 44, re-point /run-plan template ([c74714c](https://github.com/darellchua2/opencode-config-template/commit/c74714c34bf3bbcb993a56f917de2980abb011fa))
+* **skills:** implement Phases 3-4 — delete execution siblings, regenerate registry, gates green ([4cf96e8](https://github.com/darellchua2/opencode-config-template/commit/4cf96e8da7aa1066807cbc93876cb250287ebc65))
+
+### Documentation
+
+* **learnings:** index global-in-flight-guard anti-pattern entry ([14743a0](https://github.com/darellchua2/opencode-config-template/commit/14743a0fddbfa488e96859b08aad968cbc6a636f))
+* **plan:** add PLAN-408.md for [#408](https://github.com/darellchua2/opencode-config-template/issues/408) ([f1ac727](https://github.com/darellchua2/opencode-config-template/commit/f1ac7276f23cb9e51f235e54226ad511f4aa7b71))
+* **plan:** apply review findings to PLAN-408 (lean 44, /run-plan template, sweep exemptions) ([0f23c31](https://github.com/darellchua2/opencode-config-template/commit/0f23c312b7eec50ce360e711c86907f3dd0a8040))
+* **plan:** trace Phases 1-2 (per-step Done lines) ([db91039](https://github.com/darellchua2/opencode-config-template/commit/db910392c37bdfbafb0a88f665d1e5533b9d7ced))
+
+## [9.4.0](https://github.com/darellchua2/opencode-config-template/compare/v9.3.2...v9.4.0) (2026-09-18)
+
+### Features
+
+* **plugins:** implement Phase 1 — opencode-auto-continue-v2 core ([95de8de](https://github.com/darellchua2/opencode-config-template/commit/95de8de94ee6803b2f34ac3c86d3ddb2fdeb25a5))
+
+### Bug Fixes
+
+* **plugins:** address code review — rejection safety, own-send guard, test hardening ([358f6d3](https://github.com/darellchua2/opencode-config-template/commit/358f6d330c6beebac6d5bd33926a9ba33640f5ec))
+* **plugins:** round-2 review — per-session own-send guard + coverage notes ([f44861e](https://github.com/darellchua2/opencode-config-template/commit/f44861ec909c312334c7600f8c8f01141aacc9a4))
+
+### Documentation
+
+* **plan:** add PLAN-418.md for [#418](https://github.com/darellchua2/opencode-config-template/issues/418) ([2e2876c](https://github.com/darellchua2/opencode-config-template/commit/2e2876cdc35a8c29dee30c67c6b03cea755cc3b6))
+* **plan:** trace Phase 4 — gate green, all ACs verified ([91e4440](https://github.com/darellchua2/opencode-config-template/commit/91e44409aaa32f19e735c21489a146418ea9db36))
+* **readme:** implement Phase 3 — auto-continue-v2 plugin section ([11559cd](https://github.com/darellchua2/opencode-config-template/commit/11559cda64df3d4a7d47ac237b5361025df3780a))
+
+## [9.3.2](https://github.com/darellchua2/opencode-config-template/compare/v9.3.1...v9.3.2) (2026-09-18)
+
+### Code Refactoring
+
+* **skills:** implement Phase 1 — grilling-skill becomes the consolidated grill skill with modes ([2e96df3](https://github.com/darellchua2/opencode-config-template/commit/2e96df33865021f91168d3823e16a6408a2cb577))
+* **skills:** implement Phase 2 — sweep grill router references and re-pin lean count ([d657b54](https://github.com/darellchua2/opencode-config-template/commit/d657b54db04aeba30dce9fc8e0fff9170bd33137))
+* **skills:** implement Phase 3 — delete grill routers, sync counts, regenerate registry ([9bc7dcf](https://github.com/darellchua2/opencode-config-template/commit/9bc7dcfb1df208d300f987b9b902b501958d9e4c))
+
+### Documentation
+
+* **plan:** add PLAN-407.md for [#407](https://github.com/darellchua2/opencode-config-template/issues/407) ([79428cd](https://github.com/darellchua2/opencode-config-template/commit/79428cd113cf338e5cfbe205c235a422151efb4d))
+* **plan:** apply review findings to PLAN-407 (test-pinned counts, --docs inline, phase bundling) ([42c8cdc](https://github.com/darellchua2/opencode-config-template/commit/42c8cdc547c194042afe80ac06e89a5c0331bc0c))
+* **plan:** implement Phase 4 — verification green, trace historical-records exemption ([c504d8f](https://github.com/darellchua2/opencode-config-template/commit/c504d8fbb014c10953de38ff2dacd34cf27d22f5))
+
+## [9.3.1](https://github.com/darellchua2/opencode-config-template/compare/v9.3.0...v9.3.1) (2026-09-18)
+
+### Code Refactoring
+
+* **skills:** consolidate verification gates, trim skill estate ([#409](https://github.com/darellchua2/opencode-config-template/issues/409)) ([#419](https://github.com/darellchua2/opencode-config-template/issues/419)) ([a424ed9](https://github.com/darellchua2/opencode-config-template/commit/a424ed978e4ed0d8cce657d151fca6190f7239be)), closes [#383](https://github.com/darellchua2/opencode-config-template/issues/383)
+
+## [9.3.0](https://github.com/darellchua2/opencode-config-template/compare/v9.2.1...v9.3.0) (2026-09-18)
+
+### Features
+
+* **skills:** ticket/PR attribution + gh-cli fallback ([#404](https://github.com/darellchua2/opencode-config-template/issues/404)) ([#415](https://github.com/darellchua2/opencode-config-template/issues/415)) ([b7c81ac](https://github.com/darellchua2/opencode-config-template/commit/b7c81ac8a7d283cf2a45c70cfd160655af8630ea))
+
+### Documentation
+
+* **learnings:** commit local memory backlog (8 entries + index + evidence update) ([ec82ca8](https://github.com/darellchua2/opencode-config-template/commit/ec82ca86b6e39058a84cb1290e11ad825b4682ae)), closes [383/#385-era](https://github.com/383/opencode-config-template/issues/385-era) [#383](https://github.com/darellchua2/opencode-config-template/issues/383)
+
+## [9.2.1](https://github.com/darellchua2/opencode-config-template/compare/v9.2.0...v9.2.1) (2026-09-18)
+
+### Bug Fixes
+
+* **init:** conflict-gate project models.json like opencode.json ([#412](https://github.com/darellchua2/opencode-config-template/issues/412)) ([#413](https://github.com/darellchua2/opencode-config-template/issues/413)) ([30784da](https://github.com/darellchua2/opencode-config-template/commit/30784dae55f79f527116dd4d7d272a58f4b59697))
+
+## [9.2.0](https://github.com/darellchua2/opencode-config-template/compare/v9.1.3...v9.2.0) (2026-09-18)
+
+### Features
+
+* **agents:** route dwg/image redraw to cad-redraw-skill ([01dd772](https://github.com/darellchua2/opencode-config-template/commit/01dd772cc591978df71b37f578bf2c8dc6ea6f22))
+* **skills:** add cad-redraw fingerprint and spec-to-dxf scripts ([0f14c74](https://github.com/darellchua2/opencode-config-template/commit/0f14c74863c00fc14ec03a9473a219e6e15bd87e))
+* **skills:** add cad-redraw image pipeline scripts ([751fe4c](https://github.com/darellchua2/opencode-config-template/commit/751fe4c50f7157efb1acfd3d96173f0473105082))
+* **skills:** add cad-redraw-skill contract and references ([16acdec](https://github.com/darellchua2/opencode-config-template/commit/16acdec655ce6c3021d7681b20870cc77f1086f3))
+
+### Bug Fixes
+
+* **skills:** close re-review residuals in cad-redraw loaders ([507099d](https://github.com/darellchua2/opencode-config-template/commit/507099dec50c8ab9c232f708ee42ce4a235642ed))
+* **skills:** harden cad-redraw validators per code review ([8bc684b](https://github.com/darellchua2/opencode-config-template/commit/8bc684b1246be3d8d786e8388002eb79ead9cc0c))
+
+### Documentation
+
+* **learnings:** capture skill-add count blast radius and docs-registry artifact ([8e39ad7](https://github.com/darellchua2/opencode-config-template/commit/8e39ad71495aaeb28a0a696d364aa253ab1701c2))
+* **learnings:** capture validator-crash anti-pattern from [#402](https://github.com/darellchua2/opencode-config-template/issues/402) review ([081210f](https://github.com/darellchua2/opencode-config-template/commit/081210f8d003a204e2f755e7078885671284adb2))
+* **plan:** add PLAN-402.md for [#402](https://github.com/darellchua2/opencode-config-template/issues/402) ([ecb2a16](https://github.com/darellchua2/opencode-config-template/commit/ecb2a16f43165225c3ceab93e184b6ef195f4872))
+* **plan:** amend PLAN-402.md per architecture review ([7dce1b3](https://github.com/darellchua2/opencode-config-template/commit/7dce1b3417b6bce323ec31cef38f99310fbf7f7b))
+* **plan:** ride registry rebuild with phases 1 and 4 (BT-157 per-commit invariant) ([e6602a9](https://github.com/darellchua2/opencode-config-template/commit/e6602a9cd28013002a17cc699997d8b04fab3013))
+* **plan:** tick PLAN-402 acceptance criteria ([99694ab](https://github.com/darellchua2/opencode-config-template/commit/99694ab4520b7251bb435458fdff4994b7a56500))
+* **skills:** fill missing helper docstrings in spec_to_dxf ([476f8da](https://github.com/darellchua2/opencode-config-template/commit/476f8da4800f9b903b3a2f94e057e622993299bb))
+
+## [9.1.3](https://github.com/darellchua2/opencode-config-template/compare/v9.1.2...v9.1.3) (2026-09-18)
+
+### Bug Fixes
+
+* **installer:** project-scope installs honor agent-overrides.json ([#401](https://github.com/darellchua2/opencode-config-template/issues/401)) ([#410](https://github.com/darellchua2/opencode-config-template/issues/410)) ([889e7a7](https://github.com/darellchua2/opencode-config-template/commit/889e7a7fcbdd94607d1cf159563e62d7b88cabe9))
+
+## [9.1.2](https://github.com/darellchua2/opencode-config-template/compare/v9.1.1...v9.1.2) (2026-09-18)
+
+### Bug Fixes
+
+* **pipeline:** extend pipeline-mode skip set to step 3 + supersede all restatements ([1c62d41](https://github.com/darellchua2/opencode-config-template/commit/1c62d4120ebc1f26dda7dd1edfea424979574d8b))
+
+### Code Refactoring
+
+* **pipeline:** pipeline-mode PR handoff — skip pr-workflow steps 2/2.5/4 ([6385bd1](https://github.com/darellchua2/opencode-config-template/commit/6385bd160b5640be80e97727985c7acb8e19f16d))
+* **skills:** handle refactor/DRY directly — code-review-subagent is review-only ([3099b69](https://github.com/darellchua2/opencode-config-template/commit/3099b69f7a44fc1060d4d8bd5338f84663e37941))
+
+### Documentation
+
+* **agents:** disposition step 8 in pipeline-mode block per re-review note ([1efcd2a](https://github.com/darellchua2/opencode-config-template/commit/1efcd2aa6b0b7403e70169b71d713b3f317c4a46))
+* **plan:** add PLAN-399.md for [#399](https://github.com/darellchua2/opencode-config-template/issues/399) ([7aafdf2](https://github.com/darellchua2/opencode-config-template/commit/7aafdf23425db69a2fa994cec270c3fc06e3453a))
+* **plan:** apply architecture+Mode R amendments to PLAN-399 ([74bc965](https://github.com/darellchua2/opencode-config-template/commit/74bc96514f48c656d20a3651a19d3fbfdafa990c))
+* **plan:** tick PLAN-399 acceptance criteria — all 5 satisfied ([d579398](https://github.com/darellchua2/opencode-config-template/commit/d579398cd2ae5d48bc26c0a1a32cadfdbe2f1abd))
+* **plan:** verify PLAN-399 Phase 3 — registry no-drift, scoped proofs, bats INCONCLUSIVE ([7fc5217](https://github.com/darellchua2/opencode-config-template/commit/7fc5217b5dde4974070d676d6e542c7c9eb30d64))
+
+## [9.1.1](https://github.com/darellchua2/opencode-config-template/compare/v9.1.0...v9.1.1) (2026-09-18)
+
+### Bug Fixes
+
+* **installer:** update reports per-target outcomes without dropping partial updates ([#400](https://github.com/darellchua2/opencode-config-template/issues/400)) ([#403](https://github.com/darellchua2/opencode-config-template/issues/403)) ([c06bcde](https://github.com/darellchua2/opencode-config-template/commit/c06bcde4cb731fac89a1c02b3431d34a4bdaea79))
+
+## [9.1.0](https://github.com/darellchua2/opencode-config-template/compare/v9.0.0...v9.1.0) (2026-09-18)
+
+### Features
+
+* **skills:** reviewer-owned requirements coverage + Mode R relay ([2c5e66c](https://github.com/darellchua2/opencode-config-template/commit/2c5e66c01b88e9879e7af7608f22139f069da44b)), closes [#397](https://github.com/darellchua2/opencode-config-template/issues/397)
+
+## [9.0.0](https://github.com/darellchua2/opencode-config-template/compare/v8.0.0...v9.0.0) (2026-09-17)
+
+### ⚠ BREAKING CHANGES
+
+* **setup:** single install path + npx update command (#379) (#396)
+
+### Features
+
+* **setup:** single install path + npx update command ([#379](https://github.com/darellchua2/opencode-config-template/issues/379)) ([#396](https://github.com/darellchua2/opencode-config-template/issues/396)) ([9cda837](https://github.com/darellchua2/opencode-config-template/commit/9cda8370ca6f6a6e958a2caeb9109e41b1d89bcd))
+
+## [8.0.0](https://github.com/darellchua2/opencode-config-template/compare/v7.1.1...v8.0.0) (2026-09-17)
+
+### ⚠ BREAKING CHANGES
+
+* **agents:** normalize frontmatter to native v2 permissions (#380) (#395)
+
+### Code Refactoring
+
+* **agents:** normalize frontmatter to native v2 permissions ([#380](https://github.com/darellchua2/opencode-config-template/issues/380)) ([#395](https://github.com/darellchua2/opencode-config-template/issues/395)) ([a04fa6d](https://github.com/darellchua2/opencode-config-template/commit/a04fa6d47eea1b676cb7efa56cb2b08bf323220b)), closes [#379](https://github.com/darellchua2/opencode-config-template/issues/379) [#379](https://github.com/darellchua2/opencode-config-template/issues/379) [#383](https://github.com/darellchua2/opencode-config-template/issues/383)
+
+## [7.1.1](https://github.com/darellchua2/opencode-config-template/compare/v7.1.0...v7.1.1) (2026-09-17)
+
+### Bug Fixes
+
+* **skills:** restore autoresearch reference citations required by bats suite ([4673550](https://github.com/darellchua2/opencode-config-template/commit/4673550ab8f9a813e3bcb7c8591424a765428f56))
+* **skills:** restore clean-code imperative gating preamble (bats default-behavior suite) ([ec82b1c](https://github.com/darellchua2/opencode-config-template/commit/ec82b1c141e3d5c40014cd0e0c87b06c67b76554))
+
+### Code Refactoring
+
+* **skills:** add lean-standard bloat check to skills maintainer ([e0a98f9](https://github.com/darellchua2/opencode-config-template/commit/e0a98f9dd6284acfd7eee5eabb766835e24a6998))
+* **skills:** adopt lean standard in opencode-skill-creation-skill ([fd77a84](https://github.com/darellchua2/opencode-config-template/commit/fd77a84f06a50c075e225ee3e42c1e069a3d0b64))
+* **skills:** drop vestigial numeric anchors, fix api-design related labels ([fe13e6c](https://github.com/darellchua2/opencode-config-template/commit/fe13e6c0ed1829b10dbc84d5dfe4e6fd5c69f5e1))
+* **skills:** split docx-creation reference into sibling file ([7ea53d1](https://github.com/darellchua2/opencode-config-template/commit/7ea53d1b7fa8a5c202e34d57b285b75ccad3c81e))
+* **skills:** split office reference material into sibling files ([5ce5d7d](https://github.com/darellchua2/opencode-config-template/commit/5ce5d7d9df8d8262c425834fe1ee0fef762f4590))
+* **skills:** trim ceremony from 20 category-C skills ([7693673](https://github.com/darellchua2/opencode-config-template/commit/7693673eb712a2f105e2e96cbfee712540f084a9))
+* **skills:** trim ceremony from git-semantic-commits-skill ([ef32770](https://github.com/darellchua2/opencode-config-template/commit/ef32770fbc8a269802924de05e47a1d468612e12))
+* **skills:** trim HCL recipes from opentofu-kubernetes-explorer-skill ([76db575](https://github.com/darellchua2/opencode-config-template/commit/76db5759c75df70cf4128099516135f0f1e20208))
+* **skills:** trim textbook content from 10 category-A skills ([30a71d8](https://github.com/darellchua2/opencode-config-template/commit/30a71d857b3b68fefe520a900e52680290ca7c0c))
+* **skills:** trim textbook content from clean-code-skill ([e1d26fc](https://github.com/darellchua2/opencode-config-template/commit/e1d26fc155a852272ca40c9f5e83337289b909cf))
+* **skills:** trim vendor API reference from nextjs-image-usage-skill ([380c28b](https://github.com/darellchua2/opencode-config-template/commit/380c28b10af9dbc1a18b255af983c75b385bdb66))
+* **skills:** trim vendor references from 12 category-B skills ([8a9265f](https://github.com/darellchua2/opencode-config-template/commit/8a9265f604138d4f204292c31165f302f5ad7963))
+
+### Documentation
+
+* **plan:** add PLAN-383.md for [#383](https://github.com/darellchua2/opencode-config-template/issues/383) ([8eadb7f](https://github.com/darellchua2/opencode-config-template/commit/8eadb7f315edde89d01c5516e9bfe08a5d9c0ce0))
+* **plan:** apply requirements review findings to PLAN-383.md ([41bb3a1](https://github.com/darellchua2/opencode-config-template/commit/41bb3a112ded5265dc259969100ec4b4382c3be4))
+* **plan:** gate path deploy/ -> installer/ per [#390](https://github.com/darellchua2/opencode-config-template/issues/390) ([fc20883](https://github.com/darellchua2/opencode-config-template/commit/fc20883fb756173f5f6ccf9159ae7d13317464eb))
+* **plan:** tick Phase 2 trace + acceptance criteria — final validation ([0221c25](https://github.com/darellchua2/opencode-config-template/commit/0221c25090ad8b910fc47b454bcc91cdf78ad1c4))
+* **plan:** trace Phase 1 pilot steps 1.1-1.5 (5 commits) ([75cdd27](https://github.com/darellchua2/opencode-config-template/commit/75cdd276b1806a227e709cb985ee87586255afcc))
+* **plan:** trace Phases 3-4 complete (batches A-E + invariants) ([355d989](https://github.com/darellchua2/opencode-config-template/commit/355d9898d168d758adac733bba8979792b191cd4))
+* **plan:** trace step 1.6 user approval gate ([5ac7577](https://github.com/darellchua2/opencode-config-template/commit/5ac757747ef45ec76fd72b667290a654b2271f66))
+* **plan:** trace step 3.4, note skills/ layout move from [#384](https://github.com/darellchua2/opencode-config-template/issues/384) ([c562af1](https://github.com/darellchua2/opencode-config-template/commit/c562af1054fe8773599f0341df41dbf63bb105b6))
+
+## [7.1.0](https://github.com/darellchua2/opencode-config-template/compare/v7.0.1...v7.1.0) (2026-09-16)
+
+### Features
+
+* **installer:** multi-app install targets — --target opencode|claude ([#377](https://github.com/darellchua2/opencode-config-template/issues/377)) ([#393](https://github.com/darellchua2/opencode-config-template/issues/393)) ([143213e](https://github.com/darellchua2/opencode-config-template/commit/143213e77b171af4a41560e15624493ced2a80f6))
+
+### Documentation
+
+* **migration:** document DCP to v2 checkpoint compaction reasoning ([#385](https://github.com/darellchua2/opencode-config-template/issues/385)) ([#392](https://github.com/darellchua2/opencode-config-template/issues/392)) ([f051539](https://github.com/darellchua2/opencode-config-template/commit/f0515393f2807555166692c536bcba65160f687a))
+
+## [7.0.1](https://github.com/darellchua2/opencode-config-template/compare/v7.0.0...v7.0.1) (2026-09-15)
+
+### Bug Fixes
+
+* **docker:** opencode-owned npm dir + precise goal healthcheck ([#391](https://github.com/darellchua2/opencode-config-template/issues/391)) ([c543217](https://github.com/darellchua2/opencode-config-template/commit/c5432177291cfb4d52f3afd2148a7ca5aeae8742)), closes [#389](https://github.com/darellchua2/opencode-config-template/issues/389)
+
+## [7.0.0](https://github.com/darellchua2/opencode-config-template/compare/v6.1.0...v7.0.0) (2026-09-14)
+
+### ⚠ BREAKING CHANGES
+
+* **installer:** split deploy/ into installer/ + deploy/ (#378) (#390)
+
+### Code Refactoring
+
+* **installer:** split deploy/ into installer/ + deploy/ ([#378](https://github.com/darellchua2/opencode-config-template/issues/378)) ([#390](https://github.com/darellchua2/opencode-config-template/issues/390)) ([56df622](https://github.com/darellchua2/opencode-config-template/commit/56df622c2ed3fd8bbfbafa5706c7a02a086d0ef0)), closes [#281](https://github.com/darellchua2/opencode-config-template/issues/281)
+
+## [6.1.0](https://github.com/darellchua2/opencode-config-template/compare/v6.0.1...v6.1.0) (2026-09-14)
+
+### Features
+
+* **plugins:** re-add goal mode via @prevalentware/opencode-goal-plugin (OpenCode v2) ([#388](https://github.com/darellchua2/opencode-config-template/issues/388)) ([43e3c6c](https://github.com/darellchua2/opencode-config-template/commit/43e3c6cbd386ed9066733e777dea807b36713a9e)), closes [#382](https://github.com/darellchua2/opencode-config-template/issues/382) [#387](https://github.com/darellchua2/opencode-config-template/issues/387) [#382](https://github.com/darellchua2/opencode-config-template/issues/382) [#382](https://github.com/darellchua2/opencode-config-template/issues/382) [#382](https://github.com/darellchua2/opencode-config-template/issues/382)
+
+## [6.0.1](https://github.com/darellchua2/opencode-config-template/compare/v6.0.0...v6.0.1) (2026-09-14)
+
+### Bug Fixes
+
+* **review:** scaffold tree, anchored tarball gate, drop dead dockerignore ([6e5fff0](https://github.com/darellchua2/opencode-config-template/commit/6e5fff0cd20779ee76c742d90812e85c050af71f))
+* **tests:** restore pinned bats-core submodule pointer ([9ac1901](https://github.com/darellchua2/opencode-config-template/commit/9ac19010b0f97a0d3ec8fd8d317bba2eb5df73e1))
+
+### Code Refactoring
+
+* **deploy:** implement Phase 2 — rewire code paths to root content ([7a0130c](https://github.com/darellchua2/opencode-config-template/commit/7a0130ceaa1bbfa07e2a54cc9cfaadbe588e6f69))
+* **deploy:** implement Phase 3 — rewire setup scripts to root content ([33883d5](https://github.com/darellchua2/opencode-config-template/commit/33883d52385ef63dc9bd687268e33773d9c9a0fc))
+* **repo:** implement Phase 1 — move content to root + bridge ([54a65bf](https://github.com/darellchua2/opencode-config-template/commit/54a65bf30d5f24330b31c3b4aceb1d0b82823ec7))
+
+### Documentation
+
+* **content:** implement Phase 6 — self-references on new layout ([c733638](https://github.com/darellchua2/opencode-config-template/commit/c73363828168bc6b0332a54fded68c17240d7c91))
+* **learnings:** capture path-move CI-gate anchoring + vibeguard search-path pattern ([8689972](https://github.com/darellchua2/opencode-config-template/commit/8689972e77e4a2158c402a851cc074962cc9f9af)), closes [#381](https://github.com/darellchua2/opencode-config-template/issues/381)
+* **plan:** add PLAN-381.md for [#381](https://github.com/darellchua2/opencode-config-template/issues/381) ([4a5f9f2](https://github.com/darellchua2/opencode-config-template/commit/4a5f9f29e13147a68ccb5402ea2ed22c92707940))
+* **plan:** apply review findings to PLAN-381 ([d1a8458](https://github.com/darellchua2/opencode-config-template/commit/d1a8458e14a79da0fbc99fe965368a8b953280b0))
+* **repo:** implement Phase 7 — docs on new layout, all final gates green ([52caa8c](https://github.com/darellchua2/opencode-config-template/commit/52caa8c21712d0a0e1a4d9dd8108b7d4cbaf75c6))
+
+## [6.0.0](https://github.com/darellchua2/opencode-config-template/compare/v5.18.2...v6.0.0) (2026-09-14)
+
+### ⚠ BREAKING CHANGES
+
+* **packs:** drop voice pack — plugin has no v2 implementation
+
+### Features
+
+* **packs:** drop voice pack — plugin has no v2 implementation ([4d0ed8d](https://github.com/darellchua2/opencode-config-template/commit/4d0ed8dfe525dcefa1ebfddab44e1e08be6ee01a))
+
+## [5.18.2](https://github.com/darellchua2/opencode-config-template/compare/v5.18.1...v5.18.2) (2026-09-14)
+
+### Bug Fixes
+
+* **docling:** default transport to stdio and survive PEP 668 pip ([021c37a](https://github.com/darellchua2/opencode-config-template/commit/021c37a79bd2b58d0e2231a195056aff985489a1))
+
+## [5.18.1](https://github.com/darellchua2/opencode-config-template/compare/v5.18.0...v5.18.1) (2026-09-14)
+
+### Bug Fixes
+
+* **repo-setup:** write full MCP entries, not disabled-only stubs ([234e813](https://github.com/darellchua2/opencode-config-template/commit/234e813152e6211d519297cea6b9a23ba8b2eb60))
+
+### Documentation
+
+* **migration:** record v2 MCP stub-replacement and cli.json TUI-plugin traps ([e4240bc](https://github.com/darellchua2/opencode-config-template/commit/e4240bccd71431e64a97a0a7474d29570d294f9b))
+
+## [5.18.0](https://github.com/darellchua2/opencode-config-template/compare/v5.17.0...v5.18.0) (2026-09-14)
+
+### Features
+
+* **plugins:** port local plugins to v2 API, prune v1-only npm pins ([e918ece](https://github.com/darellchua2/opencode-config-template/commit/e918ece40b28568542e78005e0a9a63aafa7d27d))
+* **skills:** add opencode-v2-migration skill + subagent (149th skill, 34th agent) ([33fc115](https://github.com/darellchua2/opencode-config-template/commit/33fc115fd64a94819070a86c60f4c5a56e0079db))
+
+### Bug Fixes
+
+* **deploy:** write global config to opencode.json, not config.json ([a21504e](https://github.com/darellchua2/opencode-config-template/commit/a21504e9dfae6d036e243848eecd54bf721058cf))
+* **docker:** healthcheck against V2 /api/health endpoint ([d5aa298](https://github.com/darellchua2/opencode-config-template/commit/d5aa298c9f45edb98d851ed3f66f7b93f27c24ff))
+* **skills,deploy:** finish plugin-drop reference cleanup; harden markitdown install check ([158e316](https://github.com/darellchua2/opencode-config-template/commit/158e3164366783a21ad85fda7559ef5c1f746838))
+* **skills:** repoint plugin-dependent references after v2 plugin cleanup ([a385f0d](https://github.com/darellchua2/opencode-config-template/commit/a385f0d68b7daa76deb3c0b748918f28991919f5))
+
+### Documentation
+
+* mark V1-plugin features inert on OpenCode v2, fix v2 doc links ([a875e7c](https://github.com/darellchua2/opencode-config-template/commit/a875e7cde0a6278dfbab043a227b954d45bb6842))
+
+## [5.17.0](https://github.com/darellchua2/opencode-config-template/compare/v5.16.0...v5.17.0) (2026-09-13)
+
+### Features
+
+* **config:** convert opencode.json to native v2 shape (Phase 1) ([6f8a407](https://github.com/darellchua2/opencode-config-template/commit/6f8a407031e8e47cd62cf7a74f1e59bc0dfdcb00))
+* **deploy:** implement Phase 2 — v2 deploy tooling (steps 2.1-2.5) ([4810d22](https://github.com/darellchua2/opencode-config-template/commit/4810d22f25b998a4fe59c95f4aee937d281a1e4c))
+* **deploy:** implement Phase 2 remainder — init.mjs + Dockerfile patch (steps 2.6-2.7) ([6261fbc](https://github.com/darellchua2/opencode-config-template/commit/6261fbccfe58a275099c20eacb60fbd3396d0fca))
+* **skills:** add email-drafter-skill (Communication) ([a27482b](https://github.com/darellchua2/opencode-config-template/commit/a27482bcd0ff0f261721d3bc343aa6f69538d3ba))
+
+### Bug Fixes
+
+* **deploy:** address code-review findings — permit seed, docs sweep, counts ([72d5c9c](https://github.com/darellchua2/opencode-config-template/commit/72d5c9ca3c7fee3b0f4a689b6718682c55c4dfc4))
+* **deploy:** review iter-2 residuals — v2 doc sweep + permit tests ([3031d27](https://github.com/darellchua2/opencode-config-template/commit/3031d2728f0ab676607ffe616c9f76cebd0f87ce))
+
+### Documentation
+
+* **deploy:** implement Phase 4 — v2 doc surfaces + registry rebuild (steps 4.1-4.4) ([0bf42fd](https://github.com/darellchua2/opencode-config-template/commit/0bf42fd4d52c7f0a5e6cd14479c77a4a8b6eeb6d))
+* **plan:** add PLAN-374.md for [#374](https://github.com/darellchua2/opencode-config-template/issues/374) ([b478dcf](https://github.com/darellchua2/opencode-config-template/commit/b478dcfa02b40ace34c026c24433c126118e3a25))
+* **plan:** fold review findings into PLAN-374 (init.mjs, Docker, packs, cli.json) ([781660c](https://github.com/darellchua2/opencode-config-template/commit/781660c252de54123149948290e6a0beb87fff60))
+* **plan:** LEARNINGS bump in 4.4, client-config flag wording in 2.3 ([6f3ba20](https://github.com/darellchua2/opencode-config-template/commit/6f3ba20fbb8619dbcacb7cf4b4473531ebab579a))
+* **plan:** tick all acceptance criteria — PLAN-374 complete ([31ebf2b](https://github.com/darellchua2/opencode-config-template/commit/31ebf2be0a433d5961b36a76f7755734e0891b72))
+
 ## [5.16.0](https://github.com/darellchua2/opencode-config-template/compare/v5.15.0...v5.16.0) (2026-09-09)
 
 ### Features

@@ -8,12 +8,41 @@ AUTH_DIR="/home/opencode/.local/share/opencode"
 AUTH_FILE="${AUTH_DIR}/auth.json"
 mkdir -p "${AUTH_DIR}"
 
-# Ensure cache dir exists and is writable (defensive against volume mounts)
+# ── Server auth (v2) ─────────────────────────────────────────────────────────
+# OpenCode v2 requires HTTP auth on EVERY route (healthchecks included) and
+# auto-generates an unguessable password when none is set — one that in-container
+# healthchecks could never learn. Materialize the effective password here: use
+# OPENCODE_SERVER_PASSWORD from the environment if provided, otherwise generate
+# one. The file lets healthchecks authenticate (docker healthcheck processes do
+# not inherit this PID1's exports).
+SERVER_PASSWORD_FILE="${AUTH_DIR}/server-password"
+if [ -n "${OPENCODE_SERVER_PASSWORD}" ]; then
+    printf '%s' "${OPENCODE_SERVER_PASSWORD}" > "${SERVER_PASSWORD_FILE}"
+    chmod 600 "${SERVER_PASSWORD_FILE}"
+    echo "Server auth: using OPENCODE_SERVER_PASSWORD from environment"
+else
+    GENERATED_PW="$(head -c 24 /dev/urandom | base64 | tr -d '=+/')"
+    export OPENCODE_SERVER_PASSWORD="${GENERATED_PW}"
+    printf '%s' "${GENERATED_PW}" > "${SERVER_PASSWORD_FILE}"
+    chmod 600 "${SERVER_PASSWORD_FILE}"
+    echo "Server auth: generated password (also at ${SERVER_PASSWORD_FILE}): ${GENERATED_PW}"
+fi
+
+# Ensure cache dir exists and is writable (defensive against volume mounts).
+# Root-owned volumes here are the #1 plugin-install killer: opencode's npm
+# installer dies with EACCES on ~/.npm/_cacache and npm-array plugins are then
+# SILENTLY skipped (observed: goal plugin absent with only a WARN in
+# ~/.local/share/opencode/log/opencode.log). Entrypoint runs unprivileged and
+# cannot chown — repair is `docker exec -u root <c> chown -R opencode:opencode
+# /home/opencode/.npm` (one-time; the Dockerfile pre-creates the dirs so FRESH
+# volumes initialize correctly).
 CACHE_DIR="/home/opencode/.cache"
 mkdir -p "${CACHE_DIR}"
-if [ -d "${CACHE_DIR}" ] && [ "$(stat -c '%U' "${CACHE_DIR}" 2>/dev/null)" = "root" ]; then
-    echo "WARNING: ${CACHE_DIR} is owned by root; this may break opencode cache writes"
-fi
+for OWNED_DIR in "${CACHE_DIR}" "${HOME}/.npm"; do
+    if [ -d "${OWNED_DIR}" ] && [ "$(stat -c '%U' "${OWNED_DIR}" 2>/dev/null)" = "root" ]; then
+        echo "WARNING: ${OWNED_DIR} is owned by root; npm/plugin installs will fail (EACCES) until chowned to opencode" >&2
+    fi
+done
 
 python3 << PYEOF
 import json, os
@@ -93,8 +122,34 @@ export PONYTAIL_AGENT_MODE_MAP="${PONYTAIL_AGENT_MODE_MAP:-}"
 echo "Ponytail: mode=${PONYTAIL_DEFAULT_MODE} off-set=$([ -n \"${PONYTAIL_SUBAGENT_OFF}\" ] && echo 'custom' || echo 'default')"
 
 # ── Workspace ───────────────────────────────────────────────────────────────
-mkdir -p /workspace
+# Tolerate absence of the /workspace bind mount (bare docker run): compose
+# always mounts it; without the mount, root owns / and mkdir would fail.
+mkdir -p /workspace 2>/dev/null || true
 mkdir -p /workspace-extra 2>/dev/null || true
+
+# ── Goal plugin presence assertion (#387) ────────────────────────────────────
+# The v2 `plugins` key being silently ignored was the exact failure mode that
+# kept /goal out of this endpoint (LEARNINGS: docker-v1-binary-ignores-v2-
+# plugins-key). Poll /api/command until the goal commands appear — NOT merely
+# until the server answers: /api/command serves 200 before the plugin's async
+# npm fetch+register completes, so a first-success poll races and false-alarms.
+# Greppable verdict keeps inertness loud; non-fatal so a deliberate plugin
+# removal does not brick the endpoint (the compose healthcheck owns the
+# ongoing assertion).
+(
+    PW="$(cat "${SERVER_PASSWORD_FILE}" 2>/dev/null)"
+    BODY=""
+    for _ in $(seq 1 60); do
+        sleep 2
+        BODY="$(curl -sf -u "opencode:${PW}" "http://localhost:${PORT}/api/command" 2>/dev/null)" || true
+        echo "${BODY}" | grep -q '"goal' && break
+    done
+    if echo "${BODY}" | grep -q '"goal'; then
+        echo "GOAL-PLUGIN: OK — goal commands registered (@prevalentware/opencode-goal-plugin active)"
+    else
+        echo "GOAL-PLUGIN: ABSENT — no goal commands in /api/command after 120s; the plugins key is inert (check binary version, opencode_app/opencode.json, and ~/.npm ownership — see log/opencode.log)" >&2
+    fi
+) &
 
 echo "Starting OpenCode server on ${HOST}:${PORT}..."
 exec opencode serve --port "${PORT}" --hostname "${HOST}"

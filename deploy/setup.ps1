@@ -66,8 +66,9 @@ param(
     # (autodesk,markitdown,nextjs,docling,chrome-devtools). Empty = no-op.
     [string]$EnablePack = "",
     # Skill profile (GIT-333): deploy-time primary visibility. lean (default)
-    # rewrites the DEPLOYED config's permission.skill to 45 visible skills;
-    # full deploys the shipped 104-allow allowlist verbatim.
+    # rewrites the DEPLOYED config's skill permissions (permissions array) to
+    # 46 visible skills;
+    # full deploys the shipped 107-allow allowlist verbatim.
     [ValidateSet("lean", "full")]
     [string]$SkillProfile = "lean"
 )
@@ -93,13 +94,15 @@ if (Test-Path $VersionFile) {
 }
 
 $ConfigDir = Join-Path $HOME ".config\opencode"
-$ConfigFile = Join-Path $ConfigDir "config.json"
+# OpenCode v2 only discovers opencode.json / opencode.jsonc — never config.json.
+$ConfigFile = Join-Path $ConfigDir "opencode.json"
+$LegacyConfigFile = Join-Path $ConfigDir "config.json"
 $SkillsDir = Join-Path $ConfigDir "skills"
-$AgentsSrcDir = Join-Path $RepoDir "opencode_app\.opencode\agents"
+$AgentsSrcDir = Join-Path $RepoDir "agents"
 $AgentsDestDir = Join-Path $ConfigDir "agents"
 # Repo-owned plugins (auto-loaded by opencode from this dir). Mirrors the
 # agents/skills deploy pattern. Currently: opencode-skill-counter-sync.
-$PluginsSrcDir = Join-Path $RepoDir "opencode_app\.opencode\plugins"
+$PluginsSrcDir = Join-Path $RepoDir "plugins"
 $PluginsDestDir = Join-Path $ConfigDir "plugins"
 $BackupDir = Join-Path $HOME ".opencode-backup-$(Get-Date -Format 'yyyyMMdd_HHmmss')"
 $LogFile = Join-Path $HOME ".opencode-setup.log"
@@ -108,15 +111,16 @@ $UpdateLog = Join-Path $ConfigDir "update.log"
 
 # v2.0 model resolution (tier-based, provider-agnostic)
 $DeployDir = Join-Path $RepoDir "deploy"
-$ResolverScript = Join-Path $DeployDir "resolve-models.mjs"
+$InstallDir = Join-Path $RepoDir "installer"
+$ResolverScript = Join-Path $InstallDir "resolve-models.mjs"
 $MergePacksScript = Join-Path $DeployDir "merge-packs.mjs"
 $PacksDir = Join-Path $DeployDir "packs"
 $ApplySkillProfileScript = Join-Path $DeployDir "apply-skill-profile.mjs"
 $SkillProfilesFile = Join-Path $DeployDir "skill-profiles.json"
 $TuiScript = Join-Path $DeployDir "tui.mjs"
-$AgentTiers = Join-Path $DeployDir "agent-tiers.json"
-$ModelsDefaultMap = Join-Path $DeployDir "models.default.json"
-$ProviderPresets = Join-Path $DeployDir "provider-presets.json"
+$AgentTiers = Join-Path $InstallDir "agent-tiers.json"
+$ModelsDefaultMap = Join-Path $InstallDir "models.default.json"
+$ProviderPresets = Join-Path $InstallDir "provider-presets.json"
 # Global user overrides (~/.config/opencode/)
 $UserModelsMap = Join-Path $ConfigDir "models.json"
 $UserOverrides = Join-Path $ConfigDir "agent-overrides.json"
@@ -577,10 +581,13 @@ function Restore-FromDir {
         New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null
     }
 
-    # config.json
-    if (Test-Path (Join-Path $SrcDir "config.json")) {
+    # opencode.json (pre-v2.1 backups stored it as config.json)
+    if (Test-Path (Join-Path $SrcDir "opencode.json")) {
+        Copy-Item (Join-Path $SrcDir "opencode.json") $ConfigFile -Force
+        Write-LogInfo "Restored: opencode.json"
+    } elseif (Test-Path (Join-Path $SrcDir "config.json")) {
         Copy-Item (Join-Path $SrcDir "config.json") $ConfigFile -Force
-        Write-LogInfo "Restored: config.json"
+        Write-LogInfo "Restored: opencode.json (from legacy config.json backup)"
     }
 
     # AGENTS.md
@@ -614,7 +621,7 @@ function Restore-FromDir {
 
     # Other top-level *.json / *.md files
     Get-ChildItem $SrcDir -File -ErrorAction SilentlyContinue | Where-Object {
-        $_.Name -notin @("config.json", "AGENTS.md") -and ($_.Extension -in ".json", ".md")
+        $_.Name -notin @("config.json", "opencode.json", "AGENTS.md") -and ($_.Extension -in ".json", ".md")
     } | ForEach-Object {
         Copy-Item $_.FullName (Join-Path $ConfigDir $_.Name) -Force
         Write-LogInfo "Restored: $($_.Name)"
@@ -634,7 +641,7 @@ function New-PreRollbackBackup {
     }
 
     if (Test-Path $ConfigFile) {
-        Copy-Item $ConfigFile (Join-Path $preDir "config.json") -Force
+        Copy-Item $ConfigFile (Join-Path $preDir "opencode.json") -Force
     }
     $agentsMd = Join-Path $ConfigDir "AGENTS.md"
     if (Test-Path $agentsMd) {
@@ -841,12 +848,12 @@ USAGE:
                            2. Z.AI API key setup
                            3. Node.js check/install
                            4. opencode-ai installation
-                           5. config.json deployment
+                           5. opencode.json deployment
                            6. skills/ deployment
                            7. Environment variable persistence
 
   -Quick                  Copy config files only                Already have
-                           1. config.json -> ~/.config/opencode/  dependencies
+                           1. opencode.json -> ~/.config/opencode/  dependencies
                            2. AGENTS.md -> ~/.config/opencode/
                            3. skills/* -> ~/.config/opencode/skills/
 
@@ -923,16 +930,14 @@ USAGE:
                          autodesk, markitdown, nextjs, docling, chrome-devtools
                          (comma-separated). No-op if omitted; default OFF.
                          Example: -EnablePack autodesk,markitdown
-                         Plugin pack: voice — tui.json plugin for local
-                         speech-to-text (whisper.cpp; prereq install is
-                         macOS/Linux only, skipped with a warning on Windows)
 
    SKILL PROFILE (deploy-time primary visibility):
      -SkillProfile <p>    lean (default) | full. lean rewrites the DEPLOYED
-                          config's permission.skill to 45 primary-visible skills
+                          config's skill permissions (permissions array) to 46
+                          primary-visible skills
                           + "*": "deny" (subagents unaffected — they self-scope
                           via frontmatter allows); full deploys the shipped
-                          104-allow allowlist verbatim.
+                          107-allow allowlist verbatim.
 
  ======================================================================
                      COMMON COMBINATION EXAMPLES
@@ -955,7 +960,7 @@ USAGE:
                          CONFIGURED FEATURES
 =======================================================================
 
-    AGENTS ($(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents'))):
+    AGENTS ($(Get-AgentCount (Join-Path $RepoDir 'agents'))):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
     explore              Fast codebase exploration and analysis
@@ -992,9 +997,9 @@ USAGE:
     Usage: opencode --agent build 'implement auth feature'
             opencode --agent explore 'find all API routes'
  
-            SKILLS ($(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills'))):
+            SKILLS ($(Get-SkillCount (Join-Path $RepoDir 'skills'))):
 
-$(Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills'))
+$(Get-SkillCategories (Join-Path $RepoDir 'skills'))
 
     Run 'opencode --list-skills' for detailed descriptions
     Run 'opencode --skill <name> \"prompt\"' to invoke a skill
@@ -1700,12 +1705,23 @@ function Set-Configuration {
         Write-LogWarn ".AGENTS.md not found in $ScriptDir"
     }
 
+    # Migrate legacy deploy: setup.ps1 used to deploy the config as config.json,
+    # which OpenCode v2 never reads (it only discovers opencode.json(c)). Adopt
+    # the legacy file as the live config; if both exist, park the stale copy.
+    if ((-not (Test-Path $ConfigFile)) -and (Test-Path $LegacyConfigFile)) {
+        Move-Item $LegacyConfigFile $ConfigFile -Force
+        Write-LogInfo "Migrated legacy config.json -> opencode.json (OpenCode v2 only reads opencode.json|opencode.jsonc)"
+    } elseif ((Test-Path $ConfigFile) -and (Test-Path $LegacyConfigFile)) {
+        Move-Item $LegacyConfigFile "$LegacyConfigFile.legacy-ignored" -Force
+        Write-LogWarn "Stale legacy config.json renamed to config.json.legacy-ignored (ignored by OpenCode v2)"
+    }
+
     if (Test-Path $ConfigFile) {
         Write-Host ""
-        Write-LogWarn "config.json already exists at $ConfigFile"
+        Write-LogWarn "opencode.json already exists at $ConfigFile"
 
         if (-not (Read-YesNo "Do you want to overwrite it?" $false)) {
-            Write-LogInfo "Skipping config.json copy. Existing configuration preserved."
+            Write-LogInfo "Skipping config copy. Existing configuration preserved."
             $script:SkipConfigCopy = $true
             Deploy-Skills
             return
@@ -1713,9 +1729,9 @@ function Set-Configuration {
 
         New-FileBackup $ConfigFile
     } else {
-        $msg = "Copy config.json to $($ConfigDir)?"
+        $msg = "Copy opencode.json to $($ConfigDir)?"
         if (-not (Read-YesNo $msg $true)) {
-            Write-LogInfo "Skipping config.json copy"
+            Write-LogInfo "Skipping config copy"
             $script:SkipConfigCopy = $true
             Deploy-Skills
             return
@@ -1723,7 +1739,7 @@ function Set-Configuration {
     }
 
     if (-not $script:SkipConfigCopy) {
-        # Copy config.json from the single source of truth (opencode_app/opencode.json).
+        # Copy the config from the single source of truth (opencode_app/opencode.json).
         # Historically this copied deploy/config.json, but maintaining a duplicate
         # caused drift (see PLAN-BT-74 Phase 12.2). The resolver (run later in
         # Deploy-Agents) patches this file in-place for explore/general models (and
@@ -1732,10 +1748,10 @@ function Set-Configuration {
         $configSrc = $SourceConfig
         if (Test-Path $configSrc) {
             if (-not $DryRun) { Copy-Item $configSrc $ConfigFile -Force }
-            Write-LogSuccess "config.json copied successfully (from $SourceConfig)"
+            Write-LogSuccess "opencode.json copied successfully (from $SourceConfig)"
 
             # Deploy vibeguard secret-masking config (PLAN-GIT-315).
-            $vgSrc = Join-Path $RepoDir "opencode_app\.opencode\vibeguard.config.json"
+            $vgSrc = Join-Path $RepoDir "plugins/vibeguard.config.json"
             if (Test-Path $vgSrc) {
                 $vgDest = Join-Path $ConfigDir "vibeguard.config.json"
                 if (-not $DryRun) { Copy-Item $vgSrc $vgDest -Force }
@@ -1751,7 +1767,7 @@ function Set-Configuration {
             Install-Docling
 
             Write-Host ""
-             Write-Host "Configured $(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents')) agents:" -ForegroundColor Green
+             Write-Host "Configured $(Get-AgentCount (Join-Path $RepoDir 'agents')) agents:" -ForegroundColor Green
             Write-Host "    - build (default) - Full-featured coding agent"
             Write-Host "    - plan - Planning agent (read-only)"
             Write-Host "    - explore - Codebase exploration and analysis"
@@ -1767,7 +1783,7 @@ function Set-Configuration {
             }
             Write-Host ""
         } else {
-            Write-LogError "config.json source not found: $SourceConfig"
+            Write-LogError "opencode.json source not found: $SourceConfig"
         }
     }
 
@@ -1778,58 +1794,15 @@ function Deploy-Skills {
     Write-Host ""
     Write-LogInfo "Setting up skills directory..."
 
-    $skillsSrc = Join-Path $RepoDir "opencode_app\.opencode\skills"
-
+    # Skills deploy moved to the single install path (#379): Deploy-Content
+    # (invoked from Deploy-Agents, after migration) installs skills + agents
+    # via the installer CLI — manifest-tracked. Only the directory is ensured.
     if (-not $DryRun) {
         if (-not (Test-Path $SkillsDir)) {
             New-Item -ItemType Directory -Path $SkillsDir -Force | Out-Null
         }
     }
     Write-LogInfo "Skills directory: $SkillsDir"
-
-    if (Test-Path $skillsSrc) {
-        $existingSkills = @(Get-ChildItem $SkillsDir -ErrorAction SilentlyContinue)
-        if ($existingSkills.Count -gt 0) {
-            Write-LogWarn "Skills directory already contains files"
-
-            if (Read-YesNo "Do you want to overwrite existing skills?" $false) {
-                $skillsBackup = Join-Path $BackupDir "skills-backup"
-                if (-not $DryRun) {
-                    if (-not (Test-Path $BackupDir)) {
-                        New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
-                    }
-                    Copy-Item $SkillsDir $skillsBackup -Recurse -Force
-                    Write-LogInfo "Backed up existing skills to $skillsBackup"
-                }
-            } else {
-                Write-LogInfo "Skipping skills deployment. Existing skills preserved."
-                return
-            }
-        }
-
-        if (-not $DryRun) {
-            # Copy all skills except _archived
-            Get-ChildItem -Path $skillsSrc -Directory | Where-Object { $_.Name -ne "_archived" } | ForEach-Object {
-                Copy-Item $_.FullName $SkillsDir -Recurse -Force
-            }
-            Get-ChildItem -Path $skillsSrc -File | ForEach-Object {
-                Copy-Item $_.FullName $SkillsDir -Force
-            }
-        }
-         Write-LogSuccess "Skills copied successfully to $SkillsDir"
-         
-        $skillCount = Get-SkillCount $SkillsDir
-        Write-Host ""
-        Write-Host "Deployed $skillCount skills to $SkillsDir" -ForegroundColor Green
-        Write-Host ""
-         Write-Host "  Skill Categories:" -ForegroundColor Cyan
-        Get-SkillCategories $SkillsDir
-        Write-Host ""
-        Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
-        Write-Host ""
-    } else {
-        Write-LogWarn "skills/ folder not found in $skillsSrc"
-    }
 
     Deploy-Agents
     Deploy-Plugins
@@ -1841,16 +1814,17 @@ function Deploy-Skills {
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Run the model resolver: injects concrete models into deployed agent .md files
-# and patches config.json (explore + general always; primary only if a
+# and patches opencode.json (explore + general always; primary only if a
 # provider/mix chosen — local deploys omit a baked-in primary). Sets $LASTEXITCODE.
 function Invoke-Resolver {
+    param([switch]$ConfigOnly)
     if (-not (Test-Path $ResolverScript)) {
         Write-LogError "Resolver not found: $ResolverScript"
         return
     }
+    # #379 single install path: -ConfigOnly omits the agents args — the
+    # installer CLI (Deploy-Content) owns agent-file writing.
     $resolverArgs = @(
-        "--agents-src", $AgentsSrcDir,
-        "--agents-dest", $AgentsDestDir,
         "--tiers", $AgentTiers,
         "--default-map", $ModelsDefaultMap,
         "--user-map", $UserModelsMap,
@@ -1859,13 +1833,16 @@ function Invoke-Resolver {
         "--config-dest", $ConfigFile,
         "--state", $ResolvedSidecar
     )
+    if (-not $ConfigOnly) {
+        $resolverArgs = @("--agents-src", $AgentsSrcDir, "--agents-dest", $AgentsDestDir) + $resolverArgs
+    }
     if (Test-Path $ProjectModelsMap) { $resolverArgs += @("--project-map", $ProjectModelsMap) }
     if (Test-Path $ProjectOverrides) { $resolverArgs += @("--project-overrides", $ProjectOverrides) }
     if ($Force) { $resolverArgs += "--force" }
     if ($Provider) { $resolverArgs += @("--provider", $Provider, "--presets", $ProviderPresets) }
     # Deploy-time exposed-model guard (#281): fail-fast if a tier/source pin
     # references a model its provider doesn't serve. Guarded by file presence.
-    $ProviderModelsFile = Join-Path $DeployDir "provider-models.json"
+    $ProviderModelsFile = Join-Path $InstallDir "provider-models.json"
     if (Test-Path $ProviderModelsFile) { $resolverArgs += @("--provider-models", $ProviderModelsFile) }
     if ($DryRun) { $resolverArgs += "--dry-run" }
     & node $ResolverScript @resolverArgs
@@ -1887,10 +1864,8 @@ function Invoke-PackMerger {
     }
 
     $targetConfig = $ConfigFile
-    $targetTui = Join-Path $ConfigDir "tui.json"
     if ($DryRun) {
         $targetConfig = Join-Path $DryRunPreviewDir "opencode.json"
-        $targetTui = Join-Path $DryRunPreviewDir "tui.json"
         if (-not (Test-Path $targetConfig)) {
             Write-LogError "Dry-run preview config not found: $targetConfig"
             Write-LogError "The resolver must run first to stage the preview. Aborting pack merge."
@@ -1898,15 +1873,8 @@ function Invoke-PackMerger {
         }
     }
 
-    # Voice pack (issue #356) prereqs (whisper.cpp, sox) are macOS/Linux only —
-    # the plugin documents no Windows build. The tui.json plugin entry still
-    # merges (harmless); warn that STT prereqs need manual setup on Windows.
-    if ($EnablePack -match '(^|,)voice(,|$)') {
-        Write-LogWarn "Voice pack: whisper.cpp/sox prereq install is macOS/Linux only — set them up manually on Windows (see README, Voice plugin pack)."
-    }
-
     Write-LogInfo "Applying provider packs: $EnablePack"
-    & node $MergePacksScript --config $targetConfig --tui-config $targetTui --packs-dir $PacksDir --packs $EnablePack
+    & node $MergePacksScript --config $targetConfig --packs-dir $PacksDir --packs $EnablePack
     $mergeRc = $LASTEXITCODE
     if ($mergeRc -ne 0) {
         Write-LogError "Provider-pack merge failed (exit $mergeRc)"
@@ -1926,9 +1894,10 @@ function Invoke-PackMerger {
     $global:LASTEXITCODE = 0
 }
 
-# Apply the skill profile (GIT-333): rewrites ONLY the permission.skill block
-# of the DEPLOYED config (never the source opencode_app/opencode.json).
-# lean (default) -> 45 primary-visible skills + "*": "deny"; full -> verified
+# Apply the skill profile (GIT-333): rewrites ONLY the skill rules
+# (action:"skill") inside the permissions array of the DEPLOYED config
+# (never the source opencode_app/opencode.json).
+# lean (default) -> 44 primary-visible skills + "*": "deny"; full -> verified
 # no-op. Mirrors Invoke-PackMerger's dry-run contract (B1).
 function Invoke-SkillProfile {
     if (-not (Test-Path $ApplySkillProfileScript)) {
@@ -2063,7 +2032,7 @@ function Invoke-Migration {
         if ((Test-Path $AgentsDestDir) -and @(Get-ChildItem $AgentsDestDir -Filter "*.md" -ErrorAction SilentlyContinue).Count -gt 0) {
             Write-LogInfo "[DRY-RUN] Would back up agents -> $BackupDir/agents-backup"
         }
-        if (Test-Path $ConfigFile) { Write-LogInfo "[DRY-RUN] Would back up config.json" }
+        if (Test-Path $ConfigFile) { Write-LogInfo "[DRY-RUN] Would back up opencode.json" }
     } else {
         if ((Test-Path $AgentsDestDir) -and @(Get-ChildItem $AgentsDestDir -Filter "*.md" -ErrorAction SilentlyContinue).Count -gt 0) {
             if (-not (Test-Path $BackupDir)) { New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null }
@@ -2100,14 +2069,19 @@ function Invoke-Migration {
 function Install-LocalMcpLaunchers {
     $launcherDir = Join-Path $AppDir "mcp-servers\markitdown-local-mcp"
 
-    # Idempotency: skip the network round-trip when already installed
-    # (mirrors setup.sh install_local_mcp_launchers). Single python probe —
+    # Idempotency: skip the network round-trip when already installed AND
+    # importable — `pip show` alone hides broken installs (missing mcp SDK
+    # dep), which surfaces later as "MCP error -32000: Connection closed".
+    # (Mirrors setup.sh install_local_mcp_launchers.) Single python probe —
     # reused for the install below.
     $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
     if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
     if ($pythonCmd) {
         & $pythonCmd.Name -m pip show markitdown-local-mcp *> $null
-        if ($LASTEXITCODE -eq 0) {
+        $pipOk = $LASTEXITCODE -eq 0
+        & $pythonCmd.Name -c "from markitdown_local_mcp.__main__ import main" *> $null
+        $importOk = $LASTEXITCODE -eq 0
+        if ($pipOk -and $importOk) {
             Write-LogSuccess "markitdown-local-mcp already installed - skipping pip install"
             $global:LASTEXITCODE = 0
             return
@@ -2179,13 +2153,20 @@ function Install-Docling {
     }
     $python = if ($pythonCmd.Name -eq 'python') { 'python' } else { 'python3' }
 
+    # PEP 668 (externally-managed-environment, Debian 12+/Ubuntu 23.04+) blocks
+    # plain `pip install --user` - retry once with --break-system-packages
+    # (--user keeps the install isolated to ~/.local).
     Write-LogInfo "$python -m pip install --user docling-mcp[local]"
-    & $python -m pip install --user --no-warn-script-location "docling-mcp[local]" 2>&1 | Out-Null
+    $pipOut = & $python -m pip install --user --no-warn-script-location "docling-mcp[local]" 2>&1
+    if ($LASTEXITCODE -ne 0 -and (($pipOut | Out-String) -match 'externally-managed-environment')) {
+        Write-LogInfo "PEP 668 externally-managed environment detected - retrying with --break-system-packages"
+        & $python -m pip install --user --break-system-packages --no-warn-script-location "docling-mcp[local]" 2>&1 | Out-Null
+    }
     if ($LASTEXITCODE -eq 0) {
         Write-LogSuccess "docling-mcp installed"
         Write-LogInfo "NOTE: first 'docling convert' will download ~hundreds of MB of models from huggingface.co (cached thereafter)."
     } else {
-        Write-LogWarn "pip install failed for docling-mcp (offline or OOM?). The pack is opt-in - OpenCode will work without it. Re-run setup when online to enable."
+        Write-LogWarn "pip install failed for docling-mcp (offline, OOM, or PEP 668?). The pack is opt-in - OpenCode will work without it. Re-run setup when online to enable."
     }
 }
 
@@ -2193,17 +2174,17 @@ function Install-Docling {
 # PLUGIN DEPLOYMENT
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Copy repo-owned plugins (opencode_app/.opencode/plugins/*) into the global
+# Copy repo-owned plugins (plugins/*) into the global
 # plugins dir so opencode auto-loads them. Mirrors the skills deploy pattern.
-# These are NOT npm packages (those live in opencode.json plugin[]); they are
+# These are NOT npm packages (those live in opencode.json plugins[]); they are
 # local TS plugins auto-discovered from ~/.config/opencode/plugins/.
 
 # Install the opencode-init wrapper shim (project-scoped selective installer CLI).
 # Writes a opencode-init.cmd wrapper into the user bin dir that invokes node on
-# <repo>\deploy\init.mjs. Avoids mklink (needs Developer Mode/admin). Idempotent.
+# <repo>\installer\init.mjs. Avoids mklink (needs Developer Mode/admin). Idempotent.
 # Additive — does not change any other setup.ps1 behavior.
 function Setup-OpencodeInitShim {
-    $initSrc = Join-Path $RepoDir "deploy\init.mjs"
+    $initSrc = Join-Path $RepoDir "installer\init.mjs"
     if (-not (Test-Path $initSrc)) {
         Write-LogWarn "opencode-init source not found at $initSrc; skipping shim"
         return
@@ -2262,6 +2243,41 @@ function Deploy-Plugins {
 # ─────────────────────────────────────────────────────────────────────────────
 # AGENT DEPLOYMENT (v2.0 — resolver-driven)
 # ─────────────────────────────────────────────────────────────────────────────
+# Single install path (#379): all content installs flow through the installer
+# CLI so every deploy is manifest-tracked. Snapshots existing content first.
+function Deploy-Content {
+    Write-Host ""
+    Write-LogInfo "Deploying content via installer CLI (manifest-tracked)..."
+
+    if (-not (Test-CommandExists "node")) {
+        Write-LogError "Node.js is required by the installer CLI."
+        $global:LASTEXITCODE = 1
+        return
+    }
+
+    # Pre-overwrite snapshot (ARCH-4): preserve user edits before force-copy.
+    # Unconditional — $BackupDir may not exist yet on -Yes redeploy.
+    $contentBackup = Join-Path $BackupDir "content-backup"
+    if (@(Get-ChildItem $SkillsDir -ErrorAction SilentlyContinue).Count -gt 0) {
+        if (-not $DryRun) { New-Item -ItemType Directory -Path $contentBackup -Force | Out-Null; Copy-Item $SkillsDir (Join-Path $contentBackup "skills") -Recurse -Force }
+        Write-LogInfo "Snapshotted existing skills to content-backup/skills"
+    }
+    if (@(Get-ChildItem $AgentsDestDir -ErrorAction SilentlyContinue).Count -gt 0) {
+        if (-not $DryRun) { New-Item -ItemType Directory -Path $contentBackup -Force | Out-Null; Copy-Item $AgentsDestDir (Join-Path $contentBackup "agents") -Recurse -Force }
+        Write-LogInfo "Snapshotted existing agents to content-backup/agents"
+    }
+
+    $cliArgs = @("add", "--all", "--yes")
+    if ($Provider) { $cliArgs += @("--provider", $Provider) }
+    if ($DryRun) { $cliArgs += "--dry-run" }
+    & node (Join-Path $InstallDir "init.mjs") @cliArgs
+    if ($LASTEXITCODE -ne 0) {
+        Write-LogError "installer CLI failed (exit $LASTEXITCODE)"
+        return
+    }
+    Write-LogSuccess "Content deployed (manifest-tracked)"
+}
+
 function Deploy-Agents {
     Write-Host ""
     Write-LogInfo "Setting up agents (v2.0 model resolution)..."
@@ -2287,9 +2303,17 @@ function Deploy-Agents {
     # Migration (detect pre-v2, backup, lift customizations) before resolve
     Invoke-Migration
 
-    # Resolve + inject concrete models from tiers/overrides/presets
+    # Single install path (#379): content installs via the CLI after migration
+    # (lift must see pre-overwrite agents), before the config-only resolve.
+    Deploy-Content
+    if ($LASTEXITCODE -ne 0) {
+        Write-LogError "Content deployment failed"
+        return
+    }
+
+    # Resolve + inject concrete models into the CONFIG (agent files: Deploy-Content)
     Write-LogInfo "Resolving agent models..."
-    Invoke-Resolver
+    Invoke-Resolver -ConfigOnly
     if ($LASTEXITCODE -ne 0) {
         Write-LogError "Model resolution failed"
         return
@@ -2603,7 +2627,7 @@ function Invoke-AutoUpdate {
         $backupDir = Join-Path $HOME ".opencode-update-backup-$(Get-Date -Format 'yyyyMMdd_HHmmss')"
         if (-not $DryRun) {
             New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
-            if (Test-Path $ConfigFile) { Copy-Item $ConfigFile (Join-Path $backupDir "config.json") }
+            if (Test-Path $ConfigFile) { Copy-Item $ConfigFile (Join-Path $backupDir "opencode.json") }
             $agentsDest = Join-Path $ConfigDir "AGENTS.md"
             if (Test-Path $agentsDest) { Copy-Item $agentsDest (Join-Path $backupDir "AGENTS.md") }
             if (Test-Path $SkillsDir) { Copy-Item $SkillsDir (Join-Path $backupDir "skills") -Recurse }
@@ -2692,9 +2716,9 @@ function Show-Summary {
     }
 
     if (Test-Path $ConfigFile) {
-        Write-Host "  [OK] config.json: Copied to $ConfigDir\" -ForegroundColor Green
+        Write-Host "  [OK] opencode.json: Copied to $ConfigDir\" -ForegroundColor Green
     } else {
-        Write-Host "  [X] config.json: Not copied"
+        Write-Host "  [X] opencode.json: Not copied"
     }
 
     if (Test-Path (Join-Path $ConfigDir "AGENTS.md")) {
@@ -2706,7 +2730,7 @@ function Show-Summary {
     $skillCount = @(Get-ChildItem $SkillsDir -Directory -ErrorAction SilentlyContinue).Count
     if ($skillCount -gt 0) {
         Write-Host "  [OK] skills: $skillCount skills deployed to $SkillsDir\" -ForegroundColor Green
-        Write-Host "  [OK] skill profile: $SkillProfile (primary-visible skills in permission.skill)" -ForegroundColor Green
+        Write-Host "  [OK] skill profile: $SkillProfile (primary-visible skills in skill permissions)" -ForegroundColor Green
     } else {
         Write-Host "  [X] skills: Not deployed"
     }
@@ -2756,23 +2780,23 @@ function Show-NextSteps {
     Write-Host "  1. Restart terminal or run: . $PROFILE"
     Write-Host "  2. Verify installation: opencode --version"
     Write-Host ""
-    Write-Host "Agents ($(Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents'))):"
+    Write-Host "Agents ($(Get-AgentCount (Join-Path $RepoDir 'agents'))):"
     Write-Host "  - build (default) - Full-featured coding agent"
     Write-Host "  - plan - Planning agent (read-only)"
     Write-Host "  - explore - Codebase exploration and analysis"
     Write-Host "  - image-analyzer-subagent - Images/screenshots to code, OCR, error diagnosis"
     Write-Host "  - zai-media-subagent - Media production: image/video gen, ASR, OCR (delegated)"
     Write-Host "  - discovery-specialist-subagent - Customer-facing discovery: Vision docs + wireframes"
-    Write-Host "  - ... and $((Get-AgentCount (Join-Path $RepoDir 'opencode_app\.opencode\agents')) - 6) more agents"
+    Write-Host "  - ... and $((Get-AgentCount (Join-Path $RepoDir 'agents')) - 6) more agents"
     Write-Host ""
     Write-Host "  Usage: opencode --agent <name> `"prompt`""
     Write-Host "         opencode `"prompt`" (uses build)"
      Write-Host ""
     Write-Host "=====================================================================" -ForegroundColor White
-      Write-Host "                     $(Get-SkillCount (Join-Path $RepoDir 'opencode_app\.opencode\skills')) Skills Available" -ForegroundColor White
+      Write-Host "                     $(Get-SkillCount (Join-Path $RepoDir 'skills')) Skills Available" -ForegroundColor White
      Write-Host "=====================================================================" -ForegroundColor White
       Write-Host ""
-      Get-SkillCategories (Join-Path $RepoDir 'opencode_app\.opencode\skills')
+      Get-SkillCategories (Join-Path $RepoDir 'skills')
      Write-Host ""
     Write-Host "  Run 'opencode --list-skills' for detailed descriptions"
     Write-Host "  Run 'opencode --skill <name> `"prompt`"' to invoke a skill"
@@ -2834,7 +2858,11 @@ function Main {
             return
         }
         Set-ModelProvider
-        Invoke-Resolver
+        # Config via resolver; agent files via the manifest path (#379).
+        Invoke-Resolver -ConfigOnly
+        $updateArgs = @("update")
+        if ($Provider) { $updateArgs += @("--provider", $Provider) }
+        & node (Join-Path $InstallDir "init.mjs") @updateArgs
         Write-Host ""
         Write-Host "Model resolution complete!"
         return
@@ -2934,7 +2962,7 @@ function Main {
         switch ($option) {
             "1" {
                 Write-Host ""
-                Write-LogInfo "Quick Setup: Copy config.json and skills only"
+                Write-LogInfo "Quick Setup: Copy opencode.json and skills only"
                 $script:Quick = $true
             }
             "2" {
@@ -2985,7 +3013,7 @@ function Main {
         Set-NodeJS
         Set-OpenCode
     } else {
-        Write-LogInfo "Running quick setup: config.json and skills deployment only"
+        Write-LogInfo "Running quick setup: opencode.json and skills deployment only"
     }
 
     Set-ModelProvider

@@ -5,8 +5,8 @@
 # tool name reference, agent routing grants, and cross-file skill count
 # consistency. Peer to tests/test_mcp_count_consistency.bats (PLAN-GIT-262).
 
-SKILL_MD="opencode_app/.opencode/skills/markitdown-mcp-skill/SKILL.md"
-AGENTS_DIR="opencode_app/.opencode/agents"
+SKILL_MD="skills/markitdown-mcp-skill/SKILL.md"
+AGENTS_DIR="agents"
 
 # Agents that should have markitdown-mcp-skill: allow in their permission.skill
 AGENTS_WITH_SKILL_GRANT=(
@@ -56,7 +56,11 @@ AGENTS_WITH_SKILL_GRANT=(
 @test "agents_have_markitdown_skill_grant" {
   for agent in "${AGENTS_WITH_SKILL_GRANT[@]}"; do
     echo "  checking $agent" >&3
-    grep -q "markitdown-mcp-skill: allow" "$AGENTS_DIR/$agent.md"
+    python3 -c "
+import yaml
+fm=yaml.safe_load(open('$AGENTS_DIR/$agent.md').read().split('---')[1])
+assert any(r['action']=='skill' and r['resource']=='markitdown-mcp-skill' and r['effect']=='allow' for r in fm['permissions']), 'markitdown skill rule missing'
+"
   done
 }
 
@@ -72,13 +76,13 @@ AGENTS_WITH_SKILL_GRANT=(
 
 @test "skill_count_consistent_across_docs" {
   # Active count excludes _archived (matches count_skills/Get-SkillCount). BT-157.
-  actual=$(find opencode_app/.opencode/skills -maxdepth 2 -name SKILL.md -not -path '*/_archived/*' | wc -l | tr -d ' ')
+  actual=$(find skills -maxdepth 2 -name SKILL.md -not -path '*/_archived/*' | wc -l | tr -d ' ')
   echo "Actual skill count: $actual" >&3
 
   # setup.sh: dynamic via count_skills() helper — source it, verify output == disk,
   # and confirm no stale hardcoded literal remains. BT-157.
   source <(sed -n '/^count_skills()/,/^}/p' deploy/setup.sh)
-  setup_count=$(count_skills opencode_app/.opencode/skills | tr -d ' ')
+  setup_count=$(count_skills skills | tr -d ' ')
   echo "setup.sh count_skills output: $setup_count" >&3
   [ "$setup_count" = "$actual" ]
   ! grep -qE 'SKILLS \([0-9]+\)' deploy/setup.sh
@@ -102,7 +106,7 @@ AGENTS_WITH_SKILL_GRANT=(
   # Category counts drift as skills are merged/recategorized (BT-157);
   # README's Configuration count must equal registry.json's.
   actual=$(grep -oE '\*\*Configuration\*\* \([0-9]+\)|Configuration \([0-9]+\)' README.md | grep -oE '[0-9]+' | head -1)
-  expected=$(node -e "const r=require('./deploy/registry.json'); console.log((r.skills||[]).filter(s=>s.category==='Configuration').length)")
+  expected=$(node -e "const r=require('./installer/registry.json'); console.log((r.skills||[]).filter(s=>s.category==='Configuration').length)")
   echo "README.md Configuration count: $actual, registry: $expected" >&3
   [ "$actual" = "$expected" ]
 }

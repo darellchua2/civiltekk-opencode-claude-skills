@@ -46,19 +46,20 @@ jobs:
 
       - name: Registry drift guard
         run: |
-          echo "Checking deploy/registry.json is in sync with agent/skill frontmatter..."
-          node deploy/build-registry.mjs --check
+          echo "Checking installer/registry.json is in sync with agent/skill frontmatter..."
+          node installer/build-registry.mjs --check
 
       - name: Lint .mjs + package.json + npx tarball guard
         run: |
           echo "Syntax-checking .mjs files..."
-          node --check deploy/init.mjs deploy/source.mjs deploy/build-site.mjs
+          node --check installer/init.mjs installer/source.mjs installer/build-site.mjs
           echo "Validating package.json..."
           jq . package.json
           echo "Checking npx tarball includes source tree..."
-          npm pack --dry-run 2>&1 | grep -q "opencode_app/.opencode/" \
-            && echo "source tree in tarball ✓" \
-            || { echo "FAIL: opencode_app/.opencode/ missing from tarball"; exit 1; }
+          tarball="$(npm pack --dry-run 2>&1)"
+          echo "$tarball" | grep -q " skills/" && echo "$tarball" | grep -q " agents/" && echo "$tarball" | grep -q " installer/" \
+            && echo "source tree + installer in tarball ✓" \
+            || { echo "FAIL: skills/, agents/ or installer/ missing from tarball"; exit 1; }
 
       - name: Run tests
         run: |
@@ -147,7 +148,7 @@ jobs:
           node-version: '24'
 
       - name: Build catalog site
-        run: node deploy/build-site.mjs
+        run: node installer/build-site.mjs
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

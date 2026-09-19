@@ -35,4 +35,4 @@ tests/
 __pycache__/
 
 # Archived skills (keep image small)
-opencode_app/.opencode/skills/_archived/
+skills/_archived/

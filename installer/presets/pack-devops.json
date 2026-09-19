@@ -1,0 +1,44 @@
+{
+  "$comment": "Preset 'devops' for installer/init.mjs (--preset devops). Derived by /tmp/gen-presets.mjs from installer/registry.json; edit via the generator, not by hand.",
+  "name": "devops",
+  "description": "Git/infra/release: repo-ops + OpenTofu explorer + versioning/release/docker/monorepo/JIRA integration.",
+  "agents": [
+    "repo-ops-specialist-subagent",
+    "opentofu-explorer-subagent"
+  ],
+  "skills": [
+    "ascii-diagram-creator-skill",
+    "aws-iac-safety-skill",
+    "changelog-python-cliff-skill",
+    "continuous-learning-skill",
+    "docker-containerization-skill",
+    "documentation-consistency-skill",
+    "documentation-sync-workflow-skill",
+    "git-compact-commits-skill",
+    "git-issue-labeler-skill",
+    "git-issue-updater-skill",
+    "git-semantic-commits-skill",
+    "jira-git-integration-skill",
+    "jira-status-updater-skill",
+    "jira-ticket-labeler-skill",
+    "mermaid-diagram-creator-skill",
+    "monorepo-management-skill",
+    "opentofu-aws-explorer-skill",
+    "opentofu-ecr-provision-skill",
+    "opentofu-keycloak-explorer-skill",
+    "opentofu-kubernetes-explorer-skill",
+    "opentofu-neon-explorer-skill",
+    "opentofu-provider-setup-skill",
+    "opentofu-provisioning-workflow-skill",
+    "plan-execution-skill",
+    "pr-creation-workflow-skill",
+    "pr-merge-workflow-skill",
+    "search-first-skill",
+    "semantic-release-convention-skill",
+    "ticket-creation-skill",
+    "version-bump-standard-skill"
+  ],
+  "mcps": [
+    "codegraph"
+  ]
+}

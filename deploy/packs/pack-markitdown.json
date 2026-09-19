@@ -1,9 +1,11 @@
 {
-  "$comment": "Provider pack: markitdown privacy-hardened local MCP (PDF/DOCX/PPTX/XLSX -> Markdown). Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack markitdown. --enable-pack markitdown now also installs the Python launcher (install_local_mcp_launchers via run_pack_merger; the Docker image bakes it via pip install in the Dockerfile). Sets root-level permission {\"markitdown*\": \"allow\"} (string enum) — the legacy top-level tools key is deprecated since opencode v1.1.1 and loses conflicts to explicit permission.",
+  "$comment": "Provider pack: markitdown privacy-hardened local MCP (PDF/DOCX/PPTX/XLSX -> Markdown). Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack markitdown (v2 shape: mcp.servers.<name>.disabled:false + permissions array rule). --enable-pack markitdown now also installs the Python launcher (install_local_mcp_launchers via run_pack_merger; the Docker image bakes it via pip install in the Dockerfile). Appends the permissions rule {\"action\": \"markitdown*\", \"resource\": \"*\", \"effect\": \"allow\"} to flip the shipped deny.",
   "mcp": {
-    "markitdown": { "enabled": true }
+    "servers": {
+      "markitdown": { "disabled": false }
+    }
   },
-  "permission": {
-    "markitdown*": "allow"
-  }
+  "permissions": [
+    { "action": "markitdown*", "resource": "*", "effect": "allow" }
+  ]
 }
