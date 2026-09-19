@@ -147,14 +147,17 @@ actually run, evidence-level summary, assumptions, and the disposition.
 
 ## DWG input/output
 
-DWG is an input format only. `fingerprint.py` reads `.dwg` sources through
+DWG works as both input and output: input is read through the external
+converter chain below; output is written by `scripts/to_dwg.py` when the ODA
+File Converter is installed. `fingerprint.py` reads `.dwg` sources through
 the external converter chain (ODA File Converter via `odafc`, then LibreDWG
 `dwg2dxf`) with automatic fallback; see `references/linux-toolchain.md` for
 install guidance, converter precedence, fidelity reporting, and the
 degradation caveats (proxy objects, SHX text, annotative dimensions, dynamic
-blocks). No bundled script writes DWG — every deliverable this skill produces
-is DXF. When a DWG file is mandatory, produce and validate the DXF first,
-then convert DXF→DWG externally (e.g., ODA File Converter).
+blocks). For DWG **output**, `scripts/to_dwg.py` converts a validated DXF to
+DWG via the ODA File Converter (target version flag included) when ODA is
+installed — DXF remains the default deliverable; produce and validate it
+first, then run the writer when a DWG file is mandatory.
 
 ## Runtime requirements
 
