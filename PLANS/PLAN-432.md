@@ -31,22 +31,26 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 1: bash deploy fix
 
-- [ ] **1.1** Add the pre-prompt coexistence park to `deploy/setup.sh` immediately after the legacy `config.json` migration if/elif block: guarded on `[ -f "$CONFIG_FILE" ] && [ -f "${CONFIG_DIR}/opencode.jsonc" ]`, body `run_cmd mv "${CONFIG_DIR}/opencode.jsonc" "${CONFIG_DIR}/opencode.jsonc.legacy-ignored"` plus a `log_warn` naming the rename
+- [x] **1.1** Add the pre-prompt coexistence park to `deploy/setup.sh` immediately after the legacy `config.json` migration if/elif block: guarded on `[ -f "$CONFIG_FILE" ] && [ -f "${CONFIG_DIR}/opencode.jsonc" ]`, body `run_cmd mv "${CONFIG_DIR}/opencode.jsonc" "${CONFIG_DIR}/opencode.jsonc.legacy-ignored"` plus a `log_warn` naming the rename
     — **Why:** the ticket's defect is undefined `.json`/`.jsonc` precedence (v2 docs define no tie-break per directory); the both-exist guard (per review WARN-2 + Mode R Gap 1) covers the verified coexistence scenario without ever disabling a jsonc-only user's sole live config, and `run_cmd` (review WARN-1 + Mode R Gap 2) keeps `--dry-run` preview-only
     — **Done when:** `grep -n 'run_cmd mv "${CONFIG_DIR}/opencode.jsonc"' deploy/setup.sh` hits at a line number lower than the `opencode.json already exists at` prompt line, and the guarding line contains both `-f "$CONFIG_FILE"` and `-f "${CONFIG_DIR}/opencode.jsonc"`
     — **Consumers affected:** the deploy path of `setup.sh`; Phase 2 parity; step 1.3's test anchors
-- [ ] **1.2** Add the copy-accept park inside the `if [ "$SKIP_CONFIG_COPY" != true ]; then` branch immediately after the config `run_cmd cp`: same both-exist guard, `run_cmd mv` to `opencode.jsonc.legacy-ignored`, `log_warn`
+    — **Done:** pre-prompt park inserted after the legacy config.json migration block (both-exist guard, `run_cmd mv`, `log_warn`); files: deploy/setup.sh; fixes: none
+- [x] **1.2** Add the copy-accept park inside the `if [ "$SKIP_CONFIG_COPY" != true ]; then` branch immediately after the config `run_cmd cp`: same both-exist guard, `run_cmd mv` to `opencode.jsonc.legacy-ignored`, `log_warn`
     — **Why:** Mode R Gap 1 residual — a jsonc-only user who accepts the copy prompt recreates coexistence; parking at the moment the deploy creates `opencode.json` restores the ticket's "exactly one config file remains" end-state on the accept path too
     — **Done when:** a second `run_cmd mv "${CONFIG_DIR}/opencode.jsonc"` anchor exists in `setup.sh` at a line number greater than the config-copy line
     — **Consumers affected:** the deploy path of `setup.sh`; step 1.3's test anchors
-- [ ] **1.3** Create `tests/test_jsonc_sibling.bats` with structure pins (house pattern from `tests/deploy_delegate.bats:61`, per `LEARNINGS/patterns/bats-structure-pin-call-order.md`): (a) both park anchors exist with line ordering pre-prompt-park < prompt < copy < copy-accept-park; (b) the park guard is the both-exist form (both `-f`/`Test-Path` operands present), not jsonc-only; (c) the bash mutation is `run_cmd mv`, never a bare `mv`; (d) a negative grep that no bare `mv "${CONFIG_DIR}/opencode.jsonc"` exists
+    — **Done:** copy-accept park inserted after the config `run_cmd cp` + `log_success`; files: deploy/setup.sh; fixes: none
+- [x] **1.3** Create `tests/test_jsonc_sibling.bats` with structure pins (house pattern from `tests/deploy_delegate.bats:61`, per `LEARNINGS/patterns/bats-structure-pin-call-order.md`): (a) both park anchors exist with line ordering pre-prompt-park < prompt < copy < copy-accept-park; (b) the park guard is the both-exist form (both `-f`/`Test-Path` operands present), not jsonc-only; (c) the bash mutation is `run_cmd mv`, never a bare `mv`; (d) a negative grep that no bare `mv "${CONFIG_DIR}/opencode.jsonc"` exists
     — **Why:** correctness here is positional and contract-shaped inside a 4k-line script; the repo's established regression net for deploy-path ordering is a grep line-ordering pin
     — **Done when:** `bats tests/test_jsonc_sibling.bats` exits 0
     — **Consumers affected:** CI bats suite
-- [ ] **1.4** Run the new test plus `tests/deploy_delegate.bats` (the existing deploy-path pin suite)
+    — **Done:** structure-pin bats file created (deploy-order pin, both-exist guard count=2, run_cmd count=2, bare-mv negative grep); files: tests/test_jsonc_sibling.bats; fixes: none
+- [x] **1.4** Run the new test plus `tests/deploy_delegate.bats` (the existing deploy-path pin suite)
     — **Why:** prove the new blocks pass their own pins and did not break the existing deploy-path ordering pins
     — **Done when:** both bats invocations exit 0
     — **Consumers affected:** none beyond CI
+    — **Done:** test_jsonc_sibling 2/2 ok, deploy_delegate 4/4 ok; files: none; fixes: none
 
 ### Phase 2: PowerShell mirror
 
@@ -90,3 +94,7 @@ None — single contained fix, no blocked-by tickets.
 - **User's `.jsonc` was hand-authored (not a stub):** mitigated by design — the both-exist guard leaves a jsonc-only machine untouched, and any park is a data-preserving rename with a warning naming the new path.
 - **Grep anchors drift** if the prompt wording changes: mitigation — the pin greps the stable string `opencode.json already exists at`, unchanged since the v2 migration.
 - **Re-park overwrites an earlier parked copy** (review NOTE-1): accepted — data loss confined to an already-parked file; mirror-faithful with the `config.json` block; the warning names each rename.
+
+## Execution Trace
+
+- Phase 1 (1.1–1.4): GATE 9130a36 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bash -n clean; bats test_jsonc_sibling 2/2 ok, deploy_delegate 4/4 ok; lint/typecheck: none configured (no shellcheck/eslint/tsc manifests)
