@@ -1,10 +1,11 @@
 ---
 name: github-runners-setup-skill
 description: >-
-  Set up a Linux machine as GitHub Actions self-hosted org runners —
-  multi-runner-per-folder registration, systemd services, and the
-  local-if-idle/else-ubuntu-latest workflow pattern. Gates interactive steps
-  (gh scope refresh, sudo install, PAT + org secret) on explicit user action.
+  Set up a Linux machine as GitHub Actions self-hosted org runners
+  (multi-runner folders, systemd services) with the local-if-idle /
+  else-ubuntu-latest workflow. Gates gh scope refresh, sudo install, and
+  PAT handling on explicit user action. Triggers: self-hosted runner,
+  local CI runner, local-if-idle workflow.
 license: Apache-2.0
 compatibility: opencode
 category: DevOps
@@ -44,7 +45,7 @@ up front, with the question tool — then do not re-ask.
 The registration API needs the `admin:org` scope. Check first:
 
 ```bash
-gh auth status | grep -q 'admin:org' || echo NEEDS_REFRESH
+gh auth status | grep -q "'admin:org'" || echo NEEDS_REFRESH
 ```
 
 If refresh is needed, spawn it in a PTY, show the user the one-time code, and
@@ -62,6 +63,9 @@ Download once, extract into the first folder, copy to the rest:
 VER=$(gh api /repos/actions/runner/releases/latest --jq .tag_name | tr -d v)
 curl -sL -o /tmp/actions-runner-linux-x64-$VER.tar.gz \
   https://github.com/actions/runner/releases/download/v$VER/actions-runner-linux-x64-$VER.tar.gz
+curl -sL -o /tmp/actions-runner-linux-x64-$VER.tar.gz.sha256 \
+  https://github.com/actions/runner/releases/download/v$VER/actions-runner-linux-x64-$VER.tar.gz.sha256
+( cd /tmp && sha256sum -c "actions-runner-linux-x64-$VER.tar.gz.sha256" )
 mkdir -p ~/GITHUB_RUNNERS/r1
 tar xzf /tmp/actions-runner-linux-x64-$VER.tar.gz -C ~/GITHUB_RUNNERS/r1
 cd ~/GITHUB_RUNNERS
@@ -118,8 +122,12 @@ create it (browser: Settings → Developer settings → Tokens classic) — do n
 handle the token value in chat. Have the user run, in their own terminal:
 
 ```bash
-read -rs PAT && gh secret set ORG_RUNNER_PAT --org ORG --visibility all <<< "$PAT" && unset PAT
+read -rs PAT && gh secret set ORG_RUNNER_PAT --org ORG --visibility selected --repos REPO1,REPO2 <<< "$PAT" && unset PAT
 ```
+
+Default to `--visibility selected` naming only the repos that opt into the
+pool — the secret is an `admin:org` PAT, and `--visibility all` hands it to
+every workflow in every repo of the org.
 
 Then repos opt in by pairing a dispatcher job with the real job:
 
@@ -135,7 +143,8 @@ jobs:
           GH_TOKEN: ${{ secrets.ORG_RUNNER_PAT }}
         run: |
           idle=$(gh api orgs/ORG/actions/runners --paginate \
-            --jq '[.runners[] | select(.labels[].name=="local") | select(.status=="online" and .busy==false)] | length')
+            --jq '.runners[] | select(.labels[].name=="local") | select(.status=="online" and .busy==false) | .name' \
+            | wc -l)
           if [ "$idle" -gt 0 ]; then
             echo 'labels=["self-hosted","local"]' >> "$GITHUB_OUTPUT"
           else
@@ -168,6 +177,8 @@ explicit confirmation. Do not proceed on silence.
   direction.
 - Dispatcher adds ~10–20s per run.
 - `ORG_RUNNER_PAT` must be an **org** secret (`--org`), or repos won't see it.
+  Keep `--visibility selected` — the PAT holds `admin:org`, so `all` exposes
+  near-full org admin API to every workflow in every repo.
 
 ## Teardown
 
