@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.12.0](https://github.com/darellchua2/opencode-config-template/compare/v9.11.0...v9.12.0) (2026-09-19)
+
+### Features
+
+* **skills:** add [#60](https://github.com/darellchua2/opencode-config-template/issues/60) dimensions to skills-maintainer — suitability, duplication matrix, token cost ([07b8234](https://github.com/darellchua2/opencode-config-template/commit/07b823434fbf0b20b08983544fc897a41d94a308))
+
 ## [9.11.0](https://github.com/darellchua2/opencode-config-template/compare/v9.10.0...v9.11.0) (2026-09-19)
 
 ### Features
