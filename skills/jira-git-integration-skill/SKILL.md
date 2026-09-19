@@ -16,11 +16,13 @@ Creating a JIRA ticket before starting work; wiring ticket keys into branch/comm
 
 ## MCP Availability Guard
 
-Every step below uses `atlassian_*` MCP tools, and the `atlassian` MCP server is **disabled by default** (opt-in). Before Step 1:
+**Canonical policy home** — other skills' §MCP Availability Guard sections point here; edit the policy only in this file.
 
-- If `atlassian_*` tools are absent from your tool list, do NOT attempt or hallucinate them.
-- Interactive: offer per-project enable via `opencode-repo-setup-skill` (effective next session).
-- Fallback: REST with an API token — `curl -u email:token` against `https://<site>.atlassian.net` (cloudId: `curl https://<site>.atlassian.net/_edge/tenant_info`); scoped tokens use `api.atlassian.com/ex/jira/{cloudId}`.
+The `atlassian` MCP server is **disabled by default** (opt-in). Before any `atlassian_*` call, check whether the tools exist in your tool list:
+
+- If `atlassian_*` tools are absent, do NOT attempt or hallucinate them.
+- Interactive: offer per-project enable via `opencode-repo-setup-skill` (writes the FULL atlassian server entry into the project `opencode.json` — a bare `{"disabled":false}` stub is inert; effective next session, so this session must degrade).
+- Fallback: REST with an API token — `curl -u email:token` against `https://<site>.atlassian.net` (discover cloudId unauthenticated: `curl https://<site>.atlassian.net/_edge/tenant_info`); scoped tokens use `api.atlassian.com/ex/jira/{cloudId}`, unscoped use site-direct `/rest/api/3/`.
 - No credentials/headless: report the JIRA operation as skipped — never block the calling workflow.
 
 ## Workflow

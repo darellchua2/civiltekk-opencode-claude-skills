@@ -16,11 +16,7 @@ After pushing commits that reference a ticket; before PR creation to keep the tr
 
 ## MCP Availability Guard (JIRA branch only)
 
-GitHub comments go through `gh` — always available. JIRA comments use `atlassian_addCommentToJiraIssue`, and the `atlassian` MCP server is **disabled by default** (opt-in):
-- If `atlassian_*` tools are absent from your tool list, do NOT attempt or hallucinate them.
-- Interactive: offer per-project enable via `opencode-repo-setup-skill` (effective next session).
-- Fallback: REST comment — `curl -u email:token -X POST https://<site>.atlassian.net/rest/api/3/issue/<KEY>/comment -d '{"body":"..."}'` (cloudId: `curl https://<site>.atlassian.net/_edge/tenant_info`).
-- Otherwise: report the JIRA update as skipped — commit detection and GitHub updates are unaffected.
+GitHub comments go through `gh` — always available; commit detection and GitHub updates are unaffected. JIRA comments (`atlassian_addCommentToJiraIssue`): policy per `jira-git-integration-skill` §MCP Availability Guard. This skill's REST endpoint — `curl -u email:token -X POST https://<site>.atlassian.net/rest/api/3/issue/<KEY>/comment -d '{"body":"..."}'`.
 
 ## Workflow
 

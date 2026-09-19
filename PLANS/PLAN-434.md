@@ -35,40 +35,47 @@ Accepted agent-local restatements (review ruling, Mode R): `agents/pr-workflow-s
 
 ### Phase 1: MCP Availability Guard — single policy home
 
-- [ ] **1.1** Rewrite `skills/jira-git-integration-skill/SKILL.md` §MCP Availability Guard as the canonical policy block: disabled-by-default status, absent-tools rule (never attempt/hallucinate), per-project enable via `opencode-repo-setup-skill`, REST-fallback pattern with cloudId discovery (`_edge/tenant_info`), headless degrade order
+- [x] **1.1** Rewrite `skills/jira-git-integration-skill/SKILL.md` §MCP Availability Guard as the canonical policy block: disabled-by-default status, absent-tools rule (never attempt/hallucinate), per-project enable via `opencode-repo-setup-skill`, REST-fallback pattern with cloudId discovery (`_edge/tenant_info`), headless degrade order
     — **Why:** its frontmatter already declares it "JIRA-Git plumbing shared by other JIRA skills"; a policy change must have exactly one edit point
     — **Done when:** the section carries the full policy incl. the cloudId discovery line and the scoped/unscoped token pair (scoped → `api.atlassian.com/ex/jira/{cloudId}`, unscoped → site-direct `/rest/api/3/`); the enable line names `opencode-repo-setup-skill` with the FULL server entry (no inert bare-stub `{"disabled":false}` JSON — the stub is `opencode-repo-setup-skill:83`'s documented inert-server trap); and `grep -rn '_edge/tenant_info' skills/` (excluding `_archived`) returns exactly this one file
     — **Consumers affected:** all five skills that currently restate the guard (1.2–1.5), wayfinder + worktree-pipeline (1.6)
+    — **Done:** canonical policy home written (disabled-by-default, absent-tools rule, FULL-entry enable caveat, REST + cloudId discovery, scoped/unscoped pair); tenant_info grep single-hit confirmed; fixes: none
 
-- [ ] **1.2** `skills/git-issue-updater-skill/SKILL.md`: replace the guard body's policy bullets with one pointer line to `jira-git-integration-skill` §MCP Availability Guard + keep only the skill-specific REST comment endpoint (`POST .../issue/<KEY>/comment`); heading `## MCP Availability Guard (JIRA branch only)` stays verbatim
+- [x] **1.2** `skills/git-issue-updater-skill/SKILL.md`: replace the guard body's policy bullets with one pointer line to `jira-git-integration-skill` §MCP Availability Guard + keep only the skill-specific REST comment endpoint (`POST .../issue/<KEY>/comment`); heading `## MCP Availability Guard (JIRA branch only)` stays verbatim
     — **Why:** AC2 — policy dedup while preserving the heading the AC freezes
     — **Done when:** policy bullets (absent-tools rule, enable offer, cloudId) are gone from this file; heading + endpoint line remain; the skill-specific degrade scope stays folded into the pointer line ("GitHub comments go through `gh` — always available; commit detection and GitHub updates unaffected")
     — **Consumers affected:** none beyond readers; `jira-git-integration-skill:34` Related pointer unchanged
+    — **Done:** guard reduced to pointer + REST comment endpoint, heading verbatim; fixes: none
 
-- [ ] **1.3** `skills/jira-status-updater-skill/SKILL.md`: same reduction as 1.2, keeping its REST transition endpoint (`POST .../transitions`); heading `## MCP Availability Guard` stays verbatim
+- [x] **1.3** `skills/jira-status-updater-skill/SKILL.md`: same reduction as 1.2, keeping its REST transition endpoint (`POST .../transitions`); heading `## MCP Availability Guard` stays verbatim
     — **Why:** AC2 — same policy, same dedup
     — **Done when:** policy bullets gone; heading + endpoint line remain; step 5's inline REST fallback note still coherent (it names the payload shape, not the guard); the unique observability clauses survive — "report the transition as skipped AND log the detected ticket key" and "never fail the PR-merge workflow" fold into the pointer line
     — **Consumers affected:** none beyond readers
+    — **Done:** guard reduced to pointer + transitions endpoint, key-log/never-fail clauses folded; fixes: none
 
-- [ ] **1.4** `skills/ticket-creation-skill/SKILL.md`: reduce §MCP Availability Guard (JIRA steps) to the pointer + its REST fallback line; the three-option degrade ladder moves out (policy now lives at the home); internal reference at `:192` ("§MCP Availability Guard REST fallback") must still read true
+- [x] **1.4** `skills/ticket-creation-skill/SKILL.md`: reduce §MCP Availability Guard (JIRA steps) to the pointer + its REST fallback line; the three-option degrade ladder moves out (policy now lives at the home); internal reference at `:192` ("§MCP Availability Guard REST fallback") must still read true
     — **Why:** AC2 + the most-referenced copy (wayfinder/worktree-pipeline currently route policy through this file)
     — **Done when:** guard section is pointer + endpoint only; `:50`/`:72-73`/`:192` references all resolve; heading stays verbatim
     — **Consumers affected:** `wayfinder-skill:133`, `worktree-pipeline-skill:73` (re-pointed in 1.6), `pr-workflow-subagent` (§Attribution, untouched heading)
+    — **Done:** guard reduced to pointer + REST line; :50/:52/:185 references verified coherent post-shrink; fixes: none
 
-- [ ] **1.5** `skills/opencode-repo-setup-skill/SKILL.md:158`: drop the restated REST/cloudId pattern; keep the unique token-creation URL (`id.atlassian.com/manage-profile/security/api-tokens`) and add the pointer to the guard home
+- [x] **1.5** `skills/opencode-repo-setup-skill/SKILL.md:158`: drop the restated REST/cloudId pattern; keep the unique token-creation URL (`id.atlassian.com/manage-profile/security/api-tokens`) and add the pointer to the guard home
     — **Why:** AC2's fifth copy — this one rewords rather than copies verbatim, the drift-prone variant
     — **Done when:** no `_edge/tenant_info` or `api.atlassian.com/ex/jira` restatement remains in the file; token URL + pointer remain
     — **Consumers affected:** guard option-1 enable flow readers
+    — **Done:** REST/cloudId restatement dropped; token URL + pointer kept; fixes: none
 
-- [ ] **1.6** Re-point `skills/wayfinder-skill/SKILL.md:132-133` and `skills/worktree-pipeline-skill/SKILL.md:73` directly at `jira-git-integration-skill` §MCP Availability Guard (kill the pointer-to-pointer chain via ticket-creation)
+- [x] **1.6** Re-point `skills/wayfinder-skill/SKILL.md:132-133` and `skills/worktree-pipeline-skill/SKILL.md:73` directly at `jira-git-integration-skill` §MCP Availability Guard (kill the pointer-to-pointer chain via ticket-creation)
     — **Why:** chained pointers rot; the policy home is now jira-git-integration, one hop only
     — **Done when:** both files name jira-git-integration-skill §MCP Availability Guard; wayfinder's own degrade-destination wording ("headless → degrade to GitHub/local-markdown") is preserved verbatim; `grep -rn 'ticket-creation-skill.*MCP Availability Guard' skills/` returns no policy-route hits
     — **Consumers affected:** none (leaf consumers)
+    — **Done:** wayfinder + worktree-pipeline re-pointed at the guard home; policy-route grep clean; fixes: none
 
-- [ ] **1.7** `agents/repo-ops-specialist-subagent.md:166`: replace the full condensed policy restatement AND its structural claim ("each of those skills carries its own MCP Availability Guard" — already false today: it enumerates `jira-ticket-labeler`, which has no guard heading) with a single pointer to `jira-git-integration-skill` §MCP Availability Guard; pointer-only — no new policy text in the agent
+- [x] **1.7** `agents/repo-ops-specialist-subagent.md:166`: replace the full condensed policy restatement AND its structural claim ("each of those skills carries its own MCP Availability Guard" — already false today: it enumerates `jira-ticket-labeler`, which has no guard heading) with a single pointer to `jira-git-integration-skill` §MCP Availability Guard; pointer-only — no new policy text in the agent
     — **Why:** review BLOCK + Mode R ruling — the claim goes false (and is false now), and repo-ops is the agent future sessions load for repo setup; a stale map there silently defeats the dedup at its main propagation point
     — **Done when:** the file names jira-git-integration-skill §MCP Availability Guard; the "carries its own guard" claim is gone; no guard policy bullets (absent-rule, enable, REST/cloudId) remain in the agent body
     — **Consumers affected:** sessions that load repo-ops-specialist for MCP enable flows
+    — **Done:** policy restatement + false structural claim replaced with pointer-only line at :166; fixes: none
 
 ### Phase 2: Attribution + semver governance pointers
 

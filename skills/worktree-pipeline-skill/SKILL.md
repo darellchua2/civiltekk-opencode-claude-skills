@@ -68,9 +68,9 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    prune / resume / refuse — never clobber silently.
 3. **Ticket fetch/create**: existing ref → fetch its description
    (`gh issue view` / JIRA). JIRA access follows the **MCP Availability
-   Guard**: `atlassian_*` tools present → use them; absent → REST fallback
-   via API token; headless → degrade with a clear report (same policy as
-   `ticket-creation-skill` §MCP Availability Guard). New work → create the
+   Guard** (policy: `jira-git-integration-skill` §MCP Availability Guard):
+   `atlassian_*` tools present → use them; absent → REST fallback
+   via API token; headless → degrade with a clear report. New work → create the
    ticket first via `ticket-creation-skill` (`/create-ticket`), then
    continue.
 4. **Worktree**: locate the **main** checkout via
