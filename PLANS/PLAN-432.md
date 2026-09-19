@@ -7,11 +7,11 @@
 
 ## Acceptance Criteria
 
-- [ ] `deploy/setup.sh` parks a coexisting `~/.config/opencode/opencode.jsonc` as `opencode.jsonc.legacy-ignored` (rename, never delete) in two places: (a) before the config-exists prompt, guarded on BOTH files present, and (b) after a successful config copy, so exactly one live config remains on every exit path; each park uses `run_cmd mv` (dry-run-safe) with a `log_warn` naming the rename
-- [ ] `deploy/setup.ps1` mirrors both parks with the both-exist guard, `if (-not $DryRun)` around `Move-Item`, and `Write-LogWarn`
-- [ ] `tests/test_jsonc_sibling.bats` pins both park sites in both scripts (existence, both-exist guard form, dry-run form, ordering before the config-exists prompt); the suite passes
-- [ ] README documents the parking behavior and that `--rollback` restores prior state (undoing a park)
-- [ ] A jsonc-only machine (no `opencode.json`) that declines the config copy keeps its live `opencode.jsonc` untouched — no park fires
+- [x] `deploy/setup.sh` parks a coexisting `~/.config/opencode/opencode.jsonc` as `opencode.jsonc.legacy-ignored` (rename, never delete) in two places: (a) before the config-exists prompt, guarded on BOTH files present, and (b) after a successful config copy, so exactly one live config remains on every exit path; each park uses `run_cmd mv` (dry-run-safe) with a `log_warn` naming the rename
+- [x] `deploy/setup.ps1` mirrors both parks with the both-exist guard, `if (-not $DryRun)` around `Move-Item`, and `Write-LogWarn`
+- [x] `tests/test_jsonc_sibling.bats` pins both park sites in both scripts (existence, both-exist guard form, dry-run form, ordering before the config-exists prompt); the suite passes
+- [x] README documents the parking behavior and that `--rollback` restores prior state (undoing a park)
+- [x] A jsonc-only machine (no `opencode.json`) that declines the config copy keeps its live `opencode.jsonc` untouched — no park fires (both-exist guard requires `-f "$CONFIG_FILE"`; pinned by test 2's guard-count assertion)
 
 ## Dependency & Consumer Map
 
@@ -67,18 +67,21 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 3: docs, learnings, full gate
 
-- [ ] **3.1** Update the README deploy bullet at line 778 to state that a coexisting `opencode.jsonc` found during deploy is parked as `opencode.jsonc.legacy-ignored` (data preserved, never deleted), that this fires only when `opencode.json` is or becomes present, and that `--rollback` restores prior state and can undo a park
+- [x] **3.1** Update the README deploy bullet at line 778 to state that a coexisting `opencode.jsonc` found during deploy is parked as `opencode.jsonc.legacy-ignored` (data preserved, never deleted), that this fires only when `opencode.json` is or becomes present, and that `--rollback` restores prior state and can undo a park
     — **Why:** docs must match deployed behavior — the bullet currently implies `opencode.json` is the only config file the deploy manages; the rollback sentence covers review NOTE-2
     — **Done when:** README contains the parking claim and the rollback sentence adjacent to the existing config-copy bullet
     — **Consumers affected:** README readers; no code consumers
-- [ ] **3.2** Persist the two review-proposed learnings as `LEARNINGS/anti-patterns/park-read-config-file-needs-conflict-guard.md` and `LEARNINGS/anti-patterns/bare-mv-beside-run-cmd-breaks-dry-run.md` (2-line form per memory-hygiene house rules, evidence: this ticket + review session)
+    — **Done:** parking bullet + rollback sentence added under "The setup scripts automatically"; files: README.md; fixes: none
+- [x] **3.2** Persist the two review-proposed learnings as `LEARNINGS/anti-patterns/park-read-config-file-needs-conflict-guard.md` and `LEARNINGS/anti-patterns/bare-mv-beside-run-cmd-breaks-dry-run.md` (2-line form per memory-hygiene house rules, evidence: this ticket + review session)
     — **Why:** the architecture reviewer requested persistence; both patterns are generalizable beyond this fix (parking a runtime-READ config needs a conflict guard; new mutations must route through `run_cmd`/`-not $DryRun` because the legacy migrate block's bare `mv` is a leaky precedent)
     — **Done when:** both files exist under `LEARNINGS/anti-patterns/` and are committed in their own commit
     — **Consumers affected:** future LEARNINGS recall in this repo
-- [ ] **3.3** Run the full bats suite as the phase-3 verification gate input
+    — **Done:** both entries committed in their own commit (51bd95e) with ticket + review-session evidence; files: LEARNINGS/anti-patterns/{park-read-config-file-needs-conflict-guard,bare-mv-beside-run-cmd-breaks-dry-run}.md; fixes: none
+- [x] **3.3** Run the full bats suite as the phase-3 verification gate input
     — **Why:** the touched scripts anchor several other pins (`deploy_delegate`, `test_backup_rollback`); the full suite is the gate contract's evidence
     — **Done when:** `bats tests/` exits 0
     — **Consumers affected:** none beyond CI
+    — **Done:** full suite 340/340 ok, exit 0; files: none; fixes: none
 
 ## Technical Notes
 
@@ -101,3 +104,4 @@ None — single contained fix, no blocked-by tickets.
 
 - Phase 1 (1.1–1.4): GATE 9130a36 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bash -n clean; bats test_jsonc_sibling 2/2 ok, deploy_delegate 4/4 ok; lint/typecheck: none configured (no shellcheck/eslint/tsc manifests)
 - Phase 2 (2.1–2.2): GATE ec59536 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bats test_jsonc_sibling 3/3 ok (incl. ps1 mirror pin), deploy_delegate 4/4 ok; pwsh parser absent — structural pins are the ps1 gate
+- Phase 3 (3.1–3.3): GATE 51bd95e lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — full bats suite 340/340 ok exit 0
