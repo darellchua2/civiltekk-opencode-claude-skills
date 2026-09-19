@@ -17,6 +17,15 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### bats test bodies run under errexit — for-loop assertions are fail-fast
+
+- **Category**: solution
+- **File**: `solutions/bats-errexit-loop-failfast.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: bats-core runs test bodies under `set -e` — a failing grep/cmp inside a for-loop aborts the test immediately; do not flag multi-iteration assertion loops as false-pass (#417 review false positive)
+- **Date**: 2026-09-19
+
 ### Validator crashes on invalid input
 
 - **Category**: anti-pattern

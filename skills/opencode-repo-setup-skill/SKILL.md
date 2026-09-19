@@ -41,6 +41,7 @@ Cheap, read-only scans (no network):
 | Docs-heavy | `.docx`/`.pptx`/`.pdf` in repo | offer markitdown/docling packs |
 | Frontend | `package.json` with next/react | offer next-devtools |
 | Python | `pyproject.toml` | nothing MCP-specific by default |
+| GitHub repo | `.github/` or GitHub remote present AND `.github/ISSUE_TEMPLATE/` absent | offer issue-template scaffold (Step 2 extras) |
 
 Report findings in one table, then go to Step 2.
 
@@ -56,6 +57,7 @@ One multi-select question + one yes/no per extra. Options are built from the det
 - "Initialize CodeGraph index? (`codegraph init -i`)" — only if `.codegraph/` absent and repo is code-heavy; on accept, also append the CodeGraph rule block (below) to `<repo>/AGENTS.md`
 - "Append the LSP rule block to AGENTS.md?" — offer when a built-in LSP server matches the repo language (TS/JS → `typescript`+`eslint`; Python → `pyright`)
 - "Scaffold a minimal project AGENTS.md?" — repo rules only; NO MCP prose (that belongs to config + this skill)
+- "Scaffold GitHub issue templates? (bug report + feature request forms + chooser config)" — offer when the detection table signals a GitHub repo without `.github/ISSUE_TEMPLATE/`; copies `bug_report.yml`, `feature_request.yml`, `config.yml` from the installed `ticket-creation-skill/templates/` dir into `<repo>/.github/ISSUE_TEMPLATE/`. Create-if-absent ONLY — an existing file is skipped and reported, never overwritten. Source templates dir absent (per-skill install without `ticket-creation-skill`) → skip the offer with a note (mirrors the CodeGraph soft-skip). These are git-tracked repo files — they never touch `opencode.json`.
 
 ## Step 3 — Write (merge-write, delta-only)
 
@@ -133,13 +135,20 @@ Per-tool routing rules live at PROJECT level, not user level — this skill appe
 
 > On reviews with >10-file or shared-module changes where `opencode.json` has no `lsp` key and a built-in server matches: append a one-line LSP-enable recommendation (TS/JS/Next.js → `typescript`+`eslint`; Python → `pyright`). Recommend only — never auto-edit `opencode.json`.
 
+**Jira templates** (marker `<!-- opencode:jira-templates -->`) — offer appended when the repo is Jira-centric (detection table's Jira signal) and accepted:
+
+> Jira ticket descriptions follow the type templates — Bug: Problem description / Steps to Reproduce / Expected vs Actual / Environment / Logs / References (mirrors the canonical GitHub bug body). Story: "As a… I want… so that…" + acceptance-criteria checklist. Task: Context / Acceptance Criteria / Scope. Run the intake from `ticket-creation-skill` first (classify → collect required fields → validate → preview); never leave a Jira description empty.
+
+> GitHub repos get real form files via the issue-template scaffold above; Jira has no repo-file equivalent, so this rule block is the agent-side application path.
+
 ## Step 5 — Report
 
 State exactly:
 
 - **Enabled here**: list (e.g. `atlassian`) — takes effect on NEXT session start (opencode reads config at startup; no lazy-start mid-session)
 - **Estimated per-session cost**: atlassian ~5–6.5k tok; codegraph ~1.2k + zai-web-search ~0.35k (both already default-on, GIT-336)
-- **Rule blocks appended**: CodeGraph / LSP / none
+- **Rule blocks appended**: CodeGraph / LSP / Jira templates / none
+- **Files written**: `.github/ISSUE_TEMPLATE/{bug_report.yml,feature_request.yml,config.yml}` (per file actually written; none if all already existed) + appended AGENTS.md blocks
 - **Revert**: delete the added `mcp.<server>` keys (or the whole file if we created it); remove appended AGENTS.md blocks
 - **Global untouched**: `~/.config/opencode/config.json` unchanged; other repos unaffected
 

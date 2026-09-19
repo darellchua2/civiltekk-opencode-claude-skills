@@ -18,7 +18,7 @@ to `worktree-pipeline-skill` (invoked via `/run-worktree-pipeline`).
 I create well-structured tickets on GitHub Issues or JIRA — nothing else:
 
 1. **Detect Platform**: GitHub Issues or JIRA based on user input and project setup
-2. **Gather Ticket Requirements**: structured description following industry best practices
+2. **Intake**: classify variant (bug | feature | task), collect its required fields, validate, preview — mirroring a human filling the issue form
 3. **Determine Ticket Scope**: single ticket vs parent with sub-issues/subtasks
 4. **Create Ticket**: GitHub CLI (`gh`) or Atlassian MCP with appropriate labels/type
 
@@ -81,37 +81,60 @@ atlassian_getVisibleJiraProjects --cloudId "$CLOUD_ID" 2>/dev/null
 
 Set `PLATFORM` = `github` or `jira`.
 
-### Step 2: Gather Ticket Description
+### Step 2: Intake — classify, collect, validate, preview, submit
 
-Prompt the user for a structured ticket description:
+The agent runs the same intake a human runs in the browser issue form. Never invent field values; ask for what's missing.
 
-1. **Title/Summary** (required): concise, max 72 characters
-2. **Overview** (required): what this ticket accomplishes
-3. **Acceptance Criteria** (required): definition of done (bullet points)
-4. **Scope** (required): files or areas affected
-5. **Technical Notes** (optional): implementation considerations
+**Stage 1 — Classify.** Determine the variant from content (delegate to `git-issue-labeler` / `jira-ticket-labeler` at Step 4; the variant here selects the template):
 
-```
-Please provide the following for your ticket:
+- `bug` — something broken, reproducible → `bug` template (repo forms: `.github/ISSUE_TEMPLATE/bug_report.yml`)
+- `feature` / `task` — new capability or contained work → `feature` template (`feature_request.yml`)
 
-1. **Title** (required): Brief title for the ticket
-   Example: "Implement user authentication API"
+**Stage 2 — Intake.** Collect the variant's fields. Batch a `question` call for every required field missing from the user's request. Field labels below are canonical — they match the template files in `templates/` verbatim so agent-created and human-created tickets are structurally identical.
 
-2. **Overview** (required): What does this ticket accomplish?
-   Example: "Add JWT-based authentication endpoints for user login/registration"
+**Bug variant** (mirrors `bug_report.yml`):
 
-3. **Acceptance Criteria** (required): How do we know it's done?
-   Example:
-   - Users can register with email/password
-   - Users can login and receive JWT token
-   - Protected routes validate JWT
+| Field | Required | Notes |
+|-------|----------|-------|
+| Title | yes | ≤72 chars |
+| Problem description | yes | what's happening |
+| Steps to reproduce | yes | numbered |
+| Expected vs Actual | yes | one line each |
+| Environment | yes | OS, Node, opencode version, install method |
+| Logs / screenshots | no | rendered as code |
+| References | no | related issues, docs |
 
-4. **Scope** (required): What files/areas will be affected?
-   Example: src/api/auth/, src/middleware/, tests/auth/
+**Feature / Task variant** (mirrors `feature_request.yml`):
 
-5. **Technical Notes** (optional): Any implementation details?
-   Example: Use bcrypt for password hashing, 24h token expiry
-```
+| Field | Required | Notes |
+|-------|----------|-------|
+| Title | yes | ≤72 chars |
+| Problem / use case | yes | why this exists |
+| Proposed solution | yes | what to build |
+| Alternatives considered | no | |
+| Acceptance criteria | yes | definition of done (bullet points) |
+| Scope | yes | agent flow only — flows to the PLAN, never the browser form |
+| References | no | related issues, docs |
+
+**Stage 3 — Validate.** Required fields must be non-empty. A required field the user didn't supply means ask, not guess.
+
+**Stage 4 — Preview.** Render the ticket (title + body/description) and show it to the user for confirmation or edits before any creation call — the equivalent of reading the form's preview pane.
+
+**Stage 5 — Submit.** Only after confirmation, create via `gh` or Jira (Step 4).
+
+**Agent behavior rules:**
+
+- **Ask, don't invent**: missing required field → batched question round; never fabricate values.
+- **Search first**: search existing issues before submit — the human form's required search-first attestation has an agent-side equivalent.
+- **Parity of required-ness**: the required set equals the form's `validations.required`.
+- **Headless/CI**: no asks — proceed only if every required field came in the original request; otherwise fail naming the missing fields.
+- **Sub-issues/subtasks**: each sub-item gets its own intake round; a sub-item without acceptance criteria fails validation.
+
+**Ticket-vs-plan boundary** (this skill is upstream of `worktree-pipeline-skill`):
+
+1. A ticket must be executable by someone who never saw the discussion — anything less belongs in comments, anything more belongs in the PLAN.
+2. Every PLAN references exactly one ticket ID; the ticket's Acceptance Criteria become the PLAN's definition of done. The plan inherits AC; it never rewrites them.
+3. Technical Notes (implementation considerations) belong to the PLAN, never the ticket body.
 
 ### Step 3: Determine Ticket Scope
 
@@ -119,6 +142,44 @@ Ask: "Should this be broken into smaller sub-issues/subtasks?"
 
 - **Parent with Sub-items**: creates a parent ticket, then prompts for sub-items (repeat until done), creates each linked to the parent
 - **Single Ticket**: one ticket for contained work
+
+### Rendering the Ticket Body
+
+One canonical schema, two renderings. The variant selects the sections; sections mirror the form headings so human and agent tickets are structurally identical. Prefix agent-created titles with the form's `title` prefix (`[Bug]: ` / `[Feature]: `) so agent- and form-created titles match triage filters.
+
+**GitHub (bug variant)** — sections as `###` headings:
+
+```markdown
+### Problem description
+<problem>
+
+### Steps to reproduce
+1. <step>
+2. <step>
+
+### Expected vs Actual
+Expected: <...>
+Actual: <...>
+
+### Environment
+- OS: <...> · Node: <...> · opencode: <...> · Install: <...>
+
+### Logs / screenshots
+<shell output or screenshot refs — omit if none>
+
+### References
+- <issue/doc links — omit if none>
+```
+
+**GitHub (feature/task variant)**: `### Problem / use case`, `### Proposed solution`, `### Alternatives considered` (omit if none), `### Acceptance criteria` (checklist), `### References` (omit if none).
+
+**Jira description mapping** (plain text/ADF):
+
+| Jira type | Rendering |
+|-----------|-----------|
+| Bug | Same sections as the GitHub bug body |
+| Story | `As a <who>, I want <what>, so that <why>` + acceptance-criteria checklist |
+| Task | Context (problem/solution) + acceptance criteria + scope |
 
 ### Step 4: Create Ticket
 
@@ -254,16 +315,18 @@ gh auth login && gh auth status
 ```
 User: /create-ticket Add user authentication API
 
-Agent: Please provide:
-1. **Title**: Implement user authentication API ✓
-2. **Overview**: Add JWT-based authentication endpoints
-3. **Acceptance Criteria**: register/login/logout work; protected routes validate JWT
-4. **Scope**: src/api/auth/, src/middleware/, tests/auth/
-5. **Technical Notes**: bcrypt, 24h token expiry
+Agent: Classified as feature. Missing required fields: Problem / use case,
+       Acceptance criteria, Scope.
+       (batched question round — user answers all three)
+Agent: Preview —
+       Title: "Add user authentication API"
+       ### Problem / use case: Users cannot log in or register
+       ### Proposed solution: JWT-based auth endpoints for login/registration
+       ### Acceptance criteria: register/login work; protected routes validate JWT
+       (Scope noted for the PLAN: src/api/auth/, src/middleware/, tests/auth/)
+       Create as drafted? (y / edit)
 
-User: (provides 2-5)
-Agent: Single ticket or parent with sub-issues?
-User: Single
+User: y
 
 Agent: Labels detected: enhancement
 Created GitHub issue: #456 → https://github.com/org/repo/issues/456

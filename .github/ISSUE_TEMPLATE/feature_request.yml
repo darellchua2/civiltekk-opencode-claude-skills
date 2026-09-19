@@ -1,0 +1,52 @@
+name: 🚀 Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. A clear problem statement moves the conversation from "I want a thing" to "here is what this would solve."
+  - type: checkboxes
+    id: search-first
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please search to see if this has already been requested.
+      options:
+        - label: I have searched the existing issues
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      description: What problem does this solve? Who needs it and why?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: What should be built? Example usage welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you considered and why this one wins.
+    validations:
+      required: false
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: How do we know it's done? Bullet points.
+    validations:
+      required: true
+  - type: input
+    id: references
+    attributes:
+      label: References
+      description: Related issues, docs, or discussions (optional).
+    validations:
+      required: false
