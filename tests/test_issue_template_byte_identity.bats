@@ -19,6 +19,9 @@ SKILL_MD="skills/ticket-creation-skill/SKILL.md"
 }
 
 @test "bug_form_labels_match_skill_field_spec" {
+  # Labels are matched as BRE substrings — safe for the current set (only
+  # literal '/'). Keep new labels free of . ( [ * or switch to grep -F and
+  # drop the '$' anchor.
   for label in "Problem description" "Steps to reproduce" "Expected vs Actual" "Environment" "Logs / screenshots" "References"; do
     grep -q "label: $label$" "$TEMPLATES_DIR/bug_report.yml"
     grep -q "$label" "$SKILL_MD"

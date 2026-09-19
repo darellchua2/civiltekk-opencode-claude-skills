@@ -137,7 +137,7 @@ Per-tool routing rules live at PROJECT level, not user level — this skill appe
 
 **Jira templates** (marker `<!-- opencode:jira-templates -->`) — offer appended when the repo is Jira-centric (detection table's Jira signal) and accepted:
 
-> Jira ticket descriptions follow the type templates — Bug: Environment / Steps to Reproduce / Expected / Actual / Logs / Workaround. Story: "As a… I want… so that…" + acceptance-criteria checklist. Task: Context / Acceptance Criteria / Scope. Run the intake from `ticket-creation-skill` first (classify → collect required fields → validate → preview); never leave a Jira description empty.
+> Jira ticket descriptions follow the type templates — Bug: Problem description / Steps to Reproduce / Expected vs Actual / Environment / Logs / References (mirrors the canonical GitHub bug body). Story: "As a… I want… so that…" + acceptance-criteria checklist. Task: Context / Acceptance Criteria / Scope. Run the intake from `ticket-creation-skill` first (classify → collect required fields → validate → preview); never leave a Jira description empty.
 
 > GitHub repos get real form files via the issue-template scaffold above; Jira has no repo-file equivalent, so this rule block is the agent-side application path.
 
@@ -147,8 +147,8 @@ State exactly:
 
 - **Enabled here**: list (e.g. `atlassian`) — takes effect on NEXT session start (opencode reads config at startup; no lazy-start mid-session)
 - **Estimated per-session cost**: atlassian ~5–6.5k tok; codegraph ~1.2k + zai-web-search ~0.35k (both already default-on, GIT-336)
-- **Rule blocks appended**: CodeGraph / LSP / none
-- **Files written**: `.github/ISSUE_TEMPLATE/{bug_report.yml,feature_request.yml,config.yml}` + `AGENTS.md` blocks (revert = delete the dir / remove the blocks)
+- **Rule blocks appended**: CodeGraph / LSP / Jira templates / none
+- **Files written**: `.github/ISSUE_TEMPLATE/{bug_report.yml,feature_request.yml,config.yml}` (per file actually written; none if all already existed) + appended AGENTS.md blocks
 - **Revert**: delete the added `mcp.<server>` keys (or the whole file if we created it); remove appended AGENTS.md blocks
 - **Global untouched**: `~/.config/opencode/config.json` unchanged; other repos unaffected
 

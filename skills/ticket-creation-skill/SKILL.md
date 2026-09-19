@@ -125,6 +125,7 @@ The agent runs the same intake a human runs in the browser issue form. Never inv
 **Agent behavior rules:**
 
 - **Ask, don't invent**: missing required field → batched question round; never fabricate values.
+- **Search first**: search existing issues before submit — the human form's required search-first attestation has an agent-side equivalent.
 - **Parity of required-ness**: the required set equals the form's `validations.required`.
 - **Headless/CI**: no asks — proceed only if every required field came in the original request; otherwise fail naming the missing fields.
 - **Sub-issues/subtasks**: each sub-item gets its own intake round; a sub-item without acceptance criteria fails validation.
@@ -144,7 +145,7 @@ Ask: "Should this be broken into smaller sub-issues/subtasks?"
 
 ### Rendering the Ticket Body
 
-One canonical schema, two renderings. The variant selects the sections; sections mirror the form headings so human and agent tickets are structurally identical.
+One canonical schema, two renderings. The variant selects the sections; sections mirror the form headings so human and agent tickets are structurally identical. Prefix agent-created titles with the form's `title` prefix (`[Bug]: ` / `[Feature]: `) so agent- and form-created titles match triage filters.
 
 **GitHub (bug variant)** — sections as `###` headings:
 
@@ -322,7 +323,7 @@ Agent: Preview —
        ### Problem / use case: Users cannot log in or register
        ### Proposed solution: JWT-based auth endpoints for login/registration
        ### Acceptance criteria: register/login work; protected routes validate JWT
-       ### Scope: src/api/auth/, src/middleware/, tests/auth/
+       (Scope noted for the PLAN: src/api/auth/, src/middleware/, tests/auth/)
        Create as drafted? (y / edit)
 
 User: y
