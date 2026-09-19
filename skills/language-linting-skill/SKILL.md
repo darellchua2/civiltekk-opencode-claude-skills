@@ -28,7 +28,7 @@ Linting a polyglot codebase; decoding a specific linter error; configuring lint 
 ## House rules
 
 - **Fix semantics**: autofix for mechanical issues (`--fix`, `ruff format`); manual review for semantic findings (PMD design, SpotBugs correctness, Roslyn analyzers) — never blanket-suppress.
-- **Zero NEW errors on changed files** is the gate (pre-existing noted, not blocked) — matches `plan-automation-loop-skill` gate semantics.
+- **Zero NEW errors on changed files** is the gate (pre-existing noted, not blocked) — matches `plan-execution-skill` --gate semantics.
 - Suppressions carry a reason and scope (`// noqa: E501 # long URL in docstring`), never bare `// eslint-disable-next-line`.
 - Error-code decoding: match the code to the rule family (Ruff `E/F/I/N/UP/B/SIM/C4`, ESLint plugin prefixes, Checkstyle module names) and fix the pattern, not the instance.
 - Spring Boot: enable Bean Validation + actuator health checks as part of the lint pass config (house standard for Java services).

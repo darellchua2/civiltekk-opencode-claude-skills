@@ -57,7 +57,7 @@ permissions:
     resource: jira-status-updater-skill
     effect: allow
   - action: skill
-    resource: plan-updater-skill
+    resource: plan-execution-skill
     effect: allow
   - action: skill
     resource: changelog-python-cliff-skill
@@ -156,7 +156,7 @@ Workflow:
     - documentation-subagent scans those files for new/changed public symbols missing docstrings and fills them per language standard (Python PEP 257, Javadoc, JSDoc/TSDoc, C# XML) — docstrings only, no README/coverage work
     - Re-run lint (and tests where doctests exist) after the edits, then commit docstring additions with semantic format before PR creation
 3. Generate coverage badges if applicable
-4. Update branch-specific PLAN.md (invoke plan-updater skill)
+4. Update branch-specific PLAN.md (invoke plan-execution-skill in --update mode)
 5. Create PR using `pr-creation-workflow` (gate contract + memo check per `verification-loop-skill`)
 6. Update JIRA ticket with PR link (if applicable)
 7. Use skills for specialized tasks (linting, testing, docs as needed)
@@ -165,7 +165,7 @@ Workflow:
 **Pipeline mode** (parent states gates are green — e.g. worktree-pipeline Step 10 after `/run-plan`): skip steps 2, 2.5, 3, and 4 — the gate ran per-phase upstream, docstrings were filled before the gate, coverage badges would mutate the README after code review, and the PLAN is ticked and committed; CI (`gh pr checks`) is the merge gate. Proceed via step 1 (framework detect) → step 5 (PR create) → step 6 (JIRA link); step 8's merge handoff is moot — the orchestrator owns the merge via the CI gate. Standalone callers (direct "create pr" without a green-gates assertion) keep the full workflow. In pipeline mode this skip supersedes every other restatement of steps 2/2.5/3/4 in this file (e.g. the PLAN.md Sync section, the docstring-sweep delegation bullet, the closing gates line) — those apply on the standalone path only.
 
 PLAN.md Sync:
-- Before creating PR, invoke plan-updater skill
+- Before creating PR, invoke plan-execution-skill in --update mode
 - Updates PLAN progress checkboxes based on commits
 - Commits PLAN changes with semantic format
 - Skips gracefully if no PLAN file exists

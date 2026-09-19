@@ -68,6 +68,6 @@ Analyze session context and compact it: classify content by retention priority, 
 - `continuous-learning-skill` — extract patterns before compacting (Tier 1)
 - `verification-loop-skill` — compaction preserves gate memos + verification state
 - `eval-harness-skill` — eval results are Tier 2 (keep summaries)
-- `plan-updater-skill` — PLAN.md files are natural compaction anchors
+- `plan-execution-skill` (--update) — PLAN.md files are natural compaction anchors
 
 > **Removal note (2026-09-19, #409 trim per LEARNINGS #383 recipe):** dropped the worked compaction-strategy example, the multi-session plan template (variant of the session brief), the Example Usage section, and Best Practices prose (compressed into "When to Compact"). Kept verbatim: frontmatter, retention tiers, workflow contract, session-brief output template.

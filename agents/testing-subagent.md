@@ -54,7 +54,7 @@ permissions:
     resource: nextjs-unit-test-creator-skill
     effect: allow
   - action: skill
-    resource: plan-updater-skill
+    resource: plan-execution-skill
     effect: allow
   - action: skill
     resource: continuous-learning-skill
@@ -120,7 +120,7 @@ Workflow:
    - Integration scenarios
 5. Ensure tests follow project conventions and naming patterns
 6. Run the generated test suite (`npm test`, `pytest`, etc.) to verify pass/fail and capture coverage output
-7. Update branch-specific PLAN.md (invoke plan-updater skill)
+7. Update branch-specific PLAN.md (invoke plan-execution-skill in --update mode)
 
 Bash runs the project's own test suite and coverage commands only; never modify source code — test files are your write scope (frontmatter `edit: allow`); never touch `.env`.
 

@@ -27,7 +27,7 @@ New feature work where behavior is specifiable up front; bug fixes (write the fa
 
 **Framework hooks** (the non-generic part): pytest (`pytest-watch`/`pytest -x -q` per cycle; fixtures for arrangement, parametrize for triangulation) · Jest/Vitest (`vitest watch`, `test.each`) · Next.js: component tests via Testing Library (user-centric queries), route handlers tested as functions (`await POST(request)`), App Router E2E only as a final layer.
 
-**Related:** `plan-automation-loop-skill` (its Step 5 mandates tests for new code before the gate) · `testing-subagent` (generation).
+**Related:** `plan-execution-skill` (--gate; its 4b mandates tests for new code before the gate) · `testing-subagent` (generation).
 
 ## Iteration Protocol (opt-in)
 

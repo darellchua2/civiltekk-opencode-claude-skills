@@ -212,16 +212,6 @@
         },
         {
             "action": "skill",
-            "resource": "plan-automation-loop-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "plan-updater-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
             "resource": "pr-creation-workflow-skill",
             "effect": "allow"
         },
@@ -602,7 +592,7 @@
     "commands": {
         "run-plan": {
             "description": "Fully-automated plan execution loop — implement PLAN*.md phase-by-phase (lint+build+test+e2e gate, then commit + push per phase). Deliberate trigger; soft guardrails — for long hands-off runs prefer the runtime-guarded /goal path (@prevalentware/opencode-goal-plugin, user-space; Docker awaits #387).",
-            "template": "Load the skill `plan-automation-loop-skill` and run it to fully implement the plan file given as the argument: $ARGUMENTS",
+            "template": "Load the skill `plan-execution-skill` in --gate mode and run it to fully implement the plan file given as the argument: $ARGUMENTS",
             "agent": "build"
         },
         "create-ticket": {
