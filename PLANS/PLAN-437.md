@@ -83,10 +83,11 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
     — **Done:** Prerequisites block added naming pptx-generate-slide-skill + npx install command; `_REPO_ROOT` deleted from ppt_builder.py; dead `_SKILLS/_REPO_ROOT/_FILLER_SCRIPTS` lines removed identically from all 3 vendored test_master_repairer.py copies (pairwise identity re-proven); sibling-path grep shows only the 2 declared modifier→slide refs; files: pptx-template-modifier-skill/SKILL.md, pptx-generate-slide-skill/scripts/ppt_builder.py, 3× scripts/_common/tests/test_master_repairer.py; fixes: none
 
 ### Phase 3: Delete the shared package
-- [ ] **3.1** `git rm -r skills/_common`
+- [x] **3.1** `git rm -r skills/_common`
     — **Why:** with three vendored copies live, the shared dir is dead code whose existence invites new sibling escapes (AC3); drift is now policed by the Phase 5 identity check instead of a shared source.
     — **Done when:** dir absent from the tree; repo-wide `grep -rn 'skills/_common'` (excluding `PLANS/`, `.git/`) returns nothing.
     — **Consumers affected:** none (all consumers rewired in Phase 2).
+    — **Done:** dir removed (10 files); repo-wide grep (excl. PLANS/.git) returns zero hits; bats 341/341 green; files: skills/_common/ (deleted); fixes: none
 
 ### Phase 4: Document the contract
 - [ ] **4.1** Add "Skill Isolation Contract" section to root `AGENTS.md`: every `skills/<name>-skill/` must be fully self-contained so `npx add <name>` works standalone; cross-skill code duplication is intentional (per-skill copy model, #437); no new shared `_`-prefixed dirs; the pptx vendored `scripts/_common` copies must stay in sync (fix once, copy to all three)
@@ -134,4 +135,5 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
 
 - Phase 1 (1.1–1.3): GATE 2c04437 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — full bats suite 341/341 ok exit 0; pairwise `diff -r` of the three vendored trees empty; lint/typecheck/build: none configured (no scripts/Makefile manifests)
 - Phase 2 (2.1–2.5): GATE 8ea7258 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — slide pytest 529 passed/9 skipped (incl. vendored 23), modifier 120 passed, full bats 341/341 ok; vendored trees pairwise identical after cleanup; PLAN amended pre-commit (6f4132e) to declare modifier→slide handoff
+- Phase 3 (3.1): GATE c7a4d0e lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — repo-wide grep zero `skills/_common` refs (excl. PLANS/.git); full bats suite 341/341 ok
 
