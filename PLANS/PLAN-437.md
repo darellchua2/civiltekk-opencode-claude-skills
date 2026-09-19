@@ -6,12 +6,12 @@
 
 ## Acceptance Criteria
 
-- [ ] AC1: Each pptx skill's pytest suite passes from its own directory only (no `_common` outside the skill dir on the path)
-- [ ] AC2: No file under `skills/` references `_common` or sibling skill paths, except (a) each skill's own vendored `scripts/_common` and (b) the single declared handoff `pptx-template-modifier-skill → pptx-generate-slide-skill` (documented prerequisite + guard allowlist)
-- [ ] AC3: `skills/_common/` deleted
-- [ ] AC4: AGENTS.md "Skill Isolation Contract" section exists and states duplication is intentional
-- [ ] AC5: `tests/test_skill_isolation.bats` green, including pairwise-identity check on the three vendored copies
-- [ ] AC6: Full bats suite passes (count-drift check included)
+- [x] AC1: Each pptx skill's pytest suite passes from its own directory only (no `_common` outside the skill dir on the path)
+- [x] AC2: No file under `skills/` references `_common` or sibling skill paths, except (a) each skill's own vendored `scripts/_common` and (b) the single declared handoff `pptx-template-modifier-skill → pptx-generate-slide-skill` (documented prerequisite + guard allowlist)
+- [x] AC3: `skills/_common/` deleted
+- [x] AC4: AGENTS.md "Skill Isolation Contract" section exists and states duplication is intentional
+- [x] AC5: `tests/test_skill_isolation.bats` green, including pairwise-identity check on the three vendored copies
+- [x] AC6: Full bats suite passes (count-drift check included)
 
 ## Dependency & Consumer Map
 
@@ -104,15 +104,17 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
     — **Done:** 4 guards shipped; sibling scan scoped to runtime carriers (SKILL.md + *.py) after it correctly flagged slide's design-doc file-tree diagram as prose-only; mutation canary proves each test fails on exactly its own violation class (M1 shared-common→test1, M2 py-sibling→test3, M3 drift→test4, M4 SKILL.md-sibling→test3); files: tests/test_skill_isolation.bats; fixes: sibling-scan scope (docs/** prose excluded — diagram false positive)
 
 ### Phase 6: Full verification gates
-- [ ] **6.1** Run all three pptx skills' pytest suites standalone (`python3 -m pytest` from each `scripts/` dir) and the full bats suite (`bats tests/`)
+- [x] **6.1** Run all three pptx skills' pytest suites standalone (`python3 -m pytest` from each `scripts/` dir) and the full bats suite (`bats tests/`)
     — **Why:** proves the vendoring broke nothing and pre-existing suites stay green (AC1, AC6).
     — **Done when:** all suites exit 0.
     — **Consumers affected:** none (verification only).
+    — **Done:** slide 529 passed/9 skipped (incl. vendored 23), modifier 120 passed, generate-template vendored suite 23 passed from its own dir, full bats 345/345 (341 pre-existing + 4 new guards); files: none (verification); fixes: none
 
-- [ ] **6.2** Registry sanity: run `node installer/build-registry.mjs` and confirm `installer/registry.json` is byte-identical (no frontmatter changed → no registry churn)
+- [x] **6.2** Registry sanity: run `node installer/build-registry.mjs` and confirm `installer/registry.json` is byte-identical (no frontmatter changed → no registry churn)
     — **Why:** guards against accidental registry drift from the skills/ tree change; AGENTS.md requires registry rebuild after frontmatter changes only.
     — **Done when:** `git diff --stat installer/registry.json` empty after rebuild.
     — **Consumers affected:** none (verification only).
+    — **Done:** rebuild produced identical counts (34 agents / 146 skills) and zero entry diffs — only the `generatedAt` timestamp churned; reverted the timestamp to keep the tree clean, content proven unchanged; files: none; fixes: none
 
 ## Technical Notes
 
@@ -140,4 +142,5 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
 - Phase 3 (3.1): GATE c7a4d0e lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — repo-wide grep zero `skills/_common` refs (excl. PLANS/.git); full bats suite 341/341 ok
 - Phase 4 (4.1): GATE 832e73b lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — full bats suite 341/341 ok; section verified present with all four contract statements + exception rule
 - Phase 5 (5.1): GATE 1c568b1 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — guard 4/4 ok; mutation canary (4 planted violations → each caught by exactly its test); full bats suite 345/345 ok
+- Phase 6 (6.1–6.2): GATE final lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — slide 529✓/9skip, modifier 120✓, generate-template vendored 23✓ (each from own dir, skills/_common now deleted so external resolution is impossible); full bats 345/345; registry rebuild content-identical (timestamp-only churn reverted); all 6 ACs verified
 
