@@ -6,12 +6,12 @@
 
 ## Acceptance Criteria
 
-- [ ] `.github/ISSUE_TEMPLATE/{bug_report.yml,feature_request.yml,config.yml}` exist; field labels match the skill's spec tables verbatim
-- [ ] `ticket-creation-skill` documents intake cycle, field specs, render templates, ticket-vs-plan boundary rules
-- [ ] `skills/ticket-creation-skill/templates/` carries the 3 forms (byte-identical to repo-level ones)
-- [ ] `opencode-repo-setup-skill` offers + performs the scaffold idempotently (skip-if-present, never overwrite)
-- [ ] `node installer/build-registry.mjs` run; `registry.json` committed
-- [ ] Test suite passes
+- [x] `.github/ISSUE_TEMPLATE/{bug_report.yml,feature_request.yml,config.yml}` exist; field labels match the skill's spec tables verbatim
+- [x] `ticket-creation-skill` documents intake cycle, field specs, render templates, ticket-vs-plan boundary rules
+- [x] `skills/ticket-creation-skill/templates/` carries the 3 forms (byte-identical to repo-level ones)
+- [x] `opencode-repo-setup-skill` offers + performs the scaffold idempotently (skip-if-present, never overwrite)
+- [x] `node installer/build-registry.mjs` run; `registry.json` committed
+- [x] Test suite passes
 
 ## Dependency & Consumer Map
 
@@ -98,22 +98,30 @@ Cross-module nodes exist (templates ↔ setup-skill ↔ registry build) → arch
 
 ### Phase 5: Registry sync + verification gates
 
-- [ ] **5.1** Run `node installer/build-registry.mjs`; commit regenerated `registry.json` if changed
+- [x] **5.1** Run `node installer/build-registry.mjs`; commit regenerated `registry.json` if changed
     — **Why:** Repo contract: any SKILL.md edit must be followed by a registry rebuild and commit.
     — **Done when:** Command exits 0; `git status` shows `registry.json` either unchanged or committed.
     — **Consumers affected:** `installer/init.mjs` registry consumers.
-- [ ] **5.2** Write `tests/test_issue_template_byte_identity.bats` pinning `cmp -s` on the 3 file pairs (repo-level `.github/ISSUE_TEMPLATE/*.yml` vs `skills/ticket-creation-skill/templates/*.yml`)
+    — **Done:** registry rebuilt (agents=34, skills=151); registry.json unchanged (frontmatter untouched, as predicted); files: none; fixes: none
+- [x] **5.2** Write `tests/test_issue_template_byte_identity.bats` pinning `cmp -s` on the 3 file pairs (repo-level `.github/ISSUE_TEMPLATE/*.yml` vs `skills/ticket-creation-skill/templates/*.yml`)
     — **Why:** Review finding W2: byte-identity verified only by a one-time `cmp` decays silently on the next edit to either copy; the repo idiom (LEARNINGS: bats-structure-pin) pins load-bearing invariants in bats.
     — **Done when:** Test file exists and every pair assertion passes in 5.3's run.
     — **Consumers affected:** future edits to either copy of the forms (regression net).
-- [ ] **5.3** Run the bats test suite (`bats tests/`)
+    — **Done:** 3 tests written (byte-identity pair pin + bug/feature label-parity vs SKILL.md tables); all 3 pass standalone; files: tests/test_issue_template_byte_identity.bats; fixes: none
+- [x] **5.3** Run the bats test suite (`bats tests/`)
     — **Why:** Skill-structure and count validators must pass after new files appear inside a skill dir; the new byte-identity pin rides the same run.
     — **Done when:** All bats tests exit 0.
     — **Consumers affected:** none (verification only).
-- [ ] **5.4** Tick the acceptance-criteria checkboxes on GitHub issue #417 body via `gh issue edit`
+    — **Done:** full suite 343/343 ok, exit 0; files: none; fixes: none
+- [x] **5.4** Tick the acceptance-criteria checkboxes on GitHub issue #417 body via `gh issue edit`
     — **Done when:** `gh issue view 417` shows all 6 checkboxes ticked.
     — **Why:** The ticket is the artifact of record; its AC must reflect verified completion before PR merge.
     — **Consumers affected:** issue #417 readers/reviewers.
+    — **Done:** gh issue edit applied; body shows 6/6 `[x]`; stale setup.sh:1475 citation corrected to the init.mjs delegation (review Info note); files: issue #417 body; fixes: none
+
+## Gate Trace
+
+GATE (feat/417, phases 1-5 tree) lint=- typecheck=- build=t unit=t e2e=n.a. — build: `node installer/build-registry.mjs` exit 0 (registry unchanged); unit: `bats tests/` 343/343 ok; lint/typecheck: none configured (no eslint/tsc manifests); e2e: no frontend touched.
 
 ## Technical Notes
 
