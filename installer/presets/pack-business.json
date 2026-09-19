@@ -3,7 +3,7 @@
   "name": "business",
   "description": "BD/founder workflows: startup founder + CEO + discovery + requirements + technical design, with business/pitch/BD skills.",
   "agents": [
-    "startup-founder-primary-agent",
+    "startup-founder-subagent",
     "startup-ceo-subagent",
     "discovery-specialist-subagent",
     "requirements-specialist-subagent",

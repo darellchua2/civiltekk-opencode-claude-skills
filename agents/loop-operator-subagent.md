@@ -3,6 +3,7 @@ description: >-
   Autonomous loop operator — iterates tasks until completion criteria are met,
   with self-correction and progress tracking.
 mode: subagent
+hidden: true
 steps: 25
 permissions:
   - action: read
