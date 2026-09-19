@@ -156,4 +156,4 @@ None. No `blocked-by:` tickets.
 
 ## Execution Trace
 
-- Phase 1 (1.1–1.3): GATE a48f934+ lint=n.a typecheck=n.a build=t unit=t e2e=n.a — compose build green; smokes: opencode v2.0.8, pandas 3.0.6 in venv, 34/147/8 content entries; bats 334/334 ok
+- Phase 1 (1.1–1.3): GATE a14eee2 lint=n.a typecheck=n.a build=t unit=t e2e=n.a — compose build green; smokes: opencode v2.0.8, pandas 3.0.6 in venv, 34/147/8 content entries; bats 334/334 ok
