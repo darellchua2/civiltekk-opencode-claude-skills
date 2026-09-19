@@ -52,6 +52,7 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done when:** The ODA entry names the writer script and the LibreDWG entry states write support is out of scope.
     — **Consumers affected:** Skill users on Linux; no code consumers.
     — **Done:** ODA entry names to_dwg.py + writefile + --version default; LibreDWG entry states write out-of-scope, DWG writing via ODA only; files: skills/cad-redraw-skill/references/linux-toolchain.md; fixes: none
+    — **Done (review iteration 1):** the API name above is outdated as written — the shipped code calls `odafc.convert` (`writefile` does not exist in ezdxf v1.4.4, verified against upstream tag); linux-toolchain.md now names `odafc.convert`; fixes: 1 BLOCK + 2 WARN + 3 NOTE
 
 ### Phase 3: verification gate
 
