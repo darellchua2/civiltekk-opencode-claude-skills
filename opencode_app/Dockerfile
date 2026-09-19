@@ -1,18 +1,47 @@
-FROM node:24-bookworm-slim
+# syntax=docker/dockerfile:1
+
+# ── Stage 1: node ────────────────────────────────────────────────────────────
+# Toolchain source only. The runtime stage copies /usr/local (node, npm,
+# corepack) from this stage instead of installing Node via apt or nodesource.
+FROM node:24-bookworm-slim AS node
+
+# ── Stage 2: python-deps ─────────────────────────────────────────────────────
+# Builds the venv the runtime stage copies. MUST use the same base as the
+# runtime stage so the venv's interpreter path and glibc match after the copy
+# (venvs do not relocate).
+FROM python:3.12-slim-bookworm AS python-deps
+
+RUN python3 -m venv /opt/python-env
+
+# PLAN-GIT-262: bake the privacy-hardened markitdown MCP launcher into the
+# venv here — /app/mcp-servers/... does not exist until the runtime stage's
+# content COPYs, so the source must be COPY'd in-stage first. Do NOT use uv -
+# it is not installed in this image.
+COPY opencode_app/mcp-servers/markitdown-local-mcp /tmp/markitdown-local-mcp
+RUN /opt/python-env/bin/pip install --no-cache-dir \
+    "openpyxl>=3.1.0" \
+    "pandas>=3.0.0" \
+    "pdfplumber>=0.11.0" \
+    "requests>=2.32.0" \
+    "numpy>=2.0.0" \
+    "fastapi>=0.115.0" \
+    /tmp/markitdown-local-mcp
+
+# ── Stage 3: runtime ─────────────────────────────────────────────────────────
+FROM python:3.12-slim-bookworm
 
 LABEL org.opencontainers.image.title="opencode-config-template" \
       org.opencontainers.image.description="OpenCode standalone web endpoint - configurable agent/skill runner" \
       org.opencontainers.image.source="https://github.com/darellchua2/opencode-config-template"
 
-ARG OPENCODE_VERSION=2.0.3
+ARG OPENCODE_VERSION=2.0.8
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Runtime tools only — no python3-pip/python3-venv (the venv arrives prebuilt
+# from python-deps) and no build tooling.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        python3 \
-        python3-pip \
-        python3-venv \
         ca-certificates \
         curl \
         git \
@@ -23,26 +52,19 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+COPY --from=node /usr/local /usr/local
+COPY --from=python-deps /opt/python-env /opt/python-env
+
+ENV PATH="/opt/python-env/bin:${PATH}" \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
     PUPPETEER_SKIP_DOWNLOAD=true
 
 # OpenCode v2 ships on npm as the scoped package @opencode/cli (the legacy
 # opencode-ai package remains v1-only and silently ignores the v2 `plugins`
 # key — see LEARNINGS/solutions/docker-v1-binary-ignores-v2-plugins-key.md).
-RUN npm install -g "@opencode/cli@${OPENCODE_VERSION}" \
-    typescript \
-    ts-node
-
-RUN python3 -m venv /opt/python-env
-ENV PATH="/opt/python-env/bin:${PATH}"
-
-RUN pip install --no-cache-dir \
-    "openpyxl>=3.1.0" \
-    "pandas>=3.0.0" \
-    "pdfplumber>=0.11.0" \
-    "requests>=2.32.0" \
-    "numpy>=2.0.0" \
-    "fastapi>=0.115.0"
+# The old global TS toolchain packages are deliberately absent: the v2 binary
+# runs TS plugins natively (Bun-embedded) — nothing in this image invokes them.
+RUN npm install -g "@opencode/cli@${OPENCODE_VERSION}"
 
 RUN useradd -m -d /home/opencode -s /bin/bash opencode
 
@@ -54,7 +76,7 @@ ARG OPENCODE_PACKS=""
 COPY opencode_app/ /app/
 # Content lives at the repo root (skills/, agents/, plugins/) and lands in the
 # runtime-discovery location /app/.opencode/. The root .dockerignore keeps
-# skills/_archived/ and the local symlink bridge out of this context.
+# skills/_archived/ out of this context.
 COPY skills/ /app/.opencode/skills/
 COPY agents/ /app/.opencode/agents/
 COPY plugins/ /app/.opencode/plugins/
@@ -123,12 +145,6 @@ RUN chmod +x /app/docker-entrypoint.sh \
     && mkdir -p /home/opencode/.cache \
     && mkdir -p /home/opencode/.npm \
     && chown -R opencode:opencode /app /home/opencode
-
-# PLAN-GIT-262: bake the privacy-hardened markitdown MCP launcher into the
-# image. Uses /opt/python-env/bin/pip so the console-script lands in
-# /opt/python-env/bin (already on PATH via ENV on line 33). Do NOT use uv -
-# it is not installed in this image.
-RUN /opt/python-env/bin/pip install --no-cache-dir /app/mcp-servers/markitdown-local-mcp
 
 USER opencode
 

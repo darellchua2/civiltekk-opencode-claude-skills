@@ -6,7 +6,7 @@ services:
       args:
         # v2 binary via the scoped @opencode/cli package (v1-only opencode-ai
         # silently ignored the v2 plugins key — #387).
-        OPENCODE_VERSION: ${OPENCODE_VERSION:-2.0.3}
+        OPENCODE_VERSION: ${OPENCODE_VERSION:-2.0.8}
     container_name: opencode
     env_file: .env
     ports:

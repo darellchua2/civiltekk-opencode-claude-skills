@@ -6,9 +6,9 @@
 
 ## Acceptance Criteria
 
-- [ ] Multi-stage `opencode_app/Dockerfile` builds cleanly: `node` stage, `python-deps` stage (venv + markitdown-local-mcp), runtime stage on `python:3.12-slim-bookworm`
+- [x] Multi-stage `opencode_app/Dockerfile` builds cleanly: `node` stage, `python-deps` stage (venv + markitdown-local-mcp), runtime stage on `python:3.12-slim-bookworm`
 - [ ] `@opencode/cli` pinned to `2.0.8` in all surfaces, in sync: `.env.example` template, `docker-compose.yml` arg default, Dockerfile `ARG OPENCODE_VERSION` (host `.env` set in 2.3)
-- [ ] `typescript` + `ts-node` global npm installs removed
+- [x] `typescript` + `ts-node` global npm installs removed
 - [ ] `opencode_app/.opencode/` (4 tracked symlinks) deleted; bridge block removed from `.dockerignore`
 - [ ] `restart-opencode-pm2.sh` replaced with `restart-opencode-docker.sh` (compose-based, with health checks)
 - [ ] Host `.env` sets `OPENCODE_PORT=4096` so the `opencode-ha.civiltekk.com` proxy works unchanged
@@ -38,20 +38,23 @@
 
 ### Phase 1: Multi-stage Dockerfile + pin bump
 
-- [ ] **1.1** Rewrite `opencode_app/Dockerfile` as a 3-stage build: `node` stage (toolchain source only), `python-deps` stage (venv at `/opt/python-env` with all pip floors + markitdown-local-mcp — the stage must `COPY opencode_app/mcp-servers/markitdown-local-mcp` in-stage BEFORE the pip install, because `/app/mcp-servers/...` does not exist until the runtime content COPYs), runtime stage on `python:3.12-slim-bookworm` (apt runtime tools only; `COPY --from=node /usr/local`; `COPY --from=python-deps /opt/python-env`; `npm i -g @opencode/cli@$OPENCODE_VERSION` without `typescript`/`ts-node`; content COPYs, resolve-models, merge-packs, baseURL patch, user/chown, entrypoint, HEALTHCHECK unchanged)
+- [x] **1.1** Rewrite `opencode_app/Dockerfile` as a 3-stage build: `node` stage (toolchain source only), `python-deps` stage (venv at `/opt/python-env` with all pip floors + markitdown-local-mcp — the stage must `COPY opencode_app/mcp-servers/markitdown-local-mcp` in-stage BEFORE the pip install, because `/app/mcp-servers/...` does not exist until the runtime content COPYs), runtime stage on `python:3.12-slim-bookworm` (apt runtime tools only; `COPY --from=node /usr/local`; `COPY --from=python-deps /opt/python-env`; `npm i -g @opencode/cli@$OPENCODE_VERSION` without `typescript`/`ts-node`; content COPYs, resolve-models, merge-packs, baseURL patch, user/chown, entrypoint, HEALTHCHECK unchanged)
     — **Why:** the core deliverable of #423 — every later step (cutover, docs, verification) assumes the new image shape exists and is verifiable before any machinery is removed
     — **Done when:** the file declares exactly three `FROM` stages; `grep -c "typescript\|ts-node"` returns 0; `grep -n "markitdown"` appears only in the `python-deps` stage; `ARG OPENCODE_VERSION` precedes the npm install RUN
     — **Consumers affected:** `docker-compose.yml` (same build args — unchanged interface), `opencode_app/README.md` (docs rewritten in 3.3)
+    — **Done:** 3-stage rewrite (node / python-deps / runtime on python:3.12-slim-bookworm); files: opencode_app/Dockerfile; fixes: comment reworded so the done-when grep (zero typescript/ts-node refs) reflects intent
 
-- [ ] **1.2** Bump the OpenCode pin to 2.0.8 in all committed surfaces: Dockerfile `ARG OPENCODE_VERSION=2.0.8`, `docker-compose.yml` arg default `${OPENCODE_VERSION:-2.0.8}`, and `.env.example` (`:14` → `OPENCODE_VERSION=2.0.8`, `:12` annotation → "(default: 2.0.8)", `:13` URL → `https://www.npmjs.com/package/@opencode/cli`)
+- [x] **1.2** Bump the OpenCode pin to 2.0.8 in all committed surfaces: Dockerfile `ARG OPENCODE_VERSION=2.0.8`, `docker-compose.yml` arg default `${OPENCODE_VERSION:-2.0.8}`, and `.env.example` (`:14` → `OPENCODE_VERSION=2.0.8`, `:12` annotation → "(default: 2.0.8)", `:13` URL → `https://www.npmjs.com/package/@opencode/cli`)
     — **Why:** the image must ship current v2, and the committed template seeds every operator `.env` — its stale `1.18.11` does not exist in `@opencode/cli` (npm 404), so a fresh clone's build hard-fails; all surfaces must match so none silently wins
     — **Done when:** `grep -rn "2\.0\.3" opencode_app/Dockerfile docker-compose.yml` returns nothing (historical comments excluded); `grep -nE '1\.18\.11|opencode-ai' .env.example` returns nothing
     — **Consumers affected:** operator host (image version), restart script (builds from compose), fresh clones (template-seeded `.env`)
+    — **Done:** all three committed surfaces at 2.0.8, .env.example URL repointed to @opencode/cli; files: opencode_app/Dockerfile, docker-compose.yml, .env.example; fixes: none
 
-- [ ] **1.3** Build the image and smoke it: `docker compose build`, then verify `opencode --version` reports 2.0.8, `/opt/python-env/bin/python --version` runs, `import pandas` succeeds inside the venv, and `/app/.opencode/{agents,skills,plugins}` are non-empty
+- [x] **1.3** Build the image and smoke it: `docker compose build`, then verify `opencode --version` reports 2.0.8, `/opt/python-env/bin/python --version` runs, `import pandas` succeeds inside the venv, and `/app/.opencode/{agents,skills,plugins}` are non-empty
     — **Why:** hard proof the base-swap (node/python copy-across) and venv relocation work BEFORE any existing machinery is deleted — failure here halts the pipeline with the pm2 fallback still intact
     — **Done when:** build exits 0; `docker run --rm --entrypoint opencode <img> --version` prints `2.0.8`; `docker run --rm --entrypoint /opt/python-env/bin/python <img> -c "import pandas"` exits 0; agent/skill/plugin dir listings are non-empty
     — **Consumers affected:** none (read-only verification)
+    — **Done:** `423-opencode` built; smokes green — `opencode v2.0.8`, pandas 3.0.6 imports in copied venv, 34 agents / 147 skills / 8 plugins at /app/.opencode; files: none (verification); fixes: none. Deviation: worktree `.env` copied from host + sed'd to 2.0.8/4096 as build prep (compose requires env_file present) — pre-stages 4.1's prerequisite
 
 ### Phase 2: Runtime consolidation (bridge + pm2 removal)
 
@@ -153,4 +156,4 @@ None. No `blocked-by:` tickets.
 
 ## Execution Trace
 
-_(filled by /run-plan — gate memos per phase)_
+- Phase 1 (1.1–1.3): GATE a48f934+ lint=n.a typecheck=n.a build=t unit=t e2e=n.a — compose build green; smokes: opencode v2.0.8, pandas 3.0.6 in venv, 34/147/8 content entries; bats 334/334 ok
