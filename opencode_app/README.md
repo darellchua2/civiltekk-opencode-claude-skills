@@ -19,24 +19,16 @@ opencode_app/
 ├── Dockerfile             # Multi-stage: node:24 + @opencode/cli (v2) + python3
 ├── docker-entrypoint.sh   # Injects API keys, starts opencode serve
 ├── opencode.json          # Container-specific config (providers, agents)
-├── AGENTS.md              # Agent instructions for container mode
-└── .opencode/             # Symlink bridge → root skills/, agents/, plugins/
-    ├── agents → ../../agents
-    ├── skills → ../../skills
-    ├── plugins → ../../plugins
-    └── vibeguard.config.json → ../../plugins/vibeguard.config.json
+└── AGENTS.md              # Agent instructions for container mode
 ```
 
 Content (146 skill directories, 34 agents, plugins) lives at the **repo root** and is COPY'd
-into `/app/.opencode/` at build time. The symlinks above exist only for
-local non-Docker serving (`restart-opencode-pm2.sh` runs `opencode serve`
-with `--cwd opencode_app`); the root `.dockerignore` keeps them out of the
-build context. On Windows clones without symlink support they materialize
-as text files — cosmetic only, nothing consumes them there.
+into `/app/.opencode/` at build time — the container is the only runtime,
+so there is no local-serving bridge in the repo.
 
 ## How It Works
 
-1. **Build**: `docker compose build` uses the **repo root** as build context (the Dockerfile lives in `opencode_app/`). It copies `opencode_app/` → `/app/`, the root `skills/`/`agents/`/`plugins/` → `/app/.opencode/`, `installer/` → `/app/installer/` (model-resolver assets), and `deploy/` → `/app/deploy/` (pack merge tooling). Agent models are **resolved at build time** from the tier registry (`installer/agent-tiers.json` + `installer/models.default.json`) — Z.AI by default. Swap provider at build: `docker compose build --build-arg OPENCODE_PROVIDER=anthropic`. See root `MIGRATION.md`.
+1. **Build**: `docker compose build` uses the **repo root** as build context (the Dockerfile lives in `opencode_app/`). The Dockerfile is a 3-stage build: a `node` stage (toolchain copied via `/usr/local`), a `python-deps` stage (venv at `/opt/python-env` including the markitdown MCP), and a `python:3.12-slim-bookworm` runtime stage that copies both in. It copies `opencode_app/` → `/app/`, the root `skills/`/`agents/`/`plugins/` → `/app/.opencode/`, `installer/` → `/app/installer/` (model-resolver assets), and `deploy/` → `/app/deploy/` (pack merge tooling). Agent models are **resolved at build time** from the tier registry (`installer/agent-tiers.json` + `installer/models.default.json`) — Z.AI by default. Swap provider at build: `docker compose build --build-arg OPENCODE_PROVIDER=anthropic`. The OpenCode v2 binary pin (`OPENCODE_VERSION`) lives in three surfaces kept in sync: `.env.example` (which seeds the operator `.env` — the operator `.env` wins at build time), the `docker-compose.yml` arg default, and the Dockerfile `ARG` default. See root `MIGRATION.md`.
 2. **Runtime**: `docker-entrypoint.sh` reads API keys from environment variables, writes them to `auth.json`, then runs `opencode serve --port 4096 --hostname 0.0.0.0`.
 3. **Access**: Port 4096 inside the container maps to 4097 on the host (configurable via `OPENCODE_PORT` in `.env`).
 
@@ -107,7 +99,7 @@ User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README
 
 - Container runs as non-root `opencode` user
 - No secrets baked into the image — API keys injected at runtime via entrypoint
-- The root `.dockerignore` (build context is the repo root) excludes `.env`, `_archived/`, the symlink bridge, and dev files
+- The root `.dockerignore` (build context is the repo root) excludes `.env`, `_archived/`, and dev files
 - Health check: `GET /api/health` every 30s (V2 endpoint; `/global/health` was V1-only and now returns the web-app shell)
 
 ### Secret Masking (vibeguard)
@@ -157,7 +149,7 @@ See the main `README.md` for full details on MCP tools, supported languages, and
 
 ## markitdown MCP (PLAN-GIT-262)
 
-The privacy-hardened `markitdown` MCP launcher is **baked into the Docker image at build time** via `/opt/python-env/bin/pip install /app/mcp-servers/markitdown-local-mcp` (Dockerfile line 71). The `markitdown-local-mcp` binary lands in `/opt/python-env/bin`, which is already on `PATH` via the `ENV PATH="/opt/python-env/bin:${PATH}"` directive (Dockerfile line 33) — no entrypoint changes needed.
+The privacy-hardened `markitdown` MCP launcher is **baked into the Docker image at build time** in the Dockerfile's `python-deps` stage: the source is COPY'd to `/tmp/markitdown-local-mcp` and installed with the rest of the pip floors into `/opt/python-env`. The `markitdown-local-mcp` binary lands in `/opt/python-env/bin`, which is first on `PATH` in the runtime stage — no entrypoint changes needed.
 
 The server ships as `disabled: true` (opt-in). To enable inside the container, edit `opencode_app/opencode.json` and set `mcp.servers.markitdown.disabled` to `false`, then rebuild.
 
@@ -181,7 +173,7 @@ The PPTX stack is **pure Python** (`python-pptx` + `lxml`) — no Node.js, Playw
 - `office-thumbnail-skill` (slide → PDF → PNG for visual analysis)
 - OOXML validators in `ooxml-editing-skill` (post-decomposition, Phase 7)
 
-The Dockerfile already installs LibreOffice; no additional setup needed.
+The Dockerfile does not install LibreOffice; these skills need the image extended (or `soffice` provided another way) before they can run in the container.
 
 
 ## Subagent Chaining

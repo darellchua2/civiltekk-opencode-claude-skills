@@ -14,7 +14,7 @@ Audit the skill library: structure validation, bloat/regrowth detection, redunda
 
 ## When to use me
 
-- Auditing all skills (`opencode_app/.opencode/skills/`) for consistency
+- Auditing all skills (`skills/`) for consistency
 - Validating frontmatter (name/description present, valid YAML, name = directory name)
 - Finding redundant skills or consolidation candidates
 - Detecting content bloat or regrowth after the 2026-09 trim
@@ -22,7 +22,7 @@ Audit the skill library: structure validation, bloat/regrowth detection, redunda
 ## Validation (one pass)
 
 ```bash
-cd opencode_app/.opencode/skills
+cd skills
 for dir in */; do
   f="$dir/SKILL.md"; [ -f "$f" ] || { echo "missing: $dir"; continue; }
   grep -q '^name:' "$f" || echo "no name: $dir"
@@ -42,7 +42,7 @@ A skill encodes only house-specific content; model-known textbook/vendor docs ar
 - Any trimmed skill (contains a `> Removed 2026-09` marker) whose body re-adds spec re-quotation, vendor doc dumps, or example catalogs
 - **Description without boundary clause** — descriptions lacking a "not for X" / "use when" decision boundary; colliding families (lint, test-gen, ticket, grill) then route unpredictably
 - **Tutorial-fence density** — non-template skills with >12 code fences (template/reference skills whose fences ARE the payload are exempt)
-- `wc -l opencode_app/.opencode/skills/*/SKILL.md | sort -rn | head -20` — the standing top-20 bloat watchlist
+- `wc -l skills/*/SKILL.md | sort -rn | head -20` — the standing top-20 bloat watchlist
 
 ## Redundancy & modularization
 

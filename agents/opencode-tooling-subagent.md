@@ -101,7 +101,7 @@ Before any action, determine the current project type:
 3. The answer changes your workflow:
 
 **Configurator repo** (e.g., `opencode-config-template`):
-- The root `skills/` + `agents/` dirs are the SOURCE of truth (deployed to user space; a sanctioned symlink bridge keeps the local pm2 server loading them — see opencode_app/AGENTS.md)
+- The root `skills/` + `agents/` dirs are the SOURCE of truth (deployed to user space)
 - After any change to skills/agents, MUST run doc sync (deploy/setup.sh, deploy/setup.ps1, README.md, AGENTS.md)
 - Creating a new skill/agent here means it gets deployed to ALL user projects
 

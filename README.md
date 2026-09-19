@@ -29,9 +29,9 @@ opencode-config-template/
 │   ├── docker-entrypoint.sh     # API key injection + opencode serve
 │   ├── opencode.json            # Container-specific config
 │   ├── AGENTS.md                # Container-specific instructions
-│   ├── .opencode/               # Symlink bridge → root content (local serve only)
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
+├── restart-opencode-docker.sh   # Pull main + redeploy the container (compose up -d --build)
 ├── .env.example                 # Environment variable template
 ├── PLANS/                       # Execution plans (git-committed)
 ├── LEARNINGS/                   # Knowledge persistence template (auto-provisioned in target projects)
