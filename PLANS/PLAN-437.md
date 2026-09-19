@@ -32,20 +32,23 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
 ## Implementation Phases
 
 ### Phase 1: Vendor the shared engine into each pptx skill
-- [ ] **1.1** Copy `skills/_common/scripts` verbatim to `skills/pptx-generate-slide-skill/scripts/_common` (git add)
+- [x] **1.1** Copy `skills/_common/scripts` verbatim to `skills/pptx-generate-slide-skill/scripts/_common` (git add)
     — **Why:** `npx add` copies one directory; every module `ppt_builder.py` imports must live inside the skill dir (AC1/AC2).
     — **Done when:** tree exists and `diff -r` against the modifier copy (1.2) is empty.
     — **Consumers affected:** pptx-generate-slide-skill runtime + its pytest suite.
+    — **Done:** vendored 10-file tree (7 modules + schema + 2 tests) staged and committed; files: `skills/pptx-generate-slide-skill/scripts/_common/`; fixes: none
 
-- [ ] **1.2** Copy `skills/_common/scripts` verbatim to `skills/pptx-template-modifier-skill/scripts/_common` (git add)
+- [x] **1.2** Copy `skills/_common/scripts` verbatim to `skills/pptx-template-modifier-skill/scripts/_common` (git add)
     — **Why:** same isolation requirement for the modifier's 5 scripts that bootstrap `_COMMON_SCRIPTS`.
     — **Done when:** tree exists; pairwise diff vs 1.1 empty.
     — **Consumers affected:** pptx-template-modifier-skill scripts + tests.
+    — **Done:** vendored tree staged and committed; `diff -r` vs 1.1 empty; files: `skills/pptx-template-modifier-skill/scripts/_common/`; fixes: none
 
-- [ ] **1.3** Create `skills/pptx-generate-template-skill/scripts/_common` by copying `skills/_common/scripts` (the skill's first `scripts/` dir)
+- [x] **1.3** Create `skills/pptx-generate-template-skill/scripts/_common` by copying `skills/_common/scripts` (the skill's first `scripts/` dir)
     — **Why:** this skill has no scripts dir today — its SKILL.md imports `_common` inline, so it ships broken on `npx add` until the engine lives inside it.
     — **Done when:** tree exists; pairwise diff vs 1.1/1.2 empty.
     — **Consumers affected:** agent runtime following SKILL.md instructions.
+    — **Done:** created `scripts/` dir + vendored tree; `diff -r` vs 1.1/1.2 empty; files: `skills/pptx-generate-template-skill/scripts/_common/`; fixes: none
 
 ### Phase 2: Rewire all path resolutions to the in-skill vendored copy
 - [ ] **2.1** In `pptx-generate-slide-skill`: change `_COMMON_SCRIPTS` in `scripts/ppt_builder.py`, `scripts/tests/conftest.py`, and any `_common` path computation in `scripts/tests/test_common_invariants.py`, `test_fingerprint_resolution.py`, `test_multipass_render_merge.py`, `test_render_contract.py` from the `parent.parent.parent / "_common" / "scripts"` sibling escape to `Path(__file__)-relative own-dir "scripts/_common"`; repoint the C1 invariant (vendored `_common` must not import back into `ppt_builder`) and supersede PLAN-GIT-72 comments (note: per-skill vendoring per #437)
@@ -114,3 +117,8 @@ Cross-module consumers beyond each node's own skill: **none** (the vendored tree
 - **Vendored copies drift after future fixes**: Phase 5 byte-identity check fails loudly; AGENTS.md §Skill Isolation Contract documents the fix-once-copy-thrice rule.
 - **C1 invariant test semantic change** (`_common` must not import back into `ppt_builder`): repointed at the vendored copy in 2.1 — still meaningful, now scoped per skill.
 - **Hidden consumers of `skills/_common` outside skills/ and agents/**: repo-wide grep in 3.1 done-when; only `agents/pptx-specialist-subagent.md` found in audit.
+
+## Gate Log
+
+- Phase 1 (1.1–1.3): GATE 2c04437 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — full bats suite 341/341 ok exit 0; pairwise `diff -r` of the three vendored trees empty; lint/typecheck/build: none configured (no scripts/Makefile manifests)
+
