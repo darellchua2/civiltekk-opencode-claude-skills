@@ -319,7 +319,7 @@ Agent: Classified as feature. Missing required fields: Problem / use case,
        Acceptance criteria, Scope.
        (batched question round — user answers all three)
 Agent: Preview —
-       Title: "Add user authentication API"
+       Title: "[Feature]: Add user authentication API"
        ### Problem / use case: Users cannot log in or register
        ### Proposed solution: JWT-based auth endpoints for login/registration
        ### Acceptance criteria: register/login work; protected routes validate JWT
