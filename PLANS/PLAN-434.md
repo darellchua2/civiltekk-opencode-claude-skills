@@ -79,15 +79,17 @@ Accepted agent-local restatements (review ruling, Mode R): `agents/pr-workflow-s
 
 ### Phase 2: Attribution + semver governance pointers
 
-- [ ] **2.1** `skills/pr-creation-workflow-skill/SKILL.md` step 6: replace the restated attribution parenthetical ("token owner; GitHub does not allow spoofing…") with a pointer to `ticket-creation-skill` §Attribution; keep the `--assignee @me` mechanics and the gh-cli fallback sentence; do not renumber steps
+- [x] **2.1** `skills/pr-creation-workflow-skill/SKILL.md` step 6: replace the restated attribution parenthetical ("token owner; GitHub does not allow spoofing…") with a pointer to `ticket-creation-skill` §Attribution; keep the `--assignee @me` mechanics and the gh-cli fallback sentence; do not renumber steps
     — **Why:** AC1 — the rule already lives in ticket-creation §Attribution; `gh-cli-setup-skill:18` pins "step 6" by number
     — **Done when:** `grep -n 'token owner' skills/pr-creation-workflow-skill/SKILL.md` returns nothing; step 6 keeps gh-fallback + `@me`
     — **Consumers affected:** `agents/pr-workflow-subagent.md` (already points at §Attribution — unchanged)
+    — **Done:** attribution parenthetical replaced with ticket-creation-skill §Attribution pointer; @me + gh-cli fallback kept; step numbers untouched; fixes: none
 
-- [ ] **2.2** `skills/pr-creation-workflow-skill/SKILL.md` step 7: add the missing governance pointer to `semantic-release-convention` (mirror git-issue-labeler Step 3's "Governance: semantic-release-convention" wording)
+- [x] **2.2** `skills/pr-creation-workflow-skill/SKILL.md` step 7: add the missing governance pointer to `semantic-release-convention` (mirror git-issue-labeler Step 3's "Governance: semantic-release-convention" wording)
     — **Why:** step 7 restates the semver mapping without naming its source of truth — third copy of the rule, ungoverned
     — **Done when:** step 7 names `semantic-release-convention` as governance; mapping text unchanged
     — **Consumers affected:** none
+    — **Done:** step 7 gained Governance: semantic-release-convention (labeler wording mirrored); mapping text unchanged; fixes: none
 
 ### Phase 3: gh-cli fallback — single statement
 
@@ -137,3 +139,4 @@ None — #404 and #409 are merged; base main @ 5274dff2 already contains both.
 - **Over-trim** (removing a genuinely unique detail with the policy copy) — mitigated by per-step "keep" lists (endpoint lines, token URL, `:192` self-ref) and review at Step 7/9.
 - **Count drift false alarm** — mitigated by 4.2 registry `--check` before bats.
 GATE b7adc49 lint=- typecheck=- build=- unit=t e2e=n.a.
+GATE 0e19269 lint=- typecheck=- build=- unit=t e2e=n.a.
