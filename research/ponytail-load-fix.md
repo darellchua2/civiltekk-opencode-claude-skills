@@ -123,6 +123,6 @@ A harness (`/tmp/ponytail-verify.mjs`, run via Node v24.18.0 native type-strippi
 
 ## 6. Provenance / cross-refs
 
-- Prior audit (the "bake into .md" static-embed path, invoked only if no transform hook existed — it does, so not needed): `research/ponytail-agent-integration-audit.md`.
+- Prior audit conclusion (its research doc has since been purged): the "bake into .md" static-embed path is not needed — the transform hook exists, so static embedding is dead design.
 - OpenCode plugin docs (note: docs omit `experimental.*`, `config`, and `chat.message` hooks — rely on the source `Hooks` interface, not the docs, for the full hook list): https://opencode.ai/docs/plugins/
 - The `--pure` flag disables all external/local plugins; use it to A/B confirm Ponytail is the injection source.

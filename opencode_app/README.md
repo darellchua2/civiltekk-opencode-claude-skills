@@ -16,19 +16,19 @@ docker compose up -d
 
 ```
 opencode_app/
-├── Dockerfile             # Multi-stage: node:24 + opencode-ai + python3
+├── Dockerfile             # Multi-stage: node:24 + @opencode/cli (v2) + python3
 ├── docker-entrypoint.sh   # Injects API keys, starts opencode serve
 ├── opencode.json          # Container-specific config (providers, agents)
-├── AGENTS.md              # Agent instructions for container mode
-├── .dockerignore          # Excludes _archived, .env, node_modules
-└── .opencode/
-    ├── agents/            # 33 agent .md files (single source of truth)
-    └── skills/            # 146 skill directories + _common/ shared + _archived/ legacy
+└── AGENTS.md              # Agent instructions for container mode
 ```
+
+Content (146 skill directories, 34 agents, plugins) lives at the **repo root** and is COPY'd
+into `/app/.opencode/` at build time — the container is the only runtime,
+so there is no local-serving bridge in the repo.
 
 ## How It Works
 
-1. **Build**: `docker compose build` uses the **repo root** as build context (the Dockerfile lives in `opencode_app/`). It copies `opencode_app/` → `/app/` and `deploy/` → `/app/deploy/` (model-resolver assets). Agent models are **resolved at build time** from the tier registry (`deploy/agent-tiers.json` + `deploy/models.default.json`) — Z.AI by default. Swap provider at build: `docker compose build --build-arg OPENCODE_PROVIDER=anthropic`. See root `MIGRATION.md`.
+1. **Build**: `docker compose build` uses the **repo root** as build context (the Dockerfile lives in `opencode_app/`). The Dockerfile is a 3-stage build: a `node` stage (toolchain copied via `/usr/local`), a `python-deps` stage (venv at `/opt/python-env` including the markitdown MCP), and a `python:3.12-slim-bookworm` runtime stage that copies both in. It copies `opencode_app/` → `/app/`, the root `skills/`/`agents/`/`plugins/` → `/app/.opencode/`, `installer/` → `/app/installer/` (model-resolver assets), and `deploy/` → `/app/deploy/` (pack merge tooling). Agent models are **resolved at build time** from the tier registry (`installer/agent-tiers.json` + `installer/models.default.json`) — Z.AI by default. Swap provider at build: `docker compose build --build-arg OPENCODE_PROVIDER=anthropic`. The OpenCode v2 binary pin (`OPENCODE_VERSION`) lives in three surfaces kept in sync: `.env.example` (which seeds the operator `.env` — the operator `.env` wins at build time), the `docker-compose.yml` arg default, and the Dockerfile `ARG` default. See root `MIGRATION.md`.
 2. **Runtime**: `docker-entrypoint.sh` reads API keys from environment variables, writes them to `auth.json`, then runs `opencode serve --port 4096 --hostname 0.0.0.0`.
 3. **Access**: Port 4096 inside the container maps to 4097 on the host (configurable via `OPENCODE_PORT` in `.env`).
 
@@ -84,25 +84,27 @@ docker compose up -d
 | `nextjs` | next-devtools (1) | `--build-arg OPENCODE_PACKS=nextjs` |
 | `chrome-devtools` | chrome-devtools (1) | `--build-arg OPENCODE_PACKS=chrome-devtools` (privacy-hardened: telemetry + CrUX OFF; needs Chrome in image) |
 
-The merge runs **after** `resolve-models.mjs` and only merges each pack's `mcp` + `tools` keys (flipping `enabled`/`tools.<ns>*` ON; the autodesk pack also carries the full server definitions since they are not in the base config) — it never turns an already-on server off, never touches the `plugin` array or `agent` block. Verify post-build:
+The merge runs **after** `resolve-models.mjs` and only merges each pack's `mcp` + `permissions` keys (setting `mcp.servers.<name>.disabled: false` and appending `permissions`-array allow rules `{ "action": "<ns>*", "resource": "*", "effect": "allow" }`; the autodesk pack also carries the full server definitions since they are not in the base config) — it never turns an already-on server off, never touches the `plugins` array or `agents` block. Verify post-build:
 
 ```bash
-docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp['autodesk-revit'].enabled)"
-# Expected: true
+docker compose run --rm opencode node -e "const c=require('/app/opencode.json');console.log(c.mcp.servers['autodesk-revit'].disabled)"
+# Expected: false
 ```
 
 User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README.md` § Provider Packs).
 
-> **Telemetry hardening — opt-in MCP servers ship with analytics pre-disabled.** `chrome-devtools` (`--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers`, `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1`) and `next-devtools` (`NEXT_TELEMETRY_DISABLED=1`) are hardened in `opencode.json` so `enabled: true` is safe without further edits. See root `README.md` § MCP Servers for the full rationale.
+> **Telemetry hardening — opt-in MCP servers ship with analytics pre-disabled.** `chrome-devtools` (`--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers`, `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1`) and `next-devtools` (`NEXT_TELEMETRY_DISABLED=1`) are hardened in `opencode.json` so `disabled: false` is safe without further edits. See root `README.md` § MCP Servers for the full rationale.
 
 ## Security
 
 - Container runs as non-root `opencode` user
 - No secrets baked into the image — API keys injected at runtime via entrypoint
-- `.dockerignore` excludes `.env`, `_archived/`, and dev files
-- Health check: `GET /global/health` every 30s
+- The root `.dockerignore` (build context is the repo root) excludes `.env`, `_archived/`, and dev files
+- Health check: `GET /api/health` every 30s (V2 endpoint; `/global/health` was V1-only and now returns the web-app shell)
 
 ### Secret Masking (vibeguard)
+
+> **OpenCode v2 status:** the image ships the local v2 port (`plugins/vibeguard.ts`) — secret masking is **active** in v2 containers. The `permissions` `read` deny rules remain the second layer.
 
 The image ships with `vibeguard.config.json` baked into `.opencode/` — secret masking is **active by default**. Vibeguard masks secrets in provider-bound traffic (LLM requests) using regex patterns and restores real values at tool-execution time.
 
@@ -147,9 +149,9 @@ See the main `README.md` for full details on MCP tools, supported languages, and
 
 ## markitdown MCP (PLAN-GIT-262)
 
-The privacy-hardened `markitdown` MCP launcher is **baked into the Docker image at build time** via `/opt/python-env/bin/pip install /app/mcp-servers/markitdown-local-mcp` (Dockerfile line 71). The `markitdown-local-mcp` binary lands in `/opt/python-env/bin`, which is already on `PATH` via the `ENV PATH="/opt/python-env/bin:${PATH}"` directive (Dockerfile line 33) — no entrypoint changes needed.
+The privacy-hardened `markitdown` MCP launcher is **baked into the Docker image at build time** in the Dockerfile's `python-deps` stage: the source is COPY'd to `/tmp/markitdown-local-mcp` and installed with the rest of the pip floors into `/opt/python-env`. The `markitdown-local-mcp` binary lands in `/opt/python-env/bin`, which is first on `PATH` in the runtime stage — no entrypoint changes needed.
 
-The server ships as `enabled: false` (opt-in). To enable inside the container, edit `opencode_app/opencode.json` and flip `markitdown.enabled` to `true`, then rebuild.
+The server ships as `disabled: true` (opt-in). To enable inside the container, edit `opencode_app/opencode.json` and set `mcp.servers.markitdown.disabled` to `false`, then rebuild.
 
 **Privacy guarantees** (see [`opencode_app/mcp-servers/markitdown-local-mcp/README.md`](mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis):
 - Structural dep exclusion — no `markitdown[all]`, no `azure-*`, no `SpeechRecognition`, no `youtube-transcript-api` installed
@@ -171,12 +173,12 @@ The PPTX stack is **pure Python** (`python-pptx` + `lxml`) — no Node.js, Playw
 - `office-thumbnail-skill` (slide → PDF → PNG for visual analysis)
 - OOXML validators in `ooxml-editing-skill` (post-decomposition, Phase 7)
 
-The Dockerfile already installs LibreOffice; no additional setup needed.
+The Dockerfile does not install LibreOffice; these skills need the image extended (or `soffice` provided another way) before they can run in the container.
 
 
 ## Subagent Chaining
 
-OpenCode supports subagent-to-subagent delegation via the Task tool, controlled by the `permission.task` frontmatter field in each agent `.md` file. Key points:
+OpenCode supports subagent-to-subagent delegation via the Task tool, controlled by the subagent-spawn permission rules in each agent `.md` frontmatter (`permissions` array, `action:"task"` rules). Key points:
 
 - **Task tool** (subagent spawning) and **Skill tool** (skill loading) are separate systems with separate permissions
 - Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)
@@ -186,7 +188,7 @@ OpenCode supports subagent-to-subagent delegation via the Task tool, controlled 
 
 ## Ponytail Plugin (scoped wrapper)
 
-[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder. This container ships a **scoped wrapper plugin** (`opencode_app/.opencode/plugins/ponytail-scoped.ts`) — not the stock npm adapter — because the stock adapter injects into ALL agents unconditionally and its `PONYTAIL_SUBAGENT_MATCHER` is non-functional on OpenCode. The wrapper scopes injection by agent type.
+[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder. This container ships a **scoped wrapper plugin** (`plugins/ponytail-scoped.ts`) — not the stock npm adapter — because the stock adapter injects into ALL agents unconditionally and its `PONYTAIL_SUBAGENT_MATCHER` is non-functional on OpenCode. The wrapper scopes injection by agent type.
 
 ### Commands
 
@@ -223,11 +225,11 @@ Override by setting `PONYTAIL_SUBAGENT_OFF` to a custom regex.
 2. `experimental.chat.system.transform` hook resolves the agent (cache, or `client.session.get()` fallback), checks the off-set regex, resolves the mode, and appends the mode-filtered ruleset to the system prompt — once per turn (idempotent).
 3. `command.execute.before` hook persists `/ponytail <level>` switches per session.
 
-The vendored ruleset + adapted instruction builder live in `opencode_app/.opencode/plugins/ponytail/`. MIT attribution: `opencode_app/.opencode/plugins/ATTRIBUTION.md`. The stock `@dietrichgebert/ponytail` npm package is deliberately NOT in `opencode.json` `plugin` array (double-injection guard).
+The vendored ruleset + adapted instruction builder live in `plugins/ponytail/`. MIT attribution: `plugins/ATTRIBUTION.md`. The stock `@dietrichgebert/ponytail` npm package is deliberately NOT in `opencode.json` `plugin` array (double-injection guard).
 
 ## Learnings Auto-Inject Plugin
 
-`opencode_app/.opencode/plugins/learnings-autoinject.ts` auto-injects a **compact manifest** of a project's `LEARNINGS/*.md` files into the system prompt at session start, so the model knows what learned knowledge exists without a `glob`+`read` round-trip. It injects only titles + paths + a one-line summary (~200-400 tokens); the model `read()`s full file bodies on demand. This closes the gap documented in `continuous-learning-skill` (*"OpenCode does NOT auto-scan LEARNINGS/ directories"*). Architecture mirrors `ponytail-scoped.ts` (same 4 hooks, same toggle pattern, same off-set).
+`plugins/learnings-autoinject.ts` auto-injects a **compact manifest** of a project's `LEARNINGS/*.md` files into the system prompt at session start, so the model knows what learned knowledge exists without a `glob`+`read` round-trip. It injects only titles + paths + a one-line summary (~200-400 tokens); the model `read()`s full file bodies on demand. This closes the gap documented in `continuous-learning-skill` (*"OpenCode does NOT auto-scan LEARNINGS/ directories"*). Architecture mirrors `ponytail-scoped.ts` (same 4 hooks, same toggle pattern, same off-set).
 
 ### Commands
 
@@ -253,10 +255,12 @@ The vendored ruleset + adapted instruction builder live in `opencode_app/.openco
 2. `experimental.chat.system.transform` hook resolves the agent, checks the toggle + off-set, and appends the cached manifest to the system prompt — once per turn (idempotent). The manifest is globbed once per session and cached (rebuilt on `/learnings-refresh`).
 3. `command.execute.before` hook persists `/learnings-on|off|refresh` per session.
 
-No `opencode.json` change required — local plugins are glob-discovered. No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `experimental.chat.system.transform` vs `tui.prompt.append`). Reference: `opencode_app/.opencode/plugins/learnings-autoinject.README.md`.
+No `opencode.json` change required — local plugins are glob-discovered. `opencode-superlocalmemory` (removed pending a v2 release) was a separate vector store — no conflict. Reference: `plugins/learnings-autoinject.README.md`.
 
 ## Scheduler Plugin (cron jobs)
 
-[`opencode-scheduler@1.3.0`](https://github.com/different-ai/opencode-scheduler) (in `opencode.json` `plugin[]`) runs recurring agent jobs via the **OS-native scheduler** — launchd (macOS), systemd (Linux), Task Scheduler (Windows), with cron fallback. Jobs are workdir-scoped, supervised (no overlap, optional `timeoutSeconds` SIGTERM→SIGKILL), and forced non-interactive (`OPENCODE_PERMISSION` denies question prompts so headless runs never hang). Manage in natural language: *"Schedule a daily job at 9am to…"*, list/update/run-now/logs/delete.
+> **OpenCode v2 status:** `opencode-scheduler@1.3.0` is a V1-API plugin with no v2 release — **removed from `opencode.json`** (it only produced boot warnings). Re-add it when a v2-compatible version ships; the behavior below documents that future setup.
+
+`opencode-scheduler` (when re-added) runs recurring agent jobs via the **OS-native scheduler** — launchd (macOS), systemd (Linux), Task Scheduler (Windows), with cron fallback. Jobs are workdir-scoped, supervised (no overlap, optional `timeoutSeconds` SIGTERM→SIGKILL), and forced non-interactive (`OPENCODE_PERMISSION` denies question prompts so headless runs never hang). Manage in natural language: *"Schedule a daily job at 9am to…"*, list/update/run-now/logs/delete.
 
 **Docker caveat:** the standalone container has no systemd/launchd (and usually no cron), so scheduled jobs do not fire in-container. For the Docker deployment, schedule on the host instead (host cron/systemd timer calling `docker compose exec` / `opencode run`). User-space deploys via `setup.sh` work natively.

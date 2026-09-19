@@ -1,11 +1,11 @@
 {
-  "$comment": "Provider pack: Chrome DevTools MCP server for frontend agents. Deep-merged by deploy/merge-packs.mjs when --enable-pack chrome-devtools. Privacy flags (no telemetry, no CrUX, isolated profile) are baked into the source opencode.json command array, so this pack only flips enabled + tools. Requires Chrome stable installed locally.",
+  "$comment": "Provider pack: Chrome DevTools MCP server for frontend agents. Deep-merged by deploy/merge-packs.mjs when --enable-pack chrome-devtools (v2 shape: mcp.servers.<name>.disabled:false + permissions array rule). Privacy flags (no telemetry, no CrUX, isolated profile) are baked into the source opencode.json command array, so this pack only flips disabled + appends the permissions allow. Requires Chrome stable installed locally.",
   "mcp": {
-    "chrome-devtools": {
-      "enabled": true
+    "servers": {
+      "chrome-devtools": { "disabled": false }
     }
   },
-  "tools": {
-    "chrome-devtools*": true
-  }
+  "permissions": [
+    { "action": "chrome-devtools*", "resource": "*", "effect": "allow" }
+  ]
 }

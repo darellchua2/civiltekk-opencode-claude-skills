@@ -1,0 +1,27 @@
+{
+  "$comment": "Preset 'research' for installer/init.mjs (--preset research). Derived by /tmp/gen-presets.mjs from installer/registry.json; edit via the generator, not by hand.",
+  "name": "research",
+  "description": "Autonomous loops: autoresearch (code/ml/research) + loop-operator + paper-writing skills. ML loop needs an NVIDIA GPU.",
+  "agents": [
+    "autoresearch-code-subagent",
+    "autoresearch-ml-subagent",
+    "autoresearch-research-subagent",
+    "loop-operator-subagent"
+  ],
+  "skills": [
+    "autoresearch-code-skill",
+    "autoresearch-core-skill",
+    "autoresearch-ml-skill",
+    "autoresearch-research-skill",
+    "continuous-learning-skill",
+    "eval-harness-skill",
+    "horseshoe-paper-writing-skill",
+    "research-paper-generation-skill",
+    "search-first-skill",
+    "strategic-compact-skill",
+    "verification-loop-skill"
+  ],
+  "mcps": [
+    "codegraph"
+  ]
+}

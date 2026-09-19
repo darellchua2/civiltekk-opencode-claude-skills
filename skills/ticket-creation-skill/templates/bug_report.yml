@@ -1,0 +1,74 @@
+name: 🐞 Bug Report
+description: Report unexpected behavior or a broken feature
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. A complete report gets fixed faster.
+  - type: checkboxes
+    id: search-first
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please search to see if an issue already exists for the bug you encountered.
+      options:
+        - label: I have searched the existing issues
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem description
+      description: A concise description of what's happening.
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps another person can follow to hit the bug.
+      placeholder: |
+        1. In this environment...
+        1. With this config...
+        1. Run '...'
+        1. See error...
+    validations:
+      required: true
+  - type: textarea
+    id: expected-vs-actual
+    attributes:
+      label: Expected vs Actual
+      description: What you expected to happen, and what actually happened.
+      placeholder: |
+        Expected: ...
+        Actual: ...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Context that often determines whether the issue is reproducible.
+      value: |
+        - OS:
+        - Node:
+        - opencode:
+        - Install method:
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: Relevant log output (formatted as code automatically) or screenshots.
+      render: shell
+    validations:
+      required: false
+  - type: input
+    id: references
+    attributes:
+      label: References
+      description: Related issues, docs, or discussions (optional).
+    validations:
+      required: false

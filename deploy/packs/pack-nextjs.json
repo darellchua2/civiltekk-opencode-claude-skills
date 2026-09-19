@@ -1,9 +1,11 @@
 {
-  "$comment": "Provider pack: Next.js devtools MCP server (runtime diagnosis for Next.js 16+ projects). Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack nextjs.",
+  "$comment": "Provider pack: Next.js devtools MCP server (runtime diagnosis for Next.js 16+ projects). Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack nextjs (v2 shape: mcp.servers.<name>.disabled:false + permissions array rule). Appends the permissions rule {\"action\": \"next-devtools*\", \"resource\": \"*\", \"effect\": \"allow\"} so the merge flips the shipped deny.",
   "mcp": {
-    "next-devtools": { "enabled": true }
+    "servers": {
+      "next-devtools": { "disabled": false }
+    }
   },
-  "tools": {
-    "next-devtools*": true
-  }
+  "permissions": [
+    { "action": "next-devtools*", "resource": "*", "effect": "allow" }
+  ]
 }

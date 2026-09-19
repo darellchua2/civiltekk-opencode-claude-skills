@@ -40,7 +40,7 @@ For any diff touching `permission.task`:
 ## Evidence
 
 GIT-350 (feat/GIT-350, 2026-08-27): all four surfaces updated, `--check` green.
-Agent-body note deliberately deferred image-analyzer-subagent (PLAN-GIT-350 §1.3),
+Agent-body note deliberately deferred image-analyzer-subagent (GIT-350 §1.3),
 leaving the README row (4 delegates) ahead of the note (3) — accepted partial sync.
 
 Related: `patterns/tier-model-swap-blast-radius.md` (same multi-surface discipline

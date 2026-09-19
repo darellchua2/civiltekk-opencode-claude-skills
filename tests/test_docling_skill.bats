@@ -6,8 +6,8 @@
 # routing rule, agent skill grants, and dependency-map.json edge.
 # Peer to tests/test_markitdown_skill.bats.
 
-SKILL_MD="opencode_app/.opencode/skills/docling-mcp-skill/SKILL.md"
-AGENTS_DIR="opencode_app/.opencode/agents"
+SKILL_MD="skills/docling-mcp-skill/SKILL.md"
+AGENTS_DIR="agents"
 CONFIG="opencode_app/opencode.json"
 PACKS_DIR="deploy/packs"
 MERGE_SCRIPT="deploy/merge-packs.mjs"
@@ -48,15 +48,15 @@ MERGE_SCRIPT="deploy/merge-packs.mjs"
 # =============================================================================
 
 @test "docling_mcp_disabled_by_default" {
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'docling' in d['mcp']; assert d['mcp']['docling']['enabled'] is False, 'docling must be opt-in'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'docling' in d['mcp']['servers']; assert d['mcp']['servers']['docling']['disabled'] is True, 'docling must be opt-in'"
 }
 
 @test "docling_tool_denied_by_default" {
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['permission']['tool']['docling*'] == 'deny'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert any(r['action']=='docling*' and r['effect']=='deny' for r in d['permissions'])"
 }
 
 @test "docling_mcp_has_local_conversion_mode" {
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['mcp']['docling']['environment']['DOCLING_CONVERSION_MODE'] == 'local'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['mcp']['servers']['docling']['environment']['DOCLING_CONVERSION_MODE'] == 'local'"
 }
 
 # =============================================================================
@@ -67,21 +67,34 @@ MERGE_SCRIPT="deploy/merge-packs.mjs"
   [ -f "$PACKS_DIR/pack-docling.json" ]
 }
 
-@test "pack_docling_enables_mcp" {
-  python3 -c "import json; p=json.load(open('$PACKS_DIR/pack-docling.json')); assert p['mcp']['docling']['enabled'] is True"
+@test "pack_docling_ships_server_with_disabled_false" {
+  python3 -c "import json; p=json.load(open('$PACKS_DIR/pack-docling.json')); assert p['mcp']['servers']['docling']['disabled'] is False"
 }
 
 @test "pack_docling_grants_tool_permission" {
-  # Uses permission.tool (correct nested structure), not top-level tools
-  python3 -c "import json; p=json.load(open('$PACKS_DIR/pack-docling.json')); assert p['permission']['tool']['docling*'] is True"
+  # v2 permissions array rule, not the v1 root permission map or tools map
+  python3 -c "
+import json
+p=json.load(open('$PACKS_DIR/pack-docling.json'))
+assert {'action':'docling*','resource':'*','effect':'allow'} in p['permissions'], 'missing v2 allow rule'
+assert 'permission' not in p, 'v1 root permission map is dead in v2'
+assert 'tools' not in p, 'top-level tools map is deprecated'
+"
 }
 
 @test "pack_docling_deep_merge_flips_config" {
   # Verify merge-packs.mjs deep-merges pack-docling.json into a temp copy
-  # and flips both mcp.docling.enabled and permission.tool.docling*
+  # and flips both mcp.servers.docling.disabled and the docling* deny rule
+  # (in place — no duplicate rules)
   cp "$CONFIG" /tmp/test_docling_merge.json
   node "$MERGE_SCRIPT" --config /tmp/test_docling_merge.json --packs-dir "$PACKS_DIR" --packs docling >/dev/null 2>&1
-  python3 -c "import json; d=json.load(open('/tmp/test_docling_merge.json')); assert d['mcp']['docling']['enabled'] is True; assert d['permission']['tool']['docling*'] is True"
+  python3 -c "
+import json
+d=json.load(open('/tmp/test_docling_merge.json'))
+assert d['mcp']['servers']['docling']['disabled'] is False
+rules=[r for r in d['permissions'] if r['action']=='docling*']
+assert len(rules)==1 and rules[0]['effect']=='allow', 'deny rule must flip in place, no duplicates'
+"
   rm -f /tmp/test_docling_merge.json
 }
 
@@ -109,11 +122,15 @@ MERGE_SCRIPT="deploy/merge-packs.mjs"
 # =============================================================================
 
 @test "primary_has_docling_skill_allow" {
-  python3 -c "import json; d=json.load(open('${CONFIG}')); assert d['permission']['skill']['docling-mcp-skill'] == 'allow'"
+  python3 -c "import json; d=json.load(open('${CONFIG}')); assert any(r['action']=='skill' and r.get('resource')=='docling-mcp-skill' and r['effect']=='allow' for r in d['permissions'])"
 }
 
 @test "office_document_primary_agent_has_docling_skill" {
-  grep -q "docling-mcp-skill: allow" "$AGENTS_DIR/office-document-primary-agent.md"
+  python3 -c "
+import yaml
+fm=yaml.safe_load(open('$AGENTS_DIR/office-document-router-subagent.md').read().split('---')[1])
+assert any(r['action']=='skill' and r['resource']=='docling-mcp-skill' and r['effect']=='allow' for r in fm['permissions']), 'docling skill rule missing'
+"
 }
 
 # =============================================================================
@@ -121,7 +138,7 @@ MERGE_SCRIPT="deploy/merge-packs.mjs"
 # =============================================================================
 
 @test "dependency_map_has_docling_edge" {
-  python3 -c "import json; d=json.load(open('deploy/dependency-map.json')); assert 'docling-mcp-skill' in d['impliesMcp']; assert d['impliesMcp']['docling-mcp-skill'] == ['docling']"
+  python3 -c "import json; d=json.load(open('installer/dependency-map.json')); assert 'docling-mcp-skill' in d['impliesMcp']; assert d['impliesMcp']['docling-mcp-skill'] == ['docling']"
 }
 
 # =============================================================================

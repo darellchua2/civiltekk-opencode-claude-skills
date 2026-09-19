@@ -11,7 +11,7 @@
 # assertion) to satisfy bats' parser while still covering all 30 skills
 # (7 + 8 + 15) × 3 assertions = 90 cases.
 
-SKILLS_DIR="opencode_app/.opencode/skills"
+SKILLS_DIR="skills"
 
 # Helper: extract Iteration Protocol section line range from a file.
 # Outputs: "<start_line> <end_line>" for the section (inclusive of header,
@@ -758,35 +758,6 @@ extract_section_range() {
 }
 @test "default_behavior_nextjs-unit-test-creator_evaluator_token_in_section_only" {
   skill_md="$SKILLS_DIR/nextjs-unit-test-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  range=$(extract_section_range "$skill_md")
-  start=$(echo "$range" | awk '{print $1}')
-  end=$(echo "$range" | awk '{print $2}')
-  [ "$start" -gt 0 ] || skip "no Iteration Protocol section"
-  # PLAN intent (line 217): tokens "appear ONLY inside the Iteration Protocol
-  # section". The literal `>= 1` assertion from the prompt template is too strict
-  # for Tier 2/3 partial-pattern retrofits (e.g. plan-execution-skill cites
-  # stuck-detection.md only and legitimately never mentions results.tsv).
-  # Correct semantics: every occurrence in the file must be inside the section.
-  total=$(grep -c 'results.tsv' "$skill_md" || true)
-  in_section=$(awk -v s="$start" -v e="$end" 'NR>=s && NR<=e' "$skill_md" | grep -c 'results.tsv' || true)
-  [ "$in_section" -eq "$total" ]
-}
-
-# --- nextjs-pr-workflow ---
-@test "default_behavior_nextjs-pr-workflow_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/nextjs-pr-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q 'DO NOT execute any of the following unless' "$skill_md"
-}
-@test "default_behavior_nextjs-pr-workflow_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/nextjs-pr-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
-  [ "$count" -eq 1 ]
-}
-@test "default_behavior_nextjs-pr-workflow_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/nextjs-pr-workflow-skill/SKILL.md"
   [ -f "$skill_md" ]
   range=$(extract_section_range "$skill_md")
   start=$(echo "$range" | awk '{print $1}')

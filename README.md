@@ -12,21 +12,26 @@ A multi-mode OpenCode configurator repository:
 
 ```
 opencode-config-template/
+├── skills/                      # 146 skill directories (source of truth)
+├── agents/                      # 34 subagent .md files (source of truth)
+├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings)
+│   └── vibeguard.config.json    # Secret-masking regex patterns
 ├── deploy/                      # User-space deployment files
-│   ├── config.json              # User-space config (agents, MCP servers, providers)
 │   ├── .AGENTS.md               # User-space subagent routing (deployed)
 │   ├── setup.sh / setup.ps1     # User-space deployment scripts
+│   └── packs/ + merge-packs / apply-skill-profile / skill-profiles / tui
+├── installer/                   # npx installer (self-contained CLI flow)
+│   ├── init.mjs                 # `npx … add <name>` entry (bin: opencode-skill)
+│   ├── registry.json            # Catalog registry (build-registry.mjs output)
+│   └── agent-tiers.json + model/provider maps, presets/, resolver
 ├── opencode_app/                # Docker standalone mode
-│   ├── Dockerfile               # Container image
+│   ├── Dockerfile               # Container image (COPYs root content into /app/.opencode/)
 │   ├── docker-entrypoint.sh     # API key injection + opencode serve
 │   ├── opencode.json            # Container-specific config
 │   ├── AGENTS.md                # Container-specific instructions
-│   ├── .dockerignore
-│   ├── .opencode/
-│   │       ├── agents/              # 32 subagent .md files
-    │   │       └── skills/              # 146 skill directories
 │   └── README.md                # Docker usage guide
 ├── docker-compose.yml           # Docker Compose service definition
+├── restart-opencode-docker.sh   # Pull main + redeploy the container (compose up -d --build)
 ├── .env.example                 # Environment variable template
 ├── PLANS/                       # Execution plans (git-committed)
 ├── LEARNINGS/                   # Knowledge persistence template (auto-provisioned in target projects)
@@ -81,7 +86,7 @@ Two setup scripts are provided for different platforms:
 
 Agent models are **tier-based and provider-agnostic**. Source agent files contain
 no hardcoded model — instead each agent is categorized into a tier
-(`reasoning` / `fast` / `docs` / `vision`) in `deploy/agent-tiers.json`, and the
+(`reasoning` / `fast` / `docs` / `vision`) in `installer/agent-tiers.json`, and the
 concrete model is resolved at deploy time. Swap providers without editing agent
 files:
 
@@ -97,13 +102,15 @@ Override files (precedence highest-first; see `MIGRATION.md`):
 | `~/.config/opencode/agent-overrides.json` | per-agent pin, global |
 | `<project>/.opencode/models.json` | tier map, project-local |
 | `~/.config/opencode/models.json` | tier map, global (written by `--provider`) |
-| `deploy/models.default.json` | Z.AI defaults |
+| `installer/models.default.json` | Z.AI defaults |
 
-> **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` + `zai-media-subagent` run on
+> **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` + `uiux-reviewer-subagent` +
+> `zai-media-subagent` run on
 > `zai-coding-plan/glm-5.3-flash` (native multimodal — image/video/pdf input, 1M ctx), natively
 > mapped by models.dev under the `zai-coding-plan` subscription. They see images/screenshots
-> directly (no external vision API). When native perception is unavailable, the
-> `zai-vision-analysis-skill` fallback calls `glm-5v-turbo` (pay-as-you-go `zai` provider — a
+> directly (no external vision API). When native perception is unavailable, they fall back to the
+> inline recipe embedded in `image-analyzer-subagent`, calling `glm-5v-turbo` (pay-as-you-go
+> `zai` provider — a
 > different model) via direct API. Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY`
 > (auto-injected in Docker via `docker-entrypoint.sh`). See `AGENTS.md` § Subagent Model Tiering.
 
@@ -185,7 +192,7 @@ npx github:darellchua2/opencode-config-template add solid-principles-skill
 
 | Scope | Flag | Destination | Config touch |
 |-------|------|-------------|--------------|
-| **User** (default) | *(none)* | `~/.config/opencode/{skills,agents}/` | None — opencode auto-discovers. `--permit` opts into backup+merge of `permission.skill` entries only. |
+| **User** (default) | *(none)* | `~/.config/opencode/{skills,agents}/` | None — opencode auto-discovers. `--permit` opts into backup+merge of `permissions`-array rules: skill allows (`action:"skill"`) plus build's subagent rules (deny-all-first seed incl. explore/general). |
 | **Project** | `--project [dir]` | `./.opencode/{skills,agents}/` | Full generation: `opencode.json` + `models.json` + `AGENTS.md` (existing `opencode-init` behavior). |
 
 MCPs are **never auto-merged** at user scope — the installer prints the snippet for manual paste (or use `--project` for full-service generation).
@@ -203,11 +210,14 @@ npx github:darellchua2/opencode-config-template add tdd-subagent --no-deps
 # C. Strict-allowlist detected (setup.sh was run) — warns about hidden items
 npx github:darellchua2/opencode-config-template add my-custom-skill
 
-# D. --permit — backup config.json + merge permission entries only
+# D. --permit — backup opencode.json + merge permission entries only
 npx github:darellchua2/opencode-config-template add my-custom-skill --permit
 
 # E. Skill needs an MCP — prints snippet, never auto-merges
 npx github:darellchua2/opencode-config-template add markitdown-mcp-skill
+
+# E2. Skill declares a skill prerequisite — auto-installs it (stderr notice; --no-deps opts out)
+npx github:darellchua2/opencode-config-template add pptx-template-modifier-skill
 
 # F. Project scope (full-service)
 npx github:darellchua2/opencode-config-template add nextjs-specialist-subagent --project
@@ -216,23 +226,25 @@ npx github:darellchua2/opencode-config-template add nextjs-specialist-subagent -
 npx github:darellchua2/opencode-config-template remove solid-principles-skill
 ```
 
-### Claude Code compatibility (`--format`)
+### Multi-app install targets (`--target`)
 
-Skills follow the [Agent Skills](https://agentskills.io) open standard — the same `SKILL.md` format works in both opencode and Claude Code. Use `--format` to control the install target:
+Skills follow the [Agent Skills](https://agentskills.io) open standard — the same `SKILL.md` format works in both opencode and Claude Code. Use `--target` to control the install target:
 
 ```bash
 # G. Install to Claude Code (~/.claude/skills/<name>/SKILL.md)
-npx github:darellchua2/opencode-config-template add solid-principles-skill --format claude
+npx github:darellchua2/opencode-config-template add solid-principles-skill --target claude
 
 # Install to both opencode and Claude Code
-npx github:darellchua2/opencode-config-template add tdd-subagent --format both
+npx github:darellchua2/opencode-config-template add solid-principles-skill --target both
 ```
 
-| Format | Destination | Notes |
+| Target | Destination | Notes |
 |--------|-------------|-------|
 | `opencode` (default) | `~/.config/opencode/{skills,agents}/` | Full opencode compat (model injection, strict-allowlist detection) |
-| `claude` | `~/.claude/skills/<name>/` | Claude Code auto-discovers; `model:` lines stripped (Claude uses its own model selection) |
-| `both` | Both paths above | Cross-tool install in one command |
+| `claude` | `~/.claude/skills/<name>/` | Skills only — agents are opencode-specific and skipped with a warning; `model:` lines stripped (Claude uses its own model selection) |
+| `both` | Both paths above | Agents install to opencode only; skills go to both |
+
+> `--format` is a deprecated alias for `--target` — still accepted (values unchanged), prints a warning.
 
 ### Browsing the catalog
 
@@ -240,25 +252,25 @@ Run `opencode-init --list agents` or `--list skills` to browse in JSON, or visit
 
 ## Project-Scoped Install (`opencode-init`)
 
-Not every project needs all 33 agents + 146 skills. <!-- count: hand-maintained — sync on skill/agent add (BT-157) --> `opencode-init` installs a **curated subset** into a target project's `.opencode/` and writes a project `opencode.json` configuring just that subset — chosen interactively (TUI) or via flags (LLM/CI). It is the project-scoped companion to the global `setup.sh` deploy, and is symlinked onto PATH as `opencode-init` by `setup.sh`.
+Not every project needs all 34 agents + 146 skills.
 
-> **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. `permission.task` (scoped subagent-spawn allowlist) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
+> **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. The subagent-spawn allowlist (frontmatter `permissions` rules with `action:"task"`) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
 
 ### Presets
 
 | Preset | Agents | Skills | MCPs | Use for |
 |--------|--------|--------|------|---------|
 | `core` | explorer | git-semantic-commits, continuous-learning | codegraph | Minimal baseline |
-| `review` | code-review + architecture + language-reviewer | 28 (Code Quality + auth/perf/logging/eval) | codegraph | Code quality gates |
+| `review` | code-review + architecture + language-reviewer | 31 (Code Quality incl. checklists+baseline, auth/perf/logging/eval) | codegraph | Code quality gates |
 | `frontend` | nextjs-specialist + uiux-reviewer + responsive-audit | 19 (Next.js/React/Three.js/a11y) | next-devtools, chrome-devtools, codegraph | Web frontend |
-| `backend` | language-reviewer | 23 (Python/DB/API/security/docker) | codegraph | Server / devops-lite |
+| `backend` | language-reviewer | 25 (Python/DB/API/security/docker + review checklists/baseline) | codegraph | Server / devops-lite |
 | `docs` | documentation + coverage + docx/pptx/xlsx + office-doc | 23 (document ladder) | — (inline mermaid blocks need no MCP) | Document generation |
 | `devops` | repo-ops + opentofu-explorer | 32 (release/IaC/JIRA) | codegraph | Git / infra / release |
 | `business` | startup-founder + ceo + discovery + requirements + technical-design | 36 (BD/pitch/planning) | — | BD / founder workflows |
 | `research` | autoresearch-{ml,code,research} + loop-operator | 12 (autoresearch + papers) | codegraph | Autonomous loops (ml needs GPU) |
-| `cad` | cad-specialist | 14 (CAD & Hardware Design) | — | CAD / robotics / hardware |
+| `cad` | cad-specialist | 15 (CAD & Hardware Design) | — | CAD / robotics / hardware |
 
-Member counts include transitive deps auto-pulled by the resolver (a preset's agent `permission.task` delegates + `permission.skill` requirements). Run `opencode-init --expand <preset>` to see the exact resolved set.
+Member counts include transitive deps auto-pulled by the resolver (a preset's agent frontmatter `permissions` rules — `task`-action delegates and `skill`-action requirements). Run `opencode-init --expand <preset>` to see the exact resolved set.
 
 ### Usage
 
@@ -282,7 +294,7 @@ opencode-init                                        # walks a menu (arrow keys)
 opencode-init --help
 ```
 
-What lands in the target project: `<project>/.opencode/opencode.json` (scoped `permission.skill` + `permission.task` allowlists, `agent.build/plan/explore/general`, selected MCPs), `<project>/.opencode/agents/*.md` (model injected per tier), `<project>/.opencode/skills/<name>/`, `<project>/.opencode/models.json`, a slim `<project>/AGENTS.md`, and a `.opencode-init.manifest.json` (enables safe `--prune`).
+What lands in the target project: `<project>/.opencode/opencode.json` (scoped `permissions` skill/subagent rules, `agents.build/plan/explore/general`, selected MCPs under `mcp.servers`), `<project>/.opencode/agents/*.md` (model injected per tier), `<project>/.opencode/skills/<name>/`, `<project>/.opencode/models.json`, a slim `<project>/AGENTS.md`, and a `.opencode-init.manifest.json` (enables safe `--prune`).
 
 ## Prerequisites
 
@@ -327,7 +339,7 @@ nvm install 24
 
 ## MCP Servers
 
-The configuration ships 9 MCP server entries. **3 are enabled by default:**
+The configuration ships 8 MCP server entries. **3 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -335,7 +347,7 @@ The configuration ships 9 MCP server entries. **3 are enabled by default:**
 | `zai-web-reader` | remote | Web page content extraction |
 | `zai-web-search` | remote | Web search with cited results (GIT-336) |
 
-The remaining 6 are `enabled: false` and opt-in:
+The remaining 5 ship `disabled: true` and are opt-in:
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -344,17 +356,16 @@ The remaining 6 are `enabled: false` and opt-in:
 | `markitdown` | local | Document-to-Markdown (local-only) |
 | `docling` | local | Layout-aware document extraction (~3-4 GB) |
 | `chrome-devtools` | local | Live Chrome automation |
-| `zai-vision-mcp` | local (npx) | Z.AI vision tools (native multimodal subagents are the default) |
 
 The 4 Autodesk servers are **not shipped in the base config** — the `autodesk` provider pack below adds their full definitions at deploy time (needs `AUTODESK_API_KEY`).
 
-To enable one **for a single project**, add a `.opencode/opencode.json` in the repo (project config merges over the global one — project wins):
+To enable one **for a single project**, add it to `opencode.json` in the repo root as a **full entry** (v2 replaces `mcp.servers.<name>` atomically across config layers — a bare `{"disabled": false}` stub yields an inert server):
 
 ```json
-{ "mcp": { "atlassian": { "enabled": true } } }
+{ "mcp": { "servers": { "atlassian": { "type": "local", "command": ["npx", "-y", "mcp-remote", "https://mcp.atlassian.com/v1/mcp"], "disabled": false } } } }
 ```
 
-To enable one **globally**, set `"enabled": true` in `config.json`, or use a provider pack below. The `opencode-repo-setup-skill` automates per-project enablement interactively.
+To enable one **globally**, set `"disabled": false` under `mcp.servers` in `~/.config/opencode/opencode.json`, or use a provider pack below. The `opencode-repo-setup-skill` automates per-project enablement interactively.
 
 #### Provider Packs — deploy-time MCP toggle (#268)
 
@@ -368,13 +379,7 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 | `nextjs` | next-devtools | A running Next.js dev server |
 | `chrome-devtools` | chrome-devtools | Chrome stable installed locally (privacy-hardened: telemetry + CrUX OFF by default) |
 
-**Plugin packs** merge a `tui` key into `~/.config/opencode/tui.json` instead of flipping MCP servers. Currently one:
-
-| Pack | Plugin installed | Requires |
-|------|------------------|----------|
-| `voice` | [@renjfk/opencode-voice](https://github.com/renjfk/opencode-voice) — local speech-to-text (`ctrl+r` to record, `leader+r` to submit; `/stt-mic` picks the mic) into tui.json; also clobbers `session_rename` so `ctrl+r` works | sox + whisper.cpp (`setup.sh` auto-detects GPU vs CPU: brew+Metal on macOS; on Linux — CUDA build when `nvidia-smi` + `nvcc` are present, ROCm/HIP build when `rocminfo` is present, Vulkan build when `vulkaninfo` + `glslc` are present, CPU otherwise, with an optional ROCm install assist for AMD GPUs; NPU/iGPU paths — AMD Ryzen AI 300/400 auto-builds whisper.cpp with VitisAI NPU offload when `xrt-smi` sees the NPU (needs XRT + FlexML runtimes; `.rai` encoder cache fetched alongside the model), Intel GPU/NPU builds with OpenVINO when `/opt/intel/openvino*` + the NPU/iGPU are present (encoder runs on the Arc iGPU — NPU device is broken on Linux, whisper.cpp#2929; Vulkan remains the light cross-vendor fallback); server alternatives wired via the plugin's `sttEndpoint`: [Lemonade Server](https://lemonade-server.ai) (AMD NPU) or [OpenVINO Model Server](https://docs.openvino.ai/2025/model-server/ovms_demos_audio.html)) and suggests a matching model (large-v3-turbo on modern GPUs/Metal/AMD ROCm/Vulkan, medium on older GPUs, small on CPU-only); normalization LLM defaults to local Ollama — edit `endpoint`/`model` in the deployed tui.json for any OpenAI-compatible API; optional Piper TTS for spoken responses. macOS/Linux only |
-
-The plugin array merges **by plugin name** — re-runs replace in place and never touch your other plugins. On Docker, the `tui` merge is skipped with a warning (containers have no microphone).
+The cli.json `plugins` array merges **by package name** — re-runs replace in place and never touch your other plugins. On Docker, the cli.json merge is skipped with a warning (containers have no microphone).
 
 ```bash
 # User-space deploy (setup.sh)
@@ -394,19 +399,19 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 
 #### Skill Profiles — deploy-time primary visibility (#333)
 
-Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (106 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 45 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session at ~90 tokens/description).
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (103 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 44 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session at ~90 tokens/description).
 
 ```bash
-./deploy/setup.sh                                # default: lean (45 primary-visible skills)
+./deploy/setup.sh                                # default: lean (44 primary-visible skills)
 ./deploy/setup.sh --skill-profile full           # opt back in: shipped allowlist verbatim
-./deploy/setup.sh --skill-profile lean --dry-run # preview the deployed permission.skill block
+./deploy/setup.sh --skill-profile lean --dry-run # preview the deployed skill rules
 ./deploy/setup.ps1 -SkillProfile full            # Windows parity
 ```
 
 Key properties:
 
-- Only the **deployed** copy's `permission.skill` block is rewritten (`deploy/apply-skill-profile.mjs`); the shipped `opencode.json` is never modified — `full` is a verified no-op.
-- **Subagents are profile-immune.** All 146 skills stay on disk and every skill has either a frontmatter `permission.skill: allow` consumer agent or a lean slot — nothing is orphaned under lean.
+- Only the **deployed** copy's skill rules in the `permissions` array (`action:"skill"` entries) are rewritten (`deploy/apply-skill-profile.mjs`); the shipped `opencode.json` is never modified — `full` is a verified no-op.
+- **Subagents are profile-immune.** All 146 skills stay on disk and every skill has either a frontmatter skill-allow consumer (`permissions` rules with `action:"skill"`) or a lean slot — nothing is orphaned under lean.
 - Lean-hidden skills cannot be `@`-loaded by the primary until re-exposed; re-exposing any skill is a one-line edit to `deploy/skill-profiles.json`.
 - Typo-guarded: a lean key that doesn't match a real skill directory or the shipped allowlist fails the deploy closed.
 
@@ -415,7 +420,7 @@ Key properties:
 
 > **Note — `filesystem` MCP server has been permanently removed.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` was redundant and caused tool-selection ambiguity (the model would call `read_mcp_resource` instead of the built-in `Read` tool). Do not re-add it to project `opencode.json` files.
 
-> **Note — opt-in MCP servers ship with telemetry pre-disabled.** Two of the disabled-by-default servers phone home analytics when naively enabled; both are hardened in `opencode.json` so flipping `enabled: true` is safe without further edits:
+> **Note — opt-in MCP servers ship with telemetry pre-disabled.** Two of the disabled-by-default servers phone home analytics when naively enabled; both are hardened in `opencode.json` so setting `disabled: false` is safe without further edits:
 >
 > - **`chrome-devtools`** — Google's `chrome-devtools-mcp` sends usage statistics and Chrome UX Report (CrUX) trace URLs to Google **by default**, plus polls the npm registry for updates. Hardened with `--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers` (strips sensitive request headers before they reach the LLM), and `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1` (kills the update poll).
 > - **`next-devtools`** — Vercel's `next-devtools-mcp` collects anonymous telemetry (tool names, error events, session metadata) by default, storing a local client ID in `~/.next-devtools-mcp/`. Hardened with `NEXT_TELEMETRY_DISABLED=1`.
@@ -424,9 +429,11 @@ Key properties:
 
 ## Language Server Protocol (LSP)
 
-OpenCode ships **native LSP support** (~30 built-in language servers) that feeds real-time diagnostics back into the agent loop so the agent can fix type/lint errors as it edits. See the [official LSP docs](https://opencode.ai/docs/lsp/).
+OpenCode v1 ships **native LSP support** (~30 built-in language servers) that feeds real-time diagnostics back into the agent loop so the agent can fix type/lint errors as it edits.
 
-**LSP is deliberately NOT enabled in the distributed config.** This repository is a configuration distributor (Markdown + JSON + shell + one vendored Python MCP server) — there is no application code here for an LSP to diagnose. Forcing LSP on every downstream project would hurt more than help (memory cost, version drift, slower agent workflows). The [official guidance](https://opencode.ai/docs/lsp/#best-practices) is to enable it only when a project benefits from language-server feedback.
+> **OpenCode v2 status:** V2 accepts and preserves `lsp` configuration but **does not run language servers, expose LSP tools, or produce diagnostics** — the block is inert (see [Supported fields without direct native equivalents](https://opencode.ai/v2/docs/migrate-v1/#supported-fields-without-direct-native-equivalents)). Until V2 reintroduces LSP, rely on the project's lint/typecheck/compiler commands — the verification gates in this repo's `AGENTS.md` already work that way.
+
+**LSP is deliberately NOT enabled in the distributed config.** This repository is a configuration distributor (Markdown + JSON + shell + one vendored Python MCP server) — there is no application code here for an LSP to diagnose. Forcing LSP on every downstream project would hurt more than help (memory cost, version drift, slower agent workflows).
 
 ### Enabling LSP in a target project
 
@@ -462,7 +469,7 @@ Or enable selectively with overrides:
 | Svelte/Vue/Astro | respective LS | Elixir | elixir-ls |
 | Terraform | terraform-ls | Prisma | prisma |
 
-Set `OPENCODE_DISABLE_LSP_DOWNLOAD=true` to prevent auto-downloads. See the [full list and config schema](https://opencode.ai/docs/lsp/#configure).
+Set `OPENCODE_DISABLE_LSP_DOWNLOAD=true` to prevent auto-downloads. (Both behaviors are V1-era; V2 performs no LSP downloads or server runs at all.)
 
 ### When to prefer a CLI check instead
 
@@ -478,6 +485,8 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 | `LEARNINGS/` in target projects | Curated, git-committed | Detailed patterns, ADRs, team conventions |
 | `~/.config/opencode/learnings/` | User-level, cross-project | Personal preferences and patterns |
 
+> **OpenCode v2 status:** the `memory` tool was provided by `opencode-superlocalmemory`, a V1-API plugin with no v2 release — **removed from the config** (it only produced boot warnings). `LEARNINGS/*.md` + auto-inject + `AGENTS.md` discovery is the memory layer. Watch-list to re-add when v2-compatible: `opencode-superlocalmemory`, `@nick-vi/opencode-type-inject`, `opencode-scheduler` (check with `npm view <pkg> version` and the plugin's v2 compatibility notes). Re-added 2026-09: `opencode-goal-plugin` → `@prevalentware/opencode-goal-plugin@^0.1.48` (v2-native since 0.1.30; audited version 0.1.48, published 2026-09-07 via `npm view`). The Docker endpoint stays inert until the container's v2 binary bump (#387); TUI sidebar/palette integration (the `~/.config/opencode/cli.json` entry) is deliberately deferred — server-side `/goal` works from `opencode.json` alone.
+
 **How it works:**
 - `deploy/setup.sh` / `deploy/setup.ps1` creates `~/.config/opencode/learnings/` with 5 subfolders at user level
 - When `continuous-learning` skill runs in a target project, it auto-provisions a `LEARNINGS/` directory in that project root
@@ -486,7 +495,9 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 
 ## Secret Masking (vibeguard)
 
-Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic — the LLM provider never sees plaintext secret values, but tools (bash, write, etc.) receive real values at execution time. It is the **universal masking layer** covering all agents (primary + subagents), regardless of individual `permission.read` overrides.
+> **OpenCode v2 status:** shipped as a local V2 port (`plugins/vibeguard.ts` — engine ported from `opencode-vibeguard@0.1.0`, MIT; see `plugins/ATTRIBUTION.md`). Masking is **active** on v2; the npm pin was removed from the `plugins` array (double-registration guard). Verify with `OPENCODE_VIBEGUARD_DEBUG=1 opencode`. The `permissions` deny rules for `*.env` remain the second layer.
+
+Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic — the LLM provider never sees plaintext secret values, but tools (bash, write, etc.) receive real values at execution time. It is the **universal masking layer** covering all agents (primary + subagents), regardless of individual `read` deny rules in their `permissions` arrays.
 
 **How it works:** regex patterns in `vibeguard.config.json` match known secret shapes (API keys, tokens, passwords, connection strings, PEM blocks, JWTs). Matched values are replaced with `__VG_…__` placeholders in LLM requests and restored at tool-execution time via a per-session map.
 
@@ -557,11 +568,9 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 
 ## Skill Modularization
 
-This repository implements **skill modularization** with 146 skills organized across 23 categories. <!-- count: hand-maintained — sync on skill add (BT-157) --> Skills are designed with clear separation of concerns and explicit dependencies.
 
-> **Registry-derived (PLAN-GIT-286):** every skill + agent now carries a `category:` frontmatter field, which `deploy/build-registry.mjs` reads to emit `deploy/registry.json` — the single source of truth consumed by the `opencode-init` project-scoped installer and (regenerable into) this category table. To refresh after editing frontmatter: `node deploy/build-registry.mjs` (CI fails on drift via `--check`).
 
-> **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **125**; later **126** after `plan-automation-loop-skill` was added (Git/Workflow — `/run-plan` full-automation loop). Subsequent additions brought the total to **130**, including `zai-image-generation-skill` (Media Generation — Z.AI GLM-Image text-to-image, saves a PNG file). Post-#333: +1 `opencode-repo-setup-skill` (OpenCode Meta — per-repo MCP/project-config setup frontend) → **131**. Post-GIT-333: −1 `codegraph-setup-skill` (merged into `opencode-repo-setup-skill` §Step 4) → **130**. Post-GIT-338: −4 per-language linter skills (`python-ruff-linter`, `javascript-eslint-linter`, `java-linter`, `csharp-linter` merged into `language-linting-skill`) → **127**. Post-GIT-341: +6 vendored verbatim (pstack `unslop`/`technical-writing`/`blast-radius` @60c641e; ponytail `audit`/`review`/`debt` satellites v4.8.4) → **133**. Post-GIT-351: +1 `worktree-pipeline-skill` (Git/Workflow — `/run-worktree-pipeline` tracker-to-merged-PR pipeline via git worktrees) → **134**. Post-GIT-357: +3 media skills (`zai-video-skill`, `zai-asr-skill`, `zai-ocr-skill` — Media Generation, consumer-scoped to `zai-media-subagent`) → **137**.
+> **Migration Complete (BT-142):** The `pptx-specialist-*` stack has been migrated to chenyu's JSON-in-PPTX architecture. Final skill count is **123** (−1 `pptx-specialist-skill` decomposed, +3 chenyu skills, +2 new decomposition skills, +2 Academic & Research Writing skills added post-migration). See `PLANS/PLAN-BT-142.md` for the full plan. The legacy `pptx-specialist-skill` has been removed; all PPTX operations now route through `pptx-specialist-subagent` → `pptx-generate-slide-skill` / `pptx-generate-template-skill` / `pptx-template-modifier-skill`. Post-#283: +1 `zai-vision-analysis-skill` (Z.AI direct-API vision, free `glm-4.6v-flash`) → **125**; later **126** after `plan-automation-loop-skill` was added (Git/Workflow — `/run-plan` full-automation loop). Subsequent additions brought the total to **130**, including `zai-image-generation-skill` (Media Generation — Z.AI GLM-Image text-to-image, saves a PNG file). Post-#333: +1 `opencode-repo-setup-skill` (OpenCode Meta — per-repo MCP/project-config setup frontend) → **131**. Post-GIT-333: −1 `codegraph-setup-skill` (merged into `opencode-repo-setup-skill` §Step 4) → **130**. Post-GIT-338: −4 per-language linter skills (`python-ruff-linter`, `javascript-eslint-linter`, `java-linter`, `csharp-linter` merged into `language-linting-skill`) → **127**. Post-GIT-341: +6 vendored verbatim (pstack `unslop`/`technical-writing`/`blast-radius` @60c641e; ponytail `audit`/`review`/`debt` satellites v4.8.4) → **133**. Post-GIT-351: +1 `worktree-pipeline-skill` (Git/Workflow — `/run-worktree-pipeline` tracker-to-merged-PR pipeline via git worktrees) → **134**. Post-GIT-357: +3 media skills (`zai-video-skill`, `zai-asr-skill`, `zai-ocr-skill` — Media Generation, consumer-scoped to `zai-media-subagent`) → **137**. Post-skill-stack-simplification: +3 (`wayfinder-skill` vendored+adapted from mattpocock/skills MIT; `language-review-checklists-skill` extracted from language-reviewer; `reviewer-baseline-skill` shared reviewer boilerplate) and `ticket-plan-workflow-skill` renamed → `ticket-creation-skill` (creation-only; PLAN authoring absorbed into `worktree-pipeline-skill` §PLAN Authoring; new `/create-ticket` command) → **148**. Post-GIT-364: −1 `zai-vision-analysis-skill` (removed; native multimodal vision agents + their inline direct-API fallback recipe are the only path) → **147**. Post-#370: +1 `email-drafter-skill` (Communication — new category; business-email drafting) → **148**. Post-v2-audit: +1 `opencode-v2-migration-skill` (OpenCode Meta — v1→v2 detect/triage frontend; pairs with `opencode-v2-migration-subagent`, 34th agent, `reasoning` tier) → **149**. Post-#402: +1 `cad-redraw-skill` (CAD & Hardware Design — Linux DWG/DXF/PDF/image drawing redraw via ezdxf, evidence-aware) → **150**. Post-#404: +1 `gh-cli-setup-skill` (Git/Workflow — GitHub CLI install/auth fallback for ticket and PR flows) → **151**. Post-#409: −1 `nextjs-pr-workflow-skill` (deleted as a special case of `pr-creation-workflow-skill`; its coverage-badge feature folded into `coverage-readme-workflow-skill`, its gate table consolidated into `verification-loop-skill` as the canonical gate contract) → **150**. Post-#407: −2 grill routers (`grill-me-skill`, `grill-with-docs-skill` merged into `grilling-skill` modes — default / `--docs` / `--plan`) → **148**. Post-#408: −2 execution siblings (`plan-updater-skill`, `plan-automation-loop-skill` merged into `plan-execution-skill` modes `--update`/`--gate`) → **146**.
 
 ### Skill Categories
 
@@ -571,31 +580,32 @@ This repository implements **skill modularization** with 146 skills organized ac
 | **Presentation** (3) | pptx-generate-slide-skill, pptx-generate-template-skill, pptx-template-modifier-skill | Template-driven PowerPoint generation — extract, fill, extend |
 | **Office Utilities** (2) | ooxml-editing-skill, office-thumbnail-skill | Generic Office OOXML surgical edits and visual thumbnail/conversion |
 | **Language-Specific** (6) | python-pytest-creator, language-linting, changelog-python-cliff, python-backend-skill, python-packaging-skill, fastapi-pydantic-orm-patterns-skill | Language-specific test, linting (Ruff/ESLint/Checkstyle/dotnet format), project scaffolding, packaging, and backend patterns |
-| **Framework-Specific** (11) | nextjs-pr-workflow, nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-hooks-antipatterns-skill, react-render-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment |
+| **Framework-Specific** (10) | nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-hooks-antipatterns-skill, react-render-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment |
 | **Frontend Animation** (8) | gsap-core, gsap-timeline, gsap-scrolltrigger, gsap-plugins, gsap-utils, gsap-react, gsap-frameworks, gsap-performance | GSAP web-animation guidance — tweens/easing/stagger, timeline sequencing, ScrollTrigger scroll-linked animation + pinning, plugins (Flip, Draggable, SplitText…), utils helpers, React (`useGSAP`) and Vue/Svelte integration, performance optimization. Vendored from official greensock/gsap-skills (MIT — see THIRD_PARTY_LICENSES.md §5) |
-| **OpenCode Meta** (5) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, opencode-repo-setup, documentation-consistency-skill | Agent and skill creation/maintenance, documentation consistency auditing, per-repo MCP/project-config setup |
+| **OpenCode Meta** (6) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, opencode-repo-setup, documentation-consistency-skill, opencode-v2-migration | Agent and skill creation/maintenance, documentation consistency auditing, per-repo MCP/project-config setup, v1→v2 migration detect/triage |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
-| **Git/Workflow** (14) | ascii-diagram-creator, mermaid-diagram-creator, ticket-plan-workflow-skill, plan-execution-skill, plan-automation-loop-skill, worktree-pipeline-skill, git-issue-labeler, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, plan-updater, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, release conventions, version bumping, compact commits, branch workflow orchestration, fully-automated per-phase plan execution (lint+build+test+e2e gate → per-step traceability → commit → push) via `/run-plan`, and the tracker-ticket-to-merged-PR worktree pipeline via `/run-worktree-pipeline` |
+| **Git/Workflow** (14) | ascii-diagram-creator, mermaid-diagram-creator, ticket-creation-skill, plan-execution-skill, worktree-pipeline-skill, wayfinder-skill, git-issue-labeler, gh-cli-setup-skill, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, release conventions, version bumping, compact commits, branch workflow orchestration, structured ticket creation via `/create-ticket` (creation-only; branch+PLAN+execution live in the pipeline), fully-automated per-phase plan execution (lint+build+test+e2e gate → per-step traceability → commit → push) via `/run-plan`, the tracker-ticket-to-merged-PR worktree pipeline via `/run-worktree-pipeline`, and oversized-work planning as decision-ticket maps (`wayfinder-skill`) |
 | **Documentation** (5) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow, unslop-skill, technical-writing-skill | Documentation generation |
+| **Communication** (1) | email-drafter-skill | Business-email drafting — process, tone frames, slop checklist |
 | **Academic & Research Writing** (2) | horseshoe-paper-writing-skill, research-paper-generation-skill | Academic & research paper writing (Horseshoe Diagram Method, journal-submission formats; codebase→paper generation) |
 | **JIRA** (3) | jira-status-updater, jira-git-integration, jira-ticket-labeler | JIRA integration via MCP server |
-| **Code Quality** (12) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill, blast-radius-skill, ponytail-audit-skill, ponytail-review-skill, ponytail-debt-skill | Code quality analysis, patterns, and @deprecated code cleanup |
+| **Code Quality** (14) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill, blast-radius-skill, ponytail-audit-skill, ponytail-review-skill, ponytail-debt-skill, language-review-checklists-skill, reviewer-baseline-skill | Code quality analysis, patterns, and @deprecated code cleanup |
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Evaluated by mechanical `{"pass":bool,"score":N}` — no LLM self-judgment. Ported from uditgoenka/autoresearch + karpathy/autoresearch (MIT). |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
 | **Configuration** (2) | markitdown-mcp-skill, docling-mcp-skill | markitdown and docling MCP setup (CodeGraph init lives in `opencode-repo-setup-skill`) |
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
 | **DevOps** (5) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill, aws-iac-safety-skill | Containerization, monorepos, database migrations, observability, and IaC safety |
-| **Planning & Alignment** (4) | grilling-skill, domain-modeling-skill, grill-with-docs-skill, grill-me-skill | Relentless interview/grilling sessions and domain model (CONTEXT.md glossary + ADR) capture |
-| **Responsive & Visual Testing** (3) | wireframer-skill, playwright-responsive-audit-skill, zai-vision-analysis-skill | Low-fidelity wireframe/prototype generation, Playwright-driven responsive UI audit + fix (persistent PTY watch loop), and Z.AI direct-API image/screenshot analysis (orphaned under the native vision tier — retained as a text-only-session fallback) |
-| **CAD & Hardware Design** (14) | cad-generation-skill, cad-viewer-skill, cad-step-parts-skill, cad-dxf-skill, cad-urdf-skill, cad-srdf-skill, cad-sdf-skill, cad-sendcutsend-skill, cad-gcode-skill, cad-bambu-labs-skill, cad-implicit-skill, autodesk-aps-skill, civil-3d-skill, open3d-skill | Parametric CAD generation (STEP/STL/3MF/GLB), CAD Viewer previews, off-the-shelf parts, DXF drawings, robot descriptions (URDF/SRDF/SDF), G-code slicing, 3D printing (Bambu Labs), SendCutSend validation, implicit CAD, Autodesk APS API integration, Civil 3D workflows, Open3D 3D data processing |
+| **Planning & Alignment** (2) | grilling-skill, domain-modeling-skill | Relentless interview/grilling sessions (modes: plain, `--docs` inline glossary+ADR capture, `--plan` emitter) and the canonical domain-model capture engine |
+| **Responsive & Visual Testing** (2) | wireframer-skill, playwright-responsive-audit-skill | Low-fidelity wireframe/prototype generation and Playwright-driven responsive UI audit + fix (persistent PTY watch loop); screenshot analysis routes through `image-analyzer-subagent` (native vision tier) |
+| **CAD & Hardware Design** (15) | cad-generation-skill, cad-viewer-skill, cad-step-parts-skill, cad-dxf-skill, cad-urdf-skill, cad-srdf-skill, cad-sdf-skill, cad-sendcutsend-skill, cad-gcode-skill, cad-bambu-labs-skill, cad-implicit-skill, autodesk-aps-skill, civil-3d-skill, open3d-skill, cad-redraw-skill | Parametric CAD generation (STEP/STL/3MF/GLB), CAD Viewer previews, off-the-shelf parts, DXF drawings, evidence-aware drawing redraw (DWG/DXF/PDF/image on Linux via ezdxf), robot descriptions (URDF/SRDF/SDF), G-code slicing, 3D printing (Bambu Labs), SendCutSend validation, implicit CAD, Autodesk APS API integration, Civil 3D workflows, Open3D 3D data processing |
 | **Media Generation** (4) | zai-image-generation-skill, zai-video-skill, zai-asr-skill, zai-ocr-skill | Z.AI PAYG media endpoints: text-to-image (GLM-Image, saves PNG), text/image-to-video (CogVideoX-3, async submit + PTY poll, saves MP4), audio transcription (GLM-ASR, wav/mp3 ≤25 MB ≤30 s), and layout-aware OCR (GLM-OCR, image/PDF) — all save artifacts to local files (OpenCode's chat-only providers cannot reach these endpoints) |
 
-> **Note**: 6 redundant skills archived to `skills/_archived/`: `nextjs-complete-setup`, `python-docstring-generator`, `nextjs-tsdoc-documentor`, `git-pr-creator`, `git-issue-plan-workflow`, `jira-ticket-plan-workflow`. Use `docstring-generator` for all language docstrings (Python PEP 257, TypeScript TSDoc, Java Javadoc, C# XML docs). Use `ticket-plan-workflow-skill` for unified GitHub/JIRA ticket planning. 
+> **Note**: 6 redundant skills archived to `skills/_archived/`: `nextjs-complete-setup`, `python-docstring-generator`, `nextjs-tsdoc-documentor`, `git-pr-creator`, `git-issue-plan-workflow`, `jira-ticket-plan-workflow`. Use `docstring-generator` for all language docstrings (Python PEP 257, TypeScript TSDoc, Java Javadoc, C# XML docs). Use `ticket-creation-skill` for structured GitHub/JIRA ticket creation; branch/PLAN/execution are handled by `/run-worktree-pipeline`. 
 
 ### Agents
 
-32 agent `.md` files (plus 4 config-builtin agents defined directly in `config.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
+33→34 agent `.md` files (plus 4 config-builtin agents defined directly in `opencode.json`: `build`, `plan`, `explore`, `general`) provide specialized task handling. Note: the 2 `*-primary-agent` files (`startup-founder`, `office-document`) are routing hubs but are declared with `mode: subagent`.
 
 #### Primary Agents
 
@@ -603,8 +613,8 @@ This repository implements **skill modularization** with 146 skills organized ac
 |-------|---------|-------------|
 | **build** | Default agent for general tasks | Full access to all tools and subagents |
 | **plan** | Read-only planning and analysis | `task`, `read`, `glob`, `grep` only (no write/execute) |
-| **startup-founder-primary-agent** | Business docs - reports, quotations, spreadsheets, presentations | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
-| **office-document-primary-agent** | Office document specialist: Word, PowerPoint, Excel | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
+| **startup-founder-subagent** | Business docs - reports, quotations, spreadsheets, presentations | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
+| **office-document-router-subagent** | Office document specialist: Word, PowerPoint, Excel | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
 
 #### Subagents
 
@@ -613,7 +623,7 @@ This repository implements **skill modularization** with 146 skills organized ac
 | **linting-subagent** | Code quality and style (Python, JS/TS, Java Spring Boot, C# .NET) | linting-workflow, language-linting | `explore` |
 | **testing-subagent** | Test generation and execution | test-generator-framework, python-pytest-creator, nextjs-unit-test-creator | `explore` |
 | **tdd-subagent** | Test-driven development workflow | tdd-workflow, test-generator-framework | — |
-| **pr-workflow-subagent** | Pull request creation | pr-creation-workflow, nextjs-pr-workflow | `documentation-subagent`, `explore`, `general`, `image-analyzer-subagent` |
+| **pr-workflow-subagent** | Pull request creation | pr-creation-workflow | `documentation-subagent`, `explore`, `general`, `image-analyzer-subagent` |
 | **discovery-specialist-subagent** | Customer-facing discovery: Vision docs + wireframes | vision-creation-skill | `explore`, `image-analyzer-subagent`, `xlsx-specialist-subagent` |
 | **requirements-specialist-subagent** | BRD + SRS drafting (BABOK/IIBA + IEEE 830) | brd-creation-skill, srs-creation-skill | `explore`, `image-analyzer-subagent`, `xlsx-specialist-subagent` |
 | **technical-design-specialist-subagent** | Technical design + ADRs (engineering 'how' stage) | technical-design-creation-skill | `explore`, `image-analyzer-subagent`, `architecture-review-subagent` |
@@ -626,11 +636,12 @@ This repository implements **skill modularization** with 146 skills organized ac
 | **error-resolver-subagent** | Error diagnosis and resolution | error-resolver-workflow | — |
 | **nextjs-specialist-subagent** | Next.js scaffolding + runtime MCP diagnosis + project audit | nextjs-standard-setup, nextjs-devtools-mcp, docstring-generator, nextjs-image-usage, react-hooks-antipatterns, react-render-antipatterns, amplify-nextjs-deployment | — |
 | **opencode-tooling-subagent** | Skills, agents, and rules creation + doc sync | opencode-skill-creation, opencode-agent-creation, opencode-skills-maintainer, documentation-sync-workflow | — |
+| **opencode-v2-migration-subagent** | OpenCode v1→v2 migration execution — config mapping, frontmatter conversion, plugin triage/ports, verification | opencode-v2-migration-skill | `explore` |
 | **docx-creation-subagent** | Word document creation | docx-creation, unslop-skill, horseshoe-paper-writing-skill | — |
 | **image-analyzer-subagent** | Image analysis (native multimodal `zai-coding-plan/glm-5.3-flash`) | (built-in vision) | — |
 | **zai-media-subagent** | Media production: image/video generation, audio transcription, OCR via Z.AI PAYG skills; artifacts saved to disk, file paths returned | zai-image-generation, zai-video, zai-asr, zai-ocr | — |
 | **responsive-audit-subagent** | Responsive UI audit and fix | playwright-responsive-audit-skill | `explore`, `general`, `image-analyzer-subagent` |
-| **cad-specialist-subagent** | CAD, robotics, hardware design — orchestrates 14 CAD/engineering skills | cad-generation, cad-viewer, cad-step-parts, cad-dxf, cad-urdf, cad-srdf, cad-sdf, cad-sendcutsend, cad-gcode, cad-bambu-labs, cad-implicit, autodesk-aps-skill, civil-3d-skill, open3d-skill | — |
+| **cad-specialist-subagent** | CAD, robotics, hardware design — orchestrates 15 CAD/engineering skills | cad-generation, cad-viewer, cad-step-parts, cad-dxf, cad-urdf, cad-srdf, cad-sdf, cad-sendcutsend, cad-gcode, cad-bambu-labs, cad-implicit, autodesk-aps-skill, civil-3d-skill, open3d-skill, cad-redraw | — |
 | **explorer-subagent** | Fast codebase exploration and analysis | (built-in search capabilities) | — |
 | **pptx-specialist-subagent** | PowerPoint presentations (read, create, edit, analyze) | pptx-generate-slide, pptx-generate-template, pptx-template-modifier | — |
 | **xlsx-specialist-subagent** | Spreadsheets (read, create, edit, analyze) | xlsx-specialist | — |
@@ -639,7 +650,7 @@ This repository implements **skill modularization** with 146 skills organized ac
 | **autoresearch-ml-subagent** | Autonomous ML training loop (Karpathy-style). Requires NVIDIA GPU. | autoresearch-core, autoresearch-ml, strategic-compact | `explore`, `general` |
 | **autoresearch-code-subagent** | Autonomous code optimization (test coverage, bundle size, runtime) | autoresearch-core, autoresearch-code, continuous-learning, strategic-compact | `explore`, `general` |
 | **autoresearch-research-subagent** | Literature review / paper synthesis (Tier 2 web-only, no Bash) | autoresearch-core, autoresearch-research, search-first, strategic-compact | `explore`, `general` |
-| **language-reviewer-subagent** | Multi-language code review — Python, TypeScript/JS, Go, Rust, Java (idioms, type safety, concurrency, framework checks) | solid-principles, clean-code, code-smells, design-patterns, python-backend, fastapi-pydantic-orm-patterns, database-migration, python-packaging, react-hooks/render-antipatterns, typescript-dry-principle, language-linting, deprecated-code-cleanup, continuous-learning, search-first | `explore`, `general` |
+| **language-reviewer-subagent** | Multi-language code review — Python, TypeScript/JS, Go, Rust, Java (idioms, type safety, concurrency, framework checks); thin orchestrator over `language-review-checklists-skill` | language-review-checklists, reviewer-baseline, solid-principles, clean-code, code-smells, design-patterns, python-backend, fastapi-pydantic-orm-patterns, database-migration, python-packaging, react-hooks/render-antipatterns, typescript-dry-principle, language-linting, deprecated-code-cleanup, continuous-learning, search-first | `explore`, `general` |
 | **uiux-reviewer-subagent** | UI/UX design review (13-axis rubric: 6 AslanMazhidov + 5 RNT56 + Nielsen's 10 + anti-default AI cluster detection) | uiux-review-skill, frontend-design-skill, accessibility-a11y-skill, wireframer-skill | `explore`, `general`, `image-analyzer-subagent` |
 
 > **Built-in Delegation**: Subagents with `explore` can delegate codebase scanning to the built-in `explore` subagent. Subagents with `general` can delegate parallelizable multi-step work to the built-in `general` subagent. Access is controlled via `task` permissions in each agent's frontmatter (`"*": deny` by default, explicit allowlist).
@@ -654,7 +665,7 @@ This repository implements **skill modularization** with 146 skills organized ac
 | `2` | primary → subagent → 1 nested | Minimum for autoresearch to delegate research/exploration |
 | `3` (set here) | primary → subagent → nested → one more | Comfortable headroom for autoresearch-code/ml/research loops |
 
-Each extra level multiplies token cost (every nested subagent runs its own full context). Lower it to `2` for tighter runs; raise it only if a deeper chain hits the wall again. See the [Subagent depth docs](https://opencode.ai/docs/config#subagent-depth).
+Each extra level multiplies token cost (every nested subagent runs its own full context). Lower it to `2` for tighter runs; raise it only if a deeper chain hits the wall again. See the [OpenCode v2 config docs](https://opencode.ai/v2/docs/config/).
 
 #### Trigger Phrases
 
@@ -669,7 +680,7 @@ Some subagents recognize natural language triggers:
 
 ### Iteration Protocol (opt-in)
 
-The repository ships an **autoresearch iteration protocol** — a 5-stage loop (Understand → Hypothesize → Experiment → Evaluate → Log & Iterate) that 30 existing skills can opt into. The protocol is **off by default**; enable it via:
+The repository ships an **autoresearch iteration protocol** — a 5-stage loop (Understand → Hypothesize → Experiment → Evaluate → Log & Iterate) that 29 existing skills can opt into. The protocol is **off by default**; enable it via:
 
 | Method | How |
 |--------|-----|
@@ -677,18 +688,20 @@ The repository ships an **autoresearch iteration protocol** — a 5-stage loop (
 | Shell helper (after `setup.sh`) | `ar-enable` / `ar-disable` |
 | Per-invocation | Set the env var inline before invoking the skill |
 
-When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,"score":N}` (no LLM self-judgment), append to `<skill>-results.tsv` audit trails, and auto-revert failed experiments via Git-as-memory. See `opencode_app/.opencode/skills/autoresearch-core-skill/references/iteration-safety.md` for safety blocks and prompt-injection boundaries.
+When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,"score":N}` (no LLM self-judgment), append to `<skill>-results.tsv` audit trails, and auto-revert failed experiments via Git-as-memory. See `skills/autoresearch-core-skill/references/iteration-safety.md` for safety blocks and prompt-injection boundaries.
 
 **Retrofitted skills (29 total):**
 - **Tier 1 (full loop, 7)**: verification-loop, tdd-workflow, eval-harness, continuous-learning, deprecated-code-cleanup, linting-workflow, coverage-readme-workflow
 - **Tier 2 (partial, 7)**: documentation-consistency, error-resolver-workflow, opencode-skills-maintainer, plan-execution, pr-creation-workflow, pr-merge-workflow, playwright-responsive-audit
-- **Tier 3 (light safety, 15)**: search-first, api-design, security-audit, code-smells, performance-optimization, typescript-dry-principle, solid-principles, clean-code, test-generator-framework, python-pytest-creator, nextjs-unit-test-creator, nextjs-pr-workflow, mermaid-diagram-creator, wireframer, frontend-design
+- **Tier 3 (light safety, 14)**: search-first, api-design, security-audit, code-smells, performance-optimization, typescript-dry-principle, solid-principles, clean-code, test-generator-framework, python-pytest-creator, nextjs-unit-test-creator, mermaid-diagram-creator, wireframer, frontend-design
 
 **Maintenance:** `opencode-skills-maintainer-skill` includes a Citation drift audit rule that flags skills with iteration-keyword mentions lacking proper `autoresearch-core-skill/references/` citations.
 
 ### Ponytail (scoped wrapper plugin)
 
-[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder (YAGNI → reuse → stdlib → native → installed dep → one-liner → minimum-that-works). This repo ships a **scoped wrapper plugin** (`opencode_app/.opencode/plugins/ponytail-scoped.ts`) instead of the stock npm adapter — it adds agent-type-aware scoping the upstream OpenCode adapter lacks:
+> **OpenCode v2 status:** ported to the V2 plugin API (`session.hook("context")` injection, `command.transform` for the `/ponytail*` commands) — active on v2. Env-var controls are unchanged.
+
+[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder (YAGNI → reuse → stdlib → native → installed dep → one-liner → minimum-that-works). This repo ships a **scoped wrapper plugin** (`plugins/ponytail-scoped.ts`) instead of the stock npm adapter — it adds agent-type-aware scoping the upstream OpenCode adapter lacks:
 
 - **Read-only/research agents skip injection** (`explore`, `general`, `autoresearch-research-subagent`, `explorer-subagent`, `requirements-specialist-subagent`, `discovery-specialist-subagent`, `technical-design-specialist-subagent`) — they aren't pushed toward minimal code.
 - **Per-agent mode overrides** via `PONYTAIL_AGENT_MODE_MAP` (JSON).
@@ -700,15 +713,17 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 | `PONYTAIL_SUBAGENT_OFF` | (7 read-only agents) | Regex of agent names to exclude from injection |
 | `PONYTAIL_AGENT_MODE_MAP` | unset | JSON per-agent overrides, e.g. `{"build":"full","code-review-subagent":"lite"}` |
 
-Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See `opencode_app/README.md` § Ponytail Plugin and `opencode_app/.opencode/plugins/ATTRIBUTION.md` for the MIT attribution.
+Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See `opencode_app/README.md` § Ponytail Plugin and `plugins/ATTRIBUTION.md` for the MIT attribution.
 
 ### Learnings Auto-Inject (local plugin)
 
-`opencode_app/.opencode/plugins/learnings-autoinject.ts` closes the gap documented in `continuous-learning-skill`: *"OpenCode does NOT auto-scan LEARNINGS/ directories."* The `opencode-superlocalmemory` plugin auto-injects its **vector store**, but the git-committed `LEARNINGS/*.md` markdown files were never surfaced automatically — agents had to manually `glob`+`read`. This plugin injects a **compact manifest** (titles + paths + one-line summaries, ~200-400 tokens) into the system prompt at session start; the model `read()`s full bodies on demand.
+> **OpenCode v2 status:** ported to the V2 plugin API — the LEARNINGS manifest is auto-injected on v2.
+
+`plugins/learnings-autoinject.ts` closes the gap documented in `continuous-learning-skill`: *"OpenCode does NOT auto-scan LEARNINGS/ directories."* The `opencode-superlocalmemory` plugin auto-injects its **vector store**, but the git-committed `LEARNINGS/*.md` markdown files were never surfaced automatically — agents had to manually `glob`+`read`. This plugin injects a **compact manifest** (titles + paths + one-line summaries, ~200-400 tokens) into the system prompt at session start; the model `read()`s full bodies on demand.
 
 - **Same architecture as ponytail-scoped** — 4 hooks (`config`, `chat.message`, `experimental.chat.system.transform`, `command.execute.before`), same toggle pattern.
 - **Same off-set** — read-only/research agents skip injection (reuses ponytail's regex).
-- **No `opencode.json` change** — local plugins are glob-discovered. No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; different hook: `system.transform` vs `tui.prompt.append`).
+- **No `opencode.json` change** — local plugins are glob-discovered. `opencode-superlocalmemory` (removed pending a v2 release) injected a vector store via a different hook; no conflict — markdown manifest vs vectors.
 
 | Env var | Default | Purpose |
 |---------|---------|---------|
@@ -717,7 +732,25 @@ Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See 
 | `LEARNINGS_AUTOINJECT_OFF` | (read-only agents) | Regex of agent names to exclude |
 | `LEARNINGS_AUTOINJECT_MAX` | `30` | Cap on files in the manifest |
 
-Toggle per session: `/learnings`, `/learnings-on`, `/learnings-off`, `/learnings-refresh`. See `opencode_app/.opencode/plugins/learnings-autoinject.README.md`.
+Toggle per session: `/learnings`, `/learnings-on`, `/learnings-off`, `/learnings-refresh`. See `plugins/learnings-autoinject.README.md`.
+
+### Auto-Continue v2 (local plugin)
+
+> **OpenCode v2 status:** v2-native (`ctx.event.subscribe` + `ctx.session.prompt`) — no npm dependency, no upstream v1 plugin loads on v2. Pattern list adapted as data from MIT-licensed `developing-today/opencode-auto-continue`; `Mte90/opencode-auto-resume` (GPL) was design reference only.
+
+`plugins/opencode-auto-continue-v2.ts` makes long-running agent tasks self-heal: when a session fails with a **transient** provider error (bad request, SSE timeouts, ECONNRESET/ECONNREFUSED, idle timeout, context overflow, tool-protocol failures), it waits for the session to go idle and sends `"continue"` with exponential backoff — instead of the run dying midway. Idle-boundary only: it **never aborts a live runner**, so it cannot kill a long build that is actually working, and it **never resumes a session you cancelled** (ESC latch on `MessageAbortedError`/`session.interrupted`, lifted by your next message).
+
+| Env var | Default | Purpose |
+|---------|---------|---------|
+| `OPENCODE_AUTO_CONTINUE_ENABLED` | `true` | Global on/off |
+| `OPENCODE_AUTO_CONTINUE_MESSAGE` | `continue` | Text sent as the recovery prompt |
+| `OPENCODE_AUTO_CONTINUE_MAX_CONSECUTIVE` | `5` | Hard cap of consecutive auto-continues per session (reset by a real user message) |
+| `OPENCODE_AUTO_CONTINUE_THROTTLE_MS` | `10000` | Minimum ms between consecutive sends |
+| `OPENCODE_AUTO_CONTINUE_BASE_BACKOFF_MS` | `1000` | First retry delay (doubles per attempt) |
+| `OPENCODE_AUTO_CONTINUE_MAX_BACKOFF_MS` | `8000` | Backoff cap |
+| `OPENCODE_AUTO_CONTINUE_DEBUG` | `false` | `[opencode-auto-continue-v2]` diagnostics via the server log |
+
+Deliberately out of scope (upgrade path if real bugs demand it): busy-stall abort-first recovery (a parked prompt cannot unblock a hung v2 runner), tool-call loop fingerprinting, tool-call-as-raw-text scanning. Tests: `node --test tests/test_auto_continue_plugin.test.ts`.
 
 ### Skill Architecture
 
@@ -736,7 +769,7 @@ Skills follow a modular architecture:
                         ↓
 ┌─────────────────────────────────────────────────────┐
 │           Composite Skills (Workflow)               │
-│  ticket-plan-workflow-skill combines multiple skills │
+│  ticket-creation-skill + worktree-pipeline compose     │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -744,8 +777,9 @@ Skills follow a modular architecture:
 
 The setup scripts automatically:
 - Copies `deploy/.AGENTS.md` to `~/.config/opencode/AGENTS.md` (renaming it)
-- Copies `opencode_app/.opencode/skills/` folder to `~/.config/opencode/skills/`
-- Copies `opencode_app/opencode.json` to `~/.config/opencode/config.json` (single source of truth — model resolver patches primary/explore/general in-place during deploy)
+- Copies `skills/` folder to `~/.config/opencode/skills/`
+- Copies `opencode_app/opencode.json` to `~/.config/opencode/opencode.json` (single source of truth — model resolver patches primary/explore/general in-place during deploy; OpenCode v2 only reads `opencode.json`/`opencode.jsonc`, never `config.json`)
+- Parks a coexisting `opencode.jsonc` as `opencode.jsonc.legacy-ignored` (data preserved, never deleted): v2 defines no `.json`/`.jsonc` precedence within one directory, so the park fires only when `opencode.json` is or becomes present — a jsonc-only setup that declines the copy keeps its live config. Note: `--rollback` restores prior state and can undo a park.
 - Backs up existing files before overwriting
 
 ### Environment Variable Persistence
@@ -758,5 +792,43 @@ The setup scripts automatically:
 
 ### Template Files
 
-This repository includes inline default configurations in all setup scripts. No external template files are required.
+Setup configurations are inline in the deploy scripts. One opt-in external template ships
+for downstream repos: [installer/templates/api-quality/](installer/templates/api-quality/) —
+a Redocly lint ruleset + pre-commit hook that enforces OpenAPI authoring quality
+(see its README for adoption).
 
+
+## Testing & Development
+
+Recipes for testing installer changes without touching your real `~/.config/opencode/`:
+
+```bash
+# 1. Clone dry-run — preview any install, write nothing
+git clone https://github.com/darellchua2/opencode-config-template
+node installer/init.mjs add tdd-subagent --dry-run
+
+# 2. npm link — exercise the real bin name from your working tree
+npm link
+opencode-skill add solid-principles-skill --dry-run
+npm unlink -g
+
+# 3. Branch testing via npx (github refs support branches — zero code)
+npx github:darellchua2/opencode-config-template#feat/my-branch add X --dry-run
+
+# 4. Sandboxed runs — isolated HOME, no real config touched
+HOME="$(mktemp -d)" node installer/init.mjs add tdd-workflow-skill --yes
+
+# 5. CI safety — tests run with --yes / --dry-run only (no TTY, no prompts)
+tests/lib/bats-core/bin/bats tests/update.bats
+```
+
+Upgrading installed content without a full setup rerun:
+
+```bash
+npx github:darellchua2/opencode-config-template update          # re-copy changed entries
+npx github:darellchua2/opencode-config-template update --prune  # also remove registry-removed entries
+```
+
+**Redeploy contract:** `setup.sh --yes` force-copies content through the installer CLI. Existing
+`~/.config/opencode/{skills,agents}/` are snapshotted to the backup dir's `content-backup/`
+first — restore via the usual rollback flow if you had local edits.
