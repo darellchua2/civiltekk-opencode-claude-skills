@@ -97,6 +97,7 @@ $ConfigDir = Join-Path $HOME ".config\opencode"
 # OpenCode v2 only discovers opencode.json / opencode.jsonc — never config.json.
 $ConfigFile = Join-Path $ConfigDir "opencode.json"
 $LegacyConfigFile = Join-Path $ConfigDir "config.json"
+$JsoncConfigFile = Join-Path $ConfigDir "opencode.jsonc"
 $SkillsDir = Join-Path $ConfigDir "skills"
 $AgentsSrcDir = Join-Path $RepoDir "agents"
 $AgentsDestDir = Join-Path $ConfigDir "agents"
@@ -1716,6 +1717,14 @@ function Set-Configuration {
         Write-LogWarn "Stale legacy config.json renamed to config.json.legacy-ignored (ignored by OpenCode v2)"
     }
 
+    # Park a coexisting opencode.jsonc: OpenCode v2 docs define no .json vs
+    # .jsonc tie-break when both live in one directory. Guard on BOTH files so
+    # a jsonc-only machine keeps its sole live config; DryRun stays preview-only.
+    if ((Test-Path $ConfigFile) -and (Test-Path $JsoncConfigFile)) {
+        if (-not $DryRun) { Move-Item $JsoncConfigFile "$JsoncConfigFile.legacy-ignored" -Force }
+        Write-LogWarn "Stale opencode.jsonc found (undefined precedence vs opencode.json); renamed to opencode.jsonc.legacy-ignored"
+    }
+
     if (Test-Path $ConfigFile) {
         Write-Host ""
         Write-LogWarn "opencode.json already exists at $ConfigFile"
@@ -1749,6 +1758,14 @@ function Set-Configuration {
         if (Test-Path $configSrc) {
             if (-not $DryRun) { Copy-Item $configSrc $ConfigFile -Force }
             Write-LogSuccess "opencode.json copied successfully (from $SourceConfig)"
+
+            # Park a jsonc that now coexists with the freshly copied config
+            # (jsonc-only machine that accepted the copy): exactly one live
+            # config must remain. Same both-exist + DryRun-safe form as above.
+            if ((Test-Path $ConfigFile) -and (Test-Path $JsoncConfigFile)) {
+                if (-not $DryRun) { Move-Item $JsoncConfigFile "$JsoncConfigFile.legacy-ignored" -Force }
+                Write-LogWarn "Stale opencode.jsonc found (undefined precedence vs opencode.json); renamed to opencode.jsonc.legacy-ignored"
+            }
 
             # Deploy vibeguard secret-masking config (PLAN-GIT-315).
             $vgSrc = Join-Path $RepoDir "plugins/vibeguard.config.json"

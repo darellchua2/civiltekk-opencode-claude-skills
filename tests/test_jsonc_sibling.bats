@@ -27,3 +27,18 @@ SETUP_PS1="${REPO}/deploy/setup.ps1"
   # negative pin: no bare mv of the jsonc anywhere
   ! grep -qE '^[[:space:]]*mv "\$\{CONFIG_DIR\}/opencode\.jsonc' "$SETUP_SH"
 }
+
+@test "setup.ps1 mirrors both opencode.jsonc parks with guard and DryRun wrap" {
+  park1=$(grep -n 'Move-Item \$JsoncConfigFile "\$JsoncConfigFile\.legacy-ignored"' "$SETUP_PS1" | head -1 | cut -d: -f1)
+  prompt=$(grep -n 'if (Test-Path \$ConfigFile) {' "$SETUP_PS1" | head -1 | cut -d: -f1)
+  copy=$(grep -n 'Copy-Item \$configSrc \$ConfigFile' "$SETUP_PS1" | head -1 | cut -d: -f1)
+  park2=$(grep -n 'Move-Item \$JsoncConfigFile "\$JsoncConfigFile\.legacy-ignored"' "$SETUP_PS1" | tail -1 | cut -d: -f1)
+  [ -n "$park1" ] && [ -n "$prompt" ] && [ -n "$copy" ] && [ -n "$park2" ]
+  [ "$park1" -lt "$prompt" ] && [ "$prompt" -lt "$copy" ] && [ "$copy" -lt "$park2" ]
+  # both-exist guard (never park a jsonc-only machine's sole live config)
+  [ "$(grep -c '(Test-Path \$ConfigFile) -and (Test-Path \$JsoncConfigFile)' "$SETUP_PS1")" -eq 2 ]
+  # dry-run-safe: mutation inside the DryRun guard, never at statement start
+  [ "$(grep -c 'if (-not \$DryRun) { Move-Item \$JsoncConfigFile' "$SETUP_PS1")" -eq 2 ]
+  [ "$(grep -c 'Write-LogWarn "Stale opencode.jsonc' "$SETUP_PS1")" -eq 2 ]
+  ! grep -qE '^[[:space:]]*Move-Item \$JsoncConfigFile' "$SETUP_PS1"
+}
