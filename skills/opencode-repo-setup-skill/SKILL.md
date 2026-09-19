@@ -155,7 +155,7 @@ State exactly:
 ## Atlassian caveats (read before enabling)
 
 - **First use opens a browser OAuth flow** (mcp-remote → mcp.atlassian.com). Fine on desktop; **fails headless/CI**.
-- Headless fallback = skip MCP, use REST: token at id.atlassian.com/manage-profile/security/api-tokens (scoped tokens must use `api.atlassian.com/ex/jira/{cloudId}`; unscoped use site-direct `/rest/api/3/`), auth via `curl -u email:token`; discover cloudId unauthenticated at `https://<site>.atlassian.net/_edge/tenant_info`.
+- Headless fallback = skip MCP, use REST: token at id.atlassian.com/manage-profile/security/api-tokens; REST pattern + cloudId discovery per `jira-git-integration-skill` §MCP Availability Guard.
 - Delegation pattern: even when enabled, route bulk Jira calls through a subagent to keep tool output out of the primary context (schemas are paid regardless of who calls).
 
 ## Governance

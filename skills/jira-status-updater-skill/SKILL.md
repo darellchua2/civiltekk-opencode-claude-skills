@@ -16,12 +16,7 @@ Post-merge closure (typically driven by `worktree-pipeline-skill` or the PR work
 
 ## MCP Availability Guard
 
-Transitions/comments use `atlassian_*` MCP tools, and the `atlassian` MCP server is **disabled by default** (opt-in). Ticket-key detection (Step 1, git/`gh` based) always works; before the first `atlassian_*` call:
-
-- If `atlassian_*` tools are absent from your tool list, do NOT attempt or hallucinate them.
-- Interactive: offer per-project enable via `opencode-repo-setup-skill` (effective next session).
-- Fallback: REST transition — `curl -u email:token -X POST https://<site>.atlassian.net/rest/api/3/issue/<KEY>/transitions` (cloudId: `curl https://<site>.atlassian.net/_edge/tenant_info`).
-- No credentials/headless: report the transition as skipped and log the detected ticket key — never fail the PR-merge workflow.
+Transitions/comments use `atlassian_*` MCP tools. Policy per `jira-git-integration-skill` §MCP Availability Guard. Ticket-key detection (Step 1, git/`gh` based) always works. When skipping: log the detected ticket key and never fail the PR-merge workflow. This skill's REST endpoint — `curl -u email:token -X POST https://<site>.atlassian.net/rest/api/3/issue/<KEY>/transitions`.
 
 ## Workflow
 

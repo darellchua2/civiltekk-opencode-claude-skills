@@ -284,3 +284,21 @@
 - Searchable memory: `memory` tool (primary for quick retrieval)
 
 **Naming convention:** Use descriptive slugs (e.g., `event-driven-modules.md`), not dated or numbered prefixes. The category is determined by the subfolder.
+
+### `gh api --paginate --jq` evaluates per page — aggregations count pages
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/gh-api-paginate-jq-per-page-aggregation.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: REST `--paginate` applies `--jq` once per page (concatenated text; `--slurp` is mutually exclusive with `--jq`) — `[...]|length` emits one number per page and breaks silently at >100 items (per_page forced to 100); stream items with `--jq` then `wc -l` / `jq -s` instead (#361 review: dispatcher idle-count)
+- **Date**: 2026-09-19
+
+### Single-homed policy prose — copies are pointer + skill-specific only
+
+- **Category**: convention
+- **File**: `conventions/policy-single-home-pointer-shape.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: #434 review: dedup-target copies of single-homed policy keep pointer + skill-specific endpoint/skip clause only; compressed policy ladders inside copies are residual drift (genus of conditional-mode-blocks-supersede-all-restatements); glosses belong to consumers, not §-section owners
+- **Date**: 2026-09-19

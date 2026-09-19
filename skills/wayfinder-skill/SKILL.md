@@ -129,8 +129,8 @@ walked, and a scope boundary isn't a step on it.
 - **GitHub Issues** (default): `gh issue create/view/comment/close`,
   `--assignee @me` claims, task-list or `blocked-by: <ref>` body line for
   blocking.
-- **JIRA**: apply the **MCP Availability Guard** (same policy as
-  `ticket-creation-skill` §MCP Availability Guard): `atlassian_*` tools
+- **JIRA**: apply the **MCP Availability Guard** (policy:
+  `jira-git-integration-skill` §MCP Availability Guard): `atlassian_*` tools
   present → use them; absent → REST token fallback; headless → degrade to
   GitHub/local-markdown with a clear report.
 - **No tracker / offline**: local-markdown fallback — `docs/wayfinder/<slug>/`
