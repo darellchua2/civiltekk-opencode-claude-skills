@@ -54,14 +54,16 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 2: PowerShell mirror
 
-- [ ] **2.1** Add both parks to `deploy/setup.ps1` mirroring Phase 1: `$JsoncConfigFile = Join-Path $ConfigDir "opencode.jsonc"`; pre-prompt park after the `$LegacyConfigFile` migration block and copy-accept park inside the copy branch, each guarded on `Test-Path $ConfigFile` **-and** `Test-Path $JsoncConfigFile`, mutation wrapped in `if (-not $DryRun) { Move-Item ... }`, with `Write-LogWarn` (function at `setup.ps1:184`; guard pattern per `setup.ps1:1692,1701,1750`)
+- [x] **2.1** Add both parks to `deploy/setup.ps1` mirroring Phase 1: `$JsoncConfigFile = Join-Path $ConfigDir "opencode.jsonc"`; pre-prompt park after the `$LegacyConfigFile` migration block and copy-accept park inside the copy branch, each guarded on `Test-Path $ConfigFile` **-and** `Test-Path $JsoncConfigFile`, mutation wrapped in `if (-not $DryRun) { Move-Item ... }`, with `Write-LogWarn` (function at `setup.ps1:184`; guard pattern per `setup.ps1:1692,1701,1750`)
     — **Why:** Windows deploys have the identical defect; parity between the two deploy scripts is a repo convention, and the Mode R resolutions (both-exist + dry-run safety) apply to both scripts equally
     — **Done when:** `grep -n 'opencode\.jsonc\.legacy-ignored' deploy/setup.ps1` hits twice and `grep -n 'Write-LogWarn "Stale opencode.jsonc' deploy/setup.ps1` hits twice
     — **Consumers affected:** the deploy path of `setup.ps1`; step 2.2's test anchors
-- [ ] **2.2** Extend `tests/test_jsonc_sibling.bats` with a ps1 `@test` pinning both parks: two `.legacy-ignored` anchors, both-exist guard form (`Test-Path $ConfigFile` -and the jsonc operand), and `if (-not $DryRun)` wrapping
+    — **Done:** `$JsoncConfigFile` var added to the config-var block; both parks inserted (pre-prompt after the legacy migrate block, copy-accept after the config Copy-Item) with both-exist guard + DryRun wrap + Write-LogWarn; files: deploy/setup.ps1; fixes: none
+- [x] **2.2** Extend `tests/test_jsonc_sibling.bats` with a ps1 `@test` pinning both parks: two `.legacy-ignored` anchors, both-exist guard form (`Test-Path $ConfigFile` -and the jsonc operand), and `if (-not $DryRun)` wrapping
     — **Why:** pin the mirror so the two deploy scripts cannot silently drift apart again
     — **Done when:** `bats tests/test_jsonc_sibling.bats` exits 0 with all tests
     — **Consumers affected:** CI bats suite
+    — **Done:** ps1 pin added (deploy-order pin park1<prompt<copy<park2, both-exist guard count=2, DryRun wrap count=2, statement-start Move-Item negative); files: tests/test_jsonc_sibling.bats; fixes: none
 
 ### Phase 3: docs, learnings, full gate
 
@@ -98,3 +100,4 @@ None — single contained fix, no blocked-by tickets.
 ## Execution Trace
 
 - Phase 1 (1.1–1.4): GATE 9130a36 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bash -n clean; bats test_jsonc_sibling 2/2 ok, deploy_delegate 4/4 ok; lint/typecheck: none configured (no shellcheck/eslint/tsc manifests)
+- Phase 2 (2.1–2.2): GATE ec59536 lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bats test_jsonc_sibling 3/3 ok (incl. ps1 mirror pin), deploy_delegate 4/4 ok; pwsh parser absent — structural pins are the ps1 gate
