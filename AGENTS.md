@@ -13,6 +13,15 @@ Multi-mode OpenCode configurator:
 
 The root `skills/` and `agents/` dirs are the **single source** for skills and agents. Never edit deployed `~/.config/opencode/` copies — edit source, then redeploy.
 
+## Skill Isolation Contract (#437)
+
+Every `skills/<name>-skill/` directory must be **fully self-contained** — all scripts, schemas, and fixtures it needs live inside its own tree — because `npx github:darellchua2/opencode-config-template add <name>` copies exactly one directory.
+
+- **Cross-skill code duplication is intentional.** Shared helpers are vendored per skill (per-skill copy model), not factored into shared packages. Do not "DRY up" duplicated code across skills by extracting a common module — that is the exact regression this contract bans.
+- **No new shared `_`-prefixed dirs** (e.g. a `skills/_common/`). The former `skills/_common/scripts` engine was vendored into each pptx skill as `scripts/_common/` and the shared dir deleted.
+- **Vendored copies stay in sync**: the three pptx skills' `scripts/_common` trees must remain byte-identical (`tests/test_skill_isolation.bats` enforces it). Fix a vendored bug once, copy to all three trees, run the guard.
+- **Cross-skill runtime deps are banned by default.** The single declared exception is `pptx-template-modifier-skill → pptx-generate-slide-skill` (capability split: the modifier extends templates, the slide engine fills), documented in the modifier SKILL.md prerequisites and pinned in the guard's allowlist. A new handoff must be declared the same way — or duplicate the code instead.
+
 ## Secret Masking
 
 Vibeguard masks `.env` secrets in provider-bound traffic via regex patterns (`plugins/vibeguard.config.json`). **OpenCode v2: shipped as a local v2 port (`plugins/vibeguard.ts`, npm pin removed) — masking is active; the `permissions` deny rules for `*.env` are the second layer.** Behavioral rules: `deploy/.AGENTS.md` §Secret Hygiene. Verification + per-project overlay: `security-audit-skill` (also documents residual risks: `/share` plaintext, no fail-closed, plaintext session DB).
