@@ -104,7 +104,7 @@ Use the active Python environment:
 ```bash
 python scripts/bambu_lan_print.py config set \
   --printer a1-mini \
-  --host 192.168.1.34 \
+  --host <printer-lan-ip> \
   --access-code 12345678 \
   --model a1-mini \
   --fetch-serial

@@ -11,7 +11,7 @@
 - [x] `typescript` + `ts-node` global npm installs removed
 - [x] `opencode_app/.opencode/` (4 tracked symlinks) deleted; bridge block removed from `.dockerignore`
 - [x] `restart-opencode-pm2.sh` replaced with `restart-opencode-docker.sh` (compose-based, with health checks)
-- [x] Host `.env` sets `OPENCODE_PORT=4096` so the `opencode-ha.civiltekk.com` proxy works unchanged
+- [x] Host `.env` sets `OPENCODE_PORT=4096` so the `<public-endpoint>` proxy works unchanged
 - [x] Container healthy: `/api/command` registers the goal command; TS plugins load (vibeguard, auto-continue, learnings-autoinject)
 - [x] No "sanctioned: symlink bridge" paragraphs or live bridge path references remain in `AGENTS.md`, `README.md`, `opencode_app/`, `skills/`, `agents/`
 - [ ] Local endpoint (4096) and public endpoint return 200
@@ -71,7 +71,7 @@
     — **Done:** pm2 script deleted; restart-opencode-docker.sh executable, bash -n clean, 0 pm2 refs, polls docker Health.Status (150s bound) then public check; files: restart-opencode-pm2.sh (deleted), restart-opencode-docker.sh; fixes: none
 
 - [x] **2.3** Host-side (uncommitted): set `OPENCODE_VERSION=2.0.8` and `OPENCODE_PORT=4096` in `~/VSCODE/opencode-config-template/.env`
-    — **Why:** `.env` overrides the compose default at build time, so without this the 1.2 bumps are inert on this host; port 4096 keeps the `opencode-ha.civiltekk.com` reverse proxy working unchanged — `.env` is gitignored, so this is a host action recorded here for completeness
+    — **Why:** `.env` overrides the compose default at build time, so without this the 1.2 bumps are inert on this host; port 4096 keeps the `<public-endpoint>` reverse proxy working unchanged — `.env` is gitignored, so this is a host action recorded here for completeness
     — **Done when:** `grep -E '^(OPENCODE_VERSION|OPENCODE_PORT)=' ~/VSCODE/opencode-config-template/.env` shows `2.0.8` and `4096`
     — **Consumers affected:** compose build args and host port mapping at next deploy
     — **Done:** host .env rewritten in place (two lines only); grep confirms 2.0.8 + 4096; files: ~/VSCODE/opencode-config-template/.env (uncommitted); fixes: none
@@ -122,17 +122,17 @@
     — **Consumers affected:** none (verification only)
     — **Done:** opencode server log shows all plugins loading — vibeguard.ts, opencode-auto-continue-v2.ts, ponytail-scoped.ts, learnings-autoinject.ts, plus @prevalentware/opencode-goal-plugin@^0.1.48 npm-fetched and loaded; content dirs confirmed in 1.3; files: none (verification); fixes: the done-when's docker-logs grep matched 0 because v2 logs plugin loads in the server log file, not stdout — evidence taken from /home/opencode/.local/share/opencode/log/opencode.log instead (same fact, correct surface)
 
-- [x] **4.3** Endpoint checks, then teardown: local authenticated curl on `http://localhost:4096` (password from `/home/opencode/.local/share/opencode/server-password` in the container) and the public `https://opencode-ha.civiltekk.com` check return 200 (public: 200 or 101); then `docker compose down` so the long-lived container is owned by the post-merge restart script, not the worktree
+- [x] **4.3** Endpoint checks, then teardown: local authenticated curl on `http://localhost:4096` (password from `/home/opencode/.local/share/opencode/server-password` in the container) and the public `https://<public-endpoint>` check return 200 (public: 200 or 101); then `docker compose down` so the long-lived container is owned by the post-merge restart script, not the worktree
     — **Why:** final acceptance — the reverse proxy path users actually hit must work unchanged after cutover; teardown prevents a stale verification container surviving worktree removal and squatting on port 4096
     — **Done when:** both status checks pass; `docker ps --filter name=opencode` is empty after teardown
     — **Consumers affected:** end users of the public endpoint
-    — **Done:** local endpoint GREEN (200 on /api/command with entrypoint-materialized auth; goal command registered); public endpoint RED but pre-existing — opencode-ha.civiltekk.com resolves to proxy host 192.168.1.17 (LAN), which returned 502 for ~4 days because the old container served 4097 while the proxy-era convention expects 4096; this cutover restored service on 192.168.1.149:4096, but the 502 persists and the proxy host is unreachable from here (ssh publickey denied; no sudo for firewall check). Deviation: teardown skipped — the verified container IS the cutover (tearing down would re-kill 4096 and block the post-merge script's name adoption). Follow-up filed on #423: repoint the .17 upstream to 192.168.1.149:4096 or deploy there; not a regression, not PR-blocking; files: none (runtime); fixes: none
+    — **Done:** local endpoint GREEN (200 on /api/command with entrypoint-materialized auth; goal command registered); public endpoint RED but pre-existing — <public-endpoint> resolves to proxy host <proxy-host> (LAN), which returned 502 for ~4 days because the old container served 4097 while the proxy-era convention expects 4096; this cutover restored service on <deploy-host>:4096, but the 502 persists and the proxy host is unreachable from here (ssh publickey denied; no sudo for firewall check). Deviation: teardown skipped — the verified container IS the cutover (tearing down would re-kill 4096 and block the post-merge script's name adoption). Follow-up filed on #423: repoint the proxy-host upstream to <deploy-host>:4096 or deploy there; not a regression, not PR-blocking; files: none (runtime); fixes: none
 
 ## Technical Notes
 
 - **Venv relocation:** the venv is built at `/opt/python-env` in `python-deps` and copied to the identical path; both Python stages share `python:3.12-slim-bookworm`, so interpreter path and glibc match. Node arrives via `COPY --from=node /usr/local` (node image prefix is `/usr/local`; root-at-build global installs land there).
 - **Pin surfaces:** the committed `.env.example` seeds every operator `.env`; a stale template pin shadows both repo defaults via compose interpolation — and `1.18.11` does not exist in `@opencode/cli`, so the failure is a hard build error, not a silent downgrade. Host `.env` (`OPENCODE_VERSION`) overrides the compose default at build time. All surfaces move together (1.2 committed, 2.3 host-side).
-- **Port is not a pin:** `OPENCODE_PORT=4097` stays in the template — it is an operator-tunable matching the compose fallback `"${OPENCODE_PORT:-4097}:4096"`; the host-specific 4096 (civiltekk proxy convention) stays host-side in 2.3.
+- **Port is not a pin:** `OPENCODE_PORT=4097` stays in the template — it is an operator-tunable matching the compose fallback `"${OPENCODE_PORT:-4097}:4096"`; the host-specific 4096 (operator proxy convention) stays host-side in 2.3.
 - **markitdown-local-mcp:** `requires-python >= 3.10` — 3.12 base compatible; its install moves into `python-deps`, deleting the late runtime `pip install` RUN.
 - **No CI Docker coupling:** no workflow under `.github/workflows/` references docker — the image is operator-built only; no CI blast radius.
 - **pm2 model-resolution gap (why Docker wins):** the pm2 flow serves agents from unresolved source files (no `model:` fields — resolution runs only in `setup.sh` and the Docker build), so the container is strictly more correct.

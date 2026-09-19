@@ -49,7 +49,7 @@ After completing Bambu work that creates or modifies a local supported print art
 ```bash
 python scripts/bambu_lan_print.py config set \
   --printer a1-mini \
-  --host 192.168.1.34 \
+  --host <printer-lan-ip> \
   --access-code 12345678 \
   --model a1-mini \
   --fetch-serial
@@ -61,7 +61,7 @@ Manual JSON shape:
 {
   "printers": {
     "a1-mini": {
-      "host": "192.168.1.34",
+      "host": "<printer-lan-ip>",
       "access_code": "12345678",
       "model": "a1-mini"
     }
