@@ -1,7 +1,8 @@
-"""C1 invariant guard for the shared _common package (PLAN-GIT-72 GAP-1).
+"""C1 invariant guard for the vendored _common package (PLAN-GIT-72 GAP-1,
+re-scoped per skill by #437).
 
-The architecture-review C1 invariant requires that NO module under
-``.opencode/skills/_common/scripts/`` imports back into ``ppt_builder`` — the
+The architecture-review C1 invariant requires that NO module under this
+skill's vendored ``scripts/_common/`` imports back into ``ppt_builder`` — the
 dependency arrow is strictly ``ppt_builder -> layout_contract`` (and the other
 ``_common`` modules), never the reverse. Without this test the invariant relied
 on a manual grep; this makes it self-policing.

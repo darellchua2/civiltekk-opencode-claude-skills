@@ -1,8 +1,8 @@
 """US-4.8 Phase 0 tests — masterless guard hardening + TemplateError relocation.
 
 Tests that ``_clone_layout_into`` and ``_verify_layouts`` raise
-``TemplateError`` (from ``_common/scripts/errors.py``) instead of raw
-``IndexError`` when the presentation has no slide master.
+``TemplateError`` (from the vendored ``scripts/_common/errors.py``) instead of
+raw ``IndexError`` when the presentation has no slide master.
 """
 import sys
 from pathlib import Path
@@ -11,7 +11,7 @@ import pytest
 
 _HERE = Path(__file__).resolve().parent
 _MODIFIER_SCRIPTS = _HERE.parent
-_COMMON_SCRIPTS = _MODIFIER_SCRIPTS.parent.parent / "_common" / "scripts"
+_COMMON_SCRIPTS = _MODIFIER_SCRIPTS / "_common"
 for _p in (str(_MODIFIER_SCRIPTS), str(_COMMON_SCRIPTS)):
     if _p not in sys.path:
         sys.path.insert(0, _p)

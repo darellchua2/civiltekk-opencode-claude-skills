@@ -25,8 +25,8 @@ from typing import Any, Dict, List, Optional, Tuple
 from pptx import Presentation
 from pptx.opc.constants import CONTENT_TYPE as CT, RELATIONSHIP_TYPE as RT
 
-# PLAN-GIT-72: shared contract layer in _common.
-_COMMON_SCRIPTS = Path(__file__).resolve().parents[2] / "_common" / "scripts"
+# Per-skill vendored engine (#437): shared contract layer in scripts/_common.
+_COMMON_SCRIPTS = Path(__file__).resolve().parent / "_common"
 if str(_COMMON_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(_COMMON_SCRIPTS))
 

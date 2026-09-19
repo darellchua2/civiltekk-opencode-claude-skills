@@ -25,8 +25,8 @@ from pptx import Presentation
 _HERE = Path(__file__).resolve().parent
 _MODIFIER_SCRIPTS = _HERE.parent                   # .../pptx-template-modifier-skill/scripts
 _SKILLS = _MODIFIER_SCRIPTS.parent.parent          # .../skills
-_COMMON_SCRIPTS = _SKILLS / "_common" / "scripts"
-_FILLER_SCRIPTS = _SKILLS / "pptx-generate-slide-skill" / "scripts"
+_COMMON_SCRIPTS = _MODIFIER_SCRIPTS / "_common"    # vendored per #437
+_FILLER_SCRIPTS = _SKILLS / "pptx-generate-slide-skill" / "scripts"  # declared handoff (#437)
 for _p in (str(_MODIFIER_SCRIPTS), str(_COMMON_SCRIPTS), str(_FILLER_SCRIPTS)):
     if _p not in sys.path:
         sys.path.insert(0, _p)

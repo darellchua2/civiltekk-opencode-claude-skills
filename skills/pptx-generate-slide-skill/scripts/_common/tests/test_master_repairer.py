@@ -27,13 +27,9 @@ from lxml import etree
 from pptx import Presentation
 
 _HERE = Path(__file__).resolve().parent
-_COMMON_SCRIPTS = _HERE.parent  # .../_common/scripts — where master_repairer.py lives
-_SKILLS = _COMMON_SCRIPTS.parent.parent  # .../.opencode/skills
-_REPO_ROOT = _SKILLS.parent.parent
-_FILLER_SCRIPTS = _SKILLS / "pptx-generate-slide-skill" / "scripts"
-for _p in (str(_COMMON_SCRIPTS), str(_FILLER_SCRIPTS)):
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
+_COMMON_SCRIPTS = _HERE.parent  # vendored _common — where master_repairer.py lives
+if str(_COMMON_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_COMMON_SCRIPTS))
 
 from master_repairer import (  # noqa: E402
     RepairResult,
