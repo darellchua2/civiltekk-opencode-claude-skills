@@ -51,7 +51,7 @@ create the ticket here, then run the pipeline against its ref.
 
 ## MCP Availability Guard (JIRA steps)
 
-The `atlassian` MCP server is **disabled by default**. Policy per `jira-git-integration-skill` §MCP Availability Guard (absent tools: never attempt or hallucinate; interactive: per-project enable via `opencode-repo-setup-skill`, effective next session — this session degrades; headless/CI: skip the enable offer). REST fallback for this skill: API token + `curl -u email:token` against `https://<site>.atlassian.net`. Degrade: run the GitHub-only flow, report JIRA steps as skipped.
+The `atlassian` MCP server is **disabled by default**. Policy per `jira-git-integration-skill` §MCP Availability Guard. REST fallback for this skill: API token + `curl -u email:token` against `https://<site>.atlassian.net`. Degrade: run the GitHub-only flow, report JIRA steps as skipped.
 
 ## Steps
 

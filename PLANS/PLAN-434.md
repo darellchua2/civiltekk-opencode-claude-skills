@@ -57,7 +57,7 @@ Accepted agent-local restatements (review ruling, Mode R): `agents/pr-workflow-s
     — **Why:** AC2 + the most-referenced copy (wayfinder/worktree-pipeline currently route policy through this file)
     — **Done when:** guard section is pointer + endpoint only; `:50`/`:72-73`/`:192` references all resolve; heading stays verbatim
     — **Consumers affected:** `wayfinder-skill:133`, `worktree-pipeline-skill:73` (re-pointed in 1.6), `pr-workflow-subagent` (§Attribution, untouched heading)
-    — **Done:** guard reduced to pointer + REST line; :50/:52/:185 references verified coherent post-shrink; fixes: none
+    — **Done:** guard reduced to pointer + REST line; :50/:52/:185 references verified coherent post-shrink; fixes: review-round 1 — residual 30-word policy parenthetical deleted (AC2 pointer+endpoint shape, reviewer-prescribed text applied verbatim)
 
 - [x] **1.5** `skills/opencode-repo-setup-skill/SKILL.md:158`: drop the restated REST/cloudId pattern; keep the unique token-creation URL (`id.atlassian.com/manage-profile/security/api-tokens`) and add the pointer to the guard home
     — **Why:** AC2's fifth copy — this one rewords rather than copies verbatim, the drift-prone variant
