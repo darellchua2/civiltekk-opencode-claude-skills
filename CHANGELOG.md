@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.8.2](https://github.com/darellchua2/opencode-config-template/compare/v9.8.1...v9.8.2) (2026-09-19)
+
+### Bug Fixes
+
+* **deploy:** mirror opencode.jsonc park in setup.ps1 ([#432](https://github.com/darellchua2/opencode-config-template/issues/432)) ([ec59536](https://github.com/darellchua2/opencode-config-template/commit/ec59536a999e4f1e2a359b8688cb36e81957be2d))
+* **deploy:** park coexisting opencode.jsonc in setup.sh ([#432](https://github.com/darellchua2/opencode-config-template/issues/432)) ([9130a36](https://github.com/darellchua2/opencode-config-template/commit/9130a36ffc2775125c79b0e733cbabce1da2c6b2))
+* **deploy:** park opencode.jsonc after resolver runs ([#432](https://github.com/darellchua2/opencode-config-template/issues/432)) ([7c79909](https://github.com/darellchua2/opencode-config-template/commit/7c79909631a94c408278a2688620ff06e4d20467))
+
+### Documentation
+
+* **learnings:** drop dead pm2-bridge leg from path-move anchoring ([4f3f517](https://github.com/darellchua2/opencode-config-template/commit/4f3f517c76b0cc575833cdd735f036be32d6d7e6))
+* **plan:** add PLAN-432.md for [#432](https://github.com/darellchua2/opencode-config-template/issues/432) ([4af752b](https://github.com/darellchua2/opencode-config-template/commit/4af752b38aff2691933734f2ff487c879f93942a))
+* **plan:** fold review guards and Mode R resolutions into PLAN-432 ([e39ca94](https://github.com/darellchua2/opencode-config-template/commit/e39ca94487434d23f96d9d41bd52af7ab2f3cad1))
+* **plan:** tick PLAN-423 live-verification AC — healthy per Docker, auth-gated HTTP ([9e94733](https://github.com/darellchua2/opencode-config-template/commit/9e947331de0c39a7fb5f7d2e7dabf0bd1f855a67))
+* **plan:** trace Phase 1 (9130a36) ([d87725d](https://github.com/darellchua2/opencode-config-template/commit/d87725dc1d661052124987a3d9e688e8edd9f0b2))
+* **plan:** trace Phase 2 (ec59536) ([5401003](https://github.com/darellchua2/opencode-config-template/commit/5401003e83f396f2a28b8f1be425bfb279b6a611))
+* **plan:** trace Phase 3 (51bd95e) — PLAN complete ([7e2f83c](https://github.com/darellchua2/opencode-config-template/commit/7e2f83cad4f81798ccd30bcbf175fdc59fe84a38))
+* **plan:** trace Phase 4 (7c79909) — review fixes ([3bbfa80](https://github.com/darellchua2/opencode-config-template/commit/3bbfa80a5255501d62f5624e70510a1cd5310521))
+* **readme:** document opencode.jsonc parking and rollback note ([#432](https://github.com/darellchua2/opencode-config-template/issues/432)) ([4cc191e](https://github.com/darellchua2/opencode-config-template/commit/4cc191eea23695dd9ad89ecf1eb8229f7d7c36c7))
+* sync AGENTS.md tier table with installer/agent-tiers.json ([dffa74e](https://github.com/darellchua2/opencode-config-template/commit/dffa74e57ce9e74e54cab99970292693854aa31f))
+
 ## [9.8.1](https://github.com/darellchua2/opencode-config-template/compare/v9.8.0...v9.8.1) (2026-09-19)
 
 ### Bug Fixes
