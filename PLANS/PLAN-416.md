@@ -38,10 +38,11 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 2: Guarantees line
 
-- [ ] **2.1** Append one line to the Guarantees section of `skills/worktree-pipeline-skill/SKILL.md`: each worktree gets a CodeGraph index when the main checkout has one, soft-skipped on failure.
+- [x] **2.1** Append one line to the Guarantees section of `skills/worktree-pipeline-skill/SKILL.md`: each worktree gets a CodeGraph index when the main checkout has one, soft-skipped on failure.
     — **Why:** Guarantees is the contract summary downstream readers (pr-workflow contract reviewers, pipeline operators) rely on; omitting the new behavior there would leave the summary out of sync with Step 4.
     — **Done when:** The Guarantees section contains the new line and no other line changed.
     — **Consumers affected:** Same as 1.1 — documentation-only.
+    — **Done:** Guarantees gained the CodeGraph-index bullet (present/absent/unignored/CLI-fail cases); files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
 
 ### Phase 3: Verification gate
 

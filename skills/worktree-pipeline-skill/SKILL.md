@@ -314,6 +314,9 @@ step pushes it.
 - Every PLAN passes the atomicity self-check before commit.
 - Delegation is hub-and-spoke from the primary session (build agent allows
   `task: {"*": allow}`); bash-denied delegates receive precomputed diffs.
+- Each worktree gets a CodeGraph index when the main checkout has one
+  (skipped with a note when the index would be unignored, the CLI is
+  absent, or init fails).
 
 ## Return Contract
 
