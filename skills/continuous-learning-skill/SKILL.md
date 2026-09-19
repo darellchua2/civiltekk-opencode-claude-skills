@@ -10,7 +10,7 @@ category: Agent Optimization
 
 ## What I do
 
-The full memory-hygiene procedure (user AGENTS.md §Memory Hygiene defers here): capture reusable patterns/decisions/insights from coding sessions into `LEARNINGS/` markdown, scoped project or global.
+The full memory-hygiene procedure (user AGENTS.md §Memory Hygiene defers here): capture reusable patterns/decisions/insights from coding sessions into `LEARNINGS/` markdown, scoped `project` or `user`.
 
 ## When to use me
 
@@ -20,13 +20,13 @@ Before any review/plan/debug: **recall** first. After non-trivial fixes/decision
 
 `LEARNINGS/<category>/<slug>.md` is the single store (the `memory` tool has no v2 plugin; the manifest auto-injects per session via the local plugin — `glob`+`read` of `LEARNINGS/` is the fallback). Categories: `patterns/` · `decisions/` · `solutions/` (short-form) · `conventions/` · `anti-patterns/` (short-form).
 
-**Scope**: `project` = repo learnings (the repo's own `LEARNINGS/`); `global` = cross-project preferences (`~/.config/opencode/LEARNINGS/`). Project detection: git toplevel + repo name. Promote project → global only when a learning proved true in ≥2 projects.
+**Scope**: `project` = repo learnings (the repo's own `LEARNINGS/`); `user` = cross-project preferences (`~/.config/opencode/LEARNINGS/`). Project detection: git toplevel + repo name. Promote project → user only when a learning proved true in ≥2 projects.
 
 ## Entry format
 
 ```
 [Category]: [Title]
-Scope: [project|global]
+Scope: [project|user]
 Confidence: [0.3-0.9]
 Trigger: [when this applies]
 Action: [what to do]
