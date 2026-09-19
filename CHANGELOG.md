@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.8.4](https://github.com/darellchua2/opencode-config-template/compare/v9.8.3...v9.8.4) (2026-09-19)
+
+### Bug Fixes
+
+* **agents:** mark utility subagents hidden in primary picker ([#280](https://github.com/darellchua2/opencode-config-template/issues/280)) ([57242b0](https://github.com/darellchua2/opencode-config-template/commit/57242b0f0d2b2ce67deb5ceba6753c4f1677f920))
+
+### Code Refactoring
+
+* **agents:** rename primary agents to subagent convention ([#280](https://github.com/darellchua2/opencode-config-template/issues/280)) ([3b53fa6](https://github.com/darellchua2/opencode-config-template/commit/3b53fa652ff22f2b3e7c509a30ba20d1027f7755))
+
 ## [9.8.3](https://github.com/darellchua2/opencode-config-template/compare/v9.8.2...v9.8.3) (2026-09-19)
 
 ### Bug Fixes
