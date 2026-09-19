@@ -5,16 +5,16 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] One execution skill directory remains (`skills/plan-execution-skill/`); directory name equals skill name
-- [ ] All three former entry points map to a documented mode: `--soft` (old plan-execution), `--gate` (old plan-automation-loop; default for `/run-plan`), `--update` (old plan-updater); description ≤50 words preserving triggers (`run-plan`, `execute plan`, `automation loop`, `implement PLAN-*.md`, `update plan progress`)
-- [ ] Updater semantics preserved: rationale triple kept verbatim on `[ ]`→`[x]`; branch patterns `GIT-123`/`issue-123`/`123`/`PROJECT-123`; PLAN naming table; graceful skip; malformed-step flag primitive (warning-only); progress log; semantic commit
-- [ ] Gate semantics preserved: defers to `verification-loop-skill` §The gate contract (#409 dedup — do not re-inline); gate memo `GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t|-|n.a>`; fix-on-fail ≤3/step, ≤20 total; never push red; one atomic commit + push per phase; `— Done:`/`fixes:` traceability; zero unchecked boxes per phase; HALT terminal + `[goal:*]` markers; guardrails table; idempotent; E2E rule
-- [ ] Protocol pins intact: `## Iteration Protocol (opt-in)` heading; `metadata.protocol: autoresearch-opt-in`; citation union `iteration-safety` + `stuck-detection` + `evaluator-contract` (gate override subsection folded in)
-- [ ] `skills/plan-updater-skill/` and `skills/plan-automation-loop-skill/` deleted; zero live references — CHANGELOG, LEARNINGS, PLANS/, and README migration-history lines exempt
-- [ ] `/run-plan` command template re-pointed to the survivor (opencode.json `template`), keeping the description's `/goal` mention (docker-compose.yml:29 comment reads it)
-- [ ] Agent frontmatter AND body prose: zero deleted-name strings anywhere in `agents/*.md`; 4 `plan-updater-skill` allows re-pointed (repo-ops deduped)
-- [ ] Sync surfaces: lean 46→**44** (both deleted keys are lean members) + `tests/skill_profiles.bats` six-site re-pin to 44; `opencode_app/opencode.json` skill allows 104→102 + `/run-plan` template; `installer/presets/pack-devops.json`; stale prose literals re-derived (setup.sh:3240 + setup.ps1:1900 + README:397/400: "48 primary-visible"→44, "107 allows"→102); README counts 148→146 (root ×3 + `opencode_app/README.md:30`) + Git/Workflow row + history line; `installer/registry.json` regenerated
-- [ ] `bats tests/` suite passes
+- [x] One execution skill directory remains (`skills/plan-execution-skill/`); directory name equals skill name
+- [x] All three former entry points map to a documented mode: `--soft` (old plan-execution), `--gate` (old plan-automation-loop; default for `/run-plan`), `--update` (old plan-updater); description ≤50 words preserving triggers (`run-plan`, `execute plan`, `automation loop`, `implement PLAN-*.md`, `update plan progress`)
+- [x] Updater semantics preserved: rationale triple kept verbatim on `[ ]`→`[x]`; branch patterns `GIT-123`/`issue-123`/`123`/`PROJECT-123`; PLAN naming table; graceful skip; malformed-step flag primitive (warning-only); progress log; semantic commit
+- [x] Gate semantics preserved: defers to `verification-loop-skill` §The gate contract (#409 dedup — do not re-inline); gate memo `GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t|-|n.a>`; fix-on-fail ≤3/step, ≤20 total; never push red; one atomic commit + push per phase; `— Done:`/`fixes:` traceability; zero unchecked boxes per phase; HALT terminal + `[goal:*]` markers; guardrails table; idempotent; E2E rule
+- [x] Protocol pins intact: `## Iteration Protocol (opt-in)` heading; `metadata.protocol: autoresearch-opt-in`; citation union `iteration-safety` + `stuck-detection` + `evaluator-contract` (gate override subsection folded in)
+- [x] `skills/plan-updater-skill/` and `skills/plan-automation-loop-skill/` deleted; zero live references — CHANGELOG, LEARNINGS, PLANS/, and README migration-history lines exempt
+- [x] `/run-plan` command template re-pointed to the survivor (opencode.json `template`), keeping the description's `/goal` mention (docker-compose.yml:29 comment reads it)
+- [x] Agent frontmatter AND body prose: zero deleted-name strings anywhere in `agents/*.md`; 4 `plan-updater-skill` allows re-pointed (repo-ops deduped)
+- [x] Sync surfaces: lean 46→**44** (both deleted keys are lean members) + `tests/skill_profiles.bats` six-site re-pin to 44; `opencode_app/opencode.json` skill allows 104→102 + `/run-plan` template; `installer/presets/pack-devops.json`; stale prose literals re-derived (setup.sh:3240 + setup.ps1:1900 + README:397/400: "48 primary-visible"→44, "107 allows"→102); README counts 148→146 (root ×3 + `opencode_app/README.md:30`) + Git/Workflow row + history line; `installer/registry.json` regenerated
+- [x] `bats tests/` suite passes
 
 ## Dependency & Consumer Map
 
@@ -70,24 +70,28 @@
     — **Done:** /run-plan template → plan-execution-skill --gate; :594 description /goal mention kept; JSON valid; files: opencode_app/opencode.json; fixes: none
 
 ### Phase 3: Deletion, registry (land together — no red intermediate commit)
-- [ ] **3.1** `git rm -r skills/plan-updater-skill skills/plan-automation-loop-skill`
+- [x] **3.1** `git rm -r skills/plan-updater-skill skills/plan-automation-loop-skill`
     — **Why:** fully absorbed into survivor modes; bundled with counts + registry for a green phase commit (#407/#409 precedent)
     — **Done when:** both directories absent from `git ls-files`
     — **Consumers affected:** all swept in Phase 2
-- [ ] **3.2** Run `node installer/build-registry.mjs` (`agents=34, skills=146`); verify zero deleted names in `installer/registry.json`
+    — **Done:** git rm of both sibling dirs; absent from git ls-files; files: skills/plan-updater-skill/ skills/plan-automation-loop-skill/ (deleted); fixes: none
+- [x] **3.2** Run `node installer/build-registry.mjs` (`agents=34, skills=146`); verify zero deleted names in `installer/registry.json`
     — **Why:** registry is generated — hand edits overwritten
     — **Done when:** build exits 0; grep deleted names in registry → 0
     — **Consumers affected:** installer `add`, presets, CI `--check`
+    — **Done:** build-registry regenerated agents=34, skills=146; zero sibling names in registry; files: installer/registry.json; fixes: none
 
 ### Phase 4: Verification gate
-- [ ] **4.1** Repo-wide sweeps: `grep -rn "plan-updater-skill\|plan-automation-loop-skill"` + bare fragments (`plan-updater`, `automation-loop`), excluding `node_modules/`, `.git/`, `_archived/`, `PLANS/`, `CHANGELOG.md`, `LEARNINGS/`, README/PLAN migration-history lines, and this PLAN → zero hits on live surfaces; run `bats tests/test_autoresearch_protocol.bats` plan-execution subset
+- [x] **4.1** Repo-wide sweeps: `grep -rn "plan-updater-skill\|plan-automation-loop-skill"` + bare fragments (`plan-updater`, `automation-loop`), excluding `node_modules/`, `.git/`, `_archived/`, `PLANS/`, `CHANGELOG.md`, `LEARNINGS/`, README/PLAN migration-history lines, and this PLAN → zero hits on live surfaces; run `bats tests/test_autoresearch_protocol.bats` plan-execution subset
     — **Why:** AC requires zero live references; README history lines are mandated by 2.4 and exempt (reviewer B3 — sweep must be satisfiable)
     — **Done when:** sweeps empty on live surfaces; protocol subset green
     — **Consumers affected:** none (verification)
-- [ ] **4.2** Run gates: `bats tests/` + `node installer/build-registry.mjs` + JSON validity ×3; commit generated artifacts; working tree clean
+    — **Done:** full-name + fragment sweeps clean on live surfaces (exemptions: node_modules/.git/_archived/PLANS/CHANGELOG/LEARNINGS/README history lines); protocol bats subset 83-85 ok; files: none; fixes: none
+- [x] **4.2** Run gates: `bats tests/` + `node installer/build-registry.mjs` + JSON validity ×3; commit generated artifacts; working tree clean
     — **Why:** AGENTS.md gate; count/profile guards enforce sync surfaces at merge
     — **Done when:** bats exit 0; registry build exit 0; tree clean after artifact commit
     — **Consumers affected:** CI, Step 9 review, PR checks
+    — **Done:** bats tests/ 334 ok exit 0; build-registry exit 0; JSON x3 valid (2.2); tree clean after artifact commit; files: none; fixes: none
 
 ## Technical Notes
 - Survivor `plan-execution-skill`: path-pinned by `tests/test_autoresearch_protocol.bats`, already allowed in repo-ops, generic lifecycle name. `test_default_behavior.bats` cites are comments — zero edits.
