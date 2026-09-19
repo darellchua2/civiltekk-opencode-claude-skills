@@ -250,6 +250,15 @@
 - **Summary**: #423 review: PLAN-423 3.5 gate read green while README.md:32 still said "Symlink bridge" — case-sensitive prose grep missed the capital, and the line-anchored path pattern can't match ASCII trees that split parent/child across lines; use grep -i plus bare child-name patterns for tree blocks
 - **Date**: 2026-09-19
 
+### Guard-regex quote-shape mismatch false-greens on regression spellings
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/guard-regex-quote-shape-mismatch.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #437 review: the isolation guard's segmented `"_"` pattern passed its canary yet missed 8/10 real spellings incl. the exact pre-fix lines (`parents[2] / "_common"`); census historical lines before writing grep guards and plant those spellings in canaries
+- **Date**: 2026-09-19
+
 ### `git stash` exits 0 on nothing-to-save — porcelain-gated STASHED flags lie
 
 - **Category**: anti-pattern

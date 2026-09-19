@@ -91,7 +91,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-_SCRIPT_DIR = Path(__file__).resolve().parent
 # BT-142 Phase 2.3: the bundled default template is REMOVED. Callers MUST
 # supply a user template path — there is no fallback. This enforces the user's
 # "no bundled default.pptx" invariant (Goal #1 of PLAN-BT-142).

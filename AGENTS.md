@@ -15,12 +15,12 @@ The root `skills/` and `agents/` dirs are the **single source** for skills and a
 
 ## Skill Isolation Contract (#437)
 
-Every `skills/<name>-skill/` directory must be **fully self-contained** — all scripts, schemas, and fixtures it needs live inside its own tree — because `npx github:darellchua2/opencode-config-template add <name>` copies exactly one directory.
+Every skill directory under `skills/` (name suffix or not — e.g. the `gsap-*` dirs) must be **fully self-contained** — all scripts, schemas, and fixtures it needs live inside its own tree — because `npx github:darellchua2/opencode-config-template add <name>` copies exactly one directory. `tests/test_skill_isolation.bats` is the mechanical enforcement: it bans `skills/_common` references, parent-chain path escapes, sibling-skill paths outside the declared handoff, new `_`-prefixed shared dirs, and vendored-copy drift.
 
 - **Cross-skill code duplication is intentional.** Shared helpers are vendored per skill (per-skill copy model), not factored into shared packages. Do not "DRY up" duplicated code across skills by extracting a common module — that is the exact regression this contract bans.
-- **No new shared `_`-prefixed dirs** (e.g. a `skills/_common/`). The former `skills/_common/scripts` engine was vendored into each pptx skill as `scripts/_common/` and the shared dir deleted.
-- **Vendored copies stay in sync**: the three pptx skills' `scripts/_common` trees must remain byte-identical (`tests/test_skill_isolation.bats` enforces it). Fix a vendored bug once, copy to all three trees, run the guard.
-- **Cross-skill runtime deps are banned by default.** The single declared exception is `pptx-template-modifier-skill → pptx-generate-slide-skill` (capability split: the modifier extends templates, the slide engine fills), documented in the modifier SKILL.md prerequisites and pinned in the guard's allowlist. A new handoff must be declared the same way — or duplicate the code instead.
+- **No new shared `_`-prefixed dirs** (e.g. a `skills/_common/`); `_archived` is the only legacy exception. The former `skills/_common/scripts` engine was vendored into each pptx skill as `scripts/_common/` and the shared dir deleted.
+- **Vendored copies stay in sync**: the three pptx skills' `scripts/_common` trees must remain byte-identical (guard-enforced). Fix a vendored bug once, copy to all three trees, run the guard.
+- **Cross-skill runtime deps are banned by default.** The single declared exception is `pptx-template-modifier-skill → pptx-generate-slide-skill` (capability split: the modifier extends templates, the slide engine fills), documented in the modifier SKILL.md prerequisites. The guard's `HANDOFF_OWNER`/`HANDOFF_TARGET` vars are the source of truth for the allowlist — a new handoff updates those first, then the SKILL.md prose — or duplicate the code instead.
 
 ## Secret Masking
 

@@ -18,19 +18,54 @@ HANDOFF_TARGET="pptx-generate-slide-skill"
 
 @test "skill_isolation_no_shared_common_references" {
   # Catches both repo paths (skills/_common/...) and deploy strings
-  # (.opencode/skills/_common/...) in any file type.
-  run grep -rn "skills/_common" skills/ \
+  # (.opencode/skills/_common/...). Runtime carriers: skills + agent docs.
+  # tests/ is excluded (this file's own comments name the banned string).
+  # -eq 1: grep exit 2 (error) must fail the test, not false-green it.
+  run grep -rn "skills/_common" skills/ agents/ \
     --exclude-dir=__pycache__ --exclude-dir=.pytest_cache
-  [ "$status" -ne 0 ]
+  [ "$status" -eq 1 ]
 }
 
 @test "skill_isolation_no_parent_chain_common_escapes" {
   # Own-dir resolution is `parent / "_common"` (or parents[1]). Anything
-  # reaching parents[2]/parents[3]/parent.parent.parent, or a ../_common hop,
-  # escapes the skill dir.
-  run grep -rnE 'parents\[[2-9]\][^)]*"_"|parent\.parent\.parent|\.\./_common|"_"[[:space:]]*/[[:space:]]*"common"' \
-    skills/ --include='*.py' --include='*.md' --exclude-dir=__pycache__
-  [ "$status" -ne 0 ]
+  # reaching parents[2]+, a parent.parent.parent chain, a ../_common hop, or a
+  # segmented "_"/"common" join escapes the skill dir. parents[N>=2] is banned
+  # outright regardless of what follows (census: zero legit uses in skills/).
+  # Known residual: variable indirection (_SKILLS / "_common" / "scripts") is
+  # invisible to pattern matching — test 3 catches its cross-skill consequence.
+  run python3 - <<'PYEOF'
+import re, sys
+from pathlib import Path
+
+pat = re.compile(
+    r"parents\[([2-9]|[1-9][0-9]+)\]"
+    r"|parent\.parent\.parent"
+    r"|\.\./_common"
+    r"|['\"]_['\"]\s*/\s*['\"]common"
+)
+offenders = []
+for p in sorted(Path("skills").rglob("*")):
+    if not p.is_file() or p.suffix != ".py":
+        continue
+    parts = p.parts
+    if parts[1].startswith("_"):
+        continue
+    if any(x in ("__pycache__", ".pytest_cache") for x in parts):
+        continue
+    try:
+        text = p.read_text(encoding="utf-8")
+    except (UnicodeDecodeError, ValueError):
+        continue
+    for m in pat.finditer(text):
+        line = text.count("\n", 0, m.start()) + 1
+        offenders.append(f"{p}:{line}: {m.group(0)!r}")
+if offenders:
+    print("Parent-chain _common escapes:")
+    print("\n".join(offenders))
+    sys.exit(1)
+print("ok")
+PYEOF
+  [ "$status" -eq 0 ]
 }
 
 @test "skill_isolation_no_sibling_skill_paths_outside_declared_handoff" {
@@ -40,20 +75,30 @@ from pathlib import Path
 
 owner, target = sys.argv[1], sys.argv[2]
 root = Path("skills")
-# Deploy-path strings (opencode/skills/<x>-skill/... or skills/<x>-skill/...)
-# and python path-joins ("<x>-skill" / "scripts").
+catalog = {d.name for d in root.iterdir()
+           if d.is_dir() and not d.name.startswith("_")}
+
+def sibling(name):
+    "Resolve a referred name to a catalog dir (exact or Claude-layout +/- -skill)."
+    for cand in (name, name + "-skill"):
+        if cand in catalog:
+            return cand
+    return None
+
+def names(own):
+    out = {own}
+    if own.endswith("-skill"):
+        out.add(own[: -len("-skill")])
+    return out
+
 ref_re = re.compile(
-    r"opencode/skills/([a-z0-9-]+-skill)/|(?<![\w/-])skills/([a-z0-9-]+-skill)/"
-    r'|"([a-z0-9-]+-skill)"\s*/\s*"scripts"'
+    r"opencode/skills/([a-z0-9_-]+)/|(?<!\w)skills/([a-z0-9_-]+)/"
+    r'|"([a-z0-9_-]+)"\s*/\s*"scripts"'
 )
+fence_re = re.compile(r"```.*?```", re.S)
 violations = []
-# Runtime carriers only: SKILL.md inline code + python imports decide whether
-# an installed skill works; docs/** prose (e.g. file-tree diagrams naming a
-# sibling's layout) cannot break an install.
 for p in sorted(root.rglob("*")):
     if not p.is_file():
-        continue
-    if p.name != "SKILL.md" and p.suffix != ".py":
         continue
     parts = p.parts
     if parts[1].startswith("_"):  # _archived etc. — not shipped via npx add
@@ -64,15 +109,28 @@ for p in sorted(root.rglob("*")):
         text = p.read_text(encoding="utf-8")
     except (UnicodeDecodeError, ValueError):
         continue  # binary payload — not a path reference carrier
+    if p.suffix == ".py":
+        spans = [(0, len(text))]           # whole file is runtime carrier
+    elif p.name == "SKILL.md":
+        # Only fenced code blocks are runtime instructions; prose/links
+        # (attribution URLs, credits tables) are documentation.
+        spans = [f.span() for f in fence_re.finditer(text)]
+    else:
+        continue
     own = parts[1]
     for m in ref_re.finditer(text):
-        referred = m.group(1) or m.group(2) or m.group(3)
-        if referred == own:
+        if not any(s <= m.start() < e for s, e in spans):
             continue
-        if own == owner and referred == target:
+        referred = m.group(1) or m.group(2) or m.group(3)
+        sib = sibling(referred)
+        if sib is None:
+            continue  # not a catalog sibling (e.g. target-project paths)
+        if sib in names(own):
+            continue  # self-reference (either layout naming)
+        if own == owner and sib == target:
             continue  # the declared handoff
         line = text.count("\n", 0, m.start()) + 1
-        violations.append(f"{p}:{line}: {m.group(0)!r} ({own} -> {referred})")
+        violations.append(f"{p}:{line}: {m.group(0)!r} ({own} -> {sib})")
 if violations:
     print("Sibling skill path refs outside the declared handoff "
           f"({owner} -> {target}):")
@@ -84,6 +142,8 @@ PYEOF
 }
 
 @test "skill_isolation_pptx_vendored_trees_pairwise_identical" {
+  # Add new vendored scripts/_common trees to this list when a skill gains one
+  # (identity across DIFFERENT engines would be wrong — list them explicitly).
   for s in pptx-generate-slide-skill pptx-template-modifier-skill pptx-generate-template-skill; do
     [ -d "skills/$s/scripts/_common" ] || { fail "missing skills/$s/scripts/_common"; }
   done
@@ -93,4 +153,11 @@ PYEOF
   diff -r --exclude=__pycache__ --exclude=.pytest_cache \
     "skills/pptx-generate-slide-skill/scripts/_common" \
     "skills/pptx-generate-template-skill/scripts/_common"
+}
+
+@test "skill_isolation_no_new_underscore_prefixed_shared_dirs" {
+  # AGENTS.md §Skill Isolation Contract bans new shared `_`-prefixed dirs.
+  # Legacy allowlist: _archived (pre-existing, not shipped via npx add).
+  run bash -c "ls skills/ | grep '^_' | grep -v -x '_archived'"
+  [ "$status" -ne 0 ]
 }
