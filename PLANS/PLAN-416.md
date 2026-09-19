@@ -6,11 +6,11 @@
 
 ## Acceptance Criteria
 
-- [ ] After `git worktree add` in Step 4, iff the main checkout has `.codegraph/`, run `codegraph init -i` inside the new worktree, before Step 5 re-validation
-- [ ] `codegraph` CLI absent or init fails → soft-skip with a one-line note, pipeline continues on grep fallback (mirrors `opencode-repo-setup-skill` soft-skip policy)
-- [ ] Main repo without `.codegraph/` → no init attempt, no note noise
-- [ ] Frontmatter untouched → no `build-registry.mjs` rerun needed, no count syncs (no skill/agent/MCP change per the AGENTS.md sync-rules table)
-- [ ] `.codegraph/` not ignored on the ticket branch → skip init entirely with the one-line note (guard via `git check-ignore`; never write ignore entries) ← from Step 7 review, resolved via Mode R relay
+- [x] After `git worktree add` in Step 4, iff the main checkout has `.codegraph/`, run `codegraph init -i` inside the new worktree, before Step 5 re-validation
+- [x] `codegraph` CLI absent or init fails → soft-skip with a one-line note, pipeline continues on grep fallback (mirrors `opencode-repo-setup-skill` soft-skip policy)
+- [x] Main repo without `.codegraph/` → no init attempt, no note noise
+- [x] Frontmatter untouched → no `build-registry.mjs` rerun needed, no count syncs (no skill/agent/MCP change per the AGENTS.md sync-rules table)
+- [x] `.codegraph/` not ignored on the ticket branch → skip init entirely with the one-line note (guard via `git check-ignore`; never write ignore entries) ← from Step 7 review, resolved via Mode R relay
 
 ## Dependency & Consumer Map
 
