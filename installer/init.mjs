@@ -136,7 +136,7 @@ async function loadPresets() {
 }
 async function loadDepMap() {
   const d = await readJsonMaybe(DEPMAP_FILE);
-  return (d && d.impliesMcp) || {};
+  return { impliesMcp: (d && d.impliesMcp) || {}, requiresSkills: (d && d.requiresSkills) || {} };
 }
 
 // ─────────────────────────── selection resolver (Phase 3.1) ─────────────
@@ -183,8 +183,21 @@ export function resolveSelection({ agents: agentIn = [], skills: skillIn = [], m
       sk.add(s);
     }
   }
+
+  // required skills from every selected skill (dependency-map requiresSkills, #439).
+  // Transitive closure mirroring the delegatesTo queue above; --no-deps bypasses
+  // this resolver entirely. Cycles terminate via the Set; unknown names warn, never crash.
+  const skillQueue = [...sk];
+  while (skillQueue.length) {
+    const sname = skillQueue.shift();
+    for (const dep of depMap.requiresSkills[sname] || []) {
+      if (!skillByName.has(dep)) { warnings.push(`${sname} requires unknown skill: ${dep}`); continue; }
+      if (!sk.has(dep)) { sk.add(dep); skillQueue.push(dep); }
+    }
+  }
+
   for (const sname of sk) {
-    const implied = depMap[sname];
+    const implied = depMap.impliesMcp[sname];
     if (implied) for (const m of implied) mc.add(m);
   }
 
@@ -607,6 +620,10 @@ async function cmdAdd(args, opts, reg, depMap) {
       : { agents: [], skills: [name], mcps: [], warnings: [] };
   } else {
     sel = resolveSelection(isAgent ? { agents: [name] } : { skills: [name] }, reg, depMap);
+    // Visible notice for auto-added dependencies (#439): silent auto-install
+    // is indistinguishable from a bug at the CLI. stderr so --dry-run stdout
+    // stays machine-readable JSON. --no-deps skips this path.
+    for (const s of sel.skills) if (s !== name) console.error(`also installing required skill: ${s} (required by ${name})`);
   }
 
   // --format → --target deprecated alias (#377): map values verbatim, warn once.
@@ -753,7 +770,7 @@ async function checkStrictAllowlist(sel, opts) {
 async function warnMCPs(sel, depMap) {
   const needed = new Set();
   for (const sname of sel.skills) {
-    const implied = depMap[sname];
+    const implied = depMap.impliesMcp[sname];
     if (implied) for (const m of implied) needed.add(m);
   }
   if (!needed.size) return;

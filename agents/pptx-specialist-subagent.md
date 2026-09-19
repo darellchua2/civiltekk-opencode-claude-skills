@@ -106,7 +106,7 @@ Stage 6  Return result + (interactive only) post-generation refinement question
 
 ```bash
 python -c "
-import sys; sys.path.insert(0,'.opencode/skills/_common/scripts')
+import sys; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
 from schema_extractor import read_embedded_schema, TemplateExtractionError
 tpl = '<USER_TEMPLATE_PATH>'
 try:
@@ -215,7 +215,7 @@ If `INVALID`, fix and re-validate. Do not proceed until `VALID`.
 ```bash
 python -c "
 import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-slide-skill/scripts')
-sys.path.insert(0,'.opencode/skills/_common/scripts')
+sys.path.insert(0,'.opencode/skills/pptx-generate-slide-skill/scripts/_common')
 from overflow_check import overflow_check, slides_to_question_payload
 from layout_contract import get_render_contract
 contract = get_render_contract('<TEMPLATE_PATH>')
@@ -242,7 +242,7 @@ python -c "
 import sys, json
 sys.path.insert(0, '.opencode/skills/pptx-template-modifier-skill/scripts')
 sys.path.insert(0, '.opencode/skills/pptx-generate-slide-skill/scripts')
-sys.path.insert(0, '.opencode/skills/_common/scripts')
+sys.path.insert(0, '.opencode/skills/pptx-template-modifier-skill/scripts/_common')
 from state_machine import resolve_and_clone
 from ppt_builder import generate_ppt_from_data, DEFAULT_OUTPUT_DIR
 slide_data = <RESOLVED_JSON_ARRAY>
@@ -266,7 +266,7 @@ if note: print('NOTICE:', note)
 python -c "
 import sys, json
 sys.path.insert(0, '.opencode/skills/pptx-generate-slide-skill/scripts')
-sys.path.insert(0, '.opencode/skills/_common/scripts')
+sys.path.insert(0, '.opencode/skills/pptx-generate-slide-skill/scripts/_common')
 from multipass_render import multipass_render
 from placeholder_backfill import backfill_deck
 from notes_repair import ensure_notes_placeholder

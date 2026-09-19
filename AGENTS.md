@@ -7,11 +7,20 @@ Repo conventions only. Usage docs (install, deploy commands, file tree, chaining
 Multi-mode OpenCode configurator:
 1. **User-space deploy** — `./deploy/setup.sh` copies config, agents, skills to `~/.config/opencode/`.
 2. **Docker standalone** — `docker compose up -d` launches a web endpoint via `opencode_app/`.
-3. **Individual install** — `npx github:darellchua2/opencode-config-template add <name>` pulls a single skill/agent (shadcn-style copy model). Default target `~/.config/opencode/` (auto-discovered, no config touch); `--project` opts into `./.opencode/`; `--target claude|both` writes `~/.claude/skills/` (Agent Skills open standard; `--format` is a deprecated alias). See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
+3. **Individual install** — `npx github:darellchua2/opencode-config-template add <name>` pulls the named skill/agent plus its declared prerequisites (`dependency-map.json` `requiresSkills` auto-installs them with a notice; `--no-deps` opts out) (shadcn-style copy model). Default target `~/.config/opencode/` (auto-discovered, no config touch); `--project` opts into `./.opencode/`; `--target claude|both` writes `~/.claude/skills/` (Agent Skills open standard; `--format` is a deprecated alias). See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
 
 ## Source of Truth
 
 The root `skills/` and `agents/` dirs are the **single source** for skills and agents. Never edit deployed `~/.config/opencode/` copies — edit source, then redeploy.
+
+## Skill Isolation Contract (#437)
+
+Every skill directory under `skills/` (name suffix or not — e.g. the `gsap-*` dirs) must be **fully self-contained** — all scripts, schemas, and fixtures it needs live inside its own tree — because `npx github:darellchua2/opencode-config-template add <name>` copies one directory per requested skill (plus its **declared** `requiresSkills` prerequisites, which are themselves whole self-contained skills; `--no-deps` opts out). `tests/test_skill_isolation.bats` is the mechanical enforcement: it bans `skills/_common` references, parent-chain path escapes, sibling-skill paths outside the declared handoff, new `_`-prefixed shared dirs, and vendored-copy drift.
+
+- **Cross-skill code duplication is intentional.** Shared helpers are vendored per skill (per-skill copy model), not factored into shared packages. Do not "DRY up" duplicated code across skills by extracting a common module — that is the exact regression this contract bans.
+- **No new shared `_`-prefixed dirs** (e.g. a `skills/_common/`); `_archived` is the only legacy exception. The former `skills/_common/scripts` engine was vendored into each pptx skill as `scripts/_common/` and the shared dir deleted.
+- **Vendored copies stay in sync**: the three pptx skills' `scripts/_common` trees must remain byte-identical (guard-enforced). Fix a vendored bug once, copy to all three trees, run the guard.
+- **Cross-skill runtime deps are banned by default.** The single declared exception is `pptx-template-modifier-skill → pptx-generate-slide-skill` (capability split: the modifier extends templates, the slide engine fills), documented in the modifier SKILL.md prerequisites. The guard's `HANDOFF_OWNER`/`HANDOFF_TARGET` vars are the source of truth for the allowlist — a new handoff updates those first, then the SKILL.md prose — or duplicate the code instead.
 
 ## Secret Masking
 

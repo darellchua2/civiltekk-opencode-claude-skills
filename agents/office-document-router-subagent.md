@@ -3,6 +3,7 @@ description: >-
   Routes office document operations (docx, pptx, xlsx) to specialized subagents
   by file type.
 mode: subagent
+hidden: true
 steps: 25
 permissions:
   - action: webfetch

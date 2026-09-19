@@ -8,7 +8,7 @@
     "docx-creation-subagent",
     "pptx-specialist-subagent",
     "xlsx-specialist-subagent",
-    "office-document-primary-agent"
+    "office-document-router-subagent"
   ],
   "skills": [
     "ascii-diagram-creator-skill",

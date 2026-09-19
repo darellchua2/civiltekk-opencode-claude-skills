@@ -216,6 +216,9 @@ npx github:darellchua2/opencode-config-template add my-custom-skill --permit
 # E. Skill needs an MCP — prints snippet, never auto-merges
 npx github:darellchua2/opencode-config-template add markitdown-mcp-skill
 
+# E2. Skill declares a skill prerequisite — auto-installs it (stderr notice; --no-deps opts out)
+npx github:darellchua2/opencode-config-template add pptx-template-modifier-skill
+
 # F. Project scope (full-service)
 npx github:darellchua2/opencode-config-template add nextjs-specialist-subagent --project
 
@@ -396,7 +399,7 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 
 #### Skill Profiles — deploy-time primary visibility (#333)
 
-Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (102 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 44 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session at ~90 tokens/description).
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (103 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 44 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session at ~90 tokens/description).
 
 ```bash
 ./deploy/setup.sh                                # default: lean (44 primary-visible skills)
@@ -610,8 +613,8 @@ TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C, C++, Swift, Ko
 |-------|---------|-------------|
 | **build** | Default agent for general tasks | Full access to all tools and subagents |
 | **plan** | Read-only planning and analysis | `task`, `read`, `glob`, `grep` only (no write/execute) |
-| **startup-founder-primary-agent** | Business docs - reports, quotations, spreadsheets, presentations | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
-| **office-document-primary-agent** | Office document specialist: Word, PowerPoint, Excel | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
+| **startup-founder-subagent** | Business docs - reports, quotations, spreadsheets, presentations | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
+| **office-document-router-subagent** | Office document specialist: Word, PowerPoint, Excel | Full access (`read`, `edit`, `bash`, `webfetch`, `task`) |
 
 #### Subagents
 
@@ -789,7 +792,10 @@ The setup scripts automatically:
 
 ### Template Files
 
-This repository includes inline default configurations in all setup scripts. No external template files are required.
+Setup configurations are inline in the deploy scripts. One opt-in external template ships
+for downstream repos: [installer/templates/api-quality/](installer/templates/api-quality/) —
+a Redocly lint ruleset + pre-commit hook that enforces OpenAPI authoring quality
+(see its README for adoption).
 
 
 ## Testing & Development

@@ -11,6 +11,12 @@ category: Presentation
 
 ## What I do
 
+> **Prerequisite skill:** `pptx-generate-slide-skill` — my output is rendered
+> by its fill engine (`ppt_builder.generate_ppt_from_data`). Install it too:
+> `npx github:darellchua2/opencode-config-template add pptx-generate-slide-skill`.
+> This handoff is an intentional, allowlisted cross-skill dependency (#437);
+> it is the only one in this catalog.
+
 I am the **pptx-template-modifier-skill** (Capability B). When the base `template.pptx` is **missing a layout** that a slide needs, I extend the template by **borrowing/cloning a layout** into a derived `template_new.pptx`, which the `pptx-generate-slide-skill` engine then renders against.
 
 I do **not** fill templates myself. Normal filling is the `pptx-generate-slide-skill` skill's job. I am invoked only when the base template is missing a layout a slide needs.

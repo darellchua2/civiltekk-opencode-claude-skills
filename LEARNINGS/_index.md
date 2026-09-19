@@ -232,6 +232,15 @@
 - **Summary**: when a commit adds or changes a skill rule, sweep the same file's Example Usage of that flow — stale examples are the strongest signal teaching agents the deprecated behavior
 - **Date**: 2026-09-19
 
+### Derive consistency pins from the source-of-truth file at runtime
+
+- **Category**: convention
+- **File**: `conventions/derived-consistency-pins.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #439 review: tests pinning two files together must derive expectations from the source-of-truth file at runtime (grep HANDOFF_* from the guard), not restate literals in both — derived pins make drift a hard failure instead of two files aging separately
+- **Date**: 2026-09-19
+
 ### Adaptive review drops proactive requirements review; gaps flow via Mode R relay
 
 - **Category**: decision
@@ -248,6 +257,15 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Summary**: #423 review: PLAN-423 3.5 gate read green while README.md:32 still said "Symlink bridge" — case-sensitive prose grep missed the capital, and the line-anchored path pattern can't match ASCII trees that split parent/child across lines; use grep -i plus bare child-name patterns for tree blocks
+- **Date**: 2026-09-19
+
+### Guard-regex quote-shape mismatch false-greens on regression spellings
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/guard-regex-quote-shape-mismatch.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #437 review: the isolation guard's segmented `"_"` pattern passed its canary yet missed 8/10 real spellings incl. the exact pre-fix lines (`parents[2] / "_common"`); census historical lines before writing grep guards and plant those spellings in canaries
 - **Date**: 2026-09-19
 
 ### `git stash` exits 0 on nothing-to-save — porcelain-gated STASHED flags lie

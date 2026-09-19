@@ -24,9 +24,7 @@ from pptx import Presentation
 from pptx.util import Inches
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
-sys.path.insert(
-    0, str(pathlib.Path(__file__).resolve().parents[3] / "_common" / "scripts")
-)
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "_common"))
 
 from multipass_render import merge_decks, multipass_render
 

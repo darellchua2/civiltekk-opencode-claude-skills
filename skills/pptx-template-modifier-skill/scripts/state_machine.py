@@ -24,8 +24,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# PLAN-GIT-72: shared contract layer now in _common (no more sibling-skill hack).
-_COMMON_SCRIPTS = Path(__file__).resolve().parents[2] / "_common" / "scripts"
+# Per-skill vendored engine (#437): shared contract layer in scripts/_common.
+_COMMON_SCRIPTS = Path(__file__).resolve().parent / "_common"
 if str(_COMMON_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(_COMMON_SCRIPTS))
 

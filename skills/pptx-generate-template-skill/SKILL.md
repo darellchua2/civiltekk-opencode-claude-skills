@@ -37,7 +37,7 @@ Do **NOT** use me for:
 
 ## Engine
 
-The engine lives in the shared `_common/scripts` package (PLAN-GIT-72). I call its functions directly (so I can inspect the extracted schema mid-pipeline for the title-confirmation and confirmation-table steps):
+The engine lives in this skill's vendored `scripts/_common` package (per-skill copy per #437, superseding the shared PLAN-GIT-72 layout). I call its functions directly (so I can inspect the extracted schema mid-pipeline for the title-confirmation and confirmation-table steps):
 
 | Function | Purpose |
 |----------|---------|
@@ -71,7 +71,7 @@ Confirm the input `.pptx` exists and is readable. If not, report the problem cle
 
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/_common/scripts')
+import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
 from schema_extractor import extract_schema, validate_template_schema, TemplateExtractionError
 try:
     schema = extract_schema('<INPUT.pptx>')
@@ -113,7 +113,7 @@ The schema carries `template_metadata.title`, `title_source` (`core_xml` | `slid
 
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/_common/scripts')
+import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
 from schema_extractor import inject_default_header_zone
 schema = json.load(open('<SCHEMA_TMP>',encoding='utf-8'))
 inject_default_header_zone(schema)
@@ -136,7 +136,7 @@ Render the table with this helper (reads the stashed schema):
 
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/_common/scripts')
+import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
 schema = json.load(open('<SCHEMA_TMP>',encoding='utf-8'))
 meta = schema.get('template_metadata', {}); dims = meta.get('slide_dimensions', {})
 hf = meta.get('header_footer', {}); td = schema.get('slide_master', {}).get('text_defaults', {})
@@ -179,7 +179,7 @@ Then present it to the user with a single `question` call:
 
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/_common/scripts')
+import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
 from schema_extractor import embed_schema, TemplateExtractionError
 schema = json.load(open('<SCHEMA_TMP>',encoding='utf-8'))
 try:
@@ -196,7 +196,7 @@ Output goes to `output/<input_stem>.templated.pptx` (matches the project's `outp
 
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/_common/scripts')
+import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
 from schema_extractor import build_extraction_summary
 schema = json.load(open('<SCHEMA_TMP>',encoding='utf-8'))
 print(build_extraction_summary(schema))
@@ -230,6 +230,6 @@ I produce the embedded `ppt/template_schema.json`. Since US-4.1 the renderer **p
 ## Reference
 
 - Plan: `PLANS/PLAN-GIT-56.md`.
-- Engine: `.opencode/skills/_common/scripts/schema_extractor.py` (`extract_schema`, `validate_template_schema`, `embed_schema`, `build_extraction_summary`, `_extract_master_text_styles`, `TITLE_SOURCES`, `TitleInference`).
+- Engine: `.opencode/skills/pptx-generate-template-skill/scripts/_common/schema_extractor.py` (`extract_schema`, `validate_template_schema`, `embed_schema`, `build_extraction_summary`, `_extract_master_text_styles`, `TITLE_SOURCES`, `TitleInference`).
 - Peer skills: `pptx-generate-slide-skill` (fill), `pptx-template-modifier-skill` (extend).
 - Requirements: `docs/user-stories/chenyu-user-stories.md` — Epic 3 (US-3.1–3.6).

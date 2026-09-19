@@ -19,10 +19,12 @@ opencode_app/
 ├── Dockerfile             # Multi-stage: node:24 + @opencode/cli (v2) + python3
 ├── docker-entrypoint.sh   # Injects API keys, starts opencode serve
 ├── opencode.json          # Container-specific config (providers, agents)
-└── AGENTS.md              # Agent instructions for container mode
+├── AGENTS.md              # Agent instructions for container mode
+└── .opencode/skills/      # Project-level skills (e.g. github-runners-setup-skill)
 ```
 
-Content (146 skill directories, 34 agents, plugins) lives at the **repo root** and is COPY'd
+Content (146 skill directories, 34 agents, plugins) lives at the **repo root**
+(plus 1 project-level skill under `.opencode/skills/`) and is COPY'd
 into `/app/.opencode/` at build time — the container is the only runtime,
 so there is no local-serving bridge in the repo.
 

@@ -1,0 +1,21 @@
+# Redocly authoring-quality ruleset (template) — from opencode-config-template (#320)
+#
+# Copy this file to YOUR repo root as `redocly.yaml`, alongside `api-quality-rules.mjs`.
+# Complements the soft prompt-level gate (#319) with deterministic linting.
+#
+# Builtins (CLI 2.x): operation-description / operation-operationId are core rules.
+# Redocly 2.x REMOVED builtin schema-description and operation-tags — our plugin
+# (api-quality-rules.mjs) restores both; plugin rules are namespaced `api-quality/…`.
+extends:
+  - recommended
+rules:
+  # Authoring quality — hard errors
+  operation-description: error
+  operation-operationId: error
+  api-quality/schema-description: error
+  # Advisory
+  api-quality/operation-has-tags: warn
+  # Example on POST/PUT request bodies — promote to error once your specs comply.
+  api-quality/request-body-example: warn
+plugins:
+  - ./api-quality-rules.mjs

@@ -10,7 +10,7 @@ AGENTS_DIR="agents"
 
 # Agents that should have markitdown-mcp-skill: allow in their permission.skill
 AGENTS_WITH_SKILL_GRANT=(
-  "office-document-primary-agent"
+  "office-document-router-subagent"
   "documentation-subagent"
   "requirements-specialist-subagent"
   "technical-design-specialist-subagent"
@@ -67,7 +67,7 @@ assert any(r['action']=='skill' and r['resource']=='markitdown-mcp-skill' and r[
 @test "office_document_primary_agent_has_routing_matrix_row" {
   # Peer-conventional row format (not "Direct MCP call")
   grep -qF 'Load `markitdown-mcp-skill` → call `markitdown` MCP' \
-    "$AGENTS_DIR/office-document-primary-agent.md"
+    "$AGENTS_DIR/office-document-router-subagent.md"
 }
 
 # =============================================================================

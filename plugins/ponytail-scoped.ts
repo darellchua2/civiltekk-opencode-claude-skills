@@ -51,8 +51,8 @@ const DEFAULT_OFF_PATTERN =
   'requirements-specialist-subagent|discovery-specialist-subagent|' +
   'technical-design-specialist-subagent|' +
   'coverage-subagent|documentation-subagent|docx-creation-subagent|' +
-  'pptx-specialist-subagent|xlsx-specialist-subagent|office-document-primary-agent|' +
-  'startup-ceo-subagent|startup-founder-primary-agent|' +
+  'pptx-specialist-subagent|xlsx-specialist-subagent|office-document-router-subagent|' +
+  'startup-ceo-subagent|startup-founder-subagent|' +
   'image-analyzer-subagent|' +
   'code-review-subagent|architecture-review-subagent|error-resolver-subagent|' +
   'nextjs-specialist-subagent|autoresearch-code-subagent|loop-operator-subagent|' +
