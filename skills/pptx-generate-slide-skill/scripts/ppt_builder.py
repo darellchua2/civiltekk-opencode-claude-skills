@@ -36,11 +36,12 @@ from pptx.enum.chart import XL_CHART_TYPE, XL_LABEL_POSITION, XL_LEGEND_POSITION
 from pptx.enum.shapes import PP_PLACEHOLDER
 from pptx.util import Inches, Pt
 
-# PLAN-GIT-72 (US-5.2): the shared extraction/contract/schema infra now lives
-# in the sibling `_common/scripts` package. Put it on sys.path before importing
-# those modules. Self-bootstrap so callers need not each replicate this (a DRY
-# bootstrap helper is deferred to Phase B / m5).
-_COMMON_SCRIPTS = str(Path(__file__).resolve().parent.parent.parent / "_common" / "scripts")
+# Per-skill vendored engine (#437, supersedes PLAN-GIT-72 US-5.2): the shared
+# extraction/contract/schema infra lives in this skill's own `scripts/_common`
+# package so `npx add pptx-generate-slide-skill` ships every import. Put it on
+# sys.path before importing those modules. Self-bootstrap so callers need not
+# each replicate this.
+_COMMON_SCRIPTS = str(Path(__file__).resolve().parent / "_common")
 if _COMMON_SCRIPTS not in sys.path:
     sys.path.insert(0, _COMMON_SCRIPTS)
 
@@ -94,8 +95,6 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 # BT-142 Phase 2.3: the bundled default template is REMOVED. Callers MUST
 # supply a user template path — there is no fallback. This enforces the user's
 # "no bundled default.pptx" invariant (Goal #1 of PLAN-BT-142).
-# scripts → pptx-generate-slide-skill → skills → .opencode → repo root
-_REPO_ROOT = _SCRIPT_DIR.parents[3]
 DEFAULT_OUTPUT_DIR = Path.cwd() / "output"
 
 # _TEMPLATE_FILE is intentionally None — there is no bundled default.

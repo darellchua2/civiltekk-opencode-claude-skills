@@ -8,8 +8,8 @@ _HERE = Path(__file__).resolve().parent            # .../pptx-template-modifier-
 _MODIFIER_SCRIPTS = _HERE.parent                   # .../pptx-template-modifier-skill/scripts
 _SKILLS = _MODIFIER_SCRIPTS.parent.parent          # .../skills
 _FILLER_SCRIPTS = _SKILLS / "pptx-generate-slide-skill" / "scripts"
-# PLAN-GIT-72: shared contract/extraction infra now in _common.
-_COMMON_SCRIPTS = _SKILLS / "_common" / "scripts"
+# Per-skill vendored engine (#437): shared extraction/contract infra in scripts/_common.
+_COMMON_SCRIPTS = _MODIFIER_SCRIPTS / "_common"
 
 # _FILLER_SCRIPTS stays: tests/test_layout_creator.py imports generate_ppt_from_data
 # (the fill entry) for end-to-end clone renders. _COMMON_SCRIPTS added for the
