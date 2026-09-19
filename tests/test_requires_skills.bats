@@ -24,8 +24,8 @@ teardown() { rm -rf "$TMP_HOME"; }
 @test "requires_skills_add_auto_installs_prerequisite_with_notice" {
   run bash -c "$INIT add $MODIFIER --yes 2>&1"
   [ "$status" -eq 0 ]
-  # Visible notice naming the auto-added prerequisite (AC2) — assert the skill
-  # name + the notice verb, not exact phrasing.
+  # Notice pinned to the emitted prefix (init.mjs console.error) — exact
+  # enough to catch silent auto-install, loose enough not to pin prose.
   echo "$output" | grep -q "also installing required skill: $SLIDE"
   [ -d "$HOME/.config/opencode/skills/$MODIFIER" ]
   [ -d "$HOME/.config/opencode/skills/$SLIDE" ]
@@ -46,7 +46,7 @@ PYEOF
 @test "requires_skills_no_deps_installs_only_named_skill" {
   run bash -c "$INIT add $MODIFIER --no-deps --yes 2>&1"
   [ "$status" -eq 0 ]
-  echo "$output" | grep -q "also installing" && return 1 || true
+  ! echo "$output" | grep -q "also installing"
   [ -d "$HOME/.config/opencode/skills/$MODIFIER" ]
   [ ! -d "$HOME/.config/opencode/skills/$SLIDE" ]
 }
@@ -68,12 +68,18 @@ for name in sys.argv[1:3]:
   HANDOFF_OWNER="$(grep -oE '^HANDOFF_OWNER="[^"]+"' "$GUARD" | cut -d'"' -f2)"
   HANDOFF_TARGET="$(grep -oE '^HANDOFF_TARGET="[^"]+"' "$GUARD" | cut -d'"' -f2)"
   [ -n "$HANDOFF_OWNER" ] && [ -n "$HANDOFF_TARGET" ]
-  python3 - "$DEPMAP" "$HANDOFF_OWNER" "$HANDOFF_TARGET" <<'PYEOF'
+  python3 - "$DEPMAP" "$HANDOFF_OWNER" "$HANDOFF_TARGET" "${REPO}/opencode_app/opencode.json" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1]))
 expected = {sys.argv[2]: [sys.argv[3]]}
 got = d.get("requiresSkills", {})
 assert got == expected, f"requiresSkills {got} != guard handoff pair {expected}"
+# impliesMcp values must be real MCP server keys (dependency-map $comment claim)
+oc = json.load(open(sys.argv[4]))
+servers = set((oc.get("mcp") or {}).get("servers") or {})
+for skill, mcps in d.get("impliesMcp", {}).items():
+    for m in mcps:
+        assert m in servers, f"{skill} implies unknown MCP server {m}"
 print("ok")
 PYEOF
 }

@@ -232,6 +232,15 @@
 - **Summary**: when a commit adds or changes a skill rule, sweep the same file's Example Usage of that flow — stale examples are the strongest signal teaching agents the deprecated behavior
 - **Date**: 2026-09-19
 
+### Derive consistency pins from the source-of-truth file at runtime
+
+- **Category**: convention
+- **File**: `conventions/derived-consistency-pins.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #439 review: tests pinning two files together must derive expectations from the source-of-truth file at runtime (grep HANDOFF_* from the guard), not restate literals in both — derived pins make drift a hard failure instead of two files aging separately
+- **Date**: 2026-09-19
+
 ### Adaptive review drops proactive requirements review; gaps flow via Mode R relay
 
 - **Category**: decision
