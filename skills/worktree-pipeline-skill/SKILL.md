@@ -86,7 +86,8 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    **inside the new worktree** (before Step 5; 5–60s, index gitignored);
    exit 1 → skip init entirely with a one-line note (".codegraph/ not
    ignored in target repo — skipping init to keep commits clean") and
-   continue on the rg/grep fallback; CLI absent or init failure → one-line
+   continue on the rg/grep fallback (any other `check-ignore` exit →
+   treat as the same soft-skip path); CLI absent or init failure → one-line
    soft-skip note and continue on rg/grep. No `.codegraph/` in the main
    checkout → skip silently. Never write ignore entries (tracked
    `.gitignore` edits stage into per-phase commits; per-worktree
