@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.11.0](https://github.com/darellchua2/opencode-config-template/compare/v9.10.0...v9.11.0) (2026-09-19)
+
+### Features
+
+* **api:** Redocly lint ruleset + pre-commit hook template ([#320](https://github.com/darellchua2/opencode-config-template/issues/320)) ([ea6b482](https://github.com/darellchua2/opencode-config-template/commit/ea6b482833078188617ad05dcc20bef6fb7f4f88))
+
 ## [9.10.0](https://github.com/darellchua2/opencode-config-template/compare/v9.9.0...v9.10.0) (2026-09-19)
 
 ### Features
