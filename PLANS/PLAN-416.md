@@ -10,12 +10,13 @@
 - [ ] `codegraph` CLI absent or init fails → soft-skip with a one-line note, pipeline continues on grep fallback (mirrors `opencode-repo-setup-skill` soft-skip policy)
 - [ ] Main repo without `.codegraph/` → no init attempt, no note noise
 - [ ] Frontmatter untouched → no `build-registry.mjs` rerun needed, no count syncs (no skill/agent/MCP change per the AGENTS.md sync-rules table)
+- [ ] `.codegraph/` not ignored on the ticket branch → skip init entirely with the one-line note (guard via `git check-ignore`; never write ignore entries) ← from Step 7 review, resolved via Mode R relay
 
 ## Dependency & Consumer Map
 
 _Before writing steps, list each touched file/module and who consumes it. Use `codegraph_callers` (code) or `tofu graph` + grep (IaC)._
 
-Evidence: `rg -l "worktree-pipeline"` over the worktree — 17 files reference the skill; all key on its **name/description/trigger phrases** (unchanged by a body edit) or restate its step contract (Step 10 interplay with pr-workflow-subagent — unchanged by a new init sub-step). Verified: `.codegraph/` is committed to `.gitignore` (line 29); `package.json` has no `scripts`; CI = `.github/workflows/release.yml` running bats tests on PRs to main (includes `test_count_drift.bats`, `test_mcp_count_consistency.bats`, `skill_profiles.bats`).
+Evidence: `rg -l "worktree-pipeline"` over the worktree — 25 files reference the skill (initial count 17; delta: 5 PLANS, CHANGELOG, LEARNINGS, `registry.json`, `opencode_app/opencode.json`); all key on its **name/description/trigger phrases** (unchanged by a body edit) or restate its step contract (Step 10 interplay with pr-workflow-subagent — unchanged by a new init sub-step). Classification holds for every hit. Verified: `.codegraph/` is committed to `.gitignore` (line 29) in this repo; `package.json` has no `scripts`; CI = `.github/workflows/release.yml` running bats tests on PRs to main (includes `test_count_drift.bats`, `test_mcp_count_consistency.bats`, `skill_profiles.bats`).
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
@@ -29,10 +30,10 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 1: Step 4 conditional init
 
-- [ ] **1.1** Add the conditional CodeGraph init block to Step 4 in `skills/worktree-pipeline-skill/SKILL.md`, immediately after the `git worktree add` sentence: iff `<main-repo>/.codegraph` exists, run `npx @colbymchenry/codegraph init -i` **inside the new worktree** (before Step 5); CLI absent or init failure → one-line soft-skip note and continue (grep fallback per §6c); no `.codegraph/` in the main checkout → skip silently; explicitly forbid symlinking the main checkout's `.codegraph/` into the worktree (index reflects the main checkout's branch/paths; sharing undocumented).
-    — **Why:** Worktrees are created outside the main repo tree, where codegraph's nearest-`.codegraph/`-above resolution cannot see the main checkout's index, so §6c's preferred `codegraph_callers` path is dead on arrival without per-worktree init; the ticket's primary acceptance criteria (conditional init, soft-skip, silent skip, no symlink) all land in this one edit point.
-    — **Done when:** SKILL.md Step 4 contains the conditional init, the soft-skip note rule, the silent-skip rule, and the no-symlink caution, verified by grep in Phase 3.
-    — **Consumers affected:** Future pipeline runs in codegraph-enabled repos gain a 5–60s init sub-step (soft-skip on failure); all file-level consumers keyed on name/description are untouched.
+- [ ] **1.1** Add the conditional CodeGraph init block to Step 4 in `skills/worktree-pipeline-skill/SKILL.md`, immediately after the `git worktree add` sentence: iff `<main-repo>/.codegraph` exists, first run `git -C <worktree> check-ignore -q .codegraph/` — exit 0 (ignored on the ticket branch) → run `npx @colbymchenry/codegraph init -i` **inside the new worktree** (before Step 5); exit 1 → skip init entirely with the one-line note (".codegraph/ not ignored in target repo — skipping init to keep commits clean") and continue on the rg/grep fallback (stated outright — §6c names grep only as the IaC path); CLI absent or init failure → one-line soft-skip note and continue on rg/grep; no `.codegraph/` in the main checkout → skip silently; never write ignore entries (tracked `.gitignore` edits stage into per-phase commits; per-worktree `info/exclude` is not honored by linked worktrees — verified on git 2.43.0); explicitly forbid symlinking the main checkout's `.codegraph/` into the worktree (index reflects the main checkout's branch/paths; sharing undocumented).
+    — **Why:** Worktrees are created outside the main repo tree, where codegraph's nearest-`.codegraph/`-above resolution cannot see the main checkout's index, so §6c's preferred `codegraph_callers` path is dead on arrival without per-worktree init; the ticket's acceptance criteria (conditional init, soft-skip, silent skip, no symlink) plus the Step 7 review's ignore-hygiene gap (Mode R verdict: guard by conditional skip, not ignore-file writes) all land in this one edit point.
+    — **Done when:** SKILL.md Step 4 contains the conditional init, the check-ignore guard, the rg/grep fallback stated outright, the soft-skip note rule, the silent-skip rule, the never-write-ignores rule, and the no-symlink caution, verified by grep in Phase 3.
+    — **Consumers affected:** Future pipeline runs in codegraph-enabled repos gain a 5–60s init sub-step (soft-skip on failure or unignored index); all file-level consumers keyed on name/description are untouched.
 
 ### Phase 2: Guarantees line
 
@@ -47,9 +48,9 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Why:** Acceptance criterion 4 requires frontmatter to be untouched (count syncs and registry rebuild hinge on it); asserting it in the gate prevents silent drift.
     — **Done when:** Diff scope assertion and all grep assertions exit 0.
     — **Consumers affected:** `installer/registry.json`, `deploy/skill-profiles.json`, `README.md` — proven unchanged.
-- [ ] **3.2** Run the CI-equivalent checks: `node installer/build-registry.mjs` must produce zero diff in `registry.json`; run the bats suite (`tests/`, vendored `tests/lib/bats-core` if present, system bats otherwise) — at minimum `test_count_drift.bats`, `test_mcp_count_consistency.bats`, `skill_profiles.bats`; run the full suite if the runner is available.
-    — **Why:** These are the exact PR-gate checks in `.github/workflows/release.yml`; the change must be proven green locally before the Step 10 CI gate.
-    — **Done when:** build-registry produces no `installer/registry.json` diff and the selected bats tests exit 0.
+- [ ] **3.2** Run the CI-equivalent checks: `node installer/build-registry.mjs --check` must exit 0 (plain runs rewrite `registry.json` with a fresh `generatedAt` timestamp — `--check` is the drift guard, per the `docs-registry-is-build-site-artifact` learning); run the bats suite (`tests/`, vendored `tests/lib/bats-core` if present, system bats otherwise) — at minimum `test_count_drift.bats`, `test_mcp_count_consistency.bats`, `skill_profiles.bats`; run the full suite if the runner is available.
+    — **Why:** These are the exact PR-gate checks in `.github/workflows/release.yml`; the change must be proven green locally before the Step 10 CI gate. The `--check` flag matters: a plain registry run always churns `generatedAt`, making a literal "zero diff" gate impossible and risking timestamp churn in the PR.
+    — **Done when:** `build-registry.mjs --check` exits 0 and the selected bats tests exit 0.
     — **Consumers affected:** CI (release.yml) — confidence that the PR gate passes on first run.
 
 ## Technical Notes
@@ -68,5 +69,6 @@ None — single-file documentation-of-behavior change; no blocked-by tickets.
 | Risk | Mitigation |
 |------|------------|
 | npx cold-fetch latency or registry outage makes init slow/flaky | Soft-skip with a one-line note (AC 2) — pipeline never blocks on the index |
+| Target repo does not ignore `.codegraph/` (untracked index rides into per-phase commits) | `check-ignore` guard skips init with a note — index loss limited to unignored repos, made visible by the note; never write ignore entries (Step 7 review + Mode R relay) |
 | Count/consistency tests drift | Frontmatter untouched (3.1) + local bats run (3.2) before push |
 | Doc drift with `opencode-repo-setup-skill` phrasing | Mirror its exact soft-skip policy wording and command reference |
