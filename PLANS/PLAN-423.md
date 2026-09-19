@@ -7,13 +7,13 @@
 ## Acceptance Criteria
 
 - [ ] Multi-stage `opencode_app/Dockerfile` builds cleanly: `node` stage, `python-deps` stage (venv + markitdown-local-mcp), runtime stage on `python:3.12-slim-bookworm`
-- [ ] `@opencode/cli` pinned to `2.0.8` in all three surfaces, in sync: `.env`, `docker-compose.yml` arg default, Dockerfile `ARG OPENCODE_VERSION`
+- [ ] `@opencode/cli` pinned to `2.0.8` in all surfaces, in sync: `.env.example` template, `docker-compose.yml` arg default, Dockerfile `ARG OPENCODE_VERSION` (host `.env` set in 2.3)
 - [ ] `typescript` + `ts-node` global npm installs removed
 - [ ] `opencode_app/.opencode/` (4 tracked symlinks) deleted; bridge block removed from `.dockerignore`
 - [ ] `restart-opencode-pm2.sh` replaced with `restart-opencode-docker.sh` (compose-based, with health checks)
 - [ ] Host `.env` sets `OPENCODE_PORT=4096` so the `opencode-ha.civiltekk.com` proxy works unchanged
 - [ ] Container healthy: `/api/command` registers the goal command; TS plugins load (vibeguard, auto-continue, learnings-autoinject)
-- [ ] No "sanctioned: symlink bridge" paragraphs remain in root `AGENTS.md`, `opencode_app/AGENTS.md`, `opencode_app/README.md`
+- [ ] No "sanctioned: symlink bridge" paragraphs or live bridge path references remain in `AGENTS.md`, `README.md`, `opencode_app/`, `skills/`, `agents/`
 - [ ] Local endpoint (4096) and public endpoint return 200
 
 ## Dependency & Consumer Map
@@ -22,27 +22,31 @@
 |---------------------|---------------------------|---------------------------------|-------------|
 | `opencode_app/Dockerfile` | — | `docker-compose.yml` (build args), `opencode_app/README.md` (build docs), operator host (runtime image) | med |
 | `docker-compose.yml` (arg default) | Dockerfile `ARG` name | operator deploys, restart script | low |
-| `opencode_app/.opencode/*` (4 symlinks, deleted) | 1.3 image-verified green | `restart-opencode-pm2.sh` (deleted), bridge paragraphs in root `AGENTS.md`, `opencode_app/AGENTS.md`, `opencode_app/README.md` | med |
+| `.env.example` (committed template) | — | every fresh clone (`cp .env.example .env` → compose interpolation shadows both repo defaults) | med |
+| `opencode_app/.opencode/*` (4 symlinks, deleted) | 1.3 image-verified green | `restart-opencode-pm2.sh` (deleted), bridge paragraphs in root `AGENTS.md`, `opencode_app/AGENTS.md`, `opencode_app/README.md`, live path refs in `skills/opencode-skills-maintainer-skill`, `skills/opencode-skill-creation-skill`, `agents/opencode-tooling-subagent.md` | med |
 | `.dockerignore` | 2.1 bridge deletion (block becomes dead) | docker build context | low |
 | `restart-opencode-pm2.sh` → `restart-opencode-docker.sh` | `docker-compose.yml` | operator host (public endpoint lifecycle) | med |
 | host `.env` (uncommitted, host-side) | 1.2 pin surfaces | compose build args + host port mapping at deploy time | low |
 | `AGENTS.md` (root) | 2.1 (bridge gone) | every future session | low |
 | `opencode_app/AGENTS.md` | 2.1 (bridge gone) | opencode_app-scoped sessions | low |
 | `opencode_app/README.md` | 1.1 final Dockerfile behavior | operators/users | low |
+| `skills/opencode-skills-maintainer-skill/SKILL.md` | 2.1 (live `cd` path dies) | sessions running skill audits | low |
+| `skills/opencode-skill-creation-skill/SKILL.md` | 2.1 (bridge mention dies) | sessions creating skills | low |
+| `agents/opencode-tooling-subagent.md` | 2.1 (bridge mention dies) | tooling/config sessions | low |
 
 ## Implementation Phases
 
 ### Phase 1: Multi-stage Dockerfile + pin bump
 
-- [ ] **1.1** Rewrite `opencode_app/Dockerfile` as a 3-stage build: `node` stage (toolchain source only), `python-deps` stage (venv at `/opt/python-env` with all pip floors + markitdown-local-mcp), runtime stage on `python:3.12-slim-bookworm` (apt runtime tools only; `COPY --from=node /usr/local`; `COPY --from=python-deps /opt/python-env`; `npm i -g @opencode/cli@$OPENCODE_VERSION` without `typescript`/`ts-node`; content COPYs, resolve-models, merge-packs, baseURL patch, user/chown, entrypoint, HEALTHCHECK unchanged)
+- [ ] **1.1** Rewrite `opencode_app/Dockerfile` as a 3-stage build: `node` stage (toolchain source only), `python-deps` stage (venv at `/opt/python-env` with all pip floors + markitdown-local-mcp — the stage must `COPY opencode_app/mcp-servers/markitdown-local-mcp` in-stage BEFORE the pip install, because `/app/mcp-servers/...` does not exist until the runtime content COPYs), runtime stage on `python:3.12-slim-bookworm` (apt runtime tools only; `COPY --from=node /usr/local`; `COPY --from=python-deps /opt/python-env`; `npm i -g @opencode/cli@$OPENCODE_VERSION` without `typescript`/`ts-node`; content COPYs, resolve-models, merge-packs, baseURL patch, user/chown, entrypoint, HEALTHCHECK unchanged)
     — **Why:** the core deliverable of #423 — every later step (cutover, docs, verification) assumes the new image shape exists and is verifiable before any machinery is removed
     — **Done when:** the file declares exactly three `FROM` stages; `grep -c "typescript\|ts-node"` returns 0; `grep -n "markitdown"` appears only in the `python-deps` stage; `ARG OPENCODE_VERSION` precedes the npm install RUN
     — **Consumers affected:** `docker-compose.yml` (same build args — unchanged interface), `opencode_app/README.md` (docs rewritten in 3.3)
 
-- [ ] **1.2** Bump the OpenCode pin 2.0.3 → 2.0.8 in the Dockerfile `ARG OPENCODE_VERSION` default and the `docker-compose.yml` arg default `${OPENCODE_VERSION:-2.0.8}`
-    — **Why:** the image must ship current v2; the two repo-side surfaces must match so neither silently wins over the other (host `.env` handled separately in 2.3)
-    — **Done when:** `grep -rn "2\.0\.3" opencode_app/Dockerfile docker-compose.yml` returns nothing (historical comments excluded)
-    — **Consumers affected:** operator host (image version), restart script (builds from compose)
+- [ ] **1.2** Bump the OpenCode pin to 2.0.8 in all committed surfaces: Dockerfile `ARG OPENCODE_VERSION=2.0.8`, `docker-compose.yml` arg default `${OPENCODE_VERSION:-2.0.8}`, and `.env.example` (`:14` → `OPENCODE_VERSION=2.0.8`, `:12` annotation → "(default: 2.0.8)", `:13` URL → `https://www.npmjs.com/package/@opencode/cli`)
+    — **Why:** the image must ship current v2, and the committed template seeds every operator `.env` — its stale `1.18.11` does not exist in `@opencode/cli` (npm 404), so a fresh clone's build hard-fails; all surfaces must match so none silently wins
+    — **Done when:** `grep -rn "2\.0\.3" opencode_app/Dockerfile docker-compose.yml` returns nothing (historical comments excluded); `grep -nE '1\.18\.11|opencode-ai' .env.example` returns nothing
+    — **Consumers affected:** operator host (image version), restart script (builds from compose), fresh clones (template-seeded `.env`)
 
 - [ ] **1.3** Build the image and smoke it: `docker compose build`, then verify `opencode --version` reports 2.0.8, `/opt/python-env/bin/python --version` runs, `import pandas` succeeds inside the venv, and `/app/.opencode/{agents,skills,plugins}` are non-empty
     — **Why:** hard proof the base-swap (node/python copy-across) and venv relocation work BEFORE any existing machinery is deleted — failure here halts the pipeline with the pm2 fallback still intact
@@ -54,7 +58,7 @@
 - [ ] **2.1** `git rm` the four tracked symlinks under `opencode_app/.opencode/` and delete the bridge exclusion block (comments + 4 path lines) from `.dockerignore`
     — **Why:** the bridge existed solely to feed the pm2 runtime, which 2.2 removes; the `.dockerignore` lines are dead the moment the paths vanish — one atomic removal of the bridge mechanism
     — **Done when:** `git ls-files opencode_app/.opencode/` returns empty; `grep -n "opencode_app/.opencode" .dockerignore` returns nothing
-    — **Consumers affected:** `restart-opencode-pm2.sh` (deleted next step), bridge paragraphs in docs (Phase 3)
+    — **Consumers affected:** `restart-opencode-pm2.sh` (deleted next step), bridge paragraphs and live path refs in docs/skills/agents (Phase 3)
 
 - [ ] **2.2** Replace `restart-opencode-pm2.sh` with `restart-opencode-docker.sh`: `git checkout main && git pull`, `docker compose up -d --build`, then poll `docker inspect --format '{{.State.Health.Status}}' opencode` until `healthy` (bounded retry honoring the 60s start_period), then the unchanged public-endpoint curl check (200/101)
     — **Why:** the operator entrypoint must manage the container lifecycle instead of pm2; using the image's own HEALTHCHECK (which authenticates with the entrypoint-materialized password) avoids the old script's bare-curl 200 check, which v2 auth makes wrong
@@ -62,11 +66,11 @@
     — **Consumers affected:** operator host (public endpoint lifecycle)
 
 - [ ] **2.3** Host-side (uncommitted): set `OPENCODE_VERSION=2.0.8` and `OPENCODE_PORT=4096` in `~/VSCODE/opencode-config-template/.env`
-    — **Why:** `.env` overrides the compose default at build time, so without this the 1.2 bumps are inert; port 4096 keeps the `opencode-ha.civiltekk.com` reverse proxy working unchanged — `.env` is gitignored, so this is a host action recorded here for completeness
+    — **Why:** `.env` overrides the compose default at build time, so without this the 1.2 bumps are inert on this host; port 4096 keeps the `opencode-ha.civiltekk.com` reverse proxy working unchanged — `.env` is gitignored, so this is a host action recorded here for completeness
     — **Done when:** `grep -E '^(OPENCODE_VERSION|OPENCODE_PORT)=' ~/VSCODE/opencode-config-template/.env` shows `2.0.8` and `4096`
     — **Consumers affected:** compose build args and host port mapping at next deploy
 
-### Phase 3: Docs sync
+### Phase 3: Docs + consumer sweep
 
 - [ ] **3.1** Root `AGENTS.md` §Source of Truth: drop the "(A symlink bridge under `opencode_app/.opencode/` serves the local pm2 runtime only — sanctioned: symlink bridge.)" parenthetical
     — **Why:** the sanctioned exception is gone; leaving it teaches future sessions a dead mechanism
@@ -78,20 +82,25 @@
     — **Done when:** `grep -n "symlink" opencode_app/AGENTS.md` returns nothing; the agents/skills loading sentences describe the build-time COPY
     — **Consumers affected:** opencode_app-scoped sessions
 
-- [ ] **3.3** `opencode_app/README.md`: remove the bridge tree entry, the symlink/Windows-materialization paragraph, and the `.dockerignore` "symlink bridge" mention; document the 3-stage build layout and the `OPENCODE_VERSION` pin surfaces (repo defaults + host `.env`)
-    — **Why:** the operator-facing doc must describe the image people now build; the pin-surface note prevents the exact "bumped only the Dockerfile" trap this ticket fixes
-    — **Done when:** `grep -n "symlink" opencode_app/README.md` returns nothing; the README names the three stages and lists all three pin surfaces
+- [ ] **3.3** `opencode_app/README.md`: remove the bridge tree entry, the symlink/Windows-materialization paragraph, and the `.dockerignore` "symlink bridge" mention; remove the `restart-opencode-pm2.sh` local-serving mention (:32 — dead after 2.2); fix or drop the LibreOffice claim (:180/:184 — no libreoffice exists in the Dockerfile); document the 3-stage build layout and the `OPENCODE_VERSION` pin surfaces, naming `.env.example` as the source of the host `.env` pin
+    — **Why:** the operator-facing doc must describe the image people now build; the pin-surface note prevents the exact "bumped only one surface" trap this ticket fixes; the LibreOffice and pm2 mentions are dead references of the same class
+    — **Done when:** `grep -n "symlink" opencode_app/README.md` returns nothing; `grep -n "pm2" opencode_app/README.md` returns nothing; the README names the three stages and lists all pin surfaces including `.env.example`
     — **Consumers affected:** operators/users
 
-- [ ] **3.4** Run the reference gate: `grep -rnE 'opencode_app[/\\]\.opencode' README.md AGENTS.md opencode_app/ .dockerignore docker-compose.yml restart-opencode-docker.sh` returns nothing outside `PLANS/`, `LEARNINGS/`, `docs/` (historical)
-    — **Why:** house grep gate (PLAN-381 lineage) proving no live references to the deleted bridge paths remain
-    — **Done when:** the grep returns empty
+- [ ] **3.4** Strip live bridge references from skills and agents (body-only edits, no frontmatter changes — frontmatter edits would force a `build-registry.mjs` rebuild): `skills/opencode-skills-maintainer-skill/SKILL.md` (`:17` → root `skills/`; `:25` → `cd skills`; `:45` → `wc -l skills/*/SKILL.md | sort -rn | head -20`), `skills/opencode-skill-creation-skill/SKILL.md:45` (delete the `opencode_app/.opencode/` symlink-bridge clause, keep "never deployed copies"), `agents/opencode-tooling-subagent.md:104` (delete the sanctioned-symlink-bridge clause, keep "deployed to user space")
+    — **Why:** these are present-tense instructions (one is a live `cd` command) that hard-fail the moment 2.1 lands; body-only edits keep registry/count invariants untouched
+    — **Done when:** `grep -rn "opencode_app/.opencode" skills/ agents/` returns nothing; `grep -rn "symlink bridge" skills/ agents/` returns nothing
+    — **Consumers affected:** sessions running skill audits, skill creation, and tooling/config work
+
+- [ ] **3.5** Run the reference gate, two patterns: (a) path — `grep -rnE 'opencode_app[/\\]\.opencode' README.md AGENTS.md opencode_app/ skills/ agents/ .dockerignore docker-compose.yml .env.example restart-opencode-docker.sh`; (b) prose — `grep -rn "symlink bridge" AGENTS.md README.md opencode_app/ skills/ agents/` (do NOT gate on bare `sanctioned` — false positive at `skills/markitdown-mcp-skill/SKILL.md:64`, the markitdown enablement flow). Both return nothing outside `PLANS/`, `LEARNINGS/`, `docs/`, `research/` (historical)
+    — **Why:** house grep gate (PLAN-381 lineage) proving no live references to the deleted bridge paths remain — the prose pattern exists because `agents/opencode-tooling-subagent.md` mentions the bridge without a literal path, and a path-only gate would pass green over it
+    — **Done when:** both greps return empty
     — **Consumers affected:** none (verification only)
 
 ### Phase 4: End-to-end cutover + verification
 
-- [ ] **4.1** `docker compose up -d` on the host; wait for the container to report `healthy` (goal command registered via the compose healthcheck's `/api/command` grep)
-    — **Why:** the live cutover from the old runtime; the healthcheck is the merge-grade proof the goal plugin npm-fetch and registration completed
+- [ ] **4.1** From the worktree: copy the host `.env` in first (`cp ~/VSCODE/opencode-config-template/.env .env` — compose declares `env_file: .env` and hard-errors without it; the copy carries `OPENCODE_PORT=4096` from 2.3), then `docker compose up -d` and wait for the container to report `healthy` (goal command registered via the compose healthcheck's `/api/command` grep)
+    — **Why:** the live cutover from the old runtime; the healthcheck is the merge-grade proof the goal plugin npm-fetch and registration completed — the `.env` copy is mandatory because worktrees don't carry gitignored files (compose project name derives from the worktree dir, but `container_name: opencode` is pinned and no other container is running)
     — **Done when:** `docker inspect --format '{{.State.Health.Status}}' opencode` prints `healthy`
     — **Consumers affected:** operator host (the public endpoint now serves from Docker)
 
@@ -100,15 +109,16 @@
     — **Done when:** `docker logs opencode 2>&1 | grep -ci "vibeguard\|auto-continue\|learnings-autoinject"` > 0
     — **Consumers affected:** none (verification only)
 
-- [ ] **4.3** Endpoint checks: local authenticated curl on `http://localhost:4096` (password from `/home/opencode/.local/share/opencode/server-password` in the container) and the public `https://opencode-ha.civiltekk.com` check return 200 (public: 200 or 101)
-    — **Why:** final acceptance — the reverse proxy path users actually hit must work unchanged after cutover
-    — **Done when:** both status checks pass
+- [ ] **4.3** Endpoint checks, then teardown: local authenticated curl on `http://localhost:4096` (password from `/home/opencode/.local/share/opencode/server-password` in the container) and the public `https://opencode-ha.civiltekk.com` check return 200 (public: 200 or 101); then `docker compose down` so the long-lived container is owned by the post-merge restart script, not the worktree
+    — **Why:** final acceptance — the reverse proxy path users actually hit must work unchanged after cutover; teardown prevents a stale verification container surviving worktree removal and squatting on port 4096
+    — **Done when:** both status checks pass; `docker ps --filter name=opencode` is empty after teardown
     — **Consumers affected:** end users of the public endpoint
 
 ## Technical Notes
 
 - **Venv relocation:** the venv is built at `/opt/python-env` in `python-deps` and copied to the identical path; both Python stages share `python:3.12-slim-bookworm`, so interpreter path and glibc match. Node arrives via `COPY --from=node /usr/local` (node image prefix is `/usr/local`; root-at-build global installs land there).
-- **Pin surfaces:** host `.env` (`OPENCODE_VERSION`) overrides the compose default at build time — bumping only the Dockerfile is inert. All three surfaces (`.env`, compose default, Dockerfile ARG) move together (1.2 repo-side, 2.3 host-side).
+- **Pin surfaces:** the committed `.env.example` seeds every operator `.env`; a stale template pin shadows both repo defaults via compose interpolation — and `1.18.11` does not exist in `@opencode/cli`, so the failure is a hard build error, not a silent downgrade. Host `.env` (`OPENCODE_VERSION`) overrides the compose default at build time. All surfaces move together (1.2 committed, 2.3 host-side).
+- **Port is not a pin:** `OPENCODE_PORT=4097` stays in the template — it is an operator-tunable matching the compose fallback `"${OPENCODE_PORT:-4097}:4096"`; the host-specific 4096 (civiltekk proxy convention) stays host-side in 2.3.
 - **markitdown-local-mcp:** `requires-python >= 3.10` — 3.12 base compatible; its install moves into `python-deps`, deleting the late runtime `pip install` RUN.
 - **No CI Docker coupling:** no workflow under `.github/workflows/` references docker — the image is operator-built only; no CI blast radius.
 - **pm2 model-resolution gap (why Docker wins):** the pm2 flow serves agents from unresolved source files (no `model:` fields — resolution runs only in `setup.sh` and the Docker build), so the container is strictly more correct.
@@ -128,13 +138,18 @@ None. No `blocked-by:` tickets.
 | npm global install lands in the wrong prefix after `COPY --from=node` | node image prefix is `/usr/local`; installs run as root at build; 1.3 smoke checks `opencode --version` |
 | Long build / flaky network | BuildKit layer caching; independent stage caching; retry — no partial state risk because 1.3 gates before any deletion |
 | Bridge deleted before the new image proves out | Ordering: 1.3 (image green) strictly precedes 2.1 (bridge removal); pm2 fallback survives any Phase-1 halt |
+| pm2 script deleted (2.2) before live cutover (4.1) | Acceptable — the old script's bare-curl check is already wrong under v2 auth, so it was never a real fallback; `git revert` remains the recovery path |
 | Cutover moment drops the public endpoint | pm2 not running on this host (verified: `pm2 list` empty); port 4096 free; `OPENCODE_PORT=4096` keeps proxy config untouched; 4.3 verifies both endpoints |
 | `.env` not committed → PR reviewers can't see it | `.env` is gitignored by design; the host-side change is documented in 2.3 and must be restated in the PR body deployment notes |
 | Another host runs the old pm2 flow | That host runs `restart-opencode-docker.sh` after merge; noted in the PR body |
 
 ## Plan Review Trace
 
-_(filled at Step 7)_
+- **Reviewers selected:** architecture-review-subagent (cross-module consumer map). uiux-reviewer-subagent skipped — no frontend signal.
+- **Architecture review (round 1):** Status partial — 2 Major, 1 Warning, 3 Notes. Major 1: `.env.example` pins nonexistent `1.18.11` (hard-fails fresh builds). Major 2: 4 live bridge consumers outside the map (2 skills, 1 agent, `.env.example`) and gate too narrow. Warning: Phase 4 execution location unstated (`env_file: .env` hard-errors in a worktree). Notes: markitdown needs an in-stage COPY; README LibreOffice claim is drift; risk-table asymmetry.
+- **Requirements Gaps relay:** requirements-specialist-subagent Mode R — both gaps CONFIRMED with amendments: GAP 1 (include `.env.example` as a pin surface; npm 404 proves hard failure); GAP 2 (strip refs in skills/agents, but the gate needs a prose `"symlink bridge"` pattern — the tooling-subagent mention has no literal path; never gate on bare `sanctioned`; extend 3.3 to the README's pm2 mention).
+- **Applied to PLAN:** AC reworded (pin surfaces + bridge-paragraph scope); 1.1 markitdown in-stage COPY constraint; 1.2 extended to `.env.example` (3 line edits + done-when grep); 3.3 extended (pm2 mention, LibreOffice drift, `.env.example` in pin list); new 3.4 (skills/agents body-only edits); gate renumbered to 3.5 with two patterns; 4.1 `.env` copy prerequisite; 4.3 teardown; risk-table row added; consumer map extended with `.env.example` + 3 consumer files.
+- **Patterns applied/violated (from reviewer):** `literal-only-path-sweep-misses-variable-indirection` (violated→fixed via 3.5 prose pattern); `phase-commit-ci-gate-ordering` (applied — body-only skill edits, no registry rebuild); `docker-v1-binary-ignores-v2-plugins-key` (applied — 4.2 log-grep regression check); `path-move-ci-gate-anchoring` (applied — vibeguard anchors untouched).
 
 ## Execution Trace
 
