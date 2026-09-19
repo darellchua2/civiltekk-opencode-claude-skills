@@ -7,11 +7,11 @@
 ## Acceptance Criteria
 
 - [x] Multi-stage `opencode_app/Dockerfile` builds cleanly: `node` stage, `python-deps` stage (venv + markitdown-local-mcp), runtime stage on `python:3.12-slim-bookworm`
-- [ ] `@opencode/cli` pinned to `2.0.8` in all surfaces, in sync: `.env.example` template, `docker-compose.yml` arg default, Dockerfile `ARG OPENCODE_VERSION` (host `.env` set in 2.3)
+- [x] `@opencode/cli` pinned to `2.0.8` in all surfaces, in sync: `.env.example` template, `docker-compose.yml` arg default, Dockerfile `ARG OPENCODE_VERSION` (host `.env` set in 2.3)
 - [x] `typescript` + `ts-node` global npm installs removed
-- [ ] `opencode_app/.opencode/` (4 tracked symlinks) deleted; bridge block removed from `.dockerignore`
-- [ ] `restart-opencode-pm2.sh` replaced with `restart-opencode-docker.sh` (compose-based, with health checks)
-- [ ] Host `.env` sets `OPENCODE_PORT=4096` so the `opencode-ha.civiltekk.com` proxy works unchanged
+- [x] `opencode_app/.opencode/` (4 tracked symlinks) deleted; bridge block removed from `.dockerignore`
+- [x] `restart-opencode-pm2.sh` replaced with `restart-opencode-docker.sh` (compose-based, with health checks)
+- [x] Host `.env` sets `OPENCODE_PORT=4096` so the `opencode-ha.civiltekk.com` proxy works unchanged
 - [ ] Container healthy: `/api/command` registers the goal command; TS plugins load (vibeguard, auto-continue, learnings-autoinject)
 - [ ] No "sanctioned: symlink bridge" paragraphs or live bridge path references remain in `AGENTS.md`, `README.md`, `opencode_app/`, `skills/`, `agents/`
 - [ ] Local endpoint (4096) and public endpoint return 200
@@ -58,20 +58,23 @@
 
 ### Phase 2: Runtime consolidation (bridge + pm2 removal)
 
-- [ ] **2.1** `git rm` the four tracked symlinks under `opencode_app/.opencode/` and delete the bridge exclusion block (comments + 4 path lines) from `.dockerignore`
+- [x] **2.1** `git rm` the four tracked symlinks under `opencode_app/.opencode/` and delete the bridge exclusion block (comments + 4 path lines) from `.dockerignore`
     — **Why:** the bridge existed solely to feed the pm2 runtime, which 2.2 removes; the `.dockerignore` lines are dead the moment the paths vanish — one atomic removal of the bridge mechanism
     — **Done when:** `git ls-files opencode_app/.opencode/` returns empty; `grep -n "opencode_app/.opencode" .dockerignore` returns nothing
     — **Consumers affected:** `restart-opencode-pm2.sh` (deleted next step), bridge paragraphs and live path refs in docs/skills/agents (Phase 3)
+    — **Done:** 4 symlinks removed (git ls-files empty), .dockerignore bridge block deleted; files: opencode_app/.opencode/*, .dockerignore; fixes: none
 
-- [ ] **2.2** Replace `restart-opencode-pm2.sh` with `restart-opencode-docker.sh`: `git checkout main && git pull`, `docker compose up -d --build`, then poll `docker inspect --format '{{.State.Health.Status}}' opencode` until `healthy` (bounded retry honoring the 60s start_period), then the unchanged public-endpoint curl check (200/101)
+- [x] **2.2** Replace `restart-opencode-pm2.sh` with `restart-opencode-docker.sh`: `git checkout main && git pull`, `docker compose up -d --build`, then poll `docker inspect --format '{{.State.Health.Status}}' opencode` until `healthy` (bounded retry honoring the 60s start_period), then the unchanged public-endpoint curl check (200/101)
     — **Why:** the operator entrypoint must manage the container lifecycle instead of pm2; using the image's own HEALTHCHECK (which authenticates with the entrypoint-materialized password) avoids the old script's bare-curl 200 check, which v2 auth makes wrong
     — **Done when:** `restart-opencode-pm2.sh` is deleted; `restart-opencode-docker.sh` exists, is executable, and passes `bash -n`; it contains no pm2 references
     — **Consumers affected:** operator host (public endpoint lifecycle)
+    — **Done:** pm2 script deleted; restart-opencode-docker.sh executable, bash -n clean, 0 pm2 refs, polls docker Health.Status (150s bound) then public check; files: restart-opencode-pm2.sh (deleted), restart-opencode-docker.sh; fixes: none
 
-- [ ] **2.3** Host-side (uncommitted): set `OPENCODE_VERSION=2.0.8` and `OPENCODE_PORT=4096` in `~/VSCODE/opencode-config-template/.env`
+- [x] **2.3** Host-side (uncommitted): set `OPENCODE_VERSION=2.0.8` and `OPENCODE_PORT=4096` in `~/VSCODE/opencode-config-template/.env`
     — **Why:** `.env` overrides the compose default at build time, so without this the 1.2 bumps are inert on this host; port 4096 keeps the `opencode-ha.civiltekk.com` reverse proxy working unchanged — `.env` is gitignored, so this is a host action recorded here for completeness
     — **Done when:** `grep -E '^(OPENCODE_VERSION|OPENCODE_PORT)=' ~/VSCODE/opencode-config-template/.env` shows `2.0.8` and `4096`
     — **Consumers affected:** compose build args and host port mapping at next deploy
+    — **Done:** host .env rewritten in place (two lines only); grep confirms 2.0.8 + 4096; files: ~/VSCODE/opencode-config-template/.env (uncommitted); fixes: none
 
 ### Phase 3: Docs + consumer sweep
 
@@ -157,3 +160,4 @@ None. No `blocked-by:` tickets.
 ## Execution Trace
 
 - Phase 1 (1.1–1.3): GATE a14eee2 lint=n.a typecheck=n.a build=t unit=t e2e=n.a — compose build green; smokes: opencode v2.0.8, pandas 3.0.6 in venv, 34/147/8 content entries; bats 334/334 ok
+- Phase 2 (2.1–2.3): GATE PENDING lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bridge + pm2 script removed, bash -n clean, host .env at 2.0.8/4096; bats 334/334 ok
