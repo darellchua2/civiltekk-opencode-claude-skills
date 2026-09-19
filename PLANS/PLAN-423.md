@@ -12,7 +12,7 @@
 - [x] `opencode_app/.opencode/` (4 tracked symlinks) deleted; bridge block removed from `.dockerignore`
 - [x] `restart-opencode-pm2.sh` replaced with `restart-opencode-docker.sh` (compose-based, with health checks)
 - [x] Host `.env` sets `OPENCODE_PORT=4096` so the `opencode-ha.civiltekk.com` proxy works unchanged
-- [ ] Container healthy: `/api/command` registers the goal command; TS plugins load (vibeguard, auto-continue, learnings-autoinject)
+- [x] Container healthy: `/api/command` registers the goal command; TS plugins load (vibeguard, auto-continue, learnings-autoinject)
 - [x] No "sanctioned: symlink bridge" paragraphs or live bridge path references remain in `AGENTS.md`, `README.md`, `opencode_app/`, `skills/`, `agents/`
 - [ ] Local endpoint (4096) and public endpoint return 200
 
