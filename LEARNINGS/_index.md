@@ -18,6 +18,64 @@
 <!-- Entries are appended here automatically when new learnings are saved -->
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### Plugin pickers filtering by filename prefix drop companion files the plugin needs
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plugin-picker-prefix-filter-drops-companions.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: selecting opencode-* items without modeling companions shipped an inert vibeguard (fail-open, no masking) via the picker while the blanket path copied the config (#473 r2)
+- **Date**: 2026-09-21
+
+### First unguarded empty-array `${arr[@]}` crashes stock macOS bash 3.2 under nounset
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/unguarded-empty-array-under-nounset-bash32.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: setup.sh must stay 3.2-clean — every possibly-empty array gets a length-guard or scalar form before expansion, or macOS non-dry runs crash while CI (bash 5) stays green (#473 r2)
+- **Date**: 2026-09-21
+
+### A dry-run leak test asserting only exit 0 has no teeth
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/leak-test-asserts-exit-only.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: the child CLI installs for real AND exits 0 without the forwarding — leak nets assert the untouched surface (no artifacts), never just status (#473 r2)
+- **Date**: 2026-09-21
+
+<!-- Entries are appended here automatically when new learnings are saved -->
+
+### Provenance pins need ≥2 direct choices; equivalence pins need non-empty selections
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/provenance-pin-single-source-false-green.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: a one-choice provenance pin cannot see attribution bugs and an empty-selection equivalence pin cannot see driver drift — enforcement must cover the claim (#473 review)
+- **Date**: 2026-09-21
+
+### Steps that shell out to child CLIs inherit no dry-run behavior
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/new-steps-calling-child-clis-inherit-no-dry-run.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: forward the child's own --dry-run with the boolean-safe array form and add the PLAN-promised leak test — run_cmd does not reach child CLI calls (#473 review BLOCK)
+- **Date**: 2026-09-21
+
+### Attribution loops must test membership in the per-source closure, not the union pool
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/solo-closure-attribution-tested-the-union-pool.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: a union-pool predicate inside an attribution loop is always-true — every locked dep credited to the first solo entry and the transitive fallback went unreachable (#473 review)
+- **Date**: 2026-09-21
+
+<!-- Entries are appended here automatically when new learnings are saved -->
+
 ### Bats tests mutating shipped artifacts: snapshot/restore + private fixture copies
 
 - **Category**: pattern
