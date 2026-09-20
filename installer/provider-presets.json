@@ -23,22 +23,22 @@
   },
   "anthropic": {
     "label": "Anthropic (Claude)",
-    "primary": "anthropic/claude-opus-4-8",
+    "primary": "anthropic/claude-opus-5",
     "tiers": {
-      "reasoning": "anthropic/claude-sonnet-4-6",
-      "fast": "anthropic/claude-haiku-4-6",
-      "docs": "anthropic/claude-haiku-4-6",
-      "vision": "anthropic/claude-sonnet-4-6"
+      "reasoning": "anthropic/claude-sonnet-5",
+      "fast": "anthropic/claude-haiku-4-5",
+      "docs": "anthropic/claude-haiku-4-5",
+      "vision": "anthropic/claude-sonnet-5"
     }
   },
   "openai": {
     "label": "OpenAI (GPT)",
-    "primary": "openai/gpt-5",
+    "primary": "openai/gpt-5.6",
     "tiers": {
-      "reasoning": "openai/gpt-5",
-      "fast": "openai/gpt-5-mini",
-      "docs": "openai/gpt-5-mini",
-      "vision": "openai/gpt-5"
+      "reasoning": "openai/gpt-5.6",
+      "fast": "openai/gpt-5.4-mini",
+      "docs": "openai/gpt-5.4-mini",
+      "vision": "openai/gpt-5.6"
     }
   },
   "openrouter": {

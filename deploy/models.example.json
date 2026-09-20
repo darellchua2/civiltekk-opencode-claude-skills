@@ -1,10 +1,10 @@
 {
   "$comment": "EXAMPLE user override tier map. Copy to ~/.config/opencode/models.json (global) or <project>/.opencode/models.json (project-local) to swap providers. Project-local wins over global. Remove the $comment key when you copy. Only include keys you want to override - missing tiers fall back to models.default.json.",
-  "primary": "anthropic/claude-opus-4-8",
+  "primary": "anthropic/claude-opus-5",
   "tiers": {
-    "reasoning": "anthropic/claude-sonnet-4-6",
-    "fast": "anthropic/claude-haiku-4-6",
-    "docs": "anthropic/claude-haiku-4-6",
-    "vision": "anthropic/claude-sonnet-4-6"
+    "reasoning": "anthropic/claude-sonnet-5",
+    "fast": "anthropic/claude-haiku-4-5",
+    "docs": "anthropic/claude-haiku-4-5",
+    "vision": "anthropic/claude-sonnet-5"
   }
 }
