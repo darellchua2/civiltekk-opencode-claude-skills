@@ -132,30 +132,36 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 5: Verification gates
 
-- [ ] **5.1** Syntax gates: `bash -n deploy/setup.sh`; PowerShell parse of `deploy/setup.ps1` (pwsh if available; if absent on this machine, record INCONCLUSIVE with the bats grep-parity assertions as the compensating signal per verification-loop-skill).
+- [x] **5.1** Syntax gates: `bash -n deploy/setup.sh`; PowerShell parse of `deploy/setup.ps1` (pwsh if available; if absent on this machine, record INCONCLUSIVE with the bats grep-parity assertions as the compensating signal per verification-loop-skill).
     — **Why:** a syntax error in either deploy script bricks setup for every user; this is the cheapest possible catch.
     — **Done when:** `bash -n` exits 0; PS gate passes or INCONCLUSIVE is recorded with compensating evidence.
     — **Consumers affected:** all setup users.
-- [ ] **5.2** JSON validity: `node -e` parse of `opencode_app/opencode.json` and `deploy/packs/pack-markitdown.json`; assert the markitdown entry has the new command, env, and `disabled: true`.
+    — **Done:** bash -n PASS; pwsh absent on this box -> PS parse recorded INCONCLUSIVE, compensated by bats grep-parity assertions on setup.ps1 (all green); fixes: none
+- [x] **5.2** JSON validity: `node -e` parse of `opencode_app/opencode.json` and `deploy/packs/pack-markitdown.json`; assert the markitdown entry has the new command, env, and `disabled: true`.
     — **Why:** JSONC-comment regressions (#learned) and key drift break CI and the runtime; the parse is the mechanical check.
     — **Done when:** both files parse; assertion script exits 0.
     — **Consumers affected:** merge-packs.mjs, opencode runtime, CI.
-- [ ] **5.3** Re-run full bats suite after all edits land (Phases 1–4 complete).
+    — **Done:** opencode.json + pack JSON parse; markitdown command/env/disabled asserted; fixes: none
+- [x] **5.3** Re-run full bats suite after all edits land (Phases 1–4 complete).
     — **Why:** the gate must observe the final state, not an intermediate one.
     — **Done when:** `bats tests/` exits 0 or documented pre-existing failures only.
     — **Consumers affected:** CI gate memo.
-- [ ] **5.4** Dry-run smoke: `./deploy/setup.sh --dry-run --enable-pack markitdown` previews without leaking writes (no real pip/config mutations).
+    — **Done:** full bats suite: 433 tests, rc=0 (final state); fixes: none
+- [x] **5.4** Dry-run smoke: `./deploy/setup.sh --dry-run --enable-pack markitdown` previews without leaking writes (no real pip/config mutations).
     — **Why:** the dry-run contract (#467) must survive the installer rewrite — a leak mutates user machines during a preview.
     — **Done when:** command exits 0; `[DRY-RUN]` markers present; no `markitdown-mcp` installed as a side effect (pip show stays negative if it was negative before).
     — **Consumers affected:** CI dry-run assertions, users previewing deploys.
-- [ ] **5.5** Live smoke on this machine: run the new install path, then the stdio handshake probe (JSON-RPC `initialize` over stdin) against `markitdown-mcp`; confirm `pip check` reports no conflicts for markitdown-mcp or docling-mcp.
+    — **Done:** ./deploy/setup.sh -y -q --enable-pack markitdown --dry-run exit 0, 27 [DRY-RUN] markers, pip state absent->absent (no side effect); fixes: none
+- [x] **5.5** Live smoke on this machine: run the new install path, then the stdio handshake probe (JSON-RPC `initialize` over stdin) against `markitdown-mcp`; confirm `pip check` reports no conflicts for markitdown-mcp or docling-mcp.
     — **Why:** AC5/AC6 are end-to-end claims — spawn + handshake + coexistence can only be proven by running the real server.
     — **Done when:** handshake returns a JSON-RPC result with serverInfo; `pip check` clean for both packages.
     — **Consumers affected:** this machine's broken markitdown + docling installs (repaired as a side effect).
-- [ ] **5.6** Exhaustive zero-reference sweep: `grep -rn 'markitdown-local-mcp' .` in the worktree returns only the allowlisted references — setup-script uninstall-migration lines and historical CHANGELOG entries.
+    — **Done:** live install of markitdown-mcp==0.0.1a7 + mcp 2.2.0; stdio initialize handshake returned serverInfo name=markitdown; pip check clean for markitdown/docling; old markitdown-local-mcp uninstalled; fixes: uninstall needed --break-system-packages retry (PEP 668), added to both scripts
+- [x] **5.6** Exhaustive zero-reference sweep: `grep -rn 'markitdown-local-mcp' .` in the worktree returns only the allowlisted references — setup-script uninstall-migration lines and historical CHANGELOG entries.
     — **Why:** the repo-wide gate can only pass after Phases 3–4 update the test and doc surfaces; running it here (not at 2.2) keeps every phase's gate satisfiable at its own position.
     — **Done when:** grep output contains no functional or stale-doc reference outside the allowlist.
     — **Consumers affected:** CI grep guards; future maintainers grepping for the old name.
+    — **Done:** repo-wide grep: only allowlisted refs remain (setup-script uninstall/header comments, CHANGELOG history, PLAN self-references); fixes: none
 
 ## Technical Notes
 
@@ -179,3 +185,7 @@ None external beyond PyPI reachability. No `blocked-by:` tickets.
 | Doc test drift (README/tests asserting the old privacy posture) | Phase 4 rewrites docs in the same PR; full bats run in Phase 5 catches stragglers |
 | pip user-site drift re-breaks the shared `mcp` later | import-probe idempotency reinstalls on detection; `pip check` step proves current coexistence |
 | Vendored dir deletion orphaning references | 2.2 runs only after grep confirms zero functional references; Phase 4 rewrites the textual ones |
+
+## Gate Trace
+
+GATE 9a42bd1->final lint=t typecheck=t build=t unit=t e2e=t (bash -n PASS; JSON parse PASS; dry-run smoke PASS w/ zero side effects; bats 433/433; live stdio handshake + pip check PASS; PS parse INCONCLUSIVE-compensated)

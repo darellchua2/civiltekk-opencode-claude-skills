@@ -2576,9 +2576,13 @@ setup_config() {
             # jsonc-only machine): restore the one-live-config end state.
             park_jsonc_sibling
 
-            # Install the upstream markitdown MCP server (#487: markitdown-mcp from PyPI).
+            # Install the upstream markitdown MCP server (#487: markitdown-mcp from PyPI)
+            # only when the pack is requested — the server ships disabled:true, and
+            # markitdown[all] is a large install, so never on a plain deploy.
             # Best-effort — non-fatal on offline/pip-missing.
-            install_markitdown_mcp
+            if echo "$ENABLE_PACK" | grep -qw "markitdown"; then
+                install_markitdown_mcp
+            fi
 
             # Install docling-mcp if --enable-pack docling was requested (PLAN-GIT-308).
             # Heavy (~3-4 GB) — only runs when explicitly opted in.
@@ -2659,8 +2663,12 @@ install_markitdown_mcp() {
     fi
 
     # Migrate old installs: the retired vendored launcher must not linger on
-    # PATH beside the new entry point (best-effort — absent is fine).
-    python3 -m pip uninstall -y markitdown-local-mcp >/dev/null 2>&1 || true
+    # PATH beside the new entry point (best-effort — absent is fine). PEP 668
+    # blocks plain uninstalls on externally-managed systems — retry once with
+    # --break-system-packages (mirrors the install path below).
+    python3 -m pip uninstall -y markitdown-local-mcp >/dev/null 2>&1 \
+        || python3 -m pip uninstall -y --break-system-packages markitdown-local-mcp >/dev/null 2>&1 \
+        || true
 
     # Idempotency: skip the network round-trip when already installed AND
     # importable — `pip show` alone hides broken installs (e.g. the mcp SDK

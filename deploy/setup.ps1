@@ -1782,9 +1782,13 @@ function Set-Configuration {
                 Write-LogSuccess "vibeguard.config.json deployed (secret masking active)"
                 $script:vgDeployed = $true
             }
-            # Install the upstream markitdown MCP server (#487: markitdown-mcp from PyPI).
+            # Install the upstream markitdown MCP server (#487: markitdown-mcp from PyPI)
+            # only when the pack is requested — the server ships disabled:true, and
+            # markitdown[all] is a large install, so never on a plain deploy.
             # Best-effort — non-fatal on offline/pip-missing.
-            Install-MarkitdownMcp
+            if ($EnablePack -match '(^|,)markitdown(,|$)') {
+                Install-MarkitdownMcp
+            }
 
             # Install docling-mcp if --enable-pack docling was requested (PLAN-GIT-308).
             # Heavy (~3-4 GB) — only runs when explicitly opted in.
@@ -2125,11 +2129,15 @@ function Install-MarkitdownMcp {
     }
 
     # Migrate old installs: the retired vendored launcher must not linger on
-    # PATH beside the new entry point (best-effort — absent is fine).
+    # PATH beside the new entry point (best-effort — absent is fine). PEP 668
+    # retry mirrors the install path below.
     $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
     if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
     if ($pythonCmd) {
         & $pythonCmd.Name -m pip uninstall -y markitdown-local-mcp *> $null
+        if ($LASTEXITCODE -ne 0) {
+            & $pythonCmd.Name -m pip uninstall -y --break-system-packages markitdown-local-mcp *> $null
+        }
     }
 
     # Idempotency: skip the network round-trip when already installed AND
