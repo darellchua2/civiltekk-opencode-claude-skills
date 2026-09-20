@@ -2915,6 +2915,9 @@ function Main {
         Invoke-Resolver -ConfigOnly
         $updateArgs = @("update")
         if ($Provider) { $updateArgs += @("--provider", $Provider) }
+        # Dry-run safe (#467): mirror the resolver's preview — cmdUpdate gates
+        # writes and prune on !dry, so the flag is sufficient.
+        if ($DryRun) { $updateArgs += "--dry-run" }
         & node (Join-Path $InstallDir "init.mjs") @updateArgs
         Write-Host ""
         Write-Host "Model resolution complete!"
