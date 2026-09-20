@@ -35,5 +35,10 @@ gate; caught before implementation. Same class as #402's phantom done-when
 (see `solutions/docs-registry-is-build-site-artifact.md`, which prescribes
 `--check` but not the churn mechanism).
 
+Recurrence 3 (#482, 2026-09-20): PLAN-482 step 3.4 drafted plain-run +
+empty `git diff` again; caught by architecture review. PLAN authors: any
+registry step defaults to the `--check exits 0` form — do not re-derive
+this gate from first principles.
+
 Related: `solutions/docs-registry-is-build-site-artifact.md`,
 `patterns/skill-add-count-sync-blast-radius.md`.

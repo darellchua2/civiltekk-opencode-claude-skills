@@ -482,3 +482,21 @@
 - **Scope**: project
 - **Summary**: the `blocked-by: <ref>` body-line format has one parser (worktree-pipeline Step 1 skip-guard) and two producers (ticket-creation, wayfinder) — producers restate minimally + cite the parser; parser changes sweep all producers (#476 review)
 - **Date**: 2026-09-20
+
+### Permission-enforcement probes need a 2×2 matrix
+
+- **Category**: pattern
+- **File**: `patterns/permission-probe-2x2-matrix.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: probe rule-name version (v1 alias vs v2 native) × session shape (top-level vs child-spawn); only the v2-name child-spawn cell licenses a "rename restores enforcement" claim — single-cell probes conflate alias mismatch with wholesale child-session rule breakage (#482)
+- **Date**: 2026-09-20
+
+### Directory-scoped rename sweeps miss repo-root docs
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/directory-scoped-rename-sweep-misses-root-docs.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: frontmatter-vocabulary sweeps scoped to code dirs skip README/opencode_app teaching sites, and literal `action: task` greps pass vacuously over `action:"task"` — sweep repo-root *.md + opencode_app/ with form-insensitive patterns and named exclusions (#482)
+- **Date**: 2026-09-20
