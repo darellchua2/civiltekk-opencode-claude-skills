@@ -6,10 +6,10 @@
 
 ## Acceptance Criteria
 
-- [ ] `--target claude` and `both` install agents to `~/.claude/agents/` with translated frontmatter; skills output unchanged
-- [ ] Agents skipped no more: warning replaced by per-agent note listing dropped `permissions` rules
-- [ ] Manifest per-target hashes cover the new claude-agents writes; `update`/`remove` handle them
-- [ ] Transform unit tests; `--dry-run` previews; README / `--help` synced
+- [x] `--target claude` and `both` install agents to `~/.claude/agents/` with translated frontmatter; skills output unchanged
+- [x] Agents skipped no more: warning replaced by per-agent note listing dropped `permissions` rules
+- [x] Manifest per-target hashes cover the new claude-agents writes; `update`/`remove` handle them
+- [x] Transform unit tests; `--dry-run` previews; README / `--help` synced
 
 ## Dependency & Consumer Map
 
@@ -56,18 +56,21 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 
 ### Phase 3: tests + docs + gates
 
-- [ ] **3.1** Add `tests/claude_target.bats` (HOME-isolated; family naming per arch review F5): synthesized `name:` assertion, translated `tools:` list, `disallowedTools:` deny-carry (mirrored kimi strategy), dropped-rules warning, `Task` absence on deny+narrow agents, no `model:` line, body-byte integrity, `both` target installs agents too, update idempotency + source-drift re-copy, remove wipe, dry-run preview, `--project --target claude` downgrade retained.
+- [x] **3.1** Add `tests/claude_target.bats` (HOME-isolated; family naming per arch review F5): synthesized `name:` assertion, translated `tools:` list, `disallowedTools:` deny-carry (mirrored kimi strategy), dropped-rules warning, `Task` absence on deny+narrow agents, no `model:` line, body-byte integrity, `both` target installs agents too, update idempotency + source-drift re-copy, remove wipe, dry-run preview, `--project --target claude` downgrade retained.
     — **Why:** ticket AC; the #377 flip needs its own net.
     — **Done when:** suite green; no writes outside isolated `$HOME`.
     — **Consumers affected:** CI.
-- [ ] **3.2** Docs sync: README claude row (agents now install to `~/.claude/agents/` with `tools:` allowlist translation; deny/ask rules dropped — Claude Code permission model lives in settings), root `AGENTS.md` bullet, help text (1.1).
+    — **Done:** tests/claude_target.bats — 10 tests all green (name synthesis, tools allowlist, task deny→disallowedTools + never in tools, dropped-rule warning, body-byte integrity, both-target dual install with differing dialects, update idempotency + translated drift re-copy, remove wipe, project downgrade retained, dry-run preview); files: tests/claude_target.bats; fixes: none
+- [x] **3.2** Docs sync: README claude row (agents now install to `~/.claude/agents/` with `tools:` allowlist translation; deny/ask rules dropped — Claude Code permission model lives in settings), root `AGENTS.md` bullet, help text (1.1).
     — **Why:** repo documentation-sync rules.
     — **Done when:** claude docs describe agent translation; sweep consistent.
     — **Consumers affected:** users, docs readers.
-- [ ] **3.3** Full gate: all bats suites + `node --test` + pack/drift; `GATE` memo line for the pushed SHA.
+    — **Done:** README claude row rewritten (agents install + translation + settings note) + AGENTS.md bullet; help updated in 1.1; files: README.md, AGENTS.md; fixes: none
+- [x] **3.3** Full gate: all bats suites + `node --test` + pack/drift; `GATE` memo line for the pushed SHA.
     — **Why:** pipeline gate contract.
     — **Done when:** every suite green; memo emitted.
     — **Consumers affected:** code review, PR creation.
+    — **Done:** full gate green: 94 bats ok across 7 suites, node --test green, pack/drift bats green; files: none (verification); fixes: none
 
 ## Technical Notes
 
