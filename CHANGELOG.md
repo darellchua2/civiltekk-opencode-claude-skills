@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.17.0](https://github.com/darellchua2/opencode-config-template/compare/v9.16.0...v9.17.0) (2026-09-20)
+
+### Features
+
+* **installer:** kilo install target — native dirs + permission-map translation ([#455](https://github.com/darellchua2/opencode-config-template/issues/455)) ([#461](https://github.com/darellchua2/opencode-config-template/issues/461)) ([14246be](https://github.com/darellchua2/opencode-config-template/commit/14246be7972da656f3f329d18b2dd5c18d395672))
+
 ## [9.16.0](https://github.com/darellchua2/opencode-config-template/compare/v9.15.0...v9.16.0) (2026-09-20)
 
 ### Features
