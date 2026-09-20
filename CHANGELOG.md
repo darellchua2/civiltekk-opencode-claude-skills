@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.19.6](https://github.com/darellchua2/opencode-config-template/compare/v9.19.5...v9.19.6) (2026-09-20)
+
+### Bug Fixes
+
+* **installer:** implement Phase 3 — v2 action names in registry lookup + kimi/claude/kilo translators ([89167e5](https://github.com/darellchua2/opencode-config-template/commit/89167e522e9ed556752413862151b01b777d7407))
+
+### Code Refactoring
+
+* **agents:** implement Phase 2 — rename v1 action names to v2 (bash→shell, task→subagent) ([1428225](https://github.com/darellchua2/opencode-config-template/commit/1428225bb9aa405f81b098e0c325d62052d8a0b6))
+
+### Documentation
+
+* **learnings:** implement Phase 4 — v1-action-names learning + plan complete ([9f62e00](https://github.com/darellchua2/opencode-config-template/commit/9f62e002115ba07c50a5e76a0b24850c4bf5b74c))
+* **plan:** add PLAN-482.md for [#482](https://github.com/darellchua2/opencode-config-template/issues/482) ([5c53c39](https://github.com/darellchua2/opencode-config-template/commit/5c53c398bf4e797df7dead70353a187158f36918))
+* **plan:** apply review rulings to PLAN-482 (probe matrix, README sites, --check gate) ([cc36cb5](https://github.com/darellchua2/opencode-config-template/commit/cc36cb574a34240b462b597ab8f0d08ed7603a8f))
+* **plan:** implement Phase 1 — probe matrix verdicts (child-spawn ENFORCED) + inventory confirmation ([614cff4](https://github.com/darellchua2/opencode-config-template/commit/614cff445d73c4e0c906875af1a4b0bed636aa1f))
+
 ## [9.19.5](https://github.com/darellchua2/opencode-config-template/compare/v9.19.4...v9.19.5) (2026-09-20)
 
 ### Bug Fixes
