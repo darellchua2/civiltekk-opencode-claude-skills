@@ -7,10 +7,10 @@
 
 ## Acceptance Criteria
 
-- [ ] Decision recorded: interim global allows for the reviewer-consumed subagent-only skills (adopted — reviewer-only scope: exactly the union of the 4 reviewer agents' frontmatter skill allows; the remaining 28 non-reviewer agents' frontmatter skill allows are explicitly deferred to the upstream anomalyco/opencode#50149 fix; scope, token cost, revert trigger documented) vs accepting the embedded-baseline fallback
-- [ ] If adopted: allows added to `opencode_app/opencode.json` (delta **3**: 104→107 rules / 103→106 allows) + `deploy/skill-profiles.json` lean (delta **26**: 44→70), counts synced per the Adding Skills sync rules (`deploy/setup.sh`, `deploy/setup.ps1`, READMEs), registry gate green — all in ONE commit with the test mirrors (per-push CI otherwise red by construction)
-- [ ] Regression probe documented (3-step diagnostic) and re-run condition stated (per opencode upgrade); workaround revert condition stated (upstream anomalyco/opencode#50149 fix)
-- [ ] LEARNINGS entry marking the "subagents are profile-immune" claim as unverified for the `skill` action until the upstream fix
+- [x] Decision recorded: interim global allows for the reviewer-consumed subagent-only skills (adopted — reviewer-only scope: exactly the union of the 4 reviewer agents' frontmatter skill allows; the remaining 28 non-reviewer agents' frontmatter skill allows are explicitly deferred to the upstream anomalyco/opencode#50149 fix; scope, token cost, revert trigger documented) vs accepting the embedded-baseline fallback
+- [x] If adopted: allows added to `opencode_app/opencode.json` (delta **3**: 104→107 rules / 103→106 allows) + `deploy/skill-profiles.json` lean (delta **26**: 44→70), counts synced per the Adding Skills sync rules (`deploy/setup.sh`, `deploy/setup.ps1`, READMEs), registry gate green — all in ONE commit with the test mirrors (per-push CI otherwise red by construction)
+- [x] Regression probe documented (3-step diagnostic) and re-run condition stated (per opencode upgrade); workaround revert condition stated (upstream anomalyco/opencode#50149 fix)
+- [x] LEARNINGS entry marking the "subagents are profile-immune" claim as unverified for the `skill` action until the upstream fix
 
 ## Dependency & Consumer Map
 
@@ -80,18 +80,21 @@
 
 ### Phase 4: LEARNINGS + gates
 
-- [ ] **4.1** Update `LEARNINGS/decisions/skill-permission-allowlist.md`: mark the "subagents are profile-immune" claim UNVERIFIED for the `skill` action on opencode v2.0.11 (agent frontmatter `skill` allows ignored in child sessions while `shell`/tool-action rules DO apply — #482's probe matrix; upstream #50149); record the adopted workaround (reviewer-only scope + rationale: all-agent union = 127 skills → lean 145/146 = abolishes the profile; 3/26 deltas; ~3.2k→savings restatement basis; revert trigger); refresh the file's own stale counts (107/48/150) inline by re-derivation
+- [x] **4.1** Update `LEARNINGS/decisions/skill-permission-allowlist.md`: mark the "subagents are profile-immune" claim UNVERIFIED for the `skill` action on opencode v2.0.11 (agent frontmatter `skill` allows ignored in child sessions while `shell`/tool-action rules DO apply — #482's probe matrix; upstream #50149); record the adopted workaround (reviewer-only scope + rationale: all-agent union = 127 skills → lean 145/146 = abolishes the profile; 3/26 deltas; ~3.2k→savings restatement basis; revert trigger); refresh the file's own stale counts (107/48/150) inline by re-derivation
     — **Why:** AC4 + m2; future sessions must not cite profile-immunity as fact for skills
     — **Done when:** unverified-marker + workaround record + refreshed counts present
     — **Consumers affected:** future sessions
-- [ ] **4.2** Add `LEARNINGS/patterns/child-skill-gate-follows-merged-config.md` (+ `_index.md` entry): the child skill gate resolves against the merged config set (defaults → global → project → agent, last-match-wins), NOT the agent's frontmatter allows — config-layer allows restore loading while frontmatter allows do not; include the 3-step regression probe (spawn reviewer → invoke `skill` id → expect `loaded`) + re-run condition (per opencode upgrade)
+    — **Done:** decision file: unverified-marker + workaround record appended (scope rationale, deltas, revert trigger, revised savings); title counts re-derived 146/70; files: LEARNINGS/decisions/skill-permission-allowlist.md; fixes: none
+- [x] **4.2** Add `LEARNINGS/patterns/child-skill-gate-follows-merged-config.md` (+ `_index.md` entry): the child skill gate resolves against the merged config set (defaults → global → project → agent, last-match-wins), NOT the agent's frontmatter allows — config-layer allows restore loading while frontmatter allows do not; include the 3-step regression probe (spawn reviewer → invoke `skill` id → expect `loaded`) + re-run condition (per opencode upgrade)
     — **Why:** AC3's probe documentation + the reusable mechanism knowledge
     — **Done when:** file + index entry exist, reference #481 + #50149
     — **Consumers affected:** future sessions, upgrade re-checks
-- [ ] **4.3** Gate: full bats suite (count-pinning suites at minimum: skill_profiles, count_drift, markitdown, mcp_count_consistency, agents_target) + registry `--check`; record GATE memo; conventional commits + push (Phase 2 steps share their atomic commit; Phase 4 rides its own)
+    — **Done:** patterns/child-skill-gate-follows-merged-config.md written (mechanism + 3-step probe + revert-flip check) + _index entry; files: LEARNINGS ×2; fixes: none
+- [x] **4.3** Gate: full bats suite (count-pinning suites at minimum: skill_profiles, count_drift, markitdown, mcp_count_consistency, agents_target) + registry `--check`; record GATE memo; conventional commits + push (Phase 2 steps share their atomic commit; Phase 4 rides its own)
     — **Why:** repo verification policy; count changes fan out across suites
     — **Done when:** all suites green; memo line recorded; work committed and pushed on `feat/481`
     — **Consumers affected:** PR CI
+    — **Done:** full bats 433/433 green; registry --check no drift; committed and pushed; files: PLANS/PLAN-481.md; fixes: none
 
 ## Technical Notes
 
@@ -119,3 +122,5 @@
 - **Upstream fix lands and behavior changes shape.** Mitigation: probe is config-agnostic (expects `loaded`); revert procedure documented at the profile file.
 
 `GATE 9e20799+p2 lint=n.a. typecheck=n.a. build=t(registry --check no drift) unit=t(27/27: skill_profiles, count_drift, markitdown, mcp_count) e2e=n.a`
+
+`GATE 5555db1+p4 lint=n.a. typecheck=n.a. build=t(registry --check no drift) unit=t(433/433 full bats) e2e=n.a`

@@ -563,3 +563,12 @@
 - **Scope**: project
 - **Summary**: fail-closed cross-file guards (apply-skill-profile.mjs:74-81 lean⊆full exit 1) name their atomic unit — the append, its source-file prerequisite, and their test-pinned mirrors ride one commit or per-push CI goes red (#481 plan review)
 - **Date**: 2026-09-20
+
+### The child skill gate follows the merged config, not the agent frontmatter
+
+- **Category**: pattern
+- **File**: `patterns/child-skill-gate-follows-merged-config.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: subagent skill loading resolves against merged config layers (global/project), not frontmatter skill allows — config-layer allows are the working unlock (#481 workaround for upstream #50149); includes the 3-step regression probe + revert-flip check
+- **Date**: 2026-09-20
