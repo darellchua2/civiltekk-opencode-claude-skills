@@ -961,6 +961,7 @@ validate_mode_conflicts() {
     [ "$MIGRATE_ONLY" = true ] && modes+=("--migrate")
     [ "$ROLLBACK_MODE" = true ] && modes+=("--rollback")
     [ "$CHECK_UPDATE_ONLY" = true ] && modes+=("--check-update")
+    [ "$CHECK_CATALOG_ONLY" = true ] && modes+=("--check-catalog")
     [ "$PEONPING_ONLY" = true ] && modes+=("--peonping")
     if [ "${#modes[@]}" -gt 1 ]; then
         log_error "Mutually exclusive modes combined: ${modes[*]}. Choose one."
@@ -973,6 +974,7 @@ validate_mode_conflicts() {
         [ "$MIGRATE_ONLY" = true ] && packless+=("--migrate")
         [ "$ROLLBACK_MODE" = true ] && packless+=("--rollback")
         [ "$CHECK_UPDATE_ONLY" = true ] && packless+=("--check-update")
+        [ "$CHECK_CATALOG_ONLY" = true ] && packless+=("--check-catalog")
         [ "$PEONPING_ONLY" = true ] && packless+=("--peonping")
         if [ "${#packless[@]}" -gt 0 ]; then
             log_error "--enable-pack has no effect with ${packless[*]} (packs merge into the deployed config, which these modes never write). Drop --enable-pack or use a config-deploy mode."

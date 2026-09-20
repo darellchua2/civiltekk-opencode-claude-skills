@@ -18,6 +18,26 @@
 <!-- Entries are appended here automatically when new learnings are saved -->
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### Bats tests mutating shipped artifacts: snapshot/restore + private fixture copies
+
+- **Category**: pattern
+- **File**: `patterns/bats-mutating-shipped-artifacts-snapshot-and-isolate.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: setup()/teardown cp-snapshot mutated shipped files (mktemp path — fixed /tmp names serialize --jobs), and fixture mutations use a private mktemp copy — a shared-fixture delete poisoned three later tests (#472)
+- **Date**: 2026-09-21
+
+### New ONLY-mode flag must extend validate_mode_conflicts in both lists
+
+- **Category**: convention
+- **File**: `conventions/new-plan-mode-wires-mode-conflict-validator.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: checklist for new setup.sh modes: defaults, parser arm, conflict validator (modes + packless lists), build_plan branch, completion case, both help surfaces, wiring pins — missing the validator silently swallows combined modes (#472)
+- **Date**: 2026-09-21
+
+<!-- Entries are appended here automatically when new learnings are saved -->
+
 ### Merge writers must back up unparseable user JSON, never reset to {}
 
 - **Category**: solution

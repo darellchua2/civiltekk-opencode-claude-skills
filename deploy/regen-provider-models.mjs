@@ -22,7 +22,10 @@ const KNOWN_CATALOG_PROVIDERS = new Set(["zai", "zai-coding-plan", "anthropic", 
 const args = process.argv.slice(2);
 let catalogFile = null, checkOnly = false;
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === "--catalog") catalogFile = args[++i];
+  if (args[i] === "--catalog") {
+    catalogFile = args[++i];
+    if (!catalogFile) { console.error("--catalog requires a file path"); process.exit(2); }
+  }
   else if (args[i] === "--check") checkOnly = true;
   else { console.error(`unknown argument: ${args[i]}`); process.exit(2); }
 }
@@ -53,9 +56,10 @@ const knownInCatalog = [...KNOWN_CATALOG_PROVIDERS].filter((k) => catalog[k]?.mo
 for (const key of Object.keys(shipped)) {
   if (key === "$comment") { regenerated[key] = shipped[key]; continue; }
   const entry = catalog[key];
-  if (!entry || !entry.models || typeof entry.models !== "object") {
+  const emptyModels = entry?.models && typeof entry.models === "object" && Object.keys(entry.models).length === 0;
+  if (!entry || !entry.models || typeof entry.models !== "object" || emptyModels) {
     if (KNOWN_CATALOG_PROVIDERS.has(key) &&
-        knownInCatalog.some((k) => k !== key)) {
+        knownInCatalog.length >= 2) {
       // A known-catalog provider absent from a real catalog is a
       // typo/breakage — never a silent skip (the #468 blind-spot class).
       console.error(`regen: shipped provider '${key}' is missing from the catalog — refusing to drop it. Fix the key name or the catalog source.`);
@@ -78,7 +82,7 @@ if (checkOnly) {
     const live = new Set(Object.keys(catalog[key].models).sort());
     const have = new Set(shipped[key]);
     const missing = [...live].filter((id) => !have.has(id));
-    const extra = have.has(null) ? [] : [...have].filter((id) => !live.has(id));
+    const extra = [...have].filter((id) => !live.has(id));
     if (missing.length || extra.length) {
       drifted = true;
       if (missing.length) console.warn(`[check-catalog] ${key}: in catalog but NOT shipped — ${missing.join(", ")}`);

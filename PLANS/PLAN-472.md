@@ -69,4 +69,4 @@ Epic #464; builds on #468/#490's catalog-fresh provider-models.json. No blockers
 
 ## Gate Trace
 
-GATE (push head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 463 ok / 0 fail incl. 7 regen pins; node --test 30 pass / 0 fail; scope = deploy/regen-provider-models.mjs + deploy/setup.sh + README.md + tests/test_provider_regen.bats + fixture; shipped provider-models.json untouched)
+GATE (fix-round head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 465 ok / 0 fail — 9 regen pins after the conflict-validator registration + non-fatal-branch fixture; node --test 30 pass / 0 fail; review round 1: 2 WARN fixed (validator registration, non-fatal fixture) + NOTEs (dead ternary removed, --catalog value guard, empty-models = missing for known providers, mktemp backup path); shipped provider-models.json untouched)
