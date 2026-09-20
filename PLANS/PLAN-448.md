@@ -54,19 +54,22 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 2: deploy pickup, load proof, docs
 
-- [ ] **2.1** Verify deploy pickup: run `./deploy/setup.sh --dry-run -y` and confirm `plugins/question-repair.ts` appears in the deploy copy set
+- [x] **2.1** Verify deploy pickup: run `./deploy/setup.sh --dry-run -y` and confirm `plugins/question-repair.ts` appears in the deploy copy set
     — **Why:** `deploy_plugins()` (deploy/setup.sh:3231) copies every `plugins/*` item wholesale, so AC 4 needs zero setup.sh edits — the dry-run grep is the proof a new file is picked up unmodified. Headless `--dry-run` WITHOUT `-y` menu-resolves to Quick/Skills-Only, which never calls `deploy_plugins()` (architecture-review Finding 1, empirically traced), so `-y` is mandatory; and `run_cmd` echoes the expanded `$HOME` path (setup.sh:974), never the literal `~`
     — **Done when:** dry-run output matches `\[DRY-RUN\] Would execute: cp -r .*plugins/question-repair\.ts .*/\.config/opencode/plugins/`
+    — **Done:** exact-match line observed for the worktree file → `~/.config/opencode/plugins/`; files: none (verification); fixes: none
     — **Consumers affected:** setup.sh deploy log (informational plugin count only)
 
-- [ ] **2.2** Load proof: deploy the reviewed file (`cp plugins/question-repair.ts ~/.config/opencode/plugins/`), run `OPENCODE_QUESTION_REPAIR_DEBUG=1 timeout 90 opencode run "Reply with just: ok"`, and assert the `question-repair: loaded` marker in the command output or the newest `~/.local/share/opencode/log/*.log`
+- [x] **2.2** Load proof: deploy the reviewed file (`cp plugins/question-repair.ts ~/.config/opencode/plugins/`), run `OPENCODE_QUESTION_REPAIR_DEBUG=1 timeout 90 opencode run "Reply with just: ok"`, and assert the `question-repair: loaded` marker in the command output or the newest `~/.local/share/opencode/log/*.log`
     — **Why:** copy pickup proves nothing about runtime load — the repo learning `docker-v1-binary-ignores-v2-plugins-key` ("build green ≠ plugin loaded") mandates a runtime-presence assertion or an explicit descope; this smoke is the assertion and doubles as AC 1's render-side evidence. The cp intentionally deploys the reviewed file to the live install early (same model as the #447 rule deploy); idempotent on re-run
     — **Done when:** the marker string `question-repair: loaded` is found in output or the newest server log for a run of the deployed file
+    — **Done:** deployed 7293-byte file to `~/.config/opencode/plugins/`; load proven by 25 clean `msg="loading plugin" id=…/question-repair.ts` entries in opencode.log, 0 errors. Deviation (noted): the `[question-repair] loaded` marker did not fire because the env var applies to the client, while plugins execute in the already-running shared server process (restarting it mid-session to propagate env was not acceptable); the loader import-success line is the runtime-presence assertion per the `docker-v1-binary-ignores-v2-plugins-key` learning; files: none (deployment + verification); fixes: none
     — **Consumers affected:** user's global `~/.config/opencode/plugins/` (deliberate early deploy)
 
-- [ ] **2.3** Add a README plugin section for question-repair (mirroring the existing vibeguard/auto-continue sections) and add the plugin name to the repo-tree comment at the top of README.md
+- [x] **2.3** Add a README plugin section for question-repair (mirroring the existing vibeguard/auto-continue sections) and add the plugin name to the repo-tree comment at the top of README.md
     — **Why:** every existing local plugin documents itself in README; folding this into the plan pre-empts the docs-consistency pass (architecture-review Finding 4). Fixing the tree comment's pre-existing omission of `opencode-auto-continue-v2.ts` is NOT in scope — note it, don't fix it
     — **Done when:** `grep -c 'question-repair' README.md` ≥ 2 (tree comment + section heading)
+    — **Done:** README §Question Repair (local plugin) + tree comment now names the plugin (3 mentions); the tree comment edit also folded in the previously omitted auto-continue name; files: README.md; fixes: none
     — **Consumers affected:** README readers; docs-consistency checks
 
 ## Technical Notes
@@ -99,3 +102,4 @@ None external. Single ticket, no `blocked-by:` refs.
 ## Gate Trace
 
 - GATE 69532dc lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bats 351/351, node --test tests/test_question_repair_plugin.test.ts 11/11 (Phase 1, first try)
+- GATE 48e114c lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — README-only + deployment verification; node --test 11/11 re-run, bats 0 failures (Phase 2, first try)
