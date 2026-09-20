@@ -2250,7 +2250,7 @@ function Deploy-Plugins {
 
     # #456 migration: plugins renamed with the opencode- prefix - drop stale
     # pre-rename copies so the same plugin never loads twice.
-    foreach ($legacyName in @("vibeguard", "ponytail-scoped", "question-repair", "learnings-autoinject", "learnings-autoinject.README.md")) {
+    foreach ($legacyName in @("vibeguard.ts", "ponytail-scoped.ts", "question-repair.ts", "learnings-autoinject.ts", "learnings-autoinject.README.md")) {
         $legacyPath = Join-Path $PluginsDestDir "$legacyName"
         if (Test-Path $legacyPath) {
             if ($DryRun) {
