@@ -115,3 +115,4 @@ Cross-module consumers exist (tests, docs, bin) → architecture review selected
 
 _Gate per `verification-loop-skill` §The gate contract; lint/typecheck/build = n.a. (no tooling configured in repo or CI — closest executable check is the unit suite, which exercises `init.mjs` end-to-end)._
 
+GATE 9ab5aaa lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — bats init/update/parse_arguments 49 ok, node --test green
