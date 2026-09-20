@@ -79,10 +79,10 @@ assert 'code-review-subagent' in m['agents'], m['agents']
   [ ! -e "${HOME}/.agents/skills/tdd-workflow-skill" ]
 }
 
-@test "agents target: invalid --target value dies listing all four" {
+@test "agents target: invalid --target value dies listing all five" {
   run $INIT add tdd-workflow-skill --target bogus --yes
   [ "$status" -ne 0 ]
-  echo "$output" | grep -q "Use: opencode, claude, agents, or both."
+  echo "$output" | grep -q "Use: opencode, claude, agents, kimi, or both."
 }
 
 @test "update: agents-target entry is idempotent without source mutation" {

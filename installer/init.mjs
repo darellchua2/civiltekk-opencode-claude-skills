@@ -59,15 +59,18 @@ const USER_MANIFEST = join(USER_OC, ".skill-manifest.json");
 const USER_CLAUDE_SKILLS = join(os.homedir(), ".claude/skills");
 const USER_AGENTS_SHARED = join(os.homedir(), ".agents/agents");
 const USER_SKILLS_SHARED = join(os.homedir(), ".agents/skills");
+const USER_KIMI_AGENTS = join(os.homedir(), ".kimi-code/agents");
+const USER_KIMI_SKILLS = join(os.homedir(), ".kimi-code/skills");
 
 // Per-target write contract (#453): user-scope dest dirs + transform mode.
 // SINGLE SITE for target dest/transform resolution — write/update/remove paths
 // resolve via TARGETS, never inline constants (PLAN-453 structural gate).
 // Project-scope dest columns deferred to #454 (PLAN-453 Technical Notes).
 const TARGETS = {
-  opencode: { agentsDir: USER_AGENTS, skillsDir: USER_SKILLS, agentMode: "model-injected", skillMode: "verbatim" },
+  opencode: { agentsDir: USER_AGENTS, skillsDir: USER_SKILLS, projectAgentsDir: ".opencode/agents", projectSkillsDir: ".opencode/skills", agentMode: "model-injected", skillMode: "verbatim" },
   claude: { skillsDir: USER_CLAUDE_SKILLS, skillMode: "model-strip" }, // agents skipped (#377; #457 adds them)
   agents: { agentsDir: USER_AGENTS_SHARED, skillsDir: USER_SKILLS_SHARED, agentMode: "verbatim", skillMode: "verbatim" },
+  kimi: { agentsDir: USER_KIMI_AGENTS, skillsDir: USER_KIMI_SKILLS, projectAgentsDir: ".kimi-code/agents", projectSkillsDir: ".kimi-code/skills", agentMode: "kimi-translate", skillMode: "verbatim" },
 };
 // derived from the table so a new target row can't skip validation (both = opencode+claude alias)
 const TARGET_VALUES = [...Object.keys(TARGETS), "both"];
@@ -646,7 +649,7 @@ async function cmdAdd(args, opts, reg, depMap) {
     if (opts.target !== undefined)
       die("cannot use --format and --target together (--format is deprecated; use --target)", 2);
     opts.target = opts.format;
-    console.error("warning: --format is deprecated; use --target (values: opencode, claude, agents, both)");
+    console.error("warning: --format is deprecated; use --target (values: opencode, claude, agents, kimi, both)");
   }
 
   const project = opts.project === true ? process.cwd() : opts.project;
@@ -664,7 +667,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const dry = !!opts.dryRun;
   const target = opts.target || "opencode";
   if (!TARGET_VALUES.includes(target))
-    die(`invalid target '${target}'. Use: opencode, claude, agents, or both.`, 2);
+    die(`invalid target '${target}'. Use: opencode, claude, agents, kimi, or both.`, 2);
   const doOc = target === "opencode" || target === "both";
   const doClaude = target === "claude" || target === "both";
   const claudeSkipWarning = doClaude && sel.agents.length
@@ -710,6 +713,8 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
         if (cfg.agentMode === "model-injected") {
           const tier = reg.agents.find((a) => a.stem === stem)?.tier || "unassigned";
           content = injectModelLine(content, await agentModel(stem, tier, opts.provider));
+        } else if (cfg.agentMode === "kimi-translate") {
+          content = kimiAgentContent(content, (m) => console.error(`  kimi (${stem}): ${m}`));
         }
         await writeFile(join(cfg.agentsDir, `${stem}.md`), content, "utf8");
         newEntries[stem] = { type: "agent", targets: { ...(newEntries[stem]?.targets || {}), [t]: sha256Hex(content) } };
@@ -876,6 +881,69 @@ function stripModelLine(content) {
   return [...lines.slice(0, 1), ...fmBody, ...lines.slice(closeIdx)].join("\n");
 }
 
+// Kimi tool-name map (#454): opencode permission action → Kimi tool name.
+// Verified against Kimi's tools reference 2026-09-20 — there is no `WebFetch`
+// (the fetch tool is `FetchURL`), and unknown names never match + warn.
+const KIMI_TOOL_MAP = {
+  read: "Read", edit: "Edit", write: "Write", bash: "Bash",
+  glob: "Glob", grep: "Grep", webfetch: "FetchURL", websearch: "WebSearch",
+};
+
+// Translate an opencode agent file's `permissions` array into additive Kimi
+// `tools:` / `disallowedTools:` frontmatter keys (#454). Insertion is at column
+// 0 immediately after the opening `---` (injectModelLine precedent — never
+// key-scanning, a `>-` folded scalar would corrupt otherwise). All existing
+// keys (incl. `permissions`, which Kimi ignores) and the body stay verbatim.
+// Deny wins on action conflicts; unmappable rules are dropped via warn().
+function kimiAgentContent(content, warn) {
+  const lines = content.split(/\r?\n/);
+  if (lines[0]?.trim() !== "---") {
+    warn("no frontmatter — installed verbatim, permissions not translated");
+    return content;
+  }
+  let closeIdx = -1;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() === "---") { closeIdx = i; break; }
+  }
+  if (closeIdx === -1) {
+    warn("unterminated frontmatter — installed verbatim, permissions not translated");
+    return content;
+  }
+  // minimal YAML subset parse of the permissions list:
+  //   - action: <name> / resource: <glob> / effect: <allow|deny|ask>
+  const rules = [];
+  let cur = null;
+  for (let i = 1; i < closeIdx; i++) {
+    const a = lines[i].match(/^\s*-\s*action:\s*"?([\w:-]+)"?/);
+    if (a) { cur = { action: a[1] }; rules.push(cur); continue; }
+    if (!cur) continue;
+    const r = lines[i].match(/^\s+resource:\s*'?([^'#]+?)'?\s*$/);
+    if (r) cur.resource = r[1];
+    const e = lines[i].match(/^\s+effect:\s*"?(\w+)"?/);
+    if (e) cur.effect = e[1];
+  }
+  const tools = new Set(), denied = new Set(), dropped = new Set();
+  for (const r of rules) {
+    if (!r.action || !r.effect) continue;
+    const tool = KIMI_TOOL_MAP[r.action];
+    const global = r.resource === "*";
+    const mcpGlob = typeof r.resource === "string" && r.resource.startsWith("mcp:");
+    if (!tool || (!global && !mcpGlob) || (r.effect !== "allow" && r.effect !== "deny")) {
+      dropped.add(`${r.action}(${r.resource ?? "*"})`);
+      continue;
+    }
+    if (r.effect === "deny") denied.add(mcpGlob ? "mcp__*" : tool);
+    else if (global) tools.add(tool); // allow on mcp:* is the default in Kimi — no key needed
+  }
+  for (const t of denied) tools.delete(t); // deny wins
+  if (dropped.size) warn(`no Kimi equivalent — dropped: ${[...dropped].sort().join(", ")}`);
+  if (!tools.size && !denied.size) return content;
+  const insert = [];
+  if (tools.size) insert.push("tools:", ...[...tools].sort().map((t) => `  - ${t}`));
+  if (denied.size) insert.push("disallowedTools:", ...[...denied].sort().map((t) => `  - ${t}`));
+  return [...lines.slice(0, 1), ...insert, ...lines.slice(1)].join("\n");
+}
+
 async function cmdRemove(args, opts) {
   const name = args[0];
   if (!name) die("remove: specify a skill or agent name.", 2);
@@ -998,6 +1066,8 @@ async function cmdUpdate(args, opts) {
         if (cfg.agentMode === "model-injected") {
           const tier = reg.agents.find((a) => a.stem === name)?.tier || "unassigned";
           wouldContent = injectModelLine(agent.content, await agentModel(name, tier, opts.provider));
+        } else if (cfg.agentMode === "kimi-translate") {
+          wouldContent = kimiAgentContent(agent.content, () => {}); // warnings already surfaced at install
         } else {
           wouldContent = agent.content; // shared target: verbatim, unpinned (#453)
         }
@@ -1220,6 +1290,9 @@ SCOPE
   opencode auto-discovers them — no opencode.json touch unless --permit.
   Agents target (--target agents): cross-tool shared dir ~/.agents/{agents,skills}/
   (scanned by Kimi Code and pi; files are verbatim, agents stay model-unpinned).
+  Kimi target (--target kimi): Kimi Code native dirs ~/.kimi-code/{agents,skills}/
+  (user) and .kimi-code/{agents,skills}/ (project); permissions translate additively
+  to tools/disallowedTools (lossy — unmapped rules dropped with a warning).
   Project scope (--project): writes .opencode/{agents,skills}/ + opencode.json + models.json + AGENTS.md.
 
 FLAGS
@@ -1236,7 +1309,7 @@ FLAGS
   --prune              remove opencode-init-owned entries absent from the new set
   --permit             (user scope) backup opencode.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
-  --target <t>         (add) install target: opencode (default), claude, agents (shared ~/.agents/), or both (--format is a deprecated alias)
+  --target <t>         (add) install target: opencode (default), claude, agents (shared ~/.agents/), kimi, or both (--format is a deprecated alias)
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and
