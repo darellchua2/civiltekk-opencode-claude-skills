@@ -57,6 +57,21 @@ const USER_SKILLS = join(USER_OC, "skills");
 const USER_CONFIG = join(USER_OC, "opencode.json");
 const USER_MANIFEST = join(USER_OC, ".skill-manifest.json");
 const USER_CLAUDE_SKILLS = join(os.homedir(), ".claude/skills");
+const USER_AGENTS_SHARED = join(os.homedir(), ".agents/agents");
+const USER_SKILLS_SHARED = join(os.homedir(), ".agents/skills");
+
+// Per-target write contract (#453): user-scope dest dirs + transform mode.
+// SINGLE SITE for target dest/transform resolution — write/update/remove paths
+// resolve via TARGETS, never inline constants (PLAN-453 structural gate).
+// Project-scope dest columns deferred to #454 (PLAN-453 Technical Notes).
+const TARGETS = {
+  opencode: { agentsDir: USER_AGENTS, skillsDir: USER_SKILLS, agentMode: "model-injected", skillMode: "verbatim" },
+  claude: { skillsDir: USER_CLAUDE_SKILLS, skillMode: "model-strip" }, // agents skipped (#377; #457 adds them)
+  agents: { agentsDir: USER_AGENTS_SHARED, skillsDir: USER_SKILLS_SHARED, agentMode: "verbatim", skillMode: "verbatim" },
+};
+// derived from the table so a new target row can't skip validation (both = opencode+claude alias)
+const TARGET_VALUES = [...Object.keys(TARGETS), "both"];
+const activeTargets = (target) => (target === "both" ? ["opencode", "claude"] : [target]);
 
 // ─────────────────────────── arg parsing ────────────────────────────────
 const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps"]);
@@ -631,7 +646,7 @@ async function cmdAdd(args, opts, reg, depMap) {
     if (opts.target !== undefined)
       die("cannot use --format and --target together (--format is deprecated; use --target)", 2);
     opts.target = opts.format;
-    console.error("warning: --format is deprecated; use --target (values: opencode, claude, both)");
+    console.error("warning: --format is deprecated; use --target (values: opencode, claude, agents, both)");
   }
 
   const project = opts.project === true ? process.cwd() : opts.project;
@@ -648,22 +663,27 @@ async function cmdAdd(args, opts, reg, depMap) {
 async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const dry = !!opts.dryRun;
   const target = opts.target || "opencode";
-  if (!["opencode", "claude", "both"].includes(target))
-    die(`invalid target '${target}'. Use: opencode, claude, or both.`, 2);
+  if (!TARGET_VALUES.includes(target))
+    die(`invalid target '${target}'. Use: opencode, claude, agents, or both.`, 2);
   const doOc = target === "opencode" || target === "both";
   const doClaude = target === "claude" || target === "both";
-  // Claude Code target installs skills only — surface the skip in the preview too (#377).
   const claudeSkipWarning = doClaude && sel.agents.length
     ? `warning: ${sel.agents.length} agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)`
     : null;
+  // Claude Code target installs skills only — surface the skip in the preview too (#377).
 
   if (dry) {
     if (claudeSkipWarning) console.error(claudeSkipWarning);
+    const destinations = {};
+    for (const t of activeTargets(target))
+      destinations[t] = TARGETS[t].agentsDir ? dirname(TARGETS[t].agentsDir) : TARGETS[t].skillsDir;
     process.stdout.write(JSON.stringify({
       dryRun: true,
       scope: "user",
       target,
-      destination: doOc ? USER_OC : USER_CLAUDE_SKILLS,
+      // legacy single-destination key preserved for scripts (PLAN-453 step 1.1 contract)
+      destination: doOc ? USER_OC : (target === "agents" ? dirname(TARGETS.agents.agentsDir) : TARGETS.claude.skillsDir),
+      destinations,
       agents: sel.agents,
       skills: sel.skills,
       mcps: sel.mcps,
@@ -672,37 +692,48 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     return;
   }
 
-  // write to opencode paths
-  // written-content hashes per entry (#379): agents → injected file bytes;
-  // skills → written dir tree hash (post model-strip for the claude target).
+  // Write per active target, resolved from TARGETS (#453): dest dirs + transform
+  // modes come from the table — no per-target bespoke branches. Written-content
+  // hashes per entry (#379), keyed per target: agents → file bytes (model-
+  // injected for opencode, raw verbatim elsewhere — foreign targets stay
+  // unpinned), skills → written dir tree hash (post model-strip for claude).
   const newEntries = {};
-  if (doOc) {
-    await mkdir(USER_AGENTS, { recursive: true });
-    for (const stem of sel.agents) {
-      const agent = await readAgent(stem);
-      const tier = reg.agents.find((a) => a.stem === stem)?.tier || "unassigned";
-      const model = await agentModel(stem, tier, opts.provider);
-      const content = injectModelLine(agent.content, model);
-      await writeFile(join(USER_AGENTS, `${stem}.md`), content, "utf8");
-      newEntries[stem] = { type: "agent", targets: { opencode: sha256Hex(content) } };
+  for (const t of activeTargets(target)) {
+    const cfg = TARGETS[t];
+    if (t === "claude" && claudeSkipWarning)
+      console.error(claudeSkipWarning);
+    if (cfg.agentsDir) {
+      await mkdir(cfg.agentsDir, { recursive: true });
+      for (const stem of sel.agents) {
+        const agent = await readAgent(stem);
+        let content = agent.content;
+        if (cfg.agentMode === "model-injected") {
+          const tier = reg.agents.find((a) => a.stem === stem)?.tier || "unassigned";
+          content = injectModelLine(content, await agentModel(stem, tier, opts.provider));
+        }
+        await writeFile(join(cfg.agentsDir, `${stem}.md`), content, "utf8");
+        newEntries[stem] = { type: "agent", targets: { ...(newEntries[stem]?.targets || {}), [t]: sha256Hex(content) } };
+      }
     }
-    await mkdir(USER_SKILLS, { recursive: true });
-    for (const sname of sel.skills) {
-      const skill = await readSkill(sname);
-      const dst = join(USER_SKILLS, sname);
-      await cp(skill.dir, dst, { recursive: true, force: true });
-      newEntries[sname] = { type: "skill", targets: { opencode: await hashSkillDir(dst) } };
+    if (cfg.skillsDir) {
+      await mkdir(cfg.skillsDir, { recursive: true });
+      for (const sname of sel.skills) {
+        const skill = await readSkill(sname);
+        const dst = join(cfg.skillsDir, sname);
+        await cp(skill.dir, dst, { recursive: true, force: true });
+        if (cfg.skillMode === "model-strip") {
+          const skillMd = join(dst, "SKILL.md");
+          if (existsSync(skillMd))
+            await writeFile(skillMd, stripModelLine(await readFile(skillMd, "utf8")), "utf8");
+        }
+        newEntries[sname] = { type: "skill", targets: { ...(newEntries[sname]?.targets || {}), [t]: await hashSkillDir(dst) } };
+      }
     }
-  }
-
-  // write to Claude paths (same SKILL.md format — straight directory copy)
-  if (doClaude) for (const [n, ent] of Object.entries(await writeClaudeFormat(sel))) {
-    newEntries[n] = { type: ent.type, targets: { ...(newEntries[n]?.targets || {}), ...ent.targets } };
   }
 
   // update user-scope manifest (tracks ALL targets for uninstall/update). Agents are
-  // recorded only for targets that actually install them (opencode/both) —
-  // claude-only installs place no agent files anywhere (#377). entries merge
+  // recorded only for targets that actually install them (opencode, agents, or both) —
+  // claude-only installs still place no agent files anywhere (#377). entries merge
   // per-target: re-installing to one target preserves the other target's record.
   await mkdir(USER_OC, { recursive: true });
   const prevManifest = (await readJsonMaybe(USER_MANIFEST)) || { agents: [], skills: [] };
@@ -713,7 +744,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const manifest = {
     generatedAt: new Date().toISOString(),
     tool: "opencode-skill",
-    agents: doOc ? [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort() : (prevManifest.agents || []),
+    agents: (doOc || target === "agents") ? [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort() : (prevManifest.agents || []),
     skills: [...new Set([...(prevManifest.skills || []), ...sel.skills])].sort(),
     entries,
   };
@@ -723,6 +754,12 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     console.log(`installed (opencode) → ${USER_OC}:`);
     console.log(`  agents:  ${sel.agents.length}  -> ~/.config/opencode/agents/`);
     console.log(`  skills:  ${sel.skills.length}  -> ~/.config/opencode/skills/`);
+  }
+  if (doClaude) console.log(`  claude:  ${sel.skills.length}  -> ~/.claude/skills/`);
+  if (target === "agents") {
+    console.log(`installed (agents, shared) → ${dirname(TARGETS.agents.agentsDir)}:`);
+    console.log(`  agents:  ${sel.agents.length}  -> ~/.agents/agents/`);
+    console.log(`  skills:  ${sel.skills.length}  -> ~/.agents/skills/`);
   }
   if (sel.warnings.length) for (const w of sel.warnings) console.log(`  - ${w}`);
 
@@ -839,30 +876,6 @@ function stripModelLine(content) {
   return [...lines.slice(0, 1), ...fmBody, ...lines.slice(closeIdx)].join("\n");
 }
 
-async function writeClaudeFormat(sel) {
-  await mkdir(USER_CLAUDE_SKILLS, { recursive: true });
-  // Claude Code target installs skills only (#377): agents are opencode-specific
-  // and Claude Code silently ignores agent files written as SKILL.md.
-  if (sel.agents.length)
-    console.error(`warning: ${sel.agents.length} agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)`);
-  let count = 0;
-  const entries = {};
-  for (const sname of sel.skills) {
-    const skill = await readSkill(sname);
-    const dst = join(USER_CLAUDE_SKILLS, sname);
-    await cp(skill.dir, dst, { recursive: true, force: true });
-    // strip model: from SKILL.md for Claude compat (one source skill has it)
-    const skillMd = join(dst, "SKILL.md");
-    if (existsSync(skillMd)) {
-      await writeFile(skillMd, stripModelLine(await readFile(skillMd, "utf8")), "utf8");
-    }
-    entries[sname] = { type: "skill", targets: { claude: await hashSkillDir(dst) } };
-    count++;
-  }
-  console.log(`  claude:  ${count}  -> ~/.claude/skills/`);
-  return entries;
-}
-
 async function cmdRemove(args, opts) {
   const name = args[0];
   if (!name) die("remove: specify a skill or agent name.", 2);
@@ -882,17 +895,18 @@ async function cmdRemove(args, opts) {
     console.log(`'${name}' not found in user-scope manifest — nothing to remove.`);
     return;
   }
-  if (wasAgent) {
-    const f = join(USER_AGENTS, `${name}.md`);
-    if (existsSync(f)) await rm(f, { force: true });
+  // probe every target dir via TARGETS (#453) — remove cleans all of them
+  // (opencode + claude + shared ~/.agents)
+  for (const cfg of Object.values(TARGETS)) {
+    if (wasAgent && cfg.agentsDir) {
+      const f = join(cfg.agentsDir, `${name}.md`);
+      if (existsSync(f)) await rm(f, { force: true });
+    }
+    if (wasSkill && cfg.skillsDir) {
+      const d = join(cfg.skillsDir, name);
+      if (existsSync(d)) await rm(d, { recursive: true, force: true });
+    }
   }
-  if (wasSkill) {
-    const d = join(USER_SKILLS, name);
-    if (existsSync(d)) await rm(d, { recursive: true, force: true });
-  }
-  // also clean Claude format if present (~/.claude/skills/<name>/)
-  const claudeDir = join(USER_CLAUDE_SKILLS, name);
-  if (existsSync(claudeDir)) await rm(claudeDir, { recursive: true, force: true });
   prev.agents = (prev.agents || []).filter((a) => a !== name);
   prev.skills = (prev.skills || []).filter((s) => s !== name);
   if (prev.entries) delete prev.entries[name];
@@ -917,14 +931,23 @@ async function cmdUpdate(args, opts) {
   if (!prev.entries) {
     upgradedLegacy = true;
     for (const a of prev.agents || []) {
-      const f = join(USER_AGENTS, `${a}.md`);
-      if (existsSync(f)) entries[a] = { type: "agent", targets: { opencode: sha256Hex(await readFile(f, "utf8")) } };
+      // probe every historical target dir via TARGETS so shared installs keep their lifecycle
+      const targets = {};
+      for (const [t, cfg] of Object.entries(TARGETS)) {
+        if (!cfg.agentsDir) continue;
+        const f = join(cfg.agentsDir, `${a}.md`);
+        if (existsSync(f)) targets[t] = sha256Hex(await readFile(f, "utf8")); // installed bytes, as before
+      }
+      if (Object.keys(targets).length) entries[a] = { type: "agent", targets };
     }
     for (const s of prev.skills || []) {
-      // probe every historical target so claude installs keep their lifecycle
+      // probe every historical target dir via TARGETS so claude/shared installs keep their lifecycle
       const targets = {};
-      if (existsSync(join(USER_SKILLS, s))) targets.opencode = await hashSkillDir(join(USER_SKILLS, s));
-      if (existsSync(join(USER_CLAUDE_SKILLS, s))) targets.claude = await hashSkillDir(join(USER_CLAUDE_SKILLS, s));
+      for (const [t, cfg] of Object.entries(TARGETS)) {
+        if (!cfg.skillsDir) continue;
+        const d = join(cfg.skillsDir, s);
+        if (existsSync(d)) targets[t] = await hashSkillDir(d); // installed bytes, as before
+      }
       if (Object.keys(targets).length) entries[s] = { type: "skill", targets };
     }
   }
@@ -941,9 +964,14 @@ async function cmdUpdate(args, opts) {
     if (!inRegistry) {
       plan.registryRemoved.push(name);
       if (prune && !dry) {
-        if (ent.type === "agent") await rm(join(USER_AGENTS, `${name}.md`), { force: true });
-        else await rm(join(USER_SKILLS, name), { recursive: true, force: true });
-        await rm(join(USER_CLAUDE_SKILLS, name), { recursive: true, force: true });
+        for (const t of Object.keys(ent.targets)) {
+          const cfg = TARGETS[t];
+          if (!cfg) { console.error(`warning: pruning '${name}': unknown install target '${t}' — its files (if any) were left in place`); continue; }
+          const p = ent.type === "agent"
+            ? (cfg.agentsDir ? join(cfg.agentsDir, `${name}.md`) : null)
+            : (cfg.skillsDir ? join(cfg.skillsDir, name) : null);
+          if (p && existsSync(p)) await rm(p, { recursive: true, force: true });
+        }
         delete entries[name];
         prev.agents = (prev.agents || []).filter((x) => x !== name);
         prev.skills = (prev.skills || []).filter((x) => x !== name);
@@ -955,24 +983,33 @@ async function cmdUpdate(args, opts) {
     let touched = false, wouldContent = null; // agent: the full would-write file content
     let missingTargets = 0;
     for (const target of Object.keys(ent.targets)) {
+      const cfg = TARGETS[target];
+      if (!cfg) {
+        // explicit no-op on unknown target keys — never fallback-dispatch (older
+        // binaries routed every non-opencode key through the claude branch)
+        console.error(`warning: '${name}' has unknown install target '${target}' — skipping`);
+        continue;
+      }
       let wouldHash = null, installedPath = null;
       if (ent.type === "agent") {
-        // agents only ever install to the opencode target (#377)
-        installedPath = join(USER_AGENTS, `${name}.md`);
+        if (!cfg.agentsDir) { console.error(`warning: '${name}' target '${target}' does not install agents — skipping`); continue; }
+        installedPath = join(cfg.agentsDir, `${name}.md`);
         const agent = await readAgent(name);
-        const tier = reg.agents.find((a) => a.stem === name)?.tier || "unassigned";
-        wouldContent = injectModelLine(agent.content, await agentModel(name, tier, opts.provider));
+        if (cfg.agentMode === "model-injected") {
+          const tier = reg.agents.find((a) => a.stem === name)?.tier || "unassigned";
+          wouldContent = injectModelLine(agent.content, await agentModel(name, tier, opts.provider));
+        } else {
+          wouldContent = agent.content; // shared target: verbatim, unpinned (#453)
+        }
         wouldHash = sha256Hex(wouldContent);
       } else {
+        if (!cfg.skillsDir) { console.error(`warning: '${name}' target '${target}' does not install skills — skipping`); continue; }
+        installedPath = join(cfg.skillsDir, name);
         const skill = await readSkill(name);
-        if (target === "opencode") {
-          installedPath = join(USER_SKILLS, name);
-          wouldHash = await hashSkillDir(skill.dir);
-        } else {
-          installedPath = join(USER_CLAUDE_SKILLS, name);
-          wouldHash = await hashSkillDir(skill.dir, (rel, buf) =>
-            rel === "SKILL.md" ? Buffer.from(stripModelLine(buf.toString("utf8")), "utf8") : buf);
-        }
+        wouldHash = cfg.skillMode === "model-strip"
+          ? await hashSkillDir(skill.dir, (rel, buf) =>
+              rel === "SKILL.md" ? Buffer.from(stripModelLine(buf.toString("utf8")), "utf8") : buf)
+          : await hashSkillDir(skill.dir);
       }
       if (!existsSync(installedPath)) { plan.missing.push(`${name} (${target})`); missingTargets++; continue; }
       if (wouldHash === ent.targets[target]) continue;
@@ -984,7 +1021,7 @@ async function cmdUpdate(args, opts) {
           const skill = await readSkill(name);
           await rm(installedPath, { recursive: true, force: true });
           await cp(skill.dir, installedPath, { recursive: true });
-          if (target === "claude") {
+          if (cfg.skillMode === "model-strip") {
             const skillMd = join(installedPath, "SKILL.md");
             if (existsSync(skillMd))
               await writeFile(skillMd, stripModelLine(await readFile(skillMd, "utf8")), "utf8");
@@ -1019,8 +1056,10 @@ async function cmdUpdate(args, opts) {
   // visibility check only — name-stable updates cannot grow the permissions
   // union; missing allow rules are NOT repaired (documented deviation, #379).
   const sel = {
-    agents: Object.entries(entries).filter(([, e]) => e.type === "agent").map(([n]) => n),
-    skills: Object.entries(entries).filter(([, e]) => e.type === "skill").map(([n]) => n),
+    // opencode-target entries only: the allowlist is an opencode config check —
+    // warning about skills never installed to opencode is noise (#453)
+    agents: Object.entries(entries).filter(([, e]) => e.type === "agent" && e.targets?.opencode).map(([n]) => n),
+    skills: Object.entries(entries).filter(([, e]) => e.type === "skill" && e.targets?.opencode).map(([n]) => n),
     warnings: [],
   };
   await checkStrictAllowlist(sel, opts);
@@ -1179,6 +1218,8 @@ USAGE
 SCOPE
   User scope (default for 'add'): drops files into ~/.config/opencode/{agents,skills}/.
   opencode auto-discovers them — no opencode.json touch unless --permit.
+  Agents target (--target agents): cross-tool shared dir ~/.agents/{agents,skills}/
+  (scanned by Kimi Code and pi; files are verbatim, agents stay model-unpinned).
   Project scope (--project): writes .opencode/{agents,skills}/ + opencode.json + models.json + AGENTS.md.
 
 FLAGS
@@ -1195,7 +1236,7 @@ FLAGS
   --prune              remove opencode-init-owned entries absent from the new set
   --permit             (user scope) backup opencode.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
-  --target <t>         (add) install target: opencode (default), claude, or both (--format is a deprecated alias)
+  --target <t>         (add) install target: opencode (default), claude, agents (shared ~/.agents/), or both (--format is a deprecated alias)
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and
