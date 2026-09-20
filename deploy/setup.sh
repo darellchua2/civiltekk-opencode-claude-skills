@@ -4217,7 +4217,10 @@ main() {
     fi
 
     # Handle PeonPing-only mode (#466): the flag spelling of menu option 5 —
-    # sound-notification installer, exit immediately after.
+    # sound-notification installer, exit immediately after. Deps are re-checked
+    # here because menu option 5 got them for free from main's earlier check;
+    # the network check is intentionally NOT re-added (matches --quick: cron
+    # jobs run offline-tolerant, failures surface as run_cmd warnings).
     if [ "$PEONPING_ONLY" = true ]; then
         log_info "PeonPing Sound Notifications"
         if ! check_dependencies; then
@@ -4270,6 +4273,10 @@ main() {
         if ! check_network; then
             log_warn "Network connectivity issues detected. Some features may not work."
             if ! prompt_yes_no "Continue anyway?" "n"; then
+                # Headless fork (#466 review): EOF resolves this prompt to the
+                # default "n", so a bare no-TTY run exits 1 here — fail-closed
+                # on purpose (don't deploy on known-bad network). Say so.
+                [ -t 0 ] || log_warn "No TTY: headless default is abort (exit 1). Re-run with --skills-only for a local-only deploy."
                 exit 1
             fi
         fi
@@ -4289,8 +4296,10 @@ main() {
         # TTY gate (#466): headless runs used to fall into the menu and let
         # `read` hit EOF, silently taking the menu default. Now the default is
         # announced and taken deterministically — no prompt is reached.
+        # (A FAILING network check still aborts headless runs before this
+        # point — fail-closed on purpose: don't deploy on known-bad network.)
         if [ ! -t 0 ]; then
-            log_warn "No TTY detected - non-interactive run: defaulting to skills-only setup (the menu default). Use explicit flags (--quick, --skills-only, --update, --models-only) to choose a mode."
+            log_warn "No TTY detected - non-interactive run: defaulting to skills-only setup (the menu default). Use explicit flags (--quick, --skills-only, --update, --models-only, --migrate, --peonping) - see --help."
             deploy_skills_only
             echo ""
             echo "Skills deployment complete!"

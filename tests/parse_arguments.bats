@@ -130,4 +130,8 @@ teardown() {
         run bash -c "source '$SETUP_SH' >/dev/null 2>&1; $mode=true; ENABLE_PACK=markitdown; validate_mode_conflicts"
         [ "$status" -eq 0 ]
     done
+    # The no-mode default (bare full deploy) is the third valid combo — and
+    # the one headless users actually hit.
+    run bash -c "source '$SETUP_SH' >/dev/null 2>&1; ENABLE_PACK=markitdown; validate_mode_conflicts"
+    [ "$status" -eq 0 ]
 }

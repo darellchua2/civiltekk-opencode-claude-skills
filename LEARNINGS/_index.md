@@ -17,6 +17,24 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### Menu-case-to-flag extraction must re-derive the menu path's free preconditions
+
+- **Category**: pattern
+- **File**: `patterns/menu-case-to-flag-precondition-rederivation.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: a flag spelling for a menu case must explicitly re-add (or deliberately omit, with a comment) the preconditions the interactive path inherited from main — deps check, network check (#466)
+- **Date**: 2026-09-20
+
+### Prompt EOF takes the default — headless safety hinges on gate defaults
+
+- **Category**: pattern
+- **File**: `patterns/prompt-eof-takes-default-headless.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: setup.sh prompts resolve EOF to their declared default, so a headless code path is safe iff its gate prompts' defaults match the intended action — audit defaults, not just reachability (#466)
+- **Date**: 2026-09-20
+
 ### node -e argv has no script-name slot — slice(2) shifts args silently
 
 - **Category**: anti-pattern
