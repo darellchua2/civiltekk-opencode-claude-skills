@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.14.1](https://github.com/darellchua2/opencode-config-template/compare/v9.14.0...v9.14.1) (2026-09-20)
+
+### Bug Fixes
+
+* **ci:** review round 1 — contents:read, paginated marker scan, episode reset ([fc52740](https://github.com/darellchua2/opencode-config-template/commit/fc527401d55e7c964314c72fbd0c79b3b34baa78)), closes [#361](https://github.com/darellchua2/opencode-config-template/issues/361) [#361](https://github.com/darellchua2/opencode-config-template/issues/361)
+
 ## [9.14.0](https://github.com/darellchua2/opencode-config-template/compare/v9.13.1...v9.14.0) (2026-09-20)
 
 ### Features
