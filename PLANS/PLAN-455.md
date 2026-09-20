@@ -108,3 +108,4 @@ _Plan review round 1 (architecture-review-subagent): **rejected** → amended. T
 
 GATE 0b60caf lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — 71 bats ok (die-pin refreshed to six values), node --test green
 GATE 6d0fbe5 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — 71 bats ok, node --test green, 5-target sweep + lifecycle verified
+GATE f4925e0 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — FINAL: 84 bats ok (6 suites incl. kilo_target x13), node --test green, pack+drift green
