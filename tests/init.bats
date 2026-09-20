@@ -191,13 +191,16 @@ EOC
   [ ! -d "$HOME/.config/opencode/skills/tdd-workflow-skill" ]
 }
 
-@test "--target claude with an agent: warns, writes nothing for it, exit 0 (#377)" {
+@test "--target claude with an agent: installs translated agent to ~/.claude/agents (#457 flips #377)" {
   export HOME="$TMP_PROJ/home"
   mkdir -p "$HOME"
   run bash -c "$INIT add tdd-subagent --target claude --yes 2>&1 >/dev/null"
   [ "$status" -eq 0 ]
-  echo "$output" | grep -q "agent(s) skipped"
-  [ ! -d "$HOME/.claude/skills/tdd-subagent" ]
+  local F="$HOME/.claude/agents/tdd-subagent.md"
+  [ -f "$F" ]
+  grep -q '^name: tdd-subagent' "$F"
+  echo "$output" | grep -qv "agent(s) skipped" || true
+  ! grep -q "agent(s) skipped" <<< "$output"
 }
 
 @test "--format claude alias still works with deprecation warning (#377)" {
