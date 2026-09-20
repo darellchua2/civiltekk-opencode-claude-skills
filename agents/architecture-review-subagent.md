@@ -138,7 +138,7 @@ Before starting the review, assess scope:
 
 ## Post-Review Learning
 
-Run the gate defined in `reviewer-baseline-skill` §Mandatory Post-Review Learning Gate — blocking, every run. Architectural decisions discovered or recommended, systemic anti-patterns (same issue in 3+ files), and good patterns worth replicating are the qualifying findings; the `memory` tool is the primary store, `LEARNINGS/decisions|patterns|anti-patterns/` the curated secondary.
+Run the gate defined in `reviewer-baseline-skill` §Mandatory Post-Review Learning Gate — blocking, every run. Architectural decisions discovered or recommended, systemic anti-patterns (same issue in 3+ files), and good patterns worth replicating are the qualifying findings; the `memory` tool is the primary store, `LEARNINGS/decisions|patterns|anti-patterns/` the curated secondary (persisted by the orchestrator from your `LEARNINGS candidates:` block — never by you).
 
 ## Pattern Reference (cross-skill)
 
