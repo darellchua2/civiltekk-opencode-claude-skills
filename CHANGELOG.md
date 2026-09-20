@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.19.4](https://github.com/darellchua2/opencode-config-template/compare/v9.19.3...v9.19.4) (2026-09-20)
+
+### Bug Fixes
+
+* **deploy:** gate dry-run real-write leaks — learnings index, .env writer, models-only update ([#467](https://github.com/darellchua2/opencode-config-template/issues/467)) ([#480](https://github.com/darellchua2/opencode-config-template/issues/480)) ([f121565](https://github.com/darellchua2/opencode-config-template/commit/f12156501f0f0fd3d9e659ffe2d2c3312ff30c4e))
+
 ## [9.19.3](https://github.com/darellchua2/opencode-config-template/compare/v9.19.2...v9.19.3) (2026-09-20)
 
 ### Bug Fixes
