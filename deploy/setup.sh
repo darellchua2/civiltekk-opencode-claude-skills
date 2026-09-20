@@ -2927,7 +2927,7 @@ setup_local_llm_env() {
 
     # Create .env from example if it doesn't exist
     if [ ! -f "$env_file" ] && [ -f "$env_example" ]; then
-        cp "$env_example" "$env_file"
+        run_cmd cp "$env_example" "$env_file"
         log_info "Created .env from .env.example"
     fi
 
@@ -2936,6 +2936,13 @@ setup_local_llm_env() {
         local key="$1"
         local value="$2"
         local file="$3"
+
+        # Dry-run safe (#467): both write paths below (sed -i, >> append)
+        # bypass run_cmd and would mutate the real repo .env during a preview.
+        if [ "$DRY_RUN" = true ]; then
+            log_info "[DRY-RUN] Would set ${key}=${value} in ${file}"
+            return 0
+        fi
 
         if grep -qE "^${key}=" "$file" 2>/dev/null; then
             sed -i "s|^${key}=.*|${key}=${value}|g" "$file"
@@ -3522,7 +3529,12 @@ setup_learnings_dir() {
     done
 
     if [ ! -f "${LEARNINGS_DIR}/_index.md" ]; then
-        cat > "${LEARNINGS_DIR}/_index.md" << 'LEARNINGS_INDEX'
+        # Dry-run safe (#467): this heredoc bypasses run_cmd and would create
+        # a real file during a preview.
+        if [ "$DRY_RUN" = true ]; then
+            log_info "[DRY-RUN] Would create _index.md template"
+        else
+            cat > "${LEARNINGS_DIR}/_index.md" << 'LEARNINGS_INDEX'
 # LEARNINGS Index (User-Level)
 
 <!-- AUTO-GENERATED — manual edits to the listing below will be overwritten on next learning write -->
@@ -3543,6 +3555,7 @@ setup_learnings_dir() {
 
 <!-- No entries yet -->
 LEARNINGS_INDEX
+        fi
         log_info "Created _index.md template"
     fi
 
@@ -4206,7 +4219,10 @@ main() {
         # Config via resolver; agent files via the manifest path — update's
         # written-hash comparison propagates tier/override changes (#379).
         RESOLVER_CONFIG_ONLY=true run_resolver
-        node "${INSTALLER_DIR}/init.mjs" update ${PROVIDER:+--provider ${PROVIDER}}
+        # Dry-run safe (#467): the resolver above stages a preview; the manifest
+        # update must not re-apply for real. cmdUpdate gates writes and prune
+        # on !dry (init.mjs), so the flag is sufficient.
+        node "${INSTALLER_DIR}/init.mjs" update ${PROVIDER:+--provider ${PROVIDER}} ${DRY_RUN:+--dry-run}
         rc=$?
         if [ "$rc" -ne 0 ]; then
             log_warn "manifest update skipped (exit ${rc}) — pre-#379 installs: one full ./deploy/setup.sh run adopts the manifest"
