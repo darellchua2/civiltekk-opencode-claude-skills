@@ -257,6 +257,43 @@ for subtask in "${SUBTASKS[@]}"; do
 done
 ```
 
+### Step 4b: Multi-ticket sequence handoff
+
+When Step 4 created **more than one ticket** (parent with sub-issues or a
+batch), end the run with a sequence handoff so the refs can be pasted straight
+into `worktree-pipeline-skill` (`/run-worktree-pipeline`), which executes
+tickets in the order given. List the **executable** tickets — the sub-issues
+or batch members; omit the umbrella parent (the pipeline has no parent
+handling and would cut a branch, PLAN, and PR for it):
+
+```
+Suggested pipeline sequence:
+/run-worktree-pipeline <refs in suggested order>
+```
+
+- **One-line rationale per position** (e.g. "#458 first — schema the others consume").
+- **Order derivation priority** — a suggestion, never silently invented:
+  1. Dependencies the user explicitly stated during intake
+  2. The intake/sub-item order the user gave
+  3. Content inference (foundation/data/schema before consumers) — **always labeled "inferred"**
+
+  Never present an inferred order as user-stated. A single-ticket run skips
+  this step entirely.
+- **Recording dependencies (`blocked-by:`)**: when the user states that one
+  ticket depends on another, also write the dependency into the **dependent**
+  ticket's body so the pipeline's skip-guard (Step 1 there) enforces the order
+  at execution time:
+  - Body line `blocked-by: <ref>` under a `### Dependencies` heading —
+    bare ticket refs the pipeline recognizes: `#458`, `PROJ-123`,
+    `owner/repo#458`.
+  - Timing: blocker ref already exists → include the line in the creation
+    body; blocker created later → fetch the current body, append the line,
+    write it back (`gh issue view --json body -q .body` →
+    `gh issue edit --body-file ...`). `gh issue edit --body` REPLACES the
+    whole body — never a bare append. Jira: edit the description likewise.
+  - Keep it a plain body line — the pipeline parses bodies, not JIRA link
+    relations.
+
 ## Best Practices
 
 - **Be specific**: "Add JWT authentication" vs "Add auth"
@@ -321,4 +358,30 @@ Agent: Labels detected: enhancement
 Created GitHub issue: #456 → https://github.com/org/repo/issues/456
 
 Next step (optional): /run-worktree-pipeline #456
+```
+
+Multi-ticket run (parent with sub-issues) — the sequence handoff:
+
+```
+User: /create-ticket Auth rework: schema migration, token service, login UI
+      (login UI depends on the token service, which depends on the schema)
+
+Agent: Classified as feature, parent with sub-issues. Sub-item intake ×3,
+       each with acceptance criteria. Dependencies captured: token service
+       blocked-by schema; login UI blocked-by token service. Create? (y / edit)
+
+User: y
+
+Agent: Labels detected: enhancement
+Created #460 (parent), #461, #462, #463 —
+### Dependencies sections written: #462 `blocked-by: #461`, #463 `blocked-by: #462`
+
+Suggested pipeline sequence:
+/run-worktree-pipeline #461 #462 #463
+#461 first — schema the token service migrates onto (user-stated);
+#462 before #463 — UI consumes issued tokens (user-stated).
+
+Next step (optional): paste the sequence as-is, or reorder — unmet
+`blocked-by:` refs make the pipeline skip a ticket (left for a later run),
+not run it early.
 ```
