@@ -328,6 +328,7 @@ AUTO_ACCEPT=false
 VERBOSE=false
 SKIP_CONFIG_COPY=false
 UPDATE_ONLY=false
+PEONPING_ONLY=false       # --peonping (sound-notification installer only)
 ENABLE_AUTO_UPDATE=false
 UPDATE_SCHEDULE="manual"
 CHECK_UPDATE_ONLY=false
@@ -531,6 +532,9 @@ USAGE:
   --update                Update opencode-ai CLI only           Keep CLI current
                           (No config changes)
 
+  --peonping              Install PeonPing sound notifications  Headless /
+                          (menu option 5 as a flag)             scripted installs
+
   --rollback [TARGET]     Restore from a previous backup         Undo a bad deploy
                           TARGET:
                             (omitted)   Interactive picker
@@ -549,6 +553,7 @@ USAGE:
     -q, --quick           Quick setup mode (config + skills only, no dependencies)
     -s, --skills-only     Skills-only deployment mode
     -u, --update          Update OpenCode CLI to latest version
+    -P, --peonping        Install PeonPing sound notifications only
     --rollback [TARGET]   Restore from previous backup (see SETUP MODES above)
 
   UPDATE MANAGEMENT:
@@ -834,6 +839,10 @@ parse_arguments() {
                 CHECK_UPDATE_ONLY=true
                 shift
                 ;;
+            -P|--peonping)
+                PEONPING_ONLY=true
+                shift
+                ;;
             -k|--keep-backups)
                 if [ -n "$2" ] && [[ "$2" =~ ^-?[0-9]+$ ]]; then
                     KEEP_BACKUPS="$2"
@@ -926,6 +935,41 @@ parse_arguments() {
                 ;;
         esac
     done
+}
+
+# Mode exclusivity (#466): the early-exit modes are mutually exclusive, and
+# --enable-pack only makes sense for modes that deploy config content (the
+# pack merger runs from deploy_agents). Previously contradictory flags were
+# silently ignored, e.g. `--update --enable-pack markitdown` deployed no pack.
+# NOTE: per-flag semantic validation (e.g. --provider with --update) lands
+# with the plan model (#470), not here.
+validate_mode_conflicts() {
+    local modes=()
+    [ "$QUICK_SETUP" = true ] && modes+=("--quick")
+    [ "$SKILLS_ONLY" = true ] && modes+=("--skills-only")
+    [ "$UPDATE_ONLY" = true ] && modes+=("--update")
+    [ "$MODELS_ONLY" = true ] && modes+=("--models-only")
+    [ "$MIGRATE_ONLY" = true ] && modes+=("--migrate")
+    [ "$ROLLBACK_MODE" = true ] && modes+=("--rollback")
+    [ "$CHECK_UPDATE_ONLY" = true ] && modes+=("--check-update")
+    [ "$PEONPING_ONLY" = true ] && modes+=("--peonping")
+    if [ "${#modes[@]}" -gt 1 ]; then
+        log_error "Mutually exclusive modes combined: ${modes[*]}. Choose one."
+        exit 1
+    fi
+    if [ -n "$ENABLE_PACK" ]; then
+        local packless=()
+        [ "$UPDATE_ONLY" = true ] && packless+=("--update")
+        [ "$MODELS_ONLY" = true ] && packless+=("--models-only")
+        [ "$MIGRATE_ONLY" = true ] && packless+=("--migrate")
+        [ "$ROLLBACK_MODE" = true ] && packless+=("--rollback")
+        [ "$CHECK_UPDATE_ONLY" = true ] && packless+=("--check-update")
+        [ "$PEONPING_ONLY" = true ] && packless+=("--peonping")
+        if [ "${#packless[@]}" -gt 0 ]; then
+            log_error "--enable-pack has no effect with ${packless[*]} (packs merge into the deployed config, which these modes never write). Drop --enable-pack or use a config-deploy mode."
+            exit 1
+        fi
+    fi
 }
 
 # Validate --enable-pack <csv> against deploy/packs/pack-<name>.json.
@@ -1913,6 +1957,30 @@ setup_zai_api_key() {
     else
         log_success "API Key accepted: ${ZAI_API_KEY:0:8}...${ZAI_API_KEY: -4}"
     fi
+}
+
+# Skills-only deploy: shared by the --skills-only flag path, menu option 2,
+# and the headless no-TTY default (#466). One body, three entry points —
+# duplicating it per site is how drift bugs are born (see #469).
+deploy_skills_only() {
+    log_info "Validating OpenCode installation..."
+    if command_exists opencode; then
+        log_success "OpenCode is installed ($(opencode --version 2>/dev/null))"
+    else
+        log_error "OpenCode CLI is not installed globally"
+        log_info "Please install OpenCode first: npm install -g opencode-ai"
+        exit 1
+    fi
+
+    if ! check_dependencies; then
+        log_error "Dependency check failed. Please install missing dependencies."
+        exit 1
+    fi
+
+    setup_config || true
+    deploy_agents || true
+    setup_learnings_dir || true
+    print_summary
 }
 
 # Setup PeonPing (AI agent sound notifications)
@@ -4096,6 +4164,7 @@ main() {
     if [ -n "$ENABLE_PACK" ]; then
         validate_enable_pack
     fi
+    validate_mode_conflicts
 
     # Display header
     if [ "$UPDATE_ONLY" = false ] && [ "$SKILLS_ONLY" = false ]; then
@@ -4147,6 +4216,23 @@ main() {
         exit 0
     fi
 
+    # Handle PeonPing-only mode (#466): the flag spelling of menu option 5 —
+    # sound-notification installer, exit immediately after. Deps are re-checked
+    # here because menu option 5 got them for free from main's earlier check;
+    # the network check is intentionally NOT re-added (matches --quick: cron
+    # jobs run offline-tolerant, failures surface as run_cmd warnings).
+    if [ "$PEONPING_ONLY" = true ]; then
+        log_info "PeonPing Sound Notifications"
+        if ! check_dependencies; then
+            log_error "Dependency check failed. Please install missing dependencies."
+            exit 1
+        fi
+        setup_peonping || true
+        echo ""
+        echo "PeonPing setup complete!"
+        exit 0
+    fi
+
     # Handle migrate-only mode (v2.0): v1.x -> v2.0 migration + resolution only
     if [ "$MIGRATE_ONLY" = true ]; then
         log_info "Migrate mode (v2.0)"
@@ -4164,24 +4250,7 @@ main() {
 
     # Handle skills-only mode
     if [ "$SKILLS_ONLY" = true ]; then
-        log_info "Validating OpenCode installation..."
-        if command_exists opencode; then
-            log_success "OpenCode is installed ($(opencode --version 2>/dev/null))"
-        else
-            log_error "OpenCode CLI is not installed globally"
-            log_info "Please install OpenCode first: npm install -g opencode-ai"
-            exit 1
-        fi
-
-        if ! check_dependencies; then
-            log_error "Dependency check failed. Please install missing dependencies."
-            exit 1
-        fi
-
-        setup_config || true
-        deploy_agents || true
-        setup_learnings_dir || true
-        print_summary
+        deploy_skills_only
         echo ""
         echo "Skills deployment complete!"
         exit 0
@@ -4204,6 +4273,10 @@ main() {
         if ! check_network; then
             log_warn "Network connectivity issues detected. Some features may not work."
             if ! prompt_yes_no "Continue anyway?" "n"; then
+                # Headless fork (#466 review): EOF resolves this prompt to the
+                # default "n", so a bare no-TTY run exits 1 here — fail-closed
+                # on purpose (don't deploy on known-bad network). Say so.
+                [ -t 0 ] || log_warn "No TTY: headless default is abort (exit 1). Re-run with --skills-only for a local-only deploy."
                 exit 1
             fi
         fi
@@ -4220,6 +4293,18 @@ main() {
 
     # Main menu (if not quick setup or skills-only)
     if [ "$QUICK_SETUP" = false ] && [ "$SKILLS_ONLY" = false ] && [ "$AUTO_ACCEPT" = false ]; then
+        # TTY gate (#466): headless runs used to fall into the menu and let
+        # `read` hit EOF, silently taking the menu default. Now the default is
+        # announced and taken deterministically — no prompt is reached.
+        # (A FAILING network check still aborts headless runs before this
+        # point — fail-closed on purpose: don't deploy on known-bad network.)
+        if [ ! -t 0 ]; then
+            log_warn "No TTY detected - non-interactive run: defaulting to skills-only setup (the menu default). Use explicit flags (--quick, --skills-only, --update, --models-only, --migrate, --peonping) - see --help."
+            deploy_skills_only
+            echo ""
+            echo "Skills deployment complete!"
+            exit 0
+        fi
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "                      Setup Mode Selection"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -4243,21 +4328,7 @@ main() {
             2)
                 echo ""
                 log_info "Skills-Only Setup: Copy skills folder only"
-                
-                # Validate OpenCode installation
-                if command_exists opencode; then
-                    log_success "OpenCode is installed ($(opencode --version 2>/dev/null))"
-                else
-                    log_error "OpenCode CLI is not installed globally"
-                    log_info "Please install OpenCode first: npm install -g opencode-ai"
-
-                    exit 1
-                fi
-
-                setup_config || true
-                deploy_agents || true
-                setup_learnings_dir || true
-                print_summary
+                deploy_skills_only
                 echo ""
                 echo "Skills deployment complete!"
                 exit 0
