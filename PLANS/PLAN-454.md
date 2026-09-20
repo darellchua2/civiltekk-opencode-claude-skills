@@ -110,3 +110,4 @@ _Plan review round 1 (architecture-review-subagent): approved-with-notes; 4 Majo
 
 GATE d2b425a lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — 59 bats ok, node --test green
 GATE cebe329 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — 59 bats ok, node --test green, kimi project install/prune verified
+GATE bdb4035 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — 59 bats ok, node --test green, 4-target regression sweep + kimi lifecycle verified
