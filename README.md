@@ -760,7 +760,7 @@ Deliberately out of scope (upgrade path if real bugs demand it): busy-stall abor
 
 | Env var | Default | Purpose |
 |---------|---------|---------|
-| `OPENCODE_QUESTION_REPAIR_DEBUG` | `false` | `[question-repair]` loaded/repair markers via the server log |
+| `OPENCODE_QUESTION_REPAIR_DEBUG` | `false` | `[question-repair]` loaded/repair markers via the server log — set it when STARTING the server: plugins execute in the shared server process, so exporting it mid-session against an already-running server will not fire the markers |
 
 Deliberately out of scope: dismissed/aborted labeling (OpenCode core, by design), upstream stuck-running prompts, Docker endpoint verification (the plugin rides along via `opencode_app/Dockerfile:82` `COPY plugins/` but is not load-bearing there). Tests: `node --test tests/test_question_repair_plugin.test.ts`.
 

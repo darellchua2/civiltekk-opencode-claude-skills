@@ -82,13 +82,21 @@ test('AC2: option entries missing both fields are dropped', () => {
   assert.deepEqual(out.questions[0].options.map((o: any) => o.label ?? o.description).sort(), ['A', 'B desc']);
 });
 
-test('items without usable options are dropped; not-object items are dropped', () => {
+test('options-less items are KEPT with options: [] (safe under both schema readings)', () => {
   const input = {
-    questions: [{ question: 'Q?', header: 'H', options: [{ label: 'A' }] }, null, { header: 'no options' }],
+    questions: [{ question: 'Q?', header: 'H', options: [{ label: 'A' }] }, null, { question: 'Q2', header: 'H2' }, { question: 'Q3', header: 'H3', options: [{}, 'garbage'] }],
   };
   const out: any = normalizeQuestionInput(input);
-  assert.equal(out.questions.length, 1);
-  assert.equal(out.questions[0].question, 'Q?');
+  assert.equal(out.questions.length, 3); // null dropped; both question/header-valid items kept
+  assert.deepEqual(out.questions.map((q: any) => q.question), ['Q?', 'Q2', 'Q3']);
+  assert.deepEqual(out.questions[1].options, []); // absent → normalized to []
+  assert.deepEqual(out.questions[2].options, []); // emptied after option repair → []
+});
+
+test('items with neither question nor header are dropped', () => {
+  const input = { questions: [{ options: [{ label: 'A' }] }, { multiple: true, options: [] }] };
+  const out = normalizeQuestionInput(input);
+  assert.strictEqual(out, input); // everything dropped → beyond repair → original
 });
 
 test('AC3: valid payloads pass through as the same reference (no mutation)', () => {

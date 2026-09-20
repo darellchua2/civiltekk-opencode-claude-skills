@@ -30,7 +30,14 @@
 //   glob-order and must not matter: this plugin only ever writes whole strings
 //   or verbatim copies into input fields.
 // - Drop rules: option entries missing BOTH `label` and `description`;
-//   question items that are not objects or have no usable `options` array.
+//   question items that are not objects, or have no usable `question` AND
+//   `header`. Items whose options array is absent or empties after option
+//   repair are KEPT with `options: []` — the schema reading is ambiguous
+//   (Mode R relay round 2: served schema shows no item-level required, but
+//   strictness can't be excluded), and `[]` is safe under both: present-but-
+//   empty passes a required-check, and the tool's render path auto-appends a
+//   "Type your own answer" free-text option regardless of option count. Drop
+//   would risk silently losing a real question under the lenient reading.
 // - Bounded repair: if input is not an object, has no `questions` array, or
 //   every item is dropped, the ORIGINAL input reference is returned unchanged —
 //   the schema validator then produces its error. This plugin never invents a
@@ -100,18 +107,27 @@ function repairItem(raw: unknown): { item: Record<string, unknown> | null; chang
     changed = true;
   }
 
-  if (!Array.isArray(out.options)) return { item: null, changed: true };
-  const opts: Record<string, unknown>[] = [];
-  let optsChanged = false;
-  for (const rawOpt of out.options) {
-    const { opt, changed: c } = repairOption(rawOpt);
-    optsChanged = optsChanged || c;
-    if (opt) opts.push(opt);
-  }
-  if (opts.length === 0) return { item: null, changed: true }; // no usable options → drop item
-  if (optsChanged) {
-    out.options = opts;
+  // Nothing usable to render (no question AND no header) → drop.
+  if (!isStr(out.question) && !isStr(out.header)) return { item: null, changed: true };
+
+  // Options absent or emptied after option repair → keep with [] (safe under
+  // both schema readings; the tool auto-appends a free-text option). Drop
+  // would risk silently losing a real question.
+  if (!Array.isArray(out.options)) {
+    out.options = [];
     changed = true;
+  } else {
+    const opts: Record<string, unknown>[] = [];
+    let optsChanged = false;
+    for (const rawOpt of out.options) {
+      const { opt, changed: c } = repairOption(rawOpt);
+      optsChanged = optsChanged || c;
+      if (opt) opts.push(opt);
+    }
+    if (optsChanged) {
+      out.options = opts;
+      changed = true;
+    }
   }
 
   return { item: changed ? out : q, changed };
@@ -152,7 +168,7 @@ export default {
       const repaired = normalizeQuestionInput(event.input);
       if (repaired !== event.input) {
         if (debug) console.error('[question-repair] repaired malformed payload');
-        (event as { input?: unknown }).input = repaired;
+        event.input = repaired;
       }
     });
   },

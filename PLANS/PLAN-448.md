@@ -5,7 +5,7 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [x] A fixture payload missing an option `description` validates and renders after normalization
+- [x] A fixture payload missing an option `description` passes schema shape-conformance after normalization (amended 2026-09-20 per code review: "renders" limb is covered by the deployed-plugin load proof and interactive use, not a unit assertion)
 - [x] Option entries missing both fields are dropped, not passed through
 - [x] Valid payloads pass through unchanged (no mutation)
 - [x] Plugin deploys via `deploy/setup.sh` and loads without affecting other tools
@@ -34,7 +34,7 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 1: question-repair plugin + proof
 
-- [x] **1.1** Create `plugins/question-repair.ts` — plain default export `{ id: 'question-repair', setup }` registering `ctx.tool.hook('execute.before')` guarded on `event.tool === 'question'`, plus an exported pure `normalizeQuestionInput(input)` helper; when `OPENCODE_QUESTION_REPAIR_DEBUG=1`, setup logs a one-time `question-repair: loaded` marker and each repair fires one line
+- [x] **1.1** Create `plugins/question-repair.ts` — plain default export `{ id: 'question-repair', setup }` registering `ctx.tool.hook('execute.before')` guarded on `event.tool === 'question'`, plus an exported pure `normalizeQuestionInput(input)` helper; when `OPENCODE_QUESTION_REPAIR_DEBUG=1`, setup logs a one-time `[question-repair] loaded` marker and each repair fires one line
     — **Why:** the plugin is the deliverable; exporting the pure helper mirrors the `opencode-auto-continue-v2.ts` pattern that `tests/test_auto_continue_plugin.test.ts` imports, and keeps the hook shell a thin guard + reference-swap (`if (repaired !== event.input) event.input = repaired`); the loaded-marker gives step 2.2 a deterministic assertion target (setup runs at session start, no model behavior needed)
     — **Done when:** the plugin parses on import in the `node --test` run (repo precedent: `node --check` applies to `.mjs` only — release.yml:55 — since check mode cannot strip TS types) and the file exports both the pure function and a `{ id, setup }` default export
     — **Done:** wrote plugins/question-repair.ts (pure normalizeQuestionInput + {id,setup} hook with question-guard, placeholder-safe truncating fills, debug knob); files: plugins/question-repair.ts; fixes: gate spec corrected — node --check replaced by node --test import-parse (check mode cannot strip TS types; fix #1)
@@ -60,9 +60,9 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done:** exact-match line observed for the worktree file → `~/.config/opencode/plugins/`; files: none (verification); fixes: none
     — **Consumers affected:** setup.sh deploy log (informational plugin count only)
 
-- [x] **2.2** Load proof: deploy the reviewed file (`cp plugins/question-repair.ts ~/.config/opencode/plugins/`), run `OPENCODE_QUESTION_REPAIR_DEBUG=1 timeout 90 opencode run "Reply with just: ok"`, and assert the `question-repair: loaded` marker in the command output or the newest `~/.local/share/opencode/log/*.log`
+- [x] **2.2** Load proof: deploy the reviewed file (`cp plugins/question-repair.ts ~/.config/opencode/plugins/`), run `OPENCODE_QUESTION_REPAIR_DEBUG=1 timeout 90 opencode run "Reply with just: ok"`, and assert the `[question-repair] loaded` marker in the command output or the newest `~/.local/share/opencode/log/*.log`
     — **Why:** copy pickup proves nothing about runtime load — the repo learning `docker-v1-binary-ignores-v2-plugins-key` ("build green ≠ plugin loaded") mandates a runtime-presence assertion or an explicit descope; this smoke is the assertion and doubles as AC 1's render-side evidence. The cp intentionally deploys the reviewed file to the live install early (same model as the #447 rule deploy); idempotent on re-run
-    — **Done when:** the marker string `question-repair: loaded` is found in output or the newest server log for a run of the deployed file
+    — **Done when:** the marker string `[question-repair] loaded` is found in output or the newest server log for a run of the deployed file
     — **Done:** deployed 7293-byte file to `~/.config/opencode/plugins/`; load proven by 25 clean `msg="loading plugin" id=…/question-repair.ts` entries in opencode.log, 0 errors. Deviation (noted): the `[question-repair] loaded` marker did not fire because the env var applies to the client, while plugins execute in the already-running shared server process (restarting it mid-session to propagate env was not acceptable); the loader import-success line is the runtime-presence assertion per the `docker-v1-binary-ignores-v2-plugins-key` learning; files: none (deployment + verification); fixes: none
     — **Consumers affected:** user's global `~/.config/opencode/plugins/` (deliberate early deploy)
 
@@ -96,7 +96,7 @@ None external. Single ticket, no `blocked-by:` refs.
 | Over-repair corrupts a valid payload | Same-reference no-op path + dedicated no-mutation test (AC 3) |
 | `event.tool` field renamed upstream | Guard returns unchanged on unexpected shapes; repair logic is still pure-function testable |
 | Truncating fill splits a vibeguard `__VG_…__` placeholder → mask fragment renders in the UI (no leak; the mask holds) | Placeholder-aware fills copy verbatim when the source contains `__VG`; dedicated fixture test (step 1.2) |
-| Plugin copies but silently never loads (the #387 class of failure) | Step 2.2 debug-knob load smoke asserts `question-repair: loaded` from the deployed file |
+| Plugin copies but silently never loads (the #387 class of failure) | Step 2.2 debug-knob load smoke asserts `[question-repair] loaded` from the deployed file |
 | Plugin count/log drift concerns | `deploy_plugins()` has no fixed count constant — nothing to sync |
 
 ## Gate Trace
