@@ -3756,6 +3756,13 @@ setup_provider_credentials() {
     env_var="$(node -e 'console.log(JSON.parse(process.argv[1]).env_var)' "$block")"
     oauth="$(node -e 'console.log(JSON.parse(process.argv[1]).oauth ? "true" : "false")' "$block")"
 
+    # Dry-run preview stops before any capture (the prompt would collect a
+    # secret that the gate then discards — cleaner to not ask).
+    if [ "$DRY_RUN" = true ]; then
+        log_info "[DRY-RUN] Would capture credentials for provider '${chosen}'"
+        return 0
+    fi
+
     if [ "$oauth" = "true" ]; then
         # OAuth-capable providers authenticate via opencode's own interactive
         # login — a headless key prompt would be wrong UX (AC: hint, no prompt).
@@ -3799,10 +3806,20 @@ setup_provider_credentials() {
         register_provider_auth "$oid" "$key"
     done
 
-    # Verify via opencode's own view when it is installed.
+    # Verify via opencode's own view when it is installed. Exit status is the
+    # check — opencode renders provider DISPLAY names ("Z.AI Coding Plan"),
+    # not raw auth ids, so id-substring matching is unreliable.
     if command_exists opencode; then
-        if opencode auth list 2>/dev/null | grep -q "$(node -e 'console.log(JSON.parse(process.argv[1]).auth_ids[0])' "$block")"; then
-            log_success "Credential verified via 'opencode auth list'"
+        # Bounded: on a never-run opencode state dir the list command can stall
+        # (first-run initialization) — the verify is advisory, cap it at 15s.
+        local verify_cmd=(opencode auth list)
+        command_exists timeout && verify_cmd=(timeout 15 "${verify_cmd[@]}")
+        local listing
+        if listing="$("${verify_cmd[@]}" 2>/dev/null)"; then
+            log_success "Credentials registered (verified via 'opencode auth list'):"
+            if [ -n "$listing" ]; then
+                while IFS= read -r line; do log_info "  ${line}"; done <<< "$listing"
+            fi
         else
             log_warn "Could not verify the seeded credential via 'opencode auth list'"
         fi
@@ -3944,13 +3961,27 @@ auth = {}
 try:
     with open(auth_file) as f:
         loaded = json.load(f)
-        auth = loaded if isinstance(loaded, dict) else {}
-except (FileNotFoundError, ValueError):
+        if isinstance(loaded, dict):
+            auth = loaded
+        else:
+            raise ValueError("auth.json is not an object")
+except FileNotFoundError:
     pass
+except ValueError:
+    # Merge-never-clobber must hold even for corrupt files (#471 review): a
+    # half-written auth.json must not be silently replaced (that would destroy
+    # every stored credential) — park it and start fresh, loudly.
+    backup = auth_file + ".corrupt.bak"
+    try:
+        os.replace(auth_file, backup)
+        print(f"  warning: auth.json was unparseable — moved to {backup}", file=sys.stderr)
+    except OSError:
+        pass
 auth[auth_id] = {"type": "api", "key": key}
 os.makedirs(auth_dir, exist_ok=True)
 with open(auth_file, "w") as f:
     json.dump(auth, f, indent=2)
+os.chmod(auth_file, 0o600)  # API keys at rest — not group/world-readable
 print("  auth.json providers: " + ", ".join(sorted(auth.keys())))
 PYEOF
 }
@@ -3995,7 +4026,7 @@ setup_shell_vars() {
         fi
     fi
 
-    # Register the PAYG `zai` provider in opencode's native auth store so it
+    # Register a provider credential (see the generalized contract below) in opencode's native auth store so it
     # resolves identically to the Docker path (single credential mechanism).
     # auth.json seeding moved to setup_provider_credentials (#471) — the
     # identity layer, coupled to provider selection, not shell-vars.

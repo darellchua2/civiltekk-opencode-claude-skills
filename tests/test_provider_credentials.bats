@@ -14,16 +14,20 @@ PRESETS="installer/provider-presets.json"
   node -e '
     const pp = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
     const presets = pp.presets || pp;
+    // LOCAL allowlist (prefix-keyed-guard-silent-exemption): anything NOT in
+    // it is remote and MUST carry a valid credential block — a future provider
+    // added without one fails here instead of silently skipping capture.
+    const LOCAL = new Set(["local-llm", "vllm", "ollama"]);
     for (const [name, p] of Object.entries(presets)) {
-      if (!p.primary) continue;
-      const remote = ["zai", "zai-custom", "anthropic", "openai", "openrouter"].includes(name);
-      if (remote) {
-        const c = p.credential;
-        if (!c || !Array.isArray(c.auth_ids) || c.auth_ids.length === 0 || !c.env_var) {
-          throw new Error(name + ": missing/invalid credential block");
-        }
-      } else if (p.credential) {
-        throw new Error(name + ": local preset must not carry a credential block");
+      if (name.startsWith("$")) continue;
+      if (!p || typeof p !== "object" || !p.primary) {
+        throw new Error(name + ": preset object missing .primary");
+      }
+      const c = p.credential;
+      if (LOCAL.has(name)) {
+        if (c) throw new Error(name + ": local preset must not carry a credential block");
+      } else if (!c || !Array.isArray(c.auth_ids) || c.auth_ids.length === 0 || !c.env_var) {
+        throw new Error(name + ": remote preset missing/invalid credential block");
       }
     }
   ' "$PRESETS"
@@ -55,7 +59,7 @@ PRESETS="installer/provider-presets.json"
 
 @test "zai_capture_seeds_both_distinct_auth_ids" {
   local d; d="$(mktemp -d)"
-  bash -c "export HOME='$d'; export ZAI_API_KEY='testkey123'; source '$SETUP_SH' >/dev/null 2>&1
+  bash -c "export HOME='$d'; unset XDG_DATA_HOME XDG_CONFIG_HOME; export ZAI_API_KEY='testkey123'; source '$SETUP_SH' >/dev/null 2>&1
            DRY_RUN=false; AUTO_ACCEPT=true; PROVIDER=zai; setup_provider_credentials" >/dev/null 2>&1
   node -e '
     const a = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
@@ -67,16 +71,18 @@ PRESETS="installer/provider-presets.json"
 
 @test "oauth_preset_prints_hint_instead_of_prompting" {
   local d; d="$(mktemp -d)"
-  run bash -c "export HOME='$d'; export ANTHROPIC_API_KEY=''; source '$SETUP_SH' >/dev/null 2>&1
+  run bash -c "export HOME='$d'; unset XDG_DATA_HOME XDG_CONFIG_HOME; unset XDG_DATA_HOME XDG_CONFIG_HOME; export ANTHROPIC_API_KEY=''; source '$SETUP_SH' >/dev/null 2>&1
            DRY_RUN=false; AUTO_ACCEPT=false; PROVIDER=anthropic; setup_provider_credentials" </dev/null
-  rm -rf "$d"
   [ "$status" -eq 0 ]
   [[ "$output" == *"opencode auth login anthropic"* ]]
+  # OAuth presets must NOT write an auth entry (hint instead of prompting).
+  [ ! -f "$d/.local/share/opencode/auth.json" ]
+  rm -rf "$d"
 }
 
 @test "headless_env_var_seeds_openrouter_credential" {
   local d; d="$(mktemp -d)"
-  bash -c "export HOME='$d'; export OPENROUTER_API_KEY='or-key-1'; source '$SETUP_SH' >/dev/null 2>&1
+  bash -c "export HOME='$d'; unset XDG_DATA_HOME XDG_CONFIG_HOME; export OPENROUTER_API_KEY='or-key-1'; source '$SETUP_SH' >/dev/null 2>&1
            DRY_RUN=false; AUTO_ACCEPT=true; PROVIDER=openrouter; setup_provider_credentials" >/dev/null 2>&1
   node -e '
     const a = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
@@ -87,9 +93,10 @@ PRESETS="installer/provider-presets.json"
 
 @test "verification_runs_via_opencode_when_installed" {
   local d; d="$(mktemp -d)"
-  run bash -c "export HOME='$d'; export OPENROUTER_API_KEY='or-key-2'; source '$SETUP_SH' >/dev/null 2>&1
+  run bash -c "export HOME='$d'; unset XDG_DATA_HOME XDG_CONFIG_HOME; export OPENROUTER_API_KEY='or-key-2'; source '$SETUP_SH' >/dev/null 2>&1
            DRY_RUN=false; AUTO_ACCEPT=true; PROVIDER=openrouter
            command_exists(){ return 0; }
+           timeout(){ shift; \"\$@\"; }
            opencode(){ if [ \"\$1\" = auth ]; then echo 'Provider: openrouter'; fi; }
            setup_provider_credentials"
   rm -rf "$d"
@@ -100,7 +107,7 @@ PRESETS="installer/provider-presets.json"
 @test "credentials_step_follows_provider_in_content_plans" {
   local d; d="$(mktemp -d)"
   for flags in "QUICK_SETUP=true" "MODELS_ONLY=true" "FORCE_FULL=1"; do
-    run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1; $flags; build_plan
+    run bash -c "export HOME='$d'; unset XDG_DATA_HOME XDG_CONFIG_HOME; source '$SETUP_SH' >/dev/null 2>&1; $flags; build_plan
         printf '%s\n' \"\${PLAN_STEPS[@]}\""
     [ "$status" -eq 0 ]
     local pi ci
@@ -110,5 +117,22 @@ PRESETS="installer/provider-presets.json"
     [ -n "$ci" ]
     [ "$ci" -eq "$((pi + 1))" ]
   done
+  rm -rf "$d"
+}
+
+@test "credentials_idempotent_already_seeded_and_no_env_skips" {
+  local d; d="$(mktemp -d)"
+  mkdir -p "$d/.local/share/opencode"
+  cat > "$d/.local/share/opencode/auth.json" <<'JSON'
+{ "zai": {"type": "api", "key": "seeded"}, "zai-coding-plan": {"type": "api", "key": "seeded"} }
+JSON
+  local before after
+  before="$(md5sum < "$d/.local/share/opencode/auth.json")"
+  run bash -c "export HOME='$d'; unset XDG_DATA_HOME XDG_CONFIG_HOME ZAI_API_KEY; source '$SETUP_SH' >/dev/null 2>&1
+           DRY_RUN=false; AUTO_ACCEPT=false; PROVIDER=zai; setup_provider_credentials" </dev/null
+  [ "$status" -eq 0 ]
+  after="$(md5sum < "$d/.local/share/opencode/auth.json")"
+  [ "$before" = "$after" ]
+  [[ "$output" == *"already seeded"* ]]
   rm -rf "$d"
 }

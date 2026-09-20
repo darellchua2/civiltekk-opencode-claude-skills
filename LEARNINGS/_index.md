@@ -16,6 +16,26 @@
 ## Entries
 
 <!-- Entries are appended here automatically when new learnings are saved -->
+<!-- Entries are appended here automatically when new learnings are saved -->
+
+### Merge writers must back up unparseable user JSON, never reset to {}
+
+- **Category**: solution
+- **File**: `solutions/merge-writers-backup-on-parse-failure.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: distinguish MISSING (fresh ok) from CORRUPT (os.replace to .corrupt.bak + warn) in merge-into-user-JSON writers; chmod 600 secret stores (#471 review)
+- **Date**: 2026-09-21
+
+### `${XDG_DATA_HOME:-…}` punches through HOME-only test sandboxes
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/xdg-data-home-punches-through-home-sandboxes.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: HOME sandboxing misses `${XDG_*:-$HOME/…}` resolution — unset XDG_DATA_HOME/XDG_CONFIG_HOME in the bash -c or tests mutate real user state on machines exporting it (#471 review)
+- **Date**: 2026-09-21
+
 ### PLAN consumer-map row without an owning step
 
 - **Category**: anti-pattern

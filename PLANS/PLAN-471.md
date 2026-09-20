@@ -72,4 +72,4 @@ Epic #464; #470's plan model (step registration). Blocks #473 (picker needs cred
 
 ## Gate Trace
 
-GATE (push head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 455 ok / 0 fail incl. 8 credential pins; node --test 30 pass / 0 fail; scope = deploy/setup.sh + installer/provider-presets.json + tests/test_provider_credentials.bats)
+GATE (fix-round head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 456 ok / 0 fail — 9 credential pins after the idempotent + stale-key pins; node --test 30 pass / 0 fail; review round 1: 4 WARN fixed — LOCAL-allowlist schema pin, idempotent+oauth-entry pins, corrupt-auth.json backup + chmod 600, XDG sandbox unsets; verify switched to command-exit + listing print — real opencode renders DISPLAY names, not ids (empirically checked); NOTEs: dry-run capture gate, wrapped-tail guard, stale comment trim; opencode auth list can stall on fresh state dirs — verify bounded with timeout 15; scope unchanged)
