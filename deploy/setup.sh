@@ -3595,6 +3595,7 @@ build_plan() {
         PLAN_MODE="models-only"
         PLAN_STEPS+=("true|node-check|Node.js required|node_required")
         PLAN_STEPS+=("false|provider|Select model provider|setup_model_provider")
+        PLAN_STEPS+=("false|credentials|Capture provider credentials|setup_provider_credentials")
         PLAN_STEPS+=("true|resolver-config|Resolve models into config|resolve_models_config_only")
         PLAN_STEPS+=("false|manifest-update|Update agent manifest|update_manifest")
     elif [ "$MIGRATE_ONLY" = true ]; then
@@ -3629,6 +3630,7 @@ build_plan() {
         PLAN_STEPS+=("false|local-llm|Configure local LLM|setup_local_llm")
         PLAN_STEPS+=("false|vllm|Configure vLLM|setup_vllm")
         PLAN_STEPS+=("false|provider|Select model provider|setup_model_provider")
+        PLAN_STEPS+=("false|credentials|Capture provider credentials|setup_provider_credentials")
         PLAN_STEPS+=("true|agents|Deploy agents|deploy_agents")
         PLAN_STEPS+=("true|plugins|Deploy plugins|deploy_plugins")
         PLAN_STEPS+=("false|init-symlink|Install opencode-init shim|setup_opencode_init_symlink")
@@ -3704,6 +3706,108 @@ update_manifest() {
     if [ "$rc" -ne 0 ]; then
         # #379 contract: pre-#379 installs warn-and-continue (non-critical).
         log_warn "manifest update skipped (exit ${rc}) — pre-#379 installs: one full ./deploy/setup.sh run adopts the manifest"
+    fi
+    return 0
+}
+
+# ── Provider credentials (#471): the identity step, coupled to provider
+# selection. Resolves the chosen preset (flag → models map → defaults), reads
+# its credential block, captures the key (env var headless, masked prompt
+# interactive), seeds auth.json for EACH auth_id (merge-never-clobber), and
+# verifies via `opencode auth list` when opencode is installed. OAuth presets
+# print the manual login hint instead of prompting.
+setup_provider_credentials() {
+    local chosen=""
+    if [ -n "$PROVIDER" ]; then
+        chosen="$PROVIDER"
+    else
+        # Derive the provider prefix from the deployed models map, falling back
+        # to the shipped defaults (local deploys omit primary → zai-coding-plan).
+        chosen="$(node -e '
+            const fs = require("fs");
+            const read = (f) => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return null; } };
+            const map = read(process.argv[1]) || read(process.argv[2]);
+            const primary = map && (map.primary || (map.tiers && map.tiers.primary));
+            if (primary) console.log(String(primary).split("/")[0]);
+        ' "$USER_MODELS_MAP" "$MODELS_DEFAULT_MAP" 2>/dev/null)"
+    fi
+    [ -z "$chosen" ] && { log_info "No model provider selected - skipping credential capture"; return 0; }
+
+    # Credential block lookup: match preset name OR any of its auth_ids.
+    local block
+    block="$(node -e '
+        const fs = require("fs");
+        const pp = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+        const presets = pp.presets || pp;
+        const chosen = process.argv[2];
+        for (const p of Object.values(presets)) {
+            const c = p.credential;
+            if (c && (p.primary || c.auth_ids) &&
+                (Object.keys(presets).find(n => presets[n] === p) === chosen || c.auth_ids.includes(chosen))) {
+                console.log(JSON.stringify(c));
+                break;
+            }
+        }
+    ' "$PROVIDER_PRESETS" "$chosen" 2>/dev/null)"
+    [ -z "$block" ] && { log_info "Provider '${chosen}' needs no credential - skipping"; return 0; }
+
+    local auth_ids env_var oauth
+    auth_ids="$(node -e 'console.log(JSON.stringify(JSON.parse(process.argv[1]).auth_ids))' "$block")"
+    env_var="$(node -e 'console.log(JSON.parse(process.argv[1]).env_var)' "$block")"
+    oauth="$(node -e 'console.log(JSON.parse(process.argv[1]).oauth ? "true" : "false")' "$block")"
+
+    if [ "$oauth" = "true" ]; then
+        # OAuth-capable providers authenticate via opencode's own interactive
+        # login — a headless key prompt would be wrong UX (AC: hint, no prompt).
+        local oid
+        for oid in $(node -e 'console.log(JSON.parse(process.argv[1]).auth_ids.join(" "))' "$block"); do
+            log_info "OAuth provider: run 'opencode auth login ${oid}' to authenticate (interactive)"
+        done
+        return 0
+    fi
+
+    # Idempotent: all auth_ids already seeded and no fresh env key ⇒ skip
+    # (re-runs must not re-prompt for a key that is already in auth.json).
+    if [ -z "${!env_var:-}" ] && [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/opencode/auth.json" ]; then
+        if node -e '
+            const fs = require("fs");
+            const auth = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            const ids = JSON.parse(process.argv[2]);
+            process.exit(ids.every(id => auth[id] && auth[id].key) ? 0 : 1);
+        ' "${XDG_DATA_HOME:-$HOME/.local/share}/opencode/auth.json" "$auth_ids" 2>/dev/null; then
+            log_info "Provider '${chosen}' credentials already seeded - skipping capture"
+            return 0
+        fi
+    fi
+
+    # Capture: env var first (headless), then a masked prompt (interactive).
+    local key="${!env_var:-}"
+    if [ -z "$key" ] && [ -t 0 ] && [ "$AUTO_ACCEPT" = false ]; then
+        echo ""
+        echo "  Credential for provider '${chosen}' (env \${${env_var}})"
+        read -rs -p "  ${env_var} (input hidden, Enter to skip): " key
+        echo ""
+    fi
+    if [ -z "$key" ]; then
+        log_warn "No ${env_var} provided - provider '${chosen}' stays unauthenticated (set ${env_var} and re-run)"
+        return 0
+    fi
+
+    # Seed EVERY auth_id (merge-never-clobber inside register_provider_auth).
+    local oid
+    for oid in $(node -e 'console.log(JSON.parse(process.argv[1]).auth_ids.join(" "))' "$block"); do
+        register_provider_auth "$oid" "$key"
+    done
+
+    # Verify via opencode's own view when it is installed.
+    if command_exists opencode; then
+        if opencode auth list 2>/dev/null | grep -q "$(node -e 'console.log(JSON.parse(process.argv[1]).auth_ids[0])' "$block")"; then
+            log_success "Credential verified via 'opencode auth list'"
+        else
+            log_warn "Could not verify the seeded credential via 'opencode auth list'"
+        fi
+    else
+        log_warn "opencode not found - skipping credential verification"
     fi
     return 0
 }
@@ -3813,23 +3917,28 @@ setx_env() {
 # Mirrors the Docker entrypoint's auth["zai"] write. MERGES — never clobbers
 # existing entries (zai-coding-plan, gemini, ...). Idempotent. MCP servers still
 # read {env:ZAI_API_KEY} independently — this only authenticates the model provider.
-register_zai_auth() {
-    [ -z "$ZAI_API_KEY" ] && return 0
+register_provider_auth() {
+    # Generalized auth.json seeder (#471): merge-never-clobber — writes only
+    # auth[auth_id], preserving every other entry. Dry-run and python3-safe.
+    local auth_id="$1"
+    local key="$2"
+    [ -z "$key" ] && return 0
     if [ "$DRY_RUN" = true ]; then
-        echo "[DRY-RUN] Would register zai credential in ~/.local/share/opencode/auth.json"
+        echo "[DRY-RUN] Would register $auth_id credential in ~/.local/share/opencode/auth.json"
         return 0
     fi
     if ! command_exists python3; then
-        log_warn "python3 not found — skipping auth.json registration for zai (model provider stays unauthenticated)"
+        log_warn "python3 not found — skipping auth.json registration for $auth_id (provider stays unauthenticated)"
         return 0
     fi
     local auth_dir="${XDG_DATA_HOME:-$HOME/.local/share}/opencode"
     local auth_file="${auth_dir}/auth.json"
-    ZAI_API_KEY="$ZAI_API_KEY" python3 - "$auth_file" "$auth_dir" <<'PYEOF'
+    AUTH_ID="$auth_id" AUTH_KEY="$key" python3 - "$auth_file" "$auth_dir" <<'PYEOF'
 import json, os, sys
 auth_file, auth_dir = sys.argv[1], sys.argv[2]
-key = os.environ.get("ZAI_API_KEY", "").strip()
-if not key:
+auth_id = os.environ.get("AUTH_ID", "").strip()
+key = os.environ.get("AUTH_KEY", "").strip()
+if not auth_id or not key:
     sys.exit(0)
 auth = {}
 try:
@@ -3838,13 +3947,12 @@ try:
         auth = loaded if isinstance(loaded, dict) else {}
 except (FileNotFoundError, ValueError):
     pass
-auth["zai"] = {"type": "api", "key": key}
+auth[auth_id] = {"type": "api", "key": key}
 os.makedirs(auth_dir, exist_ok=True)
 with open(auth_file, "w") as f:
     json.dump(auth, f, indent=2)
-print("  auth.json providers: " + ", ".join(auth.keys()))
+print("  auth.json providers: " + ", ".join(sorted(auth.keys())))
 PYEOF
-    log_success "Registered zai credential in ${auth_file} (native opencode auth store)"
 }
 
 # Setup environment variables in shell config (bashrc, zshrc, etc.)
@@ -3889,7 +3997,8 @@ setup_shell_vars() {
 
     # Register the PAYG `zai` provider in opencode's native auth store so it
     # resolves identically to the Docker path (single credential mechanism).
-    register_zai_auth
+    # auth.json seeding moved to setup_provider_credentials (#471) — the
+    # identity layer, coupled to provider selection, not shell-vars.
 
     # Offer to install autoresearch protocol helpers (ar-enable / ar-disable)
     # into existing bashrc / zshrc. Prompted — never silent.
