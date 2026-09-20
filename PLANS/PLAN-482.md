@@ -74,25 +74,29 @@
 
 ### Phase 3: Installer consumers
 
-- [ ] **3.1** `installer/build-registry.mjs:182`: `ruleRes("task")` → `ruleRes("subagent")` (legacy `perm.task` map fallback at the same line stays — v1 map keys are a different format)
+- [x] **3.1** `installer/build-registry.mjs:182`: `ruleRes("task")` → `ruleRes("subagent")` (legacy `perm.task` map fallback at the same line stays — v1 map keys are a different format)
     — **Why:** delegatesTo/requiredBy edges key on the action name; the lookup must match post-rename sources or the registry silently loses every delegate edge
     — **Done when:** `grep -n 'ruleRes(' installer/build-registry.mjs` shows `subagent` and no `task` call
     — **Consumers affected:** registry.json, `npx add` dependency resolution
+    — **Done:** ruleRes("subagent") live, legacy perm.task fallback kept; registry --check: agents=34 no drift; files: installer/build-registry.mjs; fixes: none
 
-- [ ] **3.2** `installer/init.mjs`: KIMI_TOOL_MAP (line 923) `bash: "Bash"` → `shell: "Bash"`; CLAUDE_TOOL_MAP (line 979) `bash: "Bash"` → `shell: "Bash"` and `task: "Task"` → `subagent: "Task"`; update the stale comment at :977-978 ("`task` gates subagent delegation — corpus-inert today") to the post-rename reality
+- [x] **3.2** `installer/init.mjs`: KIMI_TOOL_MAP (line 923) `bash: "Bash"` → `shell: "Bash"`; CLAUDE_TOOL_MAP (line 979) `bash: "Bash"` → `shell: "Bash"` and `task: "Task"` → `subagent: "Task"`; update the stale comment at :977-978 ("`task` gates subagent delegation — corpus-inert today") to the post-rename reality
     — **Why:** both translators drop rules whose action is absent from the map (`dropped.add` path) — post-rename sources would lose their shell/delegation rules on kimi/claude targets; comments that contradict the code rot into traps
     — **Done when:** both maps key on `shell`/`subagent`, zero `bash:`/`task:` keys, comments accurate
     — **Consumers affected:** kimi/claude target installs
+    — **Done:** KIMI map keys shell:"Bash"; CLAUDE map shell:"Bash" + subagent:"Task"; :977-978 comment updated to post-rename reality; files: installer/init.mjs; fixes: none
 
-- [ ] **3.3** `installer/init.mjs` `kiloAgentContent` (lines 1084-1103): normalize `shell`→`bash` and `subagent`→`task` before `KILO_PERMISSION_TYPES` membership (:1090/:1092), map emission (:1097), and narrowAllows bookkeeping (:1093); update the stale comment at :1055-1056 ("action names match Kilo's `permission` type names 1:1" — no longer true for v2 names)
+- [x] **3.3** `installer/init.mjs` `kiloAgentContent` (lines 1084-1103): normalize `shell`→`bash` and `subagent`→`task` before `KILO_PERMISSION_TYPES` membership (:1090/:1092), map emission (:1097), and narrowAllows bookkeeping (:1093); update the stale comment at :1055-1056 ("action names match Kilo's `permission` type names 1:1" — no longer true for v2 names)
     — **Why:** Kilo passthrough admits only set members; v2-named rules would all be dropped-with-warning, emptying the emitted `permission:` map
     — **Done when:** a `subagent deny` rule in a fixture emits `task: deny` in the Kilo frontmatter (kilo_target.bats:29/:44 pin emitted keys `task: deny` / `bash: ask` — they stay green only with normalization and double as regression tripwires)
     — **Consumers affected:** kilo target installs
+    — **Done:** kiloKey alias (shell→bash, subagent→task) applied at membership/emission/narrowAllows; :1055-1056 comment updated; kilo_target.bats emitted-key pins green; files: installer/init.mjs; fixes: none
 
-- [ ] **3.4** Registry gate: `node installer/build-registry.mjs --check` exits 0 (NOT plain-run + empty-diff — a plain rebuild always restamps `generatedAt` at :238/:258, making an empty diff unsatisfiable; #416 recurrence class)
+- [x] **3.4** Registry gate: `node installer/build-registry.mjs --check` exits 0 (NOT plain-run + empty-diff — a plain rebuild always restamps `generatedAt` at :238/:258, making an empty diff unsatisfiable; #416 recurrence class)
     — **Why:** the `--check` form is the prescribed gate; it verifies the lookup produces identical registry content modulo the timestamp
     — **Done when:** `--check` exits 0; if it reports drift, inspect and either fix the lookup or commit the intentional diff with explanation
     — **Consumers affected:** registry consumers
+    — **Done:** node installer/build-registry.mjs --check exits 0 ("registry OK (agents=34, skills=146, no drift)"); files: none; fixes: none
 
 ### Phase 4: Gates + LEARNINGS
 
@@ -149,3 +153,5 @@
 `GATE 5cf1a4e lint=n.a. typecheck=n.a. build=n.a. unit=n.a. e2e=n.a` — evidence phase; no code touched.
 
 `GATE 5cf1a4e+p2 lint=n.a. typecheck=n.a. build=n.a. unit=t(16/16: autoresearch_skills, reviewer_no_writes) e2e=n.a` — frontmatter suites green; translator suites deferred to Phase 3 gate where their fixes land (push deferred with them per atomicity rule).
+
+`GATE 1428225+p3 lint=n.a. typecheck=t(node --check ×2) build=t(registry --check, no drift) unit=t(74/74 across 7 suites) e2e=n.a`

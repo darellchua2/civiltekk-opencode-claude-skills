@@ -179,7 +179,7 @@ async function build() {
     const rules = Array.isArray(fm.permissions) ? fm.permissions : [];
     const ruleRes = (action) => rules.filter((r) => r && r.action === action && r.resource !== "*").map((r) => r.resource);
     const requiresSkills = rules.length ? ruleRes("skill") : keysOf(perm.skill);
-    const delegatesTo = rules.length ? ruleRes("task") : keysOf(perm.task); // empty when task is a scalar like "allow"
+    const delegatesTo = rules.length ? ruleRes("subagent") : keysOf(perm.task); // empty when task is a scalar like "allow"; v2 action name post-#482 (legacy map fallback keeps the v1 key)
     const category = fm.category || "uncategorized";
     if (!fm.category) console.error(`warn: ${stem}: no category (-> uncategorized)`);
     agents.push({
