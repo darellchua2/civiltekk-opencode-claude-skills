@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.14.0](https://github.com/darellchua2/opencode-config-template/compare/v9.13.1...v9.14.0) (2026-09-20)
+
+### Features
+
+* **plugins:** add question-repair plugin for malformed question payloads ([69532dc](https://github.com/darellchua2/opencode-config-template/commit/69532dc971271ebf4d4386ae6d0b265fc647d5eb)), closes [#448](https://github.com/darellchua2/opencode-config-template/issues/448)
+
+### Bug Fixes
+
+* **plugins:** review round 1 — keep options-less items with [], align marker, docs caveats ([d9bbbc8](https://github.com/darellchua2/opencode-config-template/commit/d9bbbc828fafac3d90c76a1179d81bb639ae8d4e))
+
+### Documentation
+
+* **learnings:** persist [#448](https://github.com/darellchua2/opencode-config-template/issues/448) plan-review learnings ([c404076](https://github.com/darellchua2/opencode-config-template/commit/c404076a603a9dc1f07d0fa09140bf856e457d00))
+* **plan:** add PLAN-448.md for [#448](https://github.com/darellchua2/opencode-config-template/issues/448) ([eb8a63f](https://github.com/darellchua2/opencode-config-template/commit/eb8a63f8cbb1465e61742374707a461b6d352efb))
+* **plan:** apply [#448](https://github.com/darellchua2/opencode-config-template/issues/448) plan review — deploy gate fix, placeholder safety, load smoke, docker scope ([1ab87e4](https://github.com/darellchua2/opencode-config-template/commit/1ab87e47bb8e17144a3e8eeca0c4e6a86cab77fb))
+* **plan:** sync drop-rule notes to round-1 ruling, append re-gate memo (d9bbbc8) ([c2ea64c](https://github.com/darellchua2/opencode-config-template/commit/c2ea64c46e00b6535cdd233106afb3a79771ec26))
+* **plan:** tick acceptance criteria — all phases green ([a255159](https://github.com/darellchua2/opencode-config-template/commit/a2551598e2c5b0e8159b97d680ae003be0f6eef3))
+* **plan:** trace Phase 1 (69532dc) ([b71f190](https://github.com/darellchua2/opencode-config-template/commit/b71f190552f10f7003a9ac01cb0a648d7c521e15))
+* **plan:** trace Phase 2 (48e114c) ([9884839](https://github.com/darellchua2/opencode-config-template/commit/9884839723154fb66f81efaf670ca0d3b8c9276b))
+* **readme:** document question-repair plugin, fix tree comment ([#448](https://github.com/darellchua2/opencode-config-template/issues/448)) ([48e114c](https://github.com/darellchua2/opencode-config-template/commit/48e114c599002b1e0fcc536dd24d59eef39ddb0f))
+
 ## [9.13.1](https://github.com/darellchua2/opencode-config-template/compare/v9.13.0...v9.13.1) (2026-09-20)
 
 ### Bug Fixes
