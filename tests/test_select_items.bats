@@ -118,7 +118,9 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
 @test "select_dry_run_with_preseeded_plan_writes_nothing" {
   # The PLAN-promised leak net (#467 family): select + dry-run with a
   # pre-seeded plan PREVIEWS consumption and installs nothing into the live
-  # config.
+  # config. Teeth: WITHOUT the --dry-run forwarding in deploy_selected_group,
+  # init.mjs installs for real and exits 0 — this test FAILS (the round-1
+  # BLOCK regression cannot re-land silently).
   local d; d="$(mktemp -d)"
   mkdir -p "$d/.config/opencode"
   printf '%s' '{"skills":[{"name":"git-semantic-commits-skill","source":"direct"}],"agents":[],"mcps":[],"packs":[],"plugins":[],"extras":[],"warnings":[]}' > "$d/.config/opencode/deploy-plan.json"
@@ -126,8 +128,13 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
            SELECT_ITEMS=true; DRY_RUN=true; AUTO_ACCEPT=true
            command_exists(){ return 0; }; check_network(){ return 0; }; check_dependencies(){ return 0; }
            main --dry-run -y --select" </dev/null
-  rm -rf "$d"
   [ "$status" -eq 0 ]
+  # The untouched-surface assertions (the actual teeth):
+  [ ! -e "$d/.config/opencode/skills/git-semantic-commits-skill" ]
+  [ ! -e "$d/.config/opencode/agents" ]
+  # Consume-once: dry-run never unlinks the plan.
+  [ -f "$d/.config/opencode/deploy-plan.json" ]
+  rm -rf "$d"
 }
 
 @test "select_mode_plan_has_picker_steps_and_no_blanket_agents" {
@@ -138,4 +145,23 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
   echo "$output" | grep -q 'deploy-selected-skills'
   echo "$output" | grep -q 'deploy-selected-agents'
   echo "$output" | grep -q 'provision-tui'
+}
+
+@test "mcp_to_pack_map_covers_dependency_map_implies_mcp" {
+  # Derived-coverage pin (round-2 review): every impliesMcp value in
+  # dependency-map.json must map to a pack, or the plan advertises an MCP
+  # nothing enables.
+  node -e '
+    Promise.all([import("./installer/deploy-plan-items.mjs")]).then(([m]) => {
+      const fs = require("fs");
+      const depMap = JSON.parse(fs.readFileSync("installer/dependency-map.json", "utf8"));
+      const implied = new Set();
+      for (const list of Object.values(depMap.impliesMcp || {})) for (const mc of list) implied.add(mc);
+      const unmapped = [...implied].filter((mc) => !m.MCP_TO_PACK[mc]);
+      if (unmapped.length) throw new Error("implied MCPs with no MCP_TO_PACK mapping: " + unmapped.join(", "));
+      const packNames = new Set(fs.readdirSync("deploy/packs").map((f) => f.match(/^pack-(.+)\.json$/)?.[1]).filter(Boolean));
+      const unknownPacks = Object.values(m.MCP_TO_PACK).filter((pk) => !packNames.has(pk));
+      if (unknownPacks.length) throw new Error("MCP_TO_PACK maps to nonexistent packs: " + unknownPacks.join(", "));
+    });
+  '
 }

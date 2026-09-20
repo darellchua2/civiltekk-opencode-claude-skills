@@ -79,7 +79,8 @@ function planFromFlags(parsed) {
   const list = (v) => (v ? String(v).split(",").map((x) => x.trim()).filter(Boolean) : []);
   if (parsed.defaults) {
     // First-run defaults (#473): lean-profile skills + all agents + core
-    // plugins pre-checked. Lean list comes from the shipped skill profile.
+    // plugins pre-checked; packs mirror the main deploy default (none).
+    // Lean list comes from the shipped skill profile.
     let lean = [];
     try {
       const profiles = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "skill-profiles.json"), "utf8"));
@@ -90,7 +91,9 @@ function planFromFlags(parsed) {
     const packNames = [];
     try { for (const f of readdirSync(packsDir)) { const m2 = f.match(/^pack-(.+)\.json$/); if (m2) packNames.push(m2[1]); } } catch {}
     const pluginNames = [];
-    try { for (const f of readdirSync(pluginsDir)) if (f.startsWith("opencode-")) pluginNames.push(f); } catch {}
+    // .ts only: companion files (vibeguard.config.json) are copied alongside
+    // their plugin at consumption, not offered as selectable items.
+    try { for (const f of readdirSync(pluginsDir)) if (f.startsWith("opencode-") && f.endsWith(".ts")) pluginNames.push(f); } catch {}
     const { registry, depMap } = loadPickerData();
     const allAgents = registry.agents.map((a) => a.stem);
     const plan = buildSelectionPlan({ choices: { skills: lean, agents: allAgents, packs: packNames, plugins: pluginNames, extras: [] }, registry, depMap });

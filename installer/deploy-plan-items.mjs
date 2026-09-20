@@ -12,6 +12,11 @@ import { resolveSelection } from "./init.mjs";
 
 export const EXTRA_ITEMS = ["local-llm", "vllm"];
 
+// Implied-MCP id → provider pack name (dependency-map.json impliesMcp values
+// are MCP server ids; the executor's pack merge consumes pack names). Pinned
+// by test_select_items.bats against the live dependency map.
+export const MCP_TO_PACK = { docling: "docling", markitdown: "markitdown", "next-devtools": "nextjs" };
+
 /** Grouped selectable inventory from caller-loaded data. */
 export function buildInventory({ registry, packNames, pluginNames }) {
   const categories = new Map();
@@ -75,9 +80,8 @@ export function buildSelectionPlan({ choices, registry, depMap }) {
   };
 
   // Implied MCPs (impliesMcp via resolveSelection) map to their provider packs
-  // so the executor's pack merge applies them (review Gap: otherwise the plan
-  // advertises an MCP nothing enables).
-  const MCP_TO_PACK = { docling: "docling", markitdown: "markitdown", "next-devtools": "nextjs" };
+  // (module-scope MCP_TO_PACK) so the executor's pack merge applies them
+  // (review Gap: otherwise the plan advertises an MCP nothing enables).
   const packs = [...new Set([
     ...directPacks,
     ...sel.mcps.map((m) => MCP_TO_PACK[m]).filter(Boolean),

@@ -3910,12 +3910,17 @@ deploy_selected_group() {
     local names
     names=$(node -e 'const p=require(process.argv[1]); console.log((p[process.argv[2]]||[]).filter(i=>i.source==="direct").map(i=>i.name).join(" "))' "$SELECT_PLAN_FILE" "$1")
     [ -z "$names" ] && { log_info "No $1 selected"; return 0; }
-    local dry_args=()
-    [ "$DRY_RUN" = true ] && dry_args+=(--dry-run)
-    # shellcheck disable=SC2086 — intentional word splitting: one add per name
-    for name in $names; do
-        node "${INSTALLER_DIR}/init.mjs" add "$name" "${dry_args[@]}" ${PROVIDER:+--provider ${PROVIDER}} || return 1
-    done
+    # Length-guard before expansion: stock macOS bash 3.2 (no bash-4 features
+    # used in this script) treats "${arr[@]}" on an EMPTY array as unset under
+    # nounset — real (non-dry) --select runs would crash there.
+    local dry_args=""
+    if [ "$DRY_RUN" = true ]; then
+        dry_args="--dry-run"
+        node "${INSTALLER_DIR}/init.mjs" add $names $dry_args ${PROVIDER:+--provider ${PROVIDER}} || return 1
+    else
+        node "${INSTALLER_DIR}/init.mjs" add $names ${PROVIDER:+--provider ${PROVIDER}} || return 1
+    fi
+    return 0
     return 0
 }
 
@@ -3947,7 +3952,12 @@ apply_selected_packs_extras() {
     if [ "${plugin_count:-0}" -gt 0 ]; then
         run_cmd mkdir -p "${CONFIG_DIR}/plugins"
         for pname in $(node -e 'const p=require(process.argv[1]); console.log((p.plugins||[]).join(" "))' "$SELECT_PLAN_FILE" 2>/dev/null); do
-            run_cmd cp -r "${REPO_DIR}/plugins/${pname}" "${CONFIG_DIR}/plugins/${pname}"
+            run_cmd cp -r "${REPO_DIR}/plugins/${pname}" "${CONFIG_DIR}/plugins/${pname}" || { failed=1; continue; }
+            # Companion files the plugin fail-opens without (#473 review): the
+            # vibeguard plugin is inert without its config (no masking).
+            if [ "$pname" = "opencode-vibeguard.ts" ] && [ -f "${REPO_DIR}/plugins/vibeguard.config.json" ]; then
+                run_cmd cp "${REPO_DIR}/plugins/vibeguard.config.json" "${CONFIG_DIR}/plugins/vibeguard.config.json"
+            fi
         done
     fi
     # Consume-once (B2): the plan is spent only after a SUCCESSFUL deployment —
