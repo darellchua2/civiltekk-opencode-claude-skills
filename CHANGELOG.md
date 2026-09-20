@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.23.0](https://github.com/darellchua2/opencode-config-template/compare/v9.22.0...v9.23.0) (2026-09-20)
+
+### Features
+
+* **deploy:** preset-driven provider credential capture + auth.json seeding ([#471](https://github.com/darellchua2/opencode-config-template/issues/471)) ([#492](https://github.com/darellchua2/opencode-config-template/issues/492)) ([3eb0c9d](https://github.com/darellchua2/opencode-config-template/commit/3eb0c9d4ee2287d7bc716005f84abbce077b514b))
+
 ## [9.22.0](https://github.com/darellchua2/opencode-config-template/compare/v9.21.0...v9.22.0) (2026-09-20)
 
 ### Features
