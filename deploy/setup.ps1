@@ -67,8 +67,8 @@ param(
     [string]$EnablePack = "",
     # Skill profile (GIT-333): deploy-time primary visibility. lean (default)
     # rewrites the DEPLOYED config's skill permissions (permissions array) to
-    # 46 visible skills;
-    # full deploys the shipped 107-allow allowlist verbatim.
+    # 70 visible skills;
+    # full deploys the shipped 106-allow allowlist verbatim.
     [ValidateSet("lean", "full")]
     [string]$SkillProfile = "lean"
 )
@@ -942,7 +942,7 @@ USAGE:
                           primary-visible skills
                           + "*": "deny" (subagents unaffected — they self-scope
                           via frontmatter allows); full deploys the shipped
-                          107-allow allowlist verbatim.
+                          106-allow allowlist verbatim.
 
  ======================================================================
                      COMMON COMBINATION EXAMPLES
@@ -1935,7 +1935,7 @@ function Invoke-PackMerger {
 # Apply the skill profile (GIT-333): rewrites ONLY the skill rules
 # (action:"skill") inside the permissions array of the DEPLOYED config
 # (never the source opencode_app/opencode.json).
-# lean (default) -> 44 primary-visible skills + "*": "deny"; full -> verified
+# lean (default) -> 70 primary-visible skills + "*": "deny"; full -> verified
 # no-op. Mirrors Invoke-PackMerger's dry-run contract (B1).
 function Invoke-SkillProfile {
     if (-not (Test-Path $ApplySkillProfileScript)) {

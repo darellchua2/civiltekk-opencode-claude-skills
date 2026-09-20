@@ -545,3 +545,48 @@
 - **Scope**: project
 - **Summary**: parent briefs assert runtime facts ("no shell") that can be false when denies are inert — subagent probes one cheap tool call before degrading to read-only; on contradiction use the stronger capability and say so (#482 Step 9 reviewer re-ran all gates itself)
 - **Date**: 2026-09-20
+
+### Delta derived from a single surface duplicates entries in the other
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/delta-derived-from-single-surface.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: changes landing in two arrays with different memberships need the delta computed against EACH surface (union−lean=26 vs union−full=3) — single-surface derivations silently duplicate entries while subset/typo guards pass green (#481 plan review)
+- **Date**: 2026-09-20
+
+### A fail-closed guard couples cross-file edits into one atomic unit
+
+- **Category**: pattern
+- **File**: `patterns/fail-closed-guard-couples-cross-file-edits.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: fail-closed cross-file guards (apply-skill-profile.mjs:74-81 lean⊆full exit 1) name their atomic unit — the append, its source-file prerequisite, and their test-pinned mirrors ride one commit or per-push CI goes red (#481 plan review)
+- **Date**: 2026-09-20
+
+### The child skill gate follows the merged config, not the agent frontmatter
+
+- **Category**: pattern
+- **File**: `patterns/child-skill-gate-follows-merged-config.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: subagent skill loading resolves against merged config layers (global/project), not frontmatter skill allows — config-layer allows are the working unlock (#481 workaround for upstream #50149); includes the 3-step regression probe + revert-flip check
+- **Date**: 2026-09-20
+
+### Partial record refresh contradicts itself
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/partial-record-refresh-contradicts-itself.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: refreshing a decision record's header/update-block while leaving body counts stale creates in-file contradictions — refresh every count or freeze the body behind a dated historical label (#481 review)
+- **Date**: 2026-09-20
+
+### Count-literal sweeps must include docs-of-record
+
+- **Category**: pattern
+- **File**: `patterns/count-sweeps-include-docs-of-record.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: count-drift sweeps must include LEARNINGS/ (docs-of-record), and docs-of-record should cite search anchors not file:line — line refs rot within weeks (#481 review)
+- **Date**: 2026-09-20

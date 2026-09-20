@@ -405,10 +405,12 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 
 #### Skill Profiles — deploy-time primary visibility (#333)
 
-Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (103 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 44 primary-visible skills + `"*": "deny"` (~5.4k tokens saved per session at ~90 tokens/description).
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (106 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 70 primary-visible skills + `"*": "deny"` (~3.2k tokens saved per session — 36 hidden descriptions × ~90 tokens/description; re-derive as full allows − lean count, never hand-copy).
+
+> **Interim workaround (#481):** the 4 reviewer agents' 26-skill union is temporarily primary-visible in lean because opencode v2.0.11 ignores agent-frontmatter `skill` allows in child sessions ([upstream anomalyco/opencode#50149](https://github.com/anomalyco/opencode/issues/50149)) — config-layer allows are the only working path. The 28 non-reviewer agents' frontmatter skill allows remain non-functional under lean until the upstream fix (this note is the deferral record). Revert: remove the 26 entries from `deploy/skill-profiles.json` `lean` **and** the 3 added allows (`reviewer-baseline-skill`, `language-review-checklists-skill`, `uiux-review-skill`) from `opencode_app/opencode.json`, then redeploy.
 
 ```bash
-./deploy/setup.sh                                # default: lean (44 primary-visible skills)
+./deploy/setup.sh                                # default: lean (70 primary-visible skills)
 ./deploy/setup.sh --skill-profile full           # opt back in: shipped allowlist verbatim
 ./deploy/setup.sh --skill-profile lean --dry-run # preview the deployed skill rules
 ./deploy/setup.ps1 -SkillProfile full            # Windows parity
@@ -417,7 +419,7 @@ Every allowed skill's `description` is injected into the primary session's conte
 Key properties:
 
 - Only the **deployed** copy's skill rules in the `permissions` array (`action:"skill"` entries) are rewritten (`deploy/apply-skill-profile.mjs`); the shipped `opencode.json` is never modified — `full` is a verified no-op.
-- **Subagents are profile-immune.** All 146 skills stay on disk and every skill has either a frontmatter skill-allow consumer (`permissions` rules with `action:"skill"`) or a lean slot — nothing is orphaned under lean.
+- **Subagents are profile-immune** — *unverified for the `skill` action on opencode v2.0.11* ([upstream #50149](https://github.com/anomalyco/opencode/issues/50149)): frontmatter skill allows are ignored in child sessions (tool-action rules like `shell` do apply), so subagent-only skills load only via config-layer allows — see the interim workaround above. All 146 skills stay on disk and every skill has either a frontmatter skill-allow consumer (`permissions` rules with `action:"skill"`) or a lean slot — nothing is orphaned under lean.
 - Lean-hidden skills cannot be `@`-loaded by the primary until re-exposed; re-exposing any skill is a one-line edit to `deploy/skill-profiles.json`.
 - Typo-guarded: a lean key that doesn't match a real skill directory or the shipped allowlist fails the deploy closed.
 
