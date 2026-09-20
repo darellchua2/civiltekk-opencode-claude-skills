@@ -36,13 +36,13 @@ _Every step is atomic and carries rationale. Any step missing a field is malform
     — **Why:** this file is the canonical contract every other surface defers to; the tiers must exist here before executors can reference them without restating
     — **Done when:** one findable subsection defines light/full/anchors/unsure→full/exit-gate, and no other section of the file contradicts it
     — **Consumers affected:** plan-execution-skill 4c, worktree-pipeline-skill Steps 8–10, pr-workflow-subagent, pr-creation-workflow-skill, linting-subagent, eval-harness-skill
-- [ ] **1.2** Extend §Gate memo with the tier marker format `GATE <short-sha> tier=light|full lint=t typecheck=t build=t|- unit=t e2e=t|-|n.a` and state the push invariant: the pushed SHA must carry a green `tier=full` memo (exit gate plus any post-gate fix re-gate)
-    — **Why:** the memo line is the cross-surface evidence currency; Step 10's PR-time citation keys off it
-    — **Done when:** the memo format block renders the tier token, the `-` convention is reused (no new syntax), and the push invariant is stated in one sentence
+- [ ] **1.2** Extend §Gate memo with the tier marker format `GATE <short-sha> tier=light|full lint=t typecheck=t build=t|- unit=t|-|n.a e2e=t|-|n.a` and state the push invariant: the pushed SHA must carry a green `tier=full` memo (exit gate plus any post-gate fix re-gate); include the n.a gloss — a memo axis with no applicable check records `n.a` (e.g. `unit=n.a` on a light gate with zero affected tests); `n.a` means non-applicable, never INCONCLUSIVE; `unit=n.a` is valid only on `tier=light` memos, since the full gate always runs the full unit suite the push-authorizing `tier=full` memo can never carry it
+    — **Why:** the memo line is the cross-surface evidence currency; Step 10's PR-time citation keys off it; without the n.a gloss a docs-only light phase cannot record zero affected tests
+    — **Done when:** the memo format block renders the tier token, the `-`/`n.a` conventions are reused (no new syntax), the push invariant is stated in one sentence, and the gloss covers light-only `unit=n.a` plus `n.a` ≠ INCONCLUSIVE
     — **Consumers affected:** plan-execution-skill (memo writer), worktree-pipeline Step 10 (citation), pr-creation-workflow-skill (PR Quality Checks slot)
-- [ ] **1.3** Create `tests/test_tiered_gating.bats` with assertions pinning the Phase-1 contract tokens in verification-loop-skill (`tier=light|full` in the memo example, the light-gate definition, unsure→full, exit gate) using case-insensitive greps over the historical spellings actually written
+- [ ] **1.3** Create `tests/test_tiered_gating.bats` with assertions pinning the Phase-1 contract tokens in verification-loop-skill (`tier=light|full` in the memo example, the light-gate definition, unsure→full, exit gate) using case-insensitive greps over the historical spellings actually written; also pin the unchanged invariant that CI remains the only unconditional re-run (§Gate memo bullet — Phase 1 edits that very section)
     — **Why:** skill prose is this repo's runtime surface; the bats suite is its regression gate — and grep gates over prose false-green on case/anchor mismatches (LEARNINGS `case-sensitive-grep-gates-false-green`, `guard-regex-quote-shape-mismatch`)
-    — **Done when:** the new bats file passes standalone via `bats tests/test_tiered_gating.bats` and a mutation check (temporarily deleting the Tiered gating subsection fails at least one assertion)
+    — **Done when:** the new bats file passes standalone via `bats tests/test_tiered_gating.bats` and mutation checks: deleting the Tiered gating subsection fails ≥1 assertion, deleting the CI-only-unconditional-rerun bullet fails the invariant assertion
     — **Consumers affected:** CI bats suite
 
 ### Phase 2: Executor integration (plan-execution-skill)
@@ -59,9 +59,9 @@ _Every step is atomic and carries rationale. Any step missing a field is malform
     — **Why:** stale invariant wording would contradict the tiered contract inside the same file
     — **Done when:** `grep` for the old unconditional phrasing returns nothing contradicting; memo example carries the tier token
     — **Consumers affected:** readers of the skill; existing tests pinning 4c wording (checked in 4.3)
-- [ ] **2.4** Extend `tests/test_tiered_gating.bats` with plan-execution assertions: light default present, exit-gate rule present, tier token in the memo example, escalation-logging rule present
-    — **Why:** pin executor behavior so later edits cannot silently revert to full-gate-per-phase
-    — **Done when:** assertions pass standalone and a mutation check (deleting the 4c tier sentence) fails at least one
+- [ ] **2.4** Extend `tests/test_tiered_gating.bats` with plan-execution assertions: light default present, exit-gate rule present, tier token in the memo example, escalation-logging rule present, and the unchanged "Never push red" rule in 4d (Phase 2 edits the surrounding text)
+    — **Why:** pin executor behavior so later edits cannot silently revert to full-gate-per-phase or drop the never-push-red invariant while rewriting 4c/4d
+    — **Done when:** assertions pass standalone and mutation checks (deleting the 4c tier sentence, deleting the never-push-red sentence) each fail at least one
     — **Consumers affected:** CI bats suite
 
 ### Phase 3: Orchestrator integration (worktree-pipeline-skill)
@@ -78,16 +78,16 @@ _Every step is atomic and carries rationale. Any step missing a field is malform
     — **Why:** PR-time assertion strength — a tier=light line must not satisfy the pipeline's green claim
     — **Done when:** Step 10 wording requires the tier=full line
     — **Consumers affected:** pr-workflow-subagent Task prompt; PR creation flow
-- [ ] **3.4** Extend `tests/test_tiered_gating.bats` with worktree-pipeline assertions: exit-gate reference in Step 8, re-gate rule in Step 9, tier=full citation in Step 10
-    — **Why:** pin orchestrator behavior symmetrically with the other two surfaces
-    — **Done when:** assertions pass standalone; mutation check on Step 9 re-gate sentence fails at least one
+- [ ] **3.4** Extend `tests/test_tiered_gating.bats` with worktree-pipeline assertions: exit-gate reference in Step 8, re-gate rule in Step 9, tier=full citation in Step 10, and Step 9's unconditional code-review backstop reference (Phase 3 edits Step 9 itself)
+    — **Why:** pin orchestrator behavior symmetrically with the other two surfaces, including the invariant its own edits could break
+    — **Done when:** assertions pass standalone; mutation checks (deleting the Step 9 re-gate sentence, deleting the unconditional-review backstop clause) each fail at least one
     — **Consumers affected:** CI bats suite
 
 ### Phase 4: Memo-consumer sweep + suite green
 
-- [ ] **4.1** Census every GATE-memo consumer: case-insensitive `grep -rniE 'GATE (<short-sha>|<sha>)|lint=t|tier=light|tier=full'` across `agents/ skills/ deploy/ installer/ opencode_app/ tests/ README.md AGENTS.md MIGRATION.md` and record the hit list with update/no-change classification in the WORK LOG
-    — **Why:** the format change has blast radius beyond the three edited files — single-surface deltas and root-doc restatements are known miss patterns (LEARNINGS `delta-derived-from-single-surface`, `directory-scoped-rename-sweep-misses-root-docs`)
-    — **Done when:** the census output is captured and every hit is classified; zero unclassified hits
+- [ ] **4.1** Census every GATE-memo consumer: case-insensitive `grep -rniE 'GATE (<short-sha>|<sha>)|lint=t|tier=light|tier=full'` across `agents/ skills/ deploy/ installer/ opencode_app/ tests/ README.md AGENTS.md MIGRATION.md` and record the hit list with update/no-change classification in the WORK LOG; name the deliberate no-change exclusions up front — `PLANS/`, `LEARNINGS/`, `CHANGELOG.md` are immutable run history (historical trace memos stay tierless by design; never rewrite them on a re-run)
+    — **Why:** the format change has blast radius beyond the three edited files — single-surface deltas and root-doc restatements are known miss patterns (LEARNINGS `delta-derived-from-single-surface`, `directory-scoped-rename-sweep-misses-root-docs`); unnamed exclusions invite history rewrites on a later repo-wide re-run
+    — **Done when:** the census output is captured and every hit is classified; zero unclassified hits; the three exclusions are named in the census record itself
     — **Consumers affected:** pr-workflow-subagent, pr-creation-workflow-skill, any doc that teaches the memo shape
 - [ ] **4.2** Update the classified consumers so none parse or echo the old memo shape only (e.g. pr-creation-workflow-skill PR Quality Checks slot, pr-workflow-subagent prompt, README pipeline docs if they restate the memo)
     — **Why:** a consumer expecting the tierless shape must not false-negative on `tier=full` lines or teach the stale format
