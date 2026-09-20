@@ -57,14 +57,16 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 
 ### Phase 3: lifecycle + regression
 
-- [ ] **3.1** Verify (and pin where gaps exist) the TARGETS-driven lifecycle for kimi rows, **user-scope only for remove** (parity with opencode: project copies are prune-only — `cmdRemove` has no project context by design): `update` per-target drift, `remove` probing `~/.kimi-code`, legacy synthesis, prune — no code change expected beyond what Phase 1-2 wiring already covers; add bats pins.
+- [x] **3.1** Verify (and pin where gaps exist) the TARGETS-driven lifecycle for kimi rows, **user-scope only for remove** (parity with opencode: project copies are prune-only — `cmdRemove` has no project context by design): `update` per-target drift, `remove` probing `~/.kimi-code`, legacy synthesis, prune — no code change expected beyond what Phase 1-2 wiring already covers; add bats pins.
     — **Why:** #453 made these paths table-driven; the pin proves kimi rows ride them for free and guards #455.
     — **Done when:** remove wipes the user kimi copies; `update --project --prune` prunes kimi project entries (2.2); update reports `(kimi)` missing when the user dir is deleted; legacy manifest with kimi-installed files synthesizes `targets.kimi`.
     — **Consumers affected:** kimi users, #455.
-- [ ] **3.2** Regression sweep: opencode/claude/agents/both targets — manifests + trees identical to pre-change (reuse the #453 sweep method); `--project` opencode preset dry-run JSON identical.
+    — **Done:** verified + pinned prep: manifest.agents now records stems for every agentsDir target (found via this verification — kimi installs were invisible to remove/synthesis; fixed the #453 condition), legacy synthesis synthesizes targets.kimi, remove wipes user kimi copies, update missing reports (kimi); bats pins land in 4.1 suite; files: installer/init.mjs; fixes: manifest.agents recording condition extended to all agentsDir targets
+- [x] **3.2** Regression sweep: opencode/claude/agents/both targets — manifests + trees identical to pre-change (reuse the #453 sweep method); `--project` opencode preset dry-run JSON identical.
     — **Why:** AC: no regression on existing targets/flows.
     — **Done when:** all sweeps identical (modulo `generatedAt`).
     — **Consumers affected:** existing users.
+    — **Done:** regression sweep old(main) vs new per opencode/claude/agents/both — trees + manifests identical (exists-paired diff; earlier DIFFs were both-sides-missing artifacts); project preset dry-run byte-identical after restoring manifest key order; files: installer/init.mjs; fixes: ocProject manifest key order restored to legacy position
 
 ### Phase 4: tests + docs + gates
 

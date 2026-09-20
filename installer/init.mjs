@@ -400,10 +400,10 @@ export async function writeInstall(sel, opts, reg, depMap) {
   const manifest = {
     generatedAt: new Date().toISOString(),
     tool: "opencode-init",
+    ...(ocProject ? { configPath: ocFile, modelsPath: modelsFile, agentsMd } : {}),
     agents: sel.agents,
     skills: sel.skills,
     mcps: sel.mcps,
-    ...(ocProject ? { configPath: ocFile, modelsPath: modelsFile, agentsMd } : {}),
   };
 
   if (dry) {
@@ -772,7 +772,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const manifest = {
     generatedAt: new Date().toISOString(),
     tool: "opencode-skill",
-    agents: (doOc || target === "agents") ? [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort() : (prevManifest.agents || []),
+    agents: (doOc || TARGETS[target]?.agentsDir) ? [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort() : (prevManifest.agents || []),
     skills: [...new Set([...(prevManifest.skills || []), ...sel.skills])].sort(),
     entries,
   };
