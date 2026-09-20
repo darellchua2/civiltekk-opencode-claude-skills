@@ -17,6 +17,24 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### PS 5.1-targeting audits must not whitelist PSCore-only automatics
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/ps51-audit-whitelists-pscore-only-automatics.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: $IsWindows/$IsLinux/$IsMacOS are PSCore-only — a 5.1-targeting undefined-var audit that whitelists them false-greens the most likely future StrictMode crash (#465 review)
+- **Date**: 2026-09-20
+
+### Pin every behavioral clause when the target runtime is unexecutable in CI
+
+- **Category**: pattern
+- **File**: `patterns/pin-every-clause-when-runtime-unexecutable.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: a multi-clause fix verified by static pins gets one pin per clause, not one per fix — the unpinned clause stays silently deletable while the suite stays green (#465 review)
+- **Date**: 2026-09-20
+
 ### bats test bodies run under errexit — for-loop assertions are fail-fast
 
 - **Category**: solution

@@ -94,6 +94,10 @@ if (Test-Path $VersionFile) {
 }
 
 $ConfigDir = Join-Path $HOME ".config\opencode"
+# Dry-run staging target (bash: DRY_RUN_PREVIEW_DIR, setup.sh:121). Invoke-Resolver
+# stages the resolved config here via --preview-dir; Invoke-PackMerger and
+# Invoke-SkillProfile read it back in DryRun mode.
+$DryRunPreviewDir = Join-Path $ConfigDir ".dry-run-preview"
 # OpenCode v2 only discovers opencode.json / opencode.jsonc — never config.json.
 $ConfigFile = Join-Path $ConfigDir "opencode.json"
 $LegacyConfigFile = Join-Path $ConfigDir "config.json"
@@ -1864,7 +1868,15 @@ function Invoke-Resolver {
     # references a model its provider doesn't serve. Guarded by file presence.
     $ProviderModelsFile = Join-Path $InstallDir "provider-models.json"
     if (Test-Path $ProviderModelsFile) { $resolverArgs += @("--provider-models", $ProviderModelsFile) }
-    if ($DryRun) { $resolverArgs += "--dry-run" }
+    if ($DryRun) {
+        # Fresh preview per run (bash: rm -rf "$DRY_RUN_PREVIEW_DIR", setup.sh:3008)
+        # so a stale preview never mixes into this run's staged output.
+        if (Test-Path $DryRunPreviewDir) { Remove-Item $DryRunPreviewDir -Recurse -Force }
+        # resolve-models.mjs writes NOTHING on bare --dry-run (no --preview-dir =>
+        # no files). --preview-dir is what stages the files Invoke-PackMerger /
+        # Invoke-SkillProfile read back (bash:3006-3010).
+        $resolverArgs += @("--dry-run", "--preview-dir", $DryRunPreviewDir)
+    }
     & node $ResolverScript @resolverArgs
     # An apply-mode resolver write can create opencode.json beside a live
     # jsonc (decline-copy path, -ModelsOnly/-Migrate): park it here so every
@@ -2093,7 +2105,9 @@ function Invoke-Migration {
 # opencode.json. Uses pip (already a soft dep). Mirrors install_local_mcp_launchers()
 # in setup.sh.
 function Install-LocalMcpLaunchers {
-    $launcherDir = Join-Path $AppDir "mcp-servers\markitdown-local-mcp"
+    # bash inlines ${SCRIPT_DIR}/../opencode_app/... (setup.sh:2580); derive from
+    # $RepoDir the same way $SourceConfig is (:135). There is no $AppDir variable.
+    $launcherDir = Join-Path $RepoDir "opencode_app\mcp-servers\markitdown-local-mcp"
 
     # Idempotency: skip the network round-trip when already installed AND
     # importable — `pip show` alone hides broken installs (missing mcp SDK
