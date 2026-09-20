@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.16.0](https://github.com/darellchua2/opencode-config-template/compare/v9.15.0...v9.16.0) (2026-09-20)
+
+### Features
+
+* **installer:** kimi install target — native dirs + permissions translation ([#454](https://github.com/darellchua2/opencode-config-template/issues/454)) ([#459](https://github.com/darellchua2/opencode-config-template/issues/459)) ([2c66d5c](https://github.com/darellchua2/opencode-config-template/commit/2c66d5cd065768abc9598af44e6527ea6aa9bf62))
+
+### Bug Fixes
+
+* **tests:** POSIX grep for kimi web-tools agent pick (ci has no ripgrep) ([#460](https://github.com/darellchua2/opencode-config-template/issues/460)) ([6e9fa51](https://github.com/darellchua2/opencode-config-template/commit/6e9fa51b97f06c939bfd7d424551b7af3302fc5f))
+
 ## [9.15.0](https://github.com/darellchua2/opencode-config-template/compare/v9.14.1...v9.15.0) (2026-09-20)
 
 ### Features
