@@ -1,0 +1,178 @@
+#!/usr/bin/env bats
+
+# Deploy plan model + executor pins (#470). The plan (build_plan) is the
+# single authoritative mode→steps mapping; the executor (run_plan) owns
+# failure semantics: non-critical continues, critical stops, exit code is
+# truthful. Per-mode preconditions are steps (deps/node/opencode checks) —
+# the #470 arch review's precondition matrix, pinned per mode.
+
+SETUP_SH="deploy/setup.sh"
+
+# Source once per test with a sandbox HOME; flags are set AFTER source
+# (the sandbox-clobber rule) and build_plan is then called directly.
+source_plan() {
+    local d="$1"; shift
+    HOME="$d" bash -c "source '$SETUP_SH' >/dev/null 2>&1; export $*; build_plan; printf '%s\n' \"\${PLAN_STEPS[@]}\""
+}
+
+@test "plan_full_mode_shape" {
+    local d; d="$(mktemp -d)"
+    run source_plan "$d" "QUICK_SETUP=false"
+    rm -rf "$d"
+    [ "$status" -eq 0 ]
+    local first second
+    first=$(echo "$output" | head -1)
+    second=$(echo "$output" | sed -n 2p)
+    [[ "$first" == *"true|deps|Dependency check|check_dependencies_strict"* ]]
+    [[ "$second" == *"false|gh-cli|"* ]]
+    # content steps exist with correct criticality
+    echo "$output" | grep -q 'true|config|Deploy config|setup_config'
+    echo "$output" | grep -q 'true|agents|Deploy agents|deploy_agents'
+    echo "$output" | grep -q 'true|plugins|Deploy plugins|deploy_plugins'
+    echo "$output" | grep -q 'false|shell-vars|'
+    # env steps present in full
+    echo "$output" | grep -q 'false|nvm|'
+}
+
+@test "plan_quick_mode_has_no_env_steps" {
+    local d; d="$(mktemp -d)"
+    run source_plan "$d" "QUICK_SETUP=true"
+    rm -rf "$d"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q 'true|deps|'
+    ! echo "$output" | grep -q '|nvm|'
+    ! echo "$output" | grep -q '|gh-cli|'
+}
+
+@test "plan_skills_only_preconditions_are_steps" {
+    local d; d="$(mktemp -d)"
+    run source_plan "$d" "SKILLS_ONLY=true"
+    rm -rf "$d"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"true|opencode-check|"* ]]
+    [[ "$output" == *"true|deps|"* ]]
+    echo "$output" | grep -q 'true|config|'
+    echo "$output" | grep -q 'true|agents|'
+    echo "$output" | grep -q 'true|plugins|'
+    echo "$output" | grep -q 'false|init-symlink|'
+}
+
+@test "plan_models_only_manifest_update_is_noncritical_379" {
+    local d; d="$(mktemp -d)"
+    run source_plan "$d" "MODELS_ONLY=true"
+    rm -rf "$d"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"true|node-check|"* ]]
+    echo "$output" | grep -q 'true|resolver-config|'
+    echo "$output" | grep -q 'false|manifest-update|'
+}
+
+@test "plan_check_update_is_single_step_critical_mode" {
+    local d; d="$(mktemp -d)"
+    run source_plan "$d" "CHECK_UPDATE_ONLY=true"
+    rm -rf "$d"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"true|deps|"* ]]
+    [[ "$output" == *"true|check-update|"* ]]
+    [ "$(echo "$output" | wc -l)" -eq 2 ]
+}
+
+@test "executor_continues_past_noncritical_and_stops_on_critical" {
+    local d; d="$(mktemp -d)"
+    run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        stub_ok(){ return 0; }; stub_fail(){ return 1; }; stub_after(){ echo AFTER_RAN; }
+        PLAN_STEPS=( 'false|a|A failing non-critical|stub_fail' 'true|b|B ok|stub_ok' 'false|c|C after|stub_after' )
+        run_plan; echo \"rc=\$?\""
+    rm -rf "$d"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Non-critical step failed (continuing): A failing non-critical"* ]]
+    [[ "$output" == *"AFTER_RAN"* ]]
+}
+
+@test "executor_critical_failure_stops_and_reports" {
+    local d; d="$(mktemp -d)"
+    run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        stub_ok(){ return 0; }; stub_fail(){ return 1; }; stub_never(){ echo NEVER; }
+        PLAN_STEPS=( 'true|boom|Critical boom|stub_fail' 'false|never|Never runs|stub_never' )
+        if ! run_plan; then echo PLAN_FAILED; fi"
+    rm -rf "$d"
+    [[ "$output" == *"Critical step failed: Critical boom"* ]]
+    [[ "$output" != *"NEVER"* ]]
+    [[ "$output" == *"PLAN_FAILED"* ]]
+}
+
+@test "build_plan_dies_on_conflicting_modes" {
+    local d; d="$(mktemp -d)"
+    run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1; QUICK_SETUP=true; SKILLS_ONLY=true; build_plan"
+    rm -rf "$d"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Mutually exclusive"* ]]
+}
+
+@test "d2_declined_config_survives_resolver_in_place_patch" {
+    local d; d="$(mktemp -d)"
+    mkdir -p "$d/.config/opencode"
+    cat > "$d/.config/opencode/opencode.json" <<'JSON'
+{ "custom_user_key": "keep-me", "theme": "user-theme" }
+JSON
+    bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        DRY_RUN=false; SKIP_CONFIG_COPY=true; RESOLVER_CONFIG_ONLY=true
+        run_resolver" >/dev/null 2>&1
+    # The user's custom keys must survive the in-place patch (D2 contract).
+    grep -q 'keep-me' "$d/.config/opencode/opencode.json"
+    grep -q 'user-theme' "$d/.config/opencode/opencode.json"
+    rm -rf "$d"
+}
+
+@test "d2_declined_with_no_config_writes_none" {
+    local d; d="$(mktemp -d)"
+    mkdir -p "$d/.config/opencode"
+    bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        DRY_RUN=false; SKIP_CONFIG_COPY=true; RESOLVER_CONFIG_ONLY=true
+        run_resolver" >/dev/null 2>&1
+    [ ! -f "$d/.config/opencode/opencode.json" ]
+    rm -rf "$d"
+}
+
+@test "d2_without_skip_stock_template_wins" {
+    local d; d="$(mktemp -d)"
+    mkdir -p "$d/.config/opencode"
+    cat > "$d/.config/opencode/opencode.json" <<'JSON'
+{ "custom_user_key": "keep-me" }
+JSON
+    bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        DRY_RUN=false; SKIP_CONFIG_COPY=false; RESOLVER_CONFIG_ONLY=true
+        run_resolver" >/dev/null 2>&1
+    # Stock base (config-src) overwrites — pre-existing behavior, pinned so
+    # the D2 gate's absence is what this test failing means.
+    ! grep -q 'keep-me' "$d/.config/opencode/opencode.json"
+    rm -rf "$d"
+}
+
+@test "truthful_exit_models_only_failing_node_check_exits_nonzero" {
+    local d; d="$(mktemp -d)"
+    run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        command_exists(){ [ \"\$1\" = node ] && return 1 || return 0; }
+        check_network(){ return 0; }; main --models-only --dry-run -y" </dev/null
+    rm -rf "$d"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Node.js is required"* ]]
+}
+
+@test "trace_skills_only_dry_run_runs_plan_in_order" {
+    local d; d="$(mktemp -d)"
+    run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        check_dependencies(){ return 0; }; command_exists(){ return 0; }
+        check_network(){ return 0; }; main --dry-run -y -s" </dev/null
+    rm -rf "$d"
+    [ "$status" -eq 0 ]
+    # Steps appear in plan order
+    local oc deps config agents plugins
+    oc=$(echo "$output" | grep -n "Validate opencode install" | head -1 | cut -d: -f1)
+    deps=$(echo "$output" | grep -n "Dependency check" | head -1 | cut -d: -f1)
+    config=$(echo "$output" | grep -n "Plan step: Deploy config" | head -1 | cut -d: -f1)
+    agents=$(echo "$output" | grep -n "Plan step: Deploy agents" | head -1 | cut -d: -f1)
+    plugins=$(echo "$output" | grep -n "Plan step: Deploy plugins" | head -1 | cut -d: -f1)
+    [ -n "$oc" ] && [ -n "$deps" ] && [ -n "$config" ] && [ -n "$agents" ] && [ -n "$plugins" ]
+    [ "$oc" -lt "$deps" ] && [ "$deps" -lt "$config" ] && [ "$config" -lt "$agents" ] && [ "$agents" -lt "$plugins" ]
+}
