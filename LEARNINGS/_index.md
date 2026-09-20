@@ -761,3 +761,21 @@
 - **Scope**: project
 - **Summary**: count-drift sweeps must include LEARNINGS/ (docs-of-record), and docs-of-record should cite search anchors not file:line — line refs rot within weeks (#481 review)
 - **Date**: 2026-09-20
+
+### Two skill surfaces — root deployable + Docker-app project-scoped
+
+- **Category**: decision
+- **File**: `decisions/app-scoped-skill-surface.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: keep both surfaces + the app-scoped allow (root skills/ deployable, opencode_app/.opencode/skills app-only per #361); union guard + disjointness assert enforce it; revisit = split app config base if app skills grow (#486)
+- **Date**: 2026-09-20
+
+### Two artifact surfaces, one count vocabulary — every count names its surface
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/two-surface-count-conflation.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: root skills/ vs opencode_app/.opencode/skills — single-surface derivations mint phantoms and duplicate deltas (both happened in one session); fix = union guard (SKILL.md-filtered) + disjointness assert + surface-explicit counts; dated narratives keep period-true numbers (#486)
+- **Date**: 2026-09-20
