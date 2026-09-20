@@ -973,6 +973,7 @@ validate_mode_conflicts() {
     [ "$CHECK_UPDATE_ONLY" = true ] && modes+=("--check-update")
     [ "$CHECK_CATALOG_ONLY" = true ] && modes+=("--check-catalog")
     [ "$PEONPING_ONLY" = true ] && modes+=("--peonping")
+    [ "$SELECT_ITEMS" = true ] && modes+=("--select")
     if [ "${#modes[@]}" -gt 1 ]; then
         log_error "Mutually exclusive modes combined: ${modes[*]}. Choose one."
         exit 1
@@ -3903,13 +3904,17 @@ run_item_picker() {
 deploy_selected_group() {
     # $1 = plan group (skills|agents). Direct picks only — locked-by items are
     # pulled in automatically by init.mjs add's requiresSkills closure (#439).
+    # Dry-run (#473 review BLOCK): the child CLI gets its own --dry-run —
+    # boolean-safe array form, never ${DRY_RUN:+} (that shape fires on "false").
     [ -f "$SELECT_PLAN_FILE" ] || { log_error "No selection plan at ${SELECT_PLAN_FILE}"; return 1; }
     local names
     names=$(node -e 'const p=require(process.argv[1]); console.log((p[process.argv[2]]||[]).filter(i=>i.source==="direct").map(i=>i.name).join(" "))' "$SELECT_PLAN_FILE" "$1")
     [ -z "$names" ] && { log_info "No $1 selected"; return 0; }
+    local dry_args=()
+    [ "$DRY_RUN" = true ] && dry_args+=(--dry-run)
     # shellcheck disable=SC2086 — intentional word splitting: one add per name
     for name in $names; do
-        node "${INSTALLER_DIR}/init.mjs" add "$name" ${PROVIDER:+--provider ${PROVIDER}} || return 1
+        node "${INSTALLER_DIR}/init.mjs" add "$name" "${dry_args[@]}" ${PROVIDER:+--provider ${PROVIDER}} || return 1
     done
     return 0
 }
@@ -3923,20 +3928,32 @@ deploy_selected_agents() {
 }
 
 apply_selected_packs_extras() {
+    local failed=0
     local packs
     packs=$(node -e 'const p=require(process.argv[1]); console.log((p.packs||[]).join(","))' "$SELECT_PLAN_FILE" 2>/dev/null)
     if [ -n "$packs" ]; then
-        ENABLE_PACK="$packs" run_pack_merger || log_warn "pack merge failed (non-critical)"
+        ENABLE_PACK="$packs" run_pack_merger || { log_warn "pack merge failed (non-critical)"; failed=1; }
     fi
     for e in $(node -e 'const p=require(process.argv[1]); console.log((p.extras||[]).join(" "))' "$SELECT_PLAN_FILE" 2>/dev/null); do
         case "$e" in
-            local-llm) setup_local_llm || log_warn "local LLM setup failed (non-critical)" ;;
-            vllm)      setup_vllm || log_warn "vLLM setup failed (non-critical)" ;;
+            local-llm) setup_local_llm || { log_warn "local LLM setup failed (non-critical)"; failed=1; } ;;
+            vllm)      setup_vllm || { log_warn "vLLM setup failed (non-critical)"; failed=1; } ;;
         esac
     done
-    # Consume-once (B2): the plan is spent after a successful deployment —
-    # never deleted under dry-run.
-    if [ "$DRY_RUN" != true ]; then
+    # Selected plugins: copy only the picked opencode-* plugins (#473 review —
+    # plan.plugins was recorded but never consumed).
+    local plugin_count
+    plugin_count=$(node -e 'const p=require(process.argv[1]); console.log((p.plugins||[]).length)' "$SELECT_PLAN_FILE" 2>/dev/null)
+    if [ "${plugin_count:-0}" -gt 0 ]; then
+        run_cmd mkdir -p "${CONFIG_DIR}/plugins"
+        for pname in $(node -e 'const p=require(process.argv[1]); console.log((p.plugins||[]).join(" "))' "$SELECT_PLAN_FILE" 2>/dev/null); do
+            run_cmd cp -r "${REPO_DIR}/plugins/${pname}" "${CONFIG_DIR}/plugins/${pname}"
+        done
+    fi
+    # Consume-once (B2): the plan is spent only after a SUCCESSFUL deployment —
+    # a failed non-critical piece keeps the file so a re-run can retry; never
+    # deleted under dry-run.
+    if [ "$failed" -eq 0 ] && [ "$DRY_RUN" != true ]; then
         rm -f "$SELECT_PLAN_FILE"
     fi
     return 0

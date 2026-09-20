@@ -85,10 +85,16 @@ function planFromFlags(parsed) {
       const profiles = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "skill-profiles.json"), "utf8"));
       lean = profiles.lean || profiles.leanSkills || [];
     } catch { /* no profile file — empty lean list */ }
+    const packsDir = join(dirname(fileURLToPath(import.meta.url)), "packs");
+    const pluginsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "plugins");
+    const packNames = [];
+    try { for (const f of readdirSync(packsDir)) { const m2 = f.match(/^pack-(.+)\.json$/); if (m2) packNames.push(m2[1]); } } catch {}
+    const pluginNames = [];
+    try { for (const f of readdirSync(pluginsDir)) if (f.startsWith("opencode-")) pluginNames.push(f); } catch {}
     const { registry, depMap } = loadPickerData();
     const allAgents = registry.agents.map((a) => a.stem);
-    const plan = buildSelectionPlan({ choices: { skills: lean, agents: allAgents, packs: [], plugins: [], extras: [] }, registry, depMap });
-    return { skills: plan.skills.map((s) => s.name), agents: plan.agents.map((a) => a.name), packs: [], plugins: [], extras: [] };
+    const plan = buildSelectionPlan({ choices: { skills: lean, agents: allAgents, packs: packNames, plugins: pluginNames, extras: [] }, registry, depMap });
+    return { skills: plan.skills.map((s) => s.name), agents: plan.agents.map((a) => a.name), packs: plan.packs, plugins: plan.plugins, extras: [] };
   }
   return {
     skills: list(parsed.skills),
@@ -124,7 +130,8 @@ async function flowSelectItems(_parsed) {
     return;
   }
 
-  const canDashboard = parsed.driver !== "linear" && process.stdout.isTTY && Number(process.versions.node.split(".")[0]) >= 26;
+  const [maj, min] = process.versions.node.split(".").map(Number);
+  const canDashboard = parsed.driver !== "linear" && process.stdout.isTTY && (maj > 26 || (maj === 26 && min >= 4));
   if (canDashboard) {
     try {
       await dashboardSelectItems(parsed, registry, depMap, inventory);
@@ -225,13 +232,18 @@ async function dashboardSelectItems(parsed, registry, depMap, inventory) {
     } else if (event.name === "a" || event.name === "n") {
       // all/none within the group of the cursor's nearest item
       let g = null;
-      for (let i = cursor; i >= 0; i--) { if (lines[i].kind === "item") { g = lines[i].group; break; } }
+      for (let i = cursor; i >= 0; i--) { if (lines[i].kind === "item") { g = lines[i].group; break; } if (lines[i].kind === "group") { g = lines[i].id || null; break; } }
       if (g) for (const l of lines) if (l.kind === "item" && l.group === g) {
         const key = `${l.group}:${l.id}`;
         if (event.name === "a") selected.add(key); else selected.delete(key);
       }
     } else if (event.name === "enter") {
-      if (lines[cursor].kind === "confirm") { finish(true); return; }
+      const line = lines[cursor];
+      if (line.kind === "confirm") { finish(true); return; }
+      if (line.kind === "item") {
+        const key = `${line.group}:${line.id}`;
+        if (selected.has(key)) selected.delete(key); else selected.add(key);
+      }
     } else if (event.name === "q" || (event.name === "c" && event.ctrl)) {
       finish(false); return;
     }
@@ -281,14 +293,16 @@ async function linearSelectItems(parsed, registry, depMap, inventory) {
       const answer = await ask(`  (a)ll / (s)kip / (l)ist items? [a/s/l]: `);
       if (answer === null) throw new Error("stdin closed - linear selection aborted (use --print-plan --defaults for headless)");
       const mode = answer.trim().toLowerCase();
-      if (mode === "s") continue;
+      // Empty/unknown answers SKIP — an accidental Enter must not install the
+      // entire catalog (prompt-eof-takes-default-headless).
+      if (mode !== "a" && mode !== "l") continue;
       if (mode === "l") {
         for (const item of group.items.flatMap((c) => c.items || [c])) {
           const yn = await ask(`  include ${item.id}? [y/N]: `);
           if (yn === null) throw new Error("stdin closed - linear selection aborted");
           if (yn.trim().toLowerCase() === "y") choices[group.id].push(item.id);
         }
-      } else {
+      } else if (mode === "a") {
         for (const item of group.items.flatMap((c) => c.items || [c])) choices[group.id].push(item.id);
       }
     }

@@ -61,21 +61,33 @@ export function buildSelectionPlan({ choices, registry, depMap }) {
   for (const s of directSkills) solo.set(`skill:${s}`, resolveSelection({ skills: [s] }, registry, depMap));
   for (const a of directAgents) solo.set(`agent:${a}`, resolveSelection({ agents: [a] }, registry, depMap));
   for (const m of directPacks) solo.set(`pack:${m}`, resolveSelection({ mcps: [m] }, registry, depMap));
-  const whoPulled = (pool, name, directSet, groupLabel) => {
+  // Attribution must test membership IN the solo closure for the matching
+  // pool — the union pool is tautologically true for every mapped item, which
+  // credited every locked dep to the first solo entry (#473 review WARN 1).
+  const whoPulled = (poolKey, name, directSet, groupLabel) => {
     if (directSet.has(name)) return { source: "direct", reason: `selected in ${groupLabel}` };
     for (const [key, res] of solo) {
-      if (pool.includes(name)) return { source: `locked-by:${key.split(":")[1]}`, reason: `required by ${key.split(":")[1]}` };
+      if ((res[poolKey] || []).includes(name)) {
+        return { source: `locked-by:${key.split(":")[1]}`, reason: `required by ${key.split(":")[1]}` };
+      }
     }
     return { source: "locked-by:transitive", reason: "transitive dependency" };
   };
 
-  const packs = [...directPacks].sort();
+  // Implied MCPs (impliesMcp via resolveSelection) map to their provider packs
+  // so the executor's pack merge applies them (review Gap: otherwise the plan
+  // advertises an MCP nothing enables).
+  const MCP_TO_PACK = { docling: "docling", markitdown: "markitdown", "next-devtools": "nextjs" };
+  const packs = [...new Set([
+    ...directPacks,
+    ...sel.mcps.map((m) => MCP_TO_PACK[m]).filter(Boolean),
+  ])].sort();
   const plugins = (choices.plugins || []).sort();
   const extras = (choices.extras || []).sort();
   return {
-    skills: sel.skills.map((name) => ({ name, ...whoPulled(sel.skills, name, directSkills, "skills") })),
-    agents: sel.agents.map((name) => ({ name, ...whoPulled(sel.agents, name, directAgents, "agents") })),
-    mcps: sel.mcps.map((name) => ({ name, ...whoPulled(sel.mcps, name, directPacks, "packs") })),
+    skills: sel.skills.map((name) => ({ name, ...whoPulled("skills", name, directSkills, "skills") })),
+    agents: sel.agents.map((name) => ({ name, ...whoPulled("agents", name, directAgents, "agents") })),
+    mcps: sel.mcps.map((name) => ({ name, ...whoPulled("mcps", name, directPacks, "packs") })),
     packs, plugins, extras,
     warnings: sel.warnings,
   };

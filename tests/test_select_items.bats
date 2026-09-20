@@ -16,8 +16,12 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
 @test "nvm_bumped_to_26_in_both_scripts_no_stale_24" {
   grep -q 'nvm install 26' "$SETUP_SH"
   grep -q 'nvm install 26' "$SETUP_PS1"
-  ! grep -q 'nvm install 24' "$SETUP_SH"
-  ! grep -q 'nvm install 24' "$SETUP_PS1"
+  run grep -q 'nvm install 24' "$SETUP_SH"
+  [ "$status" -ne 0 ]
+  run grep -q 'nvm install 24' "$SETUP_PS1"
+  [ "$status" -ne 0 ]
+  run grep -q 'v24 via nvm' "$SETUP_PS1"
+  [ "$status" -ne 0 ]
 }
 
 @test "plan_items_auto_includes_agent_requires_skills_with_provenance" {
@@ -35,6 +39,27 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
       if (!pulled.source.startsWith("locked-by:")) throw new Error("no locked-by provenance on " + pulled.name);
       const directAgent = plan.agents.find((a) => a.name === agent.stem);
       if (directAgent.source !== "direct") throw new Error("direct agent misannotated");
+    });
+  '
+}
+
+@test "provenance_credits_true_source_with_two_direct_choices" {
+  # Two agents with disjoint requiresSkills — each pulled skill must credit
+  # ITS OWN agent, not the first solo closure (round-1 WARN 1).
+  node -e '
+    import("./installer/deploy-plan-items.mjs").then(async (m) => {
+      const registry = JSON.parse(require("fs").readFileSync("installer/registry.json", "utf8"));
+      const depMap = JSON.parse(require("fs").readFileSync("installer/dependency-map.json", "utf8"));
+      const withDeps = registry.agents.filter((a) => (a.requiresSkills || []).length > 0);
+      if (withDeps.length < 2) { console.log("fewer than 2 requiresSkills agents — pin vacuous"); return; }
+      const [a1, a2] = withDeps;
+      const plan = m.buildSelectionPlan({ choices: { agents: [a1.stem, a2.stem] }, registry, depMap });
+      const byName = Object.fromEntries(plan.skills.map((s) => [s.name, s]));
+      for (const a of [a1, a2]) {
+        const dep = byName[a.requiresSkills[0]];
+        if (!dep) throw new Error(a.requiresSkills[0] + " missing from the plan");
+        if (!String(dep.source).includes(a.stem)) throw new Error(dep.name + " credited to " + dep.source + ", expected " + a.stem);
+      }
     });
   '
 }
@@ -79,12 +104,30 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
   grep -q '"$DRY_RUN" != true ]; then' "$SETUP_SH"
 }
 
-@test "select_steps_absent_from_skills_only_plan" {
+@test "select_conflicts_with_skills_only_at_the_validator" {
+  # --select registers in validate_mode_conflicts (#473 round 1 WARN): the
+  # combination must DIE at plan validation, not silently run skills-only
+  # without the picker.
   local d; d="$(mktemp -d)"
-  run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1; SKILLS_ONLY=true; SELECT_ITEMS=true; build_plan; printf '%s\n' \"\${PLAN_STEPS[@]}\""
+  run bash -c 'export HOME="$1"; source "'"$SETUP_SH"'" >/dev/null 2>&1; SKILLS_ONLY=true; SELECT_ITEMS=true; build_plan' _ "$d"
+  rm -rf "$d"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"Mutually exclusive"* ]]
+}
+
+@test "select_dry_run_with_preseeded_plan_writes_nothing" {
+  # The PLAN-promised leak net (#467 family): select + dry-run with a
+  # pre-seeded plan PREVIEWS consumption and installs nothing into the live
+  # config.
+  local d; d="$(mktemp -d)"
+  mkdir -p "$d/.config/opencode"
+  printf '%s' '{"skills":[{"name":"git-semantic-commits-skill","source":"direct"}],"agents":[],"mcps":[],"packs":[],"plugins":[],"extras":[],"warnings":[]}' > "$d/.config/opencode/deploy-plan.json"
+  run bash -c "export HOME='$d'; unset XDG_DATA_HOME XDG_CONFIG_HOME; source '$SETUP_SH' >/dev/null 2>&1
+           SELECT_ITEMS=true; DRY_RUN=true; AUTO_ACCEPT=true
+           command_exists(){ return 0; }; check_network(){ return 0; }; check_dependencies(){ return 0; }
+           main --dry-run -y --select" </dev/null
   rm -rf "$d"
   [ "$status" -eq 0 ]
-  ! echo "$output" | grep -q "select-items"
 }
 
 @test "select_mode_plan_has_picker_steps_and_no_blanket_agents" {

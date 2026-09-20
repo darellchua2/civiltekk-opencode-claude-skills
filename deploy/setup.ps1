@@ -1488,7 +1488,7 @@ function Install-NodeJS {
 
     if (Test-CommandExists "nvm") {
         Write-LogInfo "nvm-windows is installed"
-        Write-LogInfo "Installing Node.js v24 via nvm..."
+        Write-LogInfo "Installing Node.js v26 via nvm..."
         Invoke-WithDryRun "nvm install 26"
         Invoke-WithDryRun "nvm use 26"
 
