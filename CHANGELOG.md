@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.19.2](https://github.com/darellchua2/opencode-config-template/compare/v9.19.1...v9.19.2) (2026-09-20)
+
+### Bug Fixes
+
+* **installer:** refresh provider model pins to live models.dev catalog ([#468](https://github.com/darellchua2/opencode-config-template/issues/468)) ([#477](https://github.com/darellchua2/opencode-config-template/issues/477)) ([e9c2c0c](https://github.com/darellchua2/opencode-config-template/commit/e9c2c0c9ea99276b3d6e7f7227837e8317c6bcb3)), closes [#281](https://github.com/darellchua2/opencode-config-template/issues/281) [#281](https://github.com/darellchua2/opencode-config-template/issues/281)
+
 ## [9.19.1](https://github.com/darellchua2/opencode-config-template/compare/v9.19.0...v9.19.1) (2026-09-20)
 
 ### Bug Fixes
