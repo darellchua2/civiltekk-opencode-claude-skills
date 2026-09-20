@@ -43,21 +43,24 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 
 ### Phase 2: project scope (TARGETS columns)
 
-- [ ] **2.1** Verify the #454 project-branch table lookup covers kilo rows **after the 1.3 dispatch fix**: `--project --target kilo` writes `.kilo/agents/` + `.kilo/skills/` with `permission:`-translated agents (content asserted — not just dirs), no opencode artifacts (`opencode.json`/`models.json`/`AGENTS.md` absent), dry-run omits config keys, downgrade notes intact for agents/claude, preset flow dies on non-opencode `--target`; flat copies only (no nested-dir namespacing — flat names never contain `/`).
+- [x] **2.1** Verify the #454 project-branch table lookup covers kilo rows **after the 1.3 dispatch fix**: `--project --target kilo` writes `.kilo/agents/` + `.kilo/skills/` with `permission:`-translated agents (content asserted — not just dirs), no opencode artifacts (`opencode.json`/`models.json`/`AGENTS.md` absent), dry-run omits config keys, downgrade notes intact for agents/claude, preset flow dies on non-opencode `--target`; flat copies only (no nested-dir namespacing — flat names never contain `/`).
     — **Why:** dirs/manifest/prune ride the table (verified in review); the transform dispatch was the one hard-coded imperative — owned by 1.3.
     — **Done when:** behavioral checks pass including the content assertion above; any further delta found is fixed in the shared dispatch code, not per-target.
     — **Consumers affected:** Kilo project users, CI bats.
-- [ ] **2.2** Verify lifecycle rides TARGETS: `update` per-target drift (missing reports `(kilo)`), `remove` wipes user kilo copies, legacy synthesis synthesizes `targets.kilo`, `--prune --project --target kilo` prunes; add nothing if green — pin in 4.1.
+    — **Done:** post-1.3-dispatch verification: kilo project install lands .kilo/{agents,skills} with permission:-translated agents, zero opencode artifacts, dry-run omits oc keys, agents/claude downgrade notes intact, preset+kilo dies exit 2; flat copies only; files: none (verification of 1.3); fixes: none
+- [x] **2.2** Verify lifecycle rides TARGETS: `update` per-target drift (missing reports `(kilo)`), `remove` wipes user kilo copies, legacy synthesis synthesizes `targets.kilo`, `--prune --project --target kilo` prunes; add nothing if green — pin in 4.1.
     — **Why:** proves the #453/#454 abstraction carries a third platform for free.
     — **Done when:** all behavioral checks green.
     — **Consumers affected:** Kilo users, #457.
+    — **Done:** lifecycle rides TARGETS: update missing reports (kilo), legacy synthesis synthesizes targets.kilo, remove wipes user kilo copy, prune path covered by doPrune project columns (proven #454); zero new code needed — claim held for lifecycle; files: none (verification); fixes: none
 
 ### Phase 3: regression sweep
 
-- [ ] **3.1** Regression sweep: opencode/claude/agents/kimi/both targets — manifests + trees identical to pre-change (exists-paired diff method); opencode project preset dry-run byte-identical.
+- [x] **3.1** Regression sweep: opencode/claude/agents/kimi/both targets — manifests + trees identical to pre-change (exists-paired diff method); opencode project preset dry-run byte-identical.
     — **Why:** AC: no regression on existing targets/flows (five surfaces now).
     — **Done when:** all sweeps identical (modulo `generatedAt`).
     — **Consumers affected:** existing users.
+    — **Done:** regression sweep old(main) vs new across opencode/claude/agents/kimi/both — trees + manifests identical (exists-paired); project preset dry-run byte-identical; files: none (verification); fixes: none
 
 ### Phase 4: tests + docs + gates
 
