@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.21.0](https://github.com/darellchua2/opencode-config-template/compare/v9.20.0...v9.21.0) (2026-09-20)
+
+### Features
+
+* **deploy:** use upstream markitdown-mcp from PyPI instead of vendored launcher ([#487](https://github.com/darellchua2/opencode-config-template/issues/487)) ([a2d84c4](https://github.com/darellchua2/opencode-config-template/commit/a2d84c4591904e6930f4eea11d1bc5a6271c9f95))
+
 ## [Unreleased]
 
 ### Changed
