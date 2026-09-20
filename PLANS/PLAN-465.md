@@ -64,3 +64,7 @@ None — standalone bug fix. No blocked-by.
 ## Risks & Mitigation
 - **No Windows/pwsh in this environment**: the crash itself cannot be reproduced live here. Mitigation: the paren-balanced static audit is the same analysis StrictMode performs at runtime (undefined script-scope read), applied to the whole file; residual Windows live-run verification is noted in the PR body for the maintainer.
 - **Regex drift breaking the pin suite**: the pins grep stable literals (variable names, flag strings); if setup.ps1 is restructured later, the audit (e) still holds as the class-level guard while (a)–(d) may need updating — acceptable, they are one file.
+
+## Gate Trace
+
+GATE 8faba5b lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 409 ok / 0 fail incl. 5 new pins; node --test 30 pass / 0 fail; scope = deploy/setup.ps1 + tests/test_setup_ps1_vars.bats only)
