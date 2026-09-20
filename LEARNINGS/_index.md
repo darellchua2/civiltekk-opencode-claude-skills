@@ -509,3 +509,21 @@
 - **Scope**: project
 - **Summary**: `action: bash`/`action: task` rules do nothing on v2 (actions are `shell`/`subagent`) — v1 deny leaves the tool executable; rename restores enforcement (probe matrix: v1 child inert, v2 child enforced via tool filtering; distinct from the skill-action bug in #50149) (#482)
 - **Date**: 2026-09-20
+
+### Embedded diff hunks + a path claim are untrusted — probe .git/HEAD first
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/embedded-diff-hunks-unverifiable-probe-git-head-first.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: review prompts embedding hunks plus a worktree path can name the wrong tree — reviewer's first act is a no-shell branch probe (.git/HEAD + one hunk spot-check); on mismatch fail fast with probe evidence instead of reviewing the prompt's copy (#482 Step 9)
+- **Date**: 2026-09-20
+
+### Subagent briefs can misdescribe the subagent's own toolset — probe, don't trust
+
+- **Category**: pattern
+- **File**: `patterns/subagent-brief-may-misdescribe-own-tools.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: parent briefs assert runtime facts ("no shell") that can be false when denies are inert — subagent probes one cheap tool call before degrading to read-only; on contradiction use the stronger capability and say so (#482 Step 9 reviewer re-ran all gates itself)
+- **Date**: 2026-09-20
