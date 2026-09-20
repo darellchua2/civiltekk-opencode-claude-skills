@@ -81,5 +81,6 @@ None external. No `blocked-by:` tickets.
 
 GATE 5e88a85 lint=t typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 1d509cb lint=t typecheck=n.a build=n.a unit=t e2e=n.a
+GATE bae489b lint=t typecheck=n.a build=n.a unit=t e2e=n.a
 
 
