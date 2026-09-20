@@ -591,6 +591,8 @@ export async function doPrune(sel, opts) {
   // columns only ever join against the explicit project root here
   const pTarget = TARGETS[opts.target]?.projectSkillsDir ? opts.target : "opencode";
   const pCfg = TARGETS[pTarget];
+  if (opts.target && opts.target !== "opencode" && pTarget === "opencode")
+    console.error(`note: --target ${opts.target} has no project destination; --prune uses opencode target.`);
   const agentsDir = join(project, pCfg.projectAgentsDir);
   const skillsDir = join(project, pCfg.projectSkillsDir);
   const manifestFile = join(dirname(agentsDir), ".opencode-init.manifest.json");
@@ -671,13 +673,15 @@ async function cmdAdd(args, opts, reg, depMap) {
     if (opts.target !== undefined)
       die("cannot use --format and --target together (--format is deprecated; use --target)", 2);
     opts.target = opts.format;
-    console.error("warning: --format is deprecated; use --target (values: opencode, claude, agents, kimi, both)");
+    console.error(`warning: --format is deprecated; use --target (${TARGET_VALUES.join(", ")})`);
   }
 
   const project = opts.project === true ? process.cwd() : opts.project;
   if (project) {
     const tgt = opts.target || "opencode";
-    if (TARGETS[tgt] && !TARGETS[tgt].projectSkillsDir)
+    if (!TARGET_VALUES.includes(tgt))
+      die(`invalid target '${tgt}'. Use: ${TARGET_VALUES.filter((t) => t !== "both").join(", ")}, or both.`, 2);
+    if (tgt !== "opencode" && !TARGETS[tgt]?.projectSkillsDir)
       console.error(`note: --target ${tgt} has no project destination; --project uses opencode target.`);
     opts.project = project;
     await writeInstall(sel, opts, reg, depMap);
@@ -690,7 +694,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const dry = !!opts.dryRun;
   const target = opts.target || "opencode";
   if (!TARGET_VALUES.includes(target))
-    die(`invalid target '${target}'. Use: opencode, claude, agents, kimi, or both.`, 2);
+    die(`invalid target '${target}'. Use: ${TARGET_VALUES.filter((t) => t !== "both").join(", ")}, or both.`, 2);
   const doOc = target === "opencode" || target === "both";
   const doClaude = target === "claude" || target === "both";
   const claudeSkipWarning = doClaude && sel.agents.length
@@ -932,6 +936,10 @@ function kimiAgentContent(content, warn) {
     warn("unterminated frontmatter — installed verbatim, permissions not translated");
     return content;
   }
+  if (/^(tools|disallowedTools):/m.test(lines.slice(1, closeIdx).join("\n"))) {
+    warn("frontmatter already declares tools/disallowedTools — skipping permission translation");
+    return content;
+  }
   // minimal YAML subset parse of the permissions list:
   //   - action: <name> / resource: <glob> / effect: <allow|deny|ask>
   const rules = [];
@@ -940,7 +948,7 @@ function kimiAgentContent(content, warn) {
     const a = lines[i].match(/^\s*-\s*action:\s*"?([\w:-]+)"?/);
     if (a) { cur = { action: a[1] }; rules.push(cur); continue; }
     if (!cur) continue;
-    const r = lines[i].match(/^\s+resource:\s*'?([^'#]+?)'?\s*$/);
+    const r = lines[i].match(/^\s+resource:\s*["']?([^"']+?)["']?\s*$/);
     if (r) cur.resource = r[1];
     const e = lines[i].match(/^\s+effect:\s*"?(\w+)"?/);
     if (e) cur.effect = e[1];

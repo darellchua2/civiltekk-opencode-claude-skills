@@ -119,6 +119,16 @@ assert 'code-review-subagent' in m['agents'], m['agents']
   rm -rf "$TMP_PROJ"
 }
 
+@test "kimi target: project prune-only wipes .kimi-code installs" {
+  TMP_PROJ="$(mktemp -d)"
+  $INIT add code-review-subagent --project "$TMP_PROJ" --target kimi --yes --no-deps >/dev/null 2>&1
+  [ -f "$TMP_PROJ/.kimi-code/agents/code-review-subagent.md" ]
+  run $INIT --project "$TMP_PROJ" --prune --target kimi --yes
+  [ "$status" -eq 0 ]
+  [ ! -e "$TMP_PROJ/.kimi-code/agents/code-review-subagent.md" ]
+  rm -rf "$TMP_PROJ"
+}
+
 @test "kimi target: preset flow dies on non-opencode --target" {
   TMP_PROJ="$(mktemp -d)"
   run $INIT --project "$TMP_PROJ" --preset core --target kimi --yes

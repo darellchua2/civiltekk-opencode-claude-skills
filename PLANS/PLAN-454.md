@@ -115,3 +115,5 @@ GATE d2b425a lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — 59 bats ok,
 GATE cebe329 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — 59 bats ok, node --test green, kimi project install/prune verified
 GATE bdb4035 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — 59 bats ok, node --test green, 4-target regression sweep + kimi lifecycle verified
 GATE e2e7868 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — FINAL: 70 bats ok (5 suites incl. kimi_target x11), node --test green, pack+drift green
+
+**Review round 1 (code-review-subagent, 0 BLOCK / 1 WARN / 5 NOTE):** WARN fixed — cmdAdd project branch now dies on unknown --target (derived five-value message) and notes on the `both` alias; doPrune prints the downgrade note instead of silently retargeting. NOTEs applied — resource regex quote parity, duplicate tools/disallowedTools guard (warn + skip insert), die + --format messages derived from TARGET_VALUES, kimi project-prune bats pin added. NOTE left: bare valueless --target parseArgs wart (cosmetic, parser-wide). Requirements Gaps: none.
