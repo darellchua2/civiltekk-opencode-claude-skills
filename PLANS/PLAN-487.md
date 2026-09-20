@@ -40,26 +40,31 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 1: Config + installer swap (shell + PowerShell)
 
-- [ ] **1.1** Flip the markitdown server entry in `opencode_app/opencode.json` from `"command": ["markitdown-local-mcp"]` to `["markitdown-mcp"]`, leaving `type`, `environment` (`MARKITDOWN_ENABLE_PLUGINS=false`), and `disabled: true` untouched.
+- [x] **1.1** Flip the markitdown server entry in `opencode_app/opencode.json` from `"command": ["markitdown-local-mcp"]` to `["markitdown-mcp"]`, leaving `type`, `environment` (`MARKITDOWN_ENABLE_PLUGINS=false`), and `disabled: true` untouched.
     — **Why:** the config is the single source of truth the deploy copies; every later step (scripts, Docker, tests) must agree on the new entry-point name or the server fails to spawn.
     — **Done when:** `grep -n 'markitdown-mcp' opencode_app/opencode.json` matches the command array, no `markitdown-local-mcp` remains in the file, and `node -e "JSON.parse(...)"` still parses it.
     — **Consumers affected:** opencode runtime (all deployed machines), merge-packs.mjs, test_mcp_count_consistency.bats.
-- [ ] **1.2** Replace `install_local_mcp_launchers()` in `deploy/setup.sh` with `install_markitdown_mcp()`: idempotency probe = `pip show markitdown-mcp` AND import check `from markitdown_mcp.__main__ import main`; install command `python3 -m pip install --user "markitdown-mcp==0.0.1a7" "mcp[cli]>=2.1.1,<3.0.0"` with the existing PEP 668 `--break-system-packages` retry; best-effort `python3 -m pip uninstall -y markitdown-local-mcp` for old installs; PATH warning now names the `markitdown-mcp` entry point.
+    — **Done:** command flipped, env/disabled untouched; files: opencode_app/opencode.json; fixes: none
+- [x] **1.2** Replace `install_local_mcp_launchers()` in `deploy/setup.sh` with `install_markitdown_mcp()`: idempotency probe = `pip show markitdown-mcp` AND import check `from markitdown_mcp.__main__ import main`; install command `python3 -m pip install --user "markitdown-mcp==0.0.1a7" "mcp[cli]>=2.1.1,<3.0.0"` with the existing PEP 668 `--break-system-packages` retry; best-effort `python3 -m pip uninstall -y markitdown-local-mcp` for old installs; PATH warning now names the `markitdown-mcp` entry point.
     — **Why:** PyPI is the new source; the exact pin is required because upstream publishes only alphas (plain `pip install markitdown-mcp` fails), and `mcp[cli]` restores the shared SDK 2.x that docling-mcp also needs.
     — **Done when:** `grep -c 'markitdown-local-mcp' deploy/setup.sh` returns only the intentional uninstall reference; function compiles under `bash -n`; probe text matches upstream import path.
     — **Consumers affected:** run_pack_merger call site, test_pack_permissions.bats greps, users' `~/.local/bin`.
-- [ ] **1.3** Update both `install_local_mcp_launchers` call sites in `deploy/setup.sh` (`setup_config`, `run_pack_merger`) plus help/banner text lines describing markitdown ("privacy-hardened local-only" → "upstream markitdown-mcp, stdio, plugins off").
+    — **Done:** function swapped (probe/pin/co-install/PEP 668 retry/uninstall-migration); `--force-reinstall` dropped (PyPI install heals missing deps on re-run); files: deploy/setup.sh; fixes: gate assertion count corrected to 2 intentional refs (header comment + uninstall)
+- [x] **1.3** Update both `install_local_mcp_launchers` call sites in `deploy/setup.sh` (`setup_config`, `run_pack_merger`) plus help/banner text lines describing markitdown ("privacy-hardened local-only" → "upstream markitdown-mcp, stdio, plugins off").
     — **Why:** a renamed function with stale call sites crashes every deploy at the config step; stale help text misdescribes the privacy posture.
     — **Done when:** `grep -n 'install_local_mcp_launchers' deploy/setup.sh` returns zero matches; help text mentions the new package.
     — **Consumers affected:** full-setup users, `--enable-pack markitdown` users, test_pack_permissions.bats hook assertions.
-- [ ] **1.4** Mirror steps 1.2–1.3 in `deploy/setup.ps1`: rename `Install-LocalMcpLaunchers` → `Install-MarkitdownMcp`, same probe/install/uninstall-old/PATH-warn shape (Windows script dir `%APPDATA%\Python\Scripts`), update `Set-Configuration` + `Invoke-PackMerger` call sites and help text.
+    — **Done:** both call sites renamed; help line 720 + summary line 4041 reworded; files: deploy/setup.sh; fixes: none
+- [x] **1.4** Mirror steps 1.2–1.3 in `deploy/setup.ps1`: rename `Install-LocalMcpLaunchers` → `Install-MarkitdownMcp`, same probe/install/uninstall-old/PATH-warn shape (Windows script dir `%APPDATA%\Python\Scripts`), update `Set-Configuration` + `Invoke-PackMerger` call sites and help text.
     — **Why:** platform parity is a repo invariant (#469) — a bash-only swap breaks Windows deploys silently.
     — **Done when:** `grep -c 'Install-LocalMcpLaunchers' deploy/setup.ps1` returns zero; both call sites reference `Install-MarkitdownMcp`; parity grep `grep -n 'markitdown-local-mcp' deploy/setup.ps1` returns only the intentional uninstall-migration reference.
     — **Consumers affected:** Windows users, Invoke-PackMerger, test_pack_permissions.bats / test_setup_ps1_vars.bats greps.
-- [ ] **1.5** Update the `$comment` in `deploy/packs/pack-markitdown.json` to describe the PyPI install (behavior keys unchanged).
+    — **Done:** function + both call sites renamed, uninstall-migration added, stale "local-dir pip install" comment fixed; files: deploy/setup.ps1; fixes: none
+- [x] **1.5** Update the `$comment` in `deploy/packs/pack-markitdown.json` to describe the PyPI install (behavior keys unchanged).
     — **Why:** the comment documents the install mechanism; leaving it stale misleads the next maintainer.
     — **Done when:** comment mentions `markitdown-mcp` PyPI pin; file still parses as JSON; merge keys (`disabled:false`, permissions rule) byte-identical.
     — **Consumers affected:** merge-packs.mjs (no functional change), test_pack_permissions.bats merge assertions.
+    — **Done:** comment rewritten (PyPI pin, stdio, env var); merge keys untouched; files: deploy/packs/pack-markitdown.json; fixes: none
 
 ### Phase 2: Docker + vendored removal
 

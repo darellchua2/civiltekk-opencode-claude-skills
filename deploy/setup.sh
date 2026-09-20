@@ -717,7 +717,7 @@ USAGE:
     opencode.json or opencode-repo-setup-skill):
       atlassian           JIRA and Confluence integration (first use opens browser OAuth)
       next-devtools      Next.js DevTools integration
-      markitdown         Document-to-Markdown (local-only, privacy-hardened)
+      markitdown         Document-to-Markdown (upstream markitdown-mcp, stdio, plugins off)
       docling            Layout-aware document extraction (heavy ~3-4 GB)
       chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
                           (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
@@ -2576,9 +2576,9 @@ setup_config() {
             # jsonc-only machine): restore the one-live-config end state.
             park_jsonc_sibling
 
-            # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
+            # Install the upstream markitdown MCP server (#487: markitdown-mcp from PyPI).
             # Best-effort — non-fatal on offline/pip-missing.
-            install_local_mcp_launchers
+            install_markitdown_mcp
 
             # Install docling-mcp if --enable-pack docling was requested (PLAN-GIT-308).
             # Heavy (~3-4 GB) — only runs when explicitly opted in.
@@ -2623,49 +2623,56 @@ setup_config() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LOCAL MCP LAUNCHER INSTALL (PLAN-GIT-262)
+# MARKITDOWN MCP INSTALL (#487 — upstream markitdown-mcp from PyPI)
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Install in-repo Python-based MCP launchers (currently: markitdown-local-mcp)
-# onto the user's PATH so OpenCode can spawn them via the `command` field in
-# opencode.json. Uses pip (already a soft dep via codegraph/python tooling).
+# Install the official markitdown-mcp MCP server (microsoft/markitdown) from
+# PyPI onto the user's PATH so OpenCode can spawn it via the `command` field in
+# opencode.json. Replaces the former in-repo vendored launcher
+# (markitdown-local-mcp) — #487. Uses pip (already a soft dep via
+# codegraph/python tooling).
 #
-# Why pip, not uv: uv is not a repo dependency and is not installed in the
-# Docker image. pip is available everywhere Python is.
+# Why the exact pin: upstream publishes only alpha releases (0.0.1a1–0.0.1a7);
+# plain `pip install markitdown-mcp` fails ("no matching distribution") because
+# pip skips pre-releases. An exact pre-release pin installs without --pre and
+# keeps pre-release candidates out of transitive resolution. Bump ritual: the
+# pin appears in deploy/setup.sh, deploy/setup.ps1, and opencode_app/Dockerfile
+# — bump all three together.
+#
+# Why the mcp[cli] co-install: docling-mcp>=3.0 requires mcp[cli]>=2.0,<3.0 and
+# upstream markitdown-mcp requires mcp>=2.1.1,<3.0.0 — installing both specs in
+# one resolve keeps the shared MCP SDK at 2.x for both servers (the retired
+# vendored pin mcp<2.0 was mutually exclusive with docling and broke both).
 #
 # Why --user: avoids polluting system site-packages; console-script lands in
-# ~/.local/bin (Linux/macOS) or %APPDATA%\Python\Scripts (Windows). Python
-# 3.12+ auto-adds ~/.local/bin to PATH on most distros.
-install_local_mcp_launchers() {
+# ~/.local/bin (Linux/macOS). Python 3.12+ auto-adds ~/.local/bin to PATH on
+# most distros.
+install_markitdown_mcp() {
     echo ""
-    log_info "Installing local MCP launchers..."
+    log_info "Installing markitdown-mcp (upstream, PyPI)..."
+
+    # Migrate old installs: the retired vendored launcher must not linger on
+    # PATH beside the new entry point (best-effort — absent is fine).
+    python3 -m pip uninstall -y markitdown-local-mcp >/dev/null 2>&1 || true
 
     # Idempotency: skip the network round-trip when already installed AND
     # importable — `pip show` alone hides broken installs (e.g. the mcp SDK
     # dependency missing), which surfaces later as "MCP error -32000:
-    # Connection closed" when the launcher crashes on import.
-    if python3 -m pip show markitdown-local-mcp >/dev/null 2>&1 \
-        && python3 -c "from markitdown_local_mcp.__main__ import main" >/dev/null 2>&1; then
-        log_success "markitdown-local-mcp already installed — skipping pip install"
-        return 0
-    fi
-
-    # Source-of-truth launcher directory (relative to repo root = parent of deploy/)
-    local launcher_dir="${SCRIPT_DIR}/../opencode_app/mcp-servers/markitdown-local-mcp"
-
-    if [ ! -d "$launcher_dir" ]; then
-        log_warn "markitdown-local-mcp launcher source not found at ${launcher_dir} — skipping"
+    # Connection closed" when the server crashes on import.
+    if python3 -m pip show markitdown-mcp >/dev/null 2>&1 \
+        && python3 -c "from markitdown_mcp.__main__ import main" >/dev/null 2>&1; then
+        log_success "markitdown-mcp already installed — skipping pip install"
         return 0
     fi
 
     # Prerequisite: python3 + pip
     if ! command_exists python3; then
-        log_warn "python3 not found — cannot install markitdown-local-mcp. Install Python 3.10+ and re-run."
+        log_warn "python3 not found — cannot install markitdown-mcp. Install Python 3.10+ and re-run."
         return 0
     fi
 
     if ! python3 -m pip --version >/dev/null 2>&1; then
-        log_warn "pip not available for python3 — cannot install markitdown-local-mcp. Install pip and re-run."
+        log_warn "pip not available for python3 — cannot install markitdown-mcp. Install pip and re-run."
         return 0
     fi
 
@@ -2673,14 +2680,14 @@ install_local_mcp_launchers() {
     # (externally-managed-environment, Debian 12+/Ubuntu 23.04+) blocks plain
     # `pip install --user` — retry once with --break-system-packages; --user
     # keeps the install isolated to ~/.local, which is the risk PEP 668 guards.
-    log_info "pip install --user --force-reinstall ${launcher_dir}"
+    log_info 'pip install --user "markitdown-mcp==0.0.1a7" "mcp[cli]>=2.1.1,<3.0.0"'
     local pip_err
     pip_err="$(mktemp)"
-    if python3 -m pip install --user --force-reinstall --no-warn-script-location "$launcher_dir" >/dev/null 2>"$pip_err" \
+    if python3 -m pip install --user --no-warn-script-location "markitdown-mcp==0.0.1a7" "mcp[cli]>=2.1.1,<3.0.0" >/dev/null 2>"$pip_err" \
         || { grep -q "externally-managed-environment" "$pip_err" \
-            && python3 -m pip install --user --break-system-packages --force-reinstall --no-warn-script-location "$launcher_dir" >/dev/null 2>>"$pip_err"; }; then
+            && python3 -m pip install --user --break-system-packages --no-warn-script-location "markitdown-mcp==0.0.1a7" "mcp[cli]>=2.1.1,<3.0.0" >/dev/null 2>>"$pip_err"; }; then
         rm -f "$pip_err"
-        log_success "markitdown-local-mcp installed"
+        log_success "markitdown-mcp installed"
 
         # PATH check — warn (don't fail) if ~/.local/bin not on PATH
         local user_bin="${HOME}/.local/bin"
@@ -2689,12 +2696,12 @@ install_local_mcp_launchers() {
                 # All good
                 ;;
             *)
-                log_warn "${user_bin} is not on your PATH. Add it to your shell rc to use markitdown-local-mcp:"
+                log_warn "${user_bin} is not on your PATH. Add it to your shell rc to use markitdown-mcp:"
                 echo "    export PATH=\"${user_bin}:\$PATH\"" >&2
                 ;;
         esac
     else
-        log_warn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) — OpenCode will work without it. Re-run setup when online to enable."
+        log_warn "pip install failed for markitdown-mcp (offline?). The server is opt-in (disabled: true) — OpenCode will work without it. Re-run setup when online to enable."
         log_warn "pip stderr (last 3 lines):"
         tail -n 3 "$pip_err" >&2
         rm -f "$pip_err"
@@ -3165,14 +3172,14 @@ run_pack_merger() {
         return 1
     fi
 
-    # Install-on-enable: markitdown's Python launcher is pip-installed, not
-    # baked into the target config — without this the enabled server fails to
-    # spawn. Mirrors install_docling gating. Skipped in dry-run
+    # Install-on-enable: markitdown's Python server is pip-installed from PyPI,
+    # not baked into the target config — without this the enabled server fails
+    # to spawn. Mirrors install_docling gating. Skipped in dry-run
     # (nothing real is deployed) and when the pack wasn't requested.
     # grep -qw (not anchored) is safe: validate_enable_pack fail-fast restricts
     # --enable-pack to real pack names, so no 'markitdown2' false positives.
     if [ "$DRY_RUN" != true ] && echo "$ENABLE_PACK" | grep -qw "markitdown"; then
-        install_local_mcp_launchers
+        install_markitdown_mcp
     fi
     return 0
 }
@@ -4031,7 +4038,7 @@ print_summary() {
          echo "    - web-search - Web search with cited results (auto-start, needs ZAI_API_KEY)"
          echo "    - atlassian - JIRA and Confluence (opt-in per-project)"
          echo "    - next-devtools - Next.js DevTools (opt-in)"
-         echo "    - markitdown - Document-to-Markdown, local-only, opt-in"
+         echo "    - markitdown - Document-to-Markdown (upstream markitdown-mcp), opt-in"
          echo "    - docling - Layout-aware document extraction, opt-in (~3-4 GB)"
          echo "    - chrome-devtools - Live Chrome automation, opt-in"
 
