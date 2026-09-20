@@ -39,22 +39,22 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Why:** AC-1/AC-2 are behavioral specs that must live where Step 4 ends so the agent sees them at creation time; without them the multi-ticket run prints refs with no order guidance.
     — **Done when:** SKILL.md contains the subsection with the exact copy-paste block format and the one-line-rationale requirement.
     — **Consumers affected:** primary agent runtime at multi-ticket creation.
-    — **Done:** inserted as "Step 4b: Multi-ticket sequence handoff" with the exact block format; files: skills/ticket-creation-skill/SKILL.md; fixes: none
+    — **Done:** inserted as "Step 4b: Multi-ticket sequence handoff" with the exact block format; files: skills/ticket-creation-skill/SKILL.md; fixes: review round 1 — parent-exclusion clause added (list executable tickets, omit umbrella parent)
 - [x] **1.2** Add the order-derivation priority to the same subsection: (1) user-stated dependencies, (2) intake/sub-item order, (3) content inference — inference always labeled "inferred"
     — **Why:** AC-2 requires rationales and honest labeling; a stated priority order prevents silent fabrication of sequencing.
     — **Done when:** subsection lists the three-tier priority with the inference-labeling rule.
     — **Consumers affected:** primary agent runtime; user reading the emitted rationale.
     — **Done:** three-tier priority list with the "never present inferred as user-stated" rule; files: skills/ticket-creation-skill/SKILL.md; fixes: none
-- [x] **1.3** Add the `blocked-by:` recording rules to the same subsection: when the user states a dependency, write `blocked-by: <ref>` into the dependent ticket's body at creation under a `### Dependencies` heading — at creation time if the blocker ref already exists, otherwise a follow-up body append (`gh issue edit --body` / Jira edit); GitHub `#N`, JIRA `PROJ-N`
+- [x] **1.3** Add the `blocked-by:` recording rules to the same subsection: when the user states a dependency, write `blocked-by: <ref>` into the dependent ticket's body at creation under a `### Dependencies` heading — at creation time if the blocker ref already exists, otherwise a fetch-then-write body append (`gh issue view --json body` → `gh issue edit --body-file`; bare `--body` replaces the whole body); ticket refs `#N`, `PROJ-N`, `owner/repo#N`
     — **Why:** AC-3; the ref shapes must match the pipeline Step 1 ticket regex and `blocked-by:` guard so the skip-enforcer agrees with the suggestion.
-    — **Done when:** subsection documents both timing paths, the `### Dependencies` placement, and both platform ref formats.
+    — **Done when:** subsection documents both timing paths, the `### Dependencies` placement, and the pipeline-recognized ref forms.
     — **Consumers affected:** created ticket bodies; `worktree-pipeline-skill` Step 1 skip-guard (agreement, no edit to it).
-    — **Done:** blocked-by rules added (timing paths, `### Dependencies` heading, both ref formats, plain-body-line note); files: skills/ticket-creation-skill/SKILL.md; fixes: none
+    — **Done:** blocked-by rules added (timing paths, `### Dependencies` heading, ref forms, plain-body-line note); files: skills/ticket-creation-skill/SKILL.md; fixes: review round 1 — append wording made fetch-then-write (`gh issue edit --body` clobbers bodies), ref forms enumerated
 - [x] **1.4** Extend the "Example Usage" section with a multi-ticket scenario showing the `blocked-by:` line and the emitted sequence block
     — **Why:** a normative rule with a stale example is a documented failure mode (LEARNINGS `rule-added-example-stale`); the example anchors agent behavior.
     — **Done when:** Example Usage contains a multi-ticket run ending in both artifacts.
     — **Consumers affected:** agents following the example path.
-    — **Done:** multi-ticket example appended showing `blocked-by:` write-out and the suggested-sequence block; files: skills/ticket-creation-skill/SKILL.md; fixes: none
+    — **Done:** multi-ticket example appended showing `blocked-by:` write-out and the suggested-sequence block; files: skills/ticket-creation-skill/SKILL.md; fixes: review round 1 — preview cites dependencies by name (refs don't exist pre-creation), both rationale lines labeled user-stated, skip-is-for-later-run clause
 
 ### Phase 2: Verify
 - [x] **2.1** Run `bats tests/test_skill_isolation.bats` and confirm green

@@ -383,3 +383,21 @@
 - **Scope**: project
 - **Summary**: `jq @tsv` + `IFS=$'\t' read` collapses empty cells and shifts later columns; emit `// "false"` sentinels for nullable columns in the jq program (#446 conflict labeler)
 - **Date**: 2026-09-20
+
+### `gh issue edit --body` replaces — appending is fetch-then-write
+
+- **Category**: solution
+- **File**: `solutions/gh-issue-edit-body-replaces-not-appends.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: `gh issue edit --body` replaces the whole body — appending requires fetch (`gh issue view --json body`) + rewrite via `--body-file`; instruction text hinting "append via --body" invites body clobbering (#476 review)
+- **Date**: 2026-09-20
+
+### `blocked-by:` format has one parser, multiple producers
+
+- **Category**: convention
+- **File**: `conventions/blocked-by-format-single-home.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: the `blocked-by: <ref>` body-line format has one parser (worktree-pipeline Step 1 skip-guard) and two producers (ticket-creation, wayfinder) — producers restate minimally + cite the parser; parser changes sweep all producers (#476 review)
+- **Date**: 2026-09-20

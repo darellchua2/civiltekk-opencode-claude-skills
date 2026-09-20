@@ -262,7 +262,9 @@ done
 When Step 4 created **more than one ticket** (parent with sub-issues or a
 batch), end the run with a sequence handoff so the refs can be pasted straight
 into `worktree-pipeline-skill` (`/run-worktree-pipeline`), which executes
-tickets in the order given:
+tickets in the order given. List the **executable** tickets — the sub-issues
+or batch members; omit the umbrella parent (the pipeline has no parent
+handling and would cut a branch, PLAN, and PR for it):
 
 ```
 Suggested pipeline sequence:
@@ -282,11 +284,13 @@ Suggested pipeline sequence:
   ticket's body so the pipeline's skip-guard (Step 1 there) enforces the order
   at execution time:
   - Body line `blocked-by: <ref>` under a `### Dependencies` heading —
-    GitHub `#458`, JIRA `PROJ-123`; refs must be bare ticket refs the
-    pipeline recognizes.
+    bare ticket refs the pipeline recognizes: `#458`, `PROJ-123`,
+    `owner/repo#458`.
   - Timing: blocker ref already exists → include the line in the creation
-    body; blocker created later → follow up with one body append
-    (`gh issue edit --body` / Jira edit).
+    body; blocker created later → fetch the current body, append the line,
+    write it back (`gh issue view --json body -q .body` →
+    `gh issue edit --body-file ...`). `gh issue edit --body` REPLACES the
+    whole body — never a bare append. Jira: edit the description likewise.
   - Keep it a plain body line — the pipeline parses bodies, not JIRA link
     relations.
 
@@ -363,8 +367,8 @@ User: /create-ticket Auth rework: schema migration, token service, login UI
       (login UI depends on the token service, which depends on the schema)
 
 Agent: Classified as feature, parent with sub-issues. Sub-item intake ×3,
-       each with acceptance criteria. Dependencies captured: #463 blocked-by
-       #462, #462 blocked-by #461. Create? (y / edit)
+       each with acceptance criteria. Dependencies captured: token service
+       blocked-by schema; login UI blocked-by token service. Create? (y / edit)
 
 User: y
 
@@ -374,9 +378,10 @@ Created #460 (parent), #461, #462, #463 —
 
 Suggested pipeline sequence:
 /run-worktree-pipeline #461 #462 #463
-#461 first — schema the token service migrates onto;
+#461 first — schema the token service migrates onto (user-stated);
 #462 before #463 — UI consumes issued tokens (user-stated).
 
 Next step (optional): paste the sequence as-is, or reorder — unmet
-`blocked-by:` refs make the pipeline skip a ticket, not run it early.
+`blocked-by:` refs make the pipeline skip a ticket (left for a later run),
+not run it early.
 ```
