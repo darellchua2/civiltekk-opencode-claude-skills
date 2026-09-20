@@ -320,3 +320,12 @@
 - **Scope**: project
 - **Summary**: #448 plan review (empirically traced): default/EOF menu path resolves to Quick/Skills-Only which never calls `deploy_plugins()` — use `--dry-run -y` for plugin-deploy previews; also `run_cmd` echoes the expanded `$HOME` path, never literal `~`, so grep gates must match the absolute form
 - **Date**: 2026-09-20
+
+### Fix-round PLAN sync stopped at the AC block — Technical Notes and gate trace left stale
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-fix-round-ac-only-sync.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #448 re-review: behavior-changing fix synced the amended AC + code + tests but left PLANS/PLAN-448.md:79 stating the superseded drop rule and no GATE memo for the re-run — sweep every PLAN restatement (Technical Notes, step enumerations, gate trace) of a changed rule, not just the AC block
+- **Date**: 2026-09-20
