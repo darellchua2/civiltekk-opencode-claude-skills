@@ -6,10 +6,10 @@
 
 ## Acceptance Criteria
 
-- [ ] Transform maps `read`/`edit`/`bash`/`glob`/`grep`/`task`/`webfetch`/`websearch` permission rules to Kilo's `permission` map; unmappable ones dropped with an explicit warning naming them per agent
-- [ ] `disabled` → `disable`; pass-through fields verified in output frontmatter
-- [ ] Global + project dest dirs both supported; nested-dir namespacing not triggered by flat copies
-- [ ] Transform unit tests; `--dry-run` previews; README / `--help` synced
+- [x] Transform maps `read`/`edit`/`bash`/`glob`/`grep`/`task`/`webfetch`/`websearch` permission rules to Kilo's `permission` map; unmappable ones dropped with an explicit warning naming them per agent
+- [x] `disabled` → `disable`; pass-through fields verified in output frontmatter
+- [x] Global + project dest dirs both supported; nested-dir namespacing not triggered by flat copies
+- [x] Transform unit tests; `--dry-run` previews; README / `--help` synced
 
 ## Dependency & Consumer Map
 
@@ -64,18 +64,21 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 
 ### Phase 4: tests + docs + gates
 
-- [ ] **4.1** Add `tests/kilo_target.bats` (HOME-isolated), mirroring the kimi suite: translated `permission:` map (incl. `task` passthrough + `ask` effect via `zai-media-subagent` + dropped `skill()` warning), `disabled→disable` rename (synthesized fixture — corpus has none), verbatim skills, body-byte integrity, no `model:` line, update idempotency + source-drift re-copy, user-scope remove, **project scope with content assertion** (`permission:` present, `tools:`/`disallowedTools:` absent) + artifact guard + downgrade pins, preset-flow die, dry-run preview, corpus guard pinning zero inline `` !`cmd` `` snippets in `skills/` (Kilo executes them in trusted locations), zero `disabled:` in `agents/`.
+- [x] **4.1** Add `tests/kilo_target.bats` (HOME-isolated), mirroring the kimi suite: translated `permission:` map (incl. `task` passthrough + `ask` effect via `zai-media-subagent` + dropped `skill()` warning), `disabled→disable` rename (synthesized fixture — corpus has none), verbatim skills, body-byte integrity, no `model:` line, update idempotency + source-drift re-copy, user-scope remove, **project scope with content assertion** (`permission:` present, `tools:`/`disallowedTools:` absent) + artifact guard + downgrade pins, preset-flow die, dry-run preview, corpus guard pinning zero inline `` !`cmd` `` snippets in `skills/` (Kilo executes them in trusted locations), zero `disabled:` in `agents/`.
     — **Why:** the ticket's AC names transform coverage; the two corpus guards pin verified-clean hazards against future regressions.
     — **Done when:** new suite green; no writes outside isolated `$HOME`/tmp project.
     — **Consumers affected:** CI.
-- [ ] **4.2** Docs sync: README target table `kilo` row (dirs incl. the singular `~/.config/kilo/agent`, lossy-mapping note: `*`-resource rules map by action name, resource-globbed + `skill`/`question` rules dropped, `task` maps to Kilo's delegation gate, **`mcp:*` denies have no Kilo equivalent — MCP access is governed by Kilo's own config**; unknown frontmatter keys like `permissions`/`system`/`category` are retained, not stripped — Kilo ignores them), root `AGENTS.md` bullet, help text (Phase 1).
+    — **Done:** tests/kilo_target.bats — 13 tests all green (permission map incl. task deny + ask via zai-media, dropped-rule warning incl. read(mcp:*), body-byte integrity, disabled→disable synthesized fixture, verbatim skills, update idempotency + translated drift re-copy, user-scope remove, project scope with content assertion + artifact guard, downgrade pins, preset-flow die, corpus guards: zero !`cmd` snippets in skills/, zero disabled: in agents/); files: tests/kilo_target.bats; fixes: none
+- [x] **4.2** Docs sync: README target table `kilo` row (dirs incl. the singular `~/.config/kilo/agent`, lossy-mapping note: `*`-resource rules map by action name, resource-globbed + `skill`/`question` rules dropped, `task` maps to Kilo's delegation gate, **`mcp:*` denies have no Kilo equivalent — MCP access is governed by Kilo's own config**; unknown frontmatter keys like `permissions`/`system`/`category` are retained, not stripped — Kilo ignores them), root `AGENTS.md` bullet, help text (Phase 1).
     — **Why:** repo documentation-sync rules; the retention note resolves the ticket's "stripped" wording (architecture-review Gap 1 recommended answer: retention preserves update-hash stability + one-key reversibility; stripping buys nothing Kilo can observe).
     — **Done when:** `rg -i 'opencode, claude' README.md AGENTS.md installer/init.mjs` consistent (six values); kilo row cites the Kilo docs URLs.
     — **Consumers affected:** users, docs readers.
-- [ ] **4.3** Full gate: all bats suites + `node --test` + pack/drift; `GATE` memo line for the pushed SHA.
+    — **Done:** README target table kilo row (dirs incl. singular global agent dir, lossy mapping incl. mcp:*-deny non-parity note, retention note) + AGENTS.md bullet extended; six-value enumeration lives in the derived die message (verified at runtime in Phase 1 — the literal grep is superseded by the derivation per derived-consistency-pins); files: README.md, AGENTS.md; fixes: none
+- [x] **4.3** Full gate: all bats suites + `node --test` + pack/drift; `GATE` memo line for the pushed SHA.
     — **Why:** pipeline gate contract.
     — **Done when:** every suite green; memo emitted.
     — **Consumers affected:** code review, PR creation.
+    — **Done:** full gate green: 84 bats ok across 6 suites, node --test green, pack/drift bats green; files: none (verification); fixes: none
 
 ## Technical Notes
 
