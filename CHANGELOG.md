@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.19.1](https://github.com/darellchua2/opencode-config-template/compare/v9.19.0...v9.19.1) (2026-09-20)
+
+### Bug Fixes
+
+* **deploy:** fix setup.ps1 StrictMode crashes + dry-run staging gap ([#465](https://github.com/darellchua2/opencode-config-template/issues/465)) ([#475](https://github.com/darellchua2/opencode-config-template/issues/475)) ([a20148c](https://github.com/darellchua2/opencode-config-template/commit/a20148c5c31919823c4cfdf1582ab4709cf2f883))
+
 ## [9.19.0](https://github.com/darellchua2/opencode-config-template/compare/v9.18.0...v9.19.0) (2026-09-20)
 
 ### Features
