@@ -120,3 +120,4 @@ GATE e2e7868 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — FINAL: 70 b
 GATE d82ccd9 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — post-review: 71 bats ok (+1 kimi project-prune pin), node --test green
 
 Re-review round 1: 0 BLOCK / 0 WARN / 2 NOTE (merge-ready). Applied: doPrune dies on invalid --target (one-line hoist). Deferred: 3 supplementary test pins (fold into #455 suite work).
+GATE d6942e2 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — FINAL: 71 bats ok, node --test green
