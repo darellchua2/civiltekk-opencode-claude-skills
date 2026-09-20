@@ -27,7 +27,7 @@
 //
 // Uses a plain default export `{ id, setup }` (validated shape per the v2
 // plugin loader) to avoid a runtime dependency on @opencode/plugin — same
-// convention as plugins/vibeguard.ts. Named exports are test-only helpers the
+// convention as plugins/opencode-vibeguard.ts. Named exports are test-only helpers the
 // loader ignores.
 
 // ── config ─────────────────────────────────────────────────────────────────────

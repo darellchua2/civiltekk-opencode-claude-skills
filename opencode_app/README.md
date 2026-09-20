@@ -106,7 +106,7 @@ User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README
 
 ### Secret Masking (vibeguard)
 
-> **OpenCode v2 status:** the image ships the local v2 port (`plugins/vibeguard.ts`) — secret masking is **active** in v2 containers. The `permissions` `read` deny rules remain the second layer.
+> **OpenCode v2 status:** the image ships the local v2 port (`plugins/opencode-vibeguard.ts`) — secret masking is **active** in v2 containers. The `permissions` `read` deny rules remain the second layer.
 
 The image ships with `vibeguard.config.json` baked into `.opencode/` — secret masking is **active by default**. Vibeguard masks secrets in provider-bound traffic (LLM requests) using regex patterns and restores real values at tool-execution time.
 
@@ -190,7 +190,7 @@ OpenCode supports subagent-to-subagent delegation via the Task tool, controlled 
 
 ## Ponytail Plugin (scoped wrapper)
 
-[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder. This container ships a **scoped wrapper plugin** (`plugins/ponytail-scoped.ts`) — not the stock npm adapter — because the stock adapter injects into ALL agents unconditionally and its `PONYTAIL_SUBAGENT_MATCHER` is non-functional on OpenCode. The wrapper scopes injection by agent type.
+[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder. This container ships a **scoped wrapper plugin** (`plugins/opencode-ponytail-scoped.ts`) — not the stock npm adapter — because the stock adapter injects into ALL agents unconditionally and its `PONYTAIL_SUBAGENT_MATCHER` is non-functional on OpenCode. The wrapper scopes injection by agent type.
 
 ### Commands
 
@@ -231,7 +231,7 @@ The vendored ruleset + adapted instruction builder live in `plugins/ponytail/`. 
 
 ## Learnings Auto-Inject Plugin
 
-`plugins/learnings-autoinject.ts` auto-injects a **compact manifest** of a project's `LEARNINGS/*.md` files into the system prompt at session start, so the model knows what learned knowledge exists without a `glob`+`read` round-trip. It injects only titles + paths + a one-line summary (~200-400 tokens); the model `read()`s full file bodies on demand. This closes the gap documented in `continuous-learning-skill` (*"OpenCode does NOT auto-scan LEARNINGS/ directories"*). Architecture mirrors `ponytail-scoped.ts` (same 4 hooks, same toggle pattern, same off-set).
+`plugins/opencode-learnings-autoinject.ts` auto-injects a **compact manifest** of a project's `LEARNINGS/*.md` files into the system prompt at session start, so the model knows what learned knowledge exists without a `glob`+`read` round-trip. It injects only titles + paths + a one-line summary (~200-400 tokens); the model `read()`s full file bodies on demand. This closes the gap documented in `continuous-learning-skill` (*"OpenCode does NOT auto-scan LEARNINGS/ directories"*). Architecture mirrors `opencode-ponytail-scoped.ts` (same 4 hooks, same toggle pattern, same off-set).
 
 ### Commands
 
@@ -257,7 +257,7 @@ The vendored ruleset + adapted instruction builder live in `plugins/ponytail/`. 
 2. `experimental.chat.system.transform` hook resolves the agent, checks the toggle + off-set, and appends the cached manifest to the system prompt — once per turn (idempotent). The manifest is globbed once per session and cached (rebuilt on `/learnings-refresh`).
 3. `command.execute.before` hook persists `/learnings-on|off|refresh` per session.
 
-No `opencode.json` change required — local plugins are glob-discovered. `opencode-superlocalmemory` (removed pending a v2 release) was a separate vector store — no conflict. Reference: `plugins/learnings-autoinject.README.md`.
+No `opencode.json` change required — local plugins are glob-discovered. `opencode-superlocalmemory` (removed pending a v2 release) was a separate vector store — no conflict. Reference: `plugins/opencode-learnings-autoinject.README.md`.
 
 ## Scheduler Plugin (cron jobs)
 

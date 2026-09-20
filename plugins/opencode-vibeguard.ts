@@ -1,4 +1,4 @@
-// vibeguard.ts — OpenCode v2 local port of opencode-vibeguard (secret masking).
+// opencode-vibeguard.ts — OpenCode v2 local port of opencode-vibeguard (secret masking).
 //
 // Ported from opencode-vibeguard@0.1.0 (MIT, https://github.com/inkdust2021/opencode-vibeguard)
 // because V1 plugin implementations do not run on OpenCode v2. Engine, pattern,

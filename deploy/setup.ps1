@@ -2248,6 +2248,13 @@ function Deploy-Plugins {
         New-Item -ItemType Directory -Path $PluginsDestDir -Force | Out-Null
     }
 
+    # #456 migration: plugins renamed with the opencode- prefix - drop stale
+    # pre-rename copies so the same plugin never loads twice.
+    foreach ($legacyName in @("vibeguard", "ponytail-scoped", "question-repair", "learnings-autoinject")) {
+        $legacyPath = Join-Path $PluginsDestDir "$legacyName.ts"
+        if (Test-Path $legacyPath) { Remove-Item $legacyPath -Force }
+    }
+
     # Copy each plugin file/subdirectory (skip dotfiles, _archived, node_modules).
     # Mirrors setup.sh which copies BOTH top-level .ts plugin files (e.g.
     # ponytail-scoped.ts, learnings-autoinject.ts) AND plugin subdirectories.
