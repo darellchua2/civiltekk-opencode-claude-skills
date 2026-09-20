@@ -62,18 +62,21 @@ Cross-module consumers exist (tests, docs, bin) → architecture review selected
 
 ### Phase 3: lifecycle (update / remove)
 
-- [ ] **3.1** Rework `cmdUpdate` per-target loop: replace the "agents only ever install to the opencode target" assumption (`init.mjs:960`) — `installedPath` and `wouldHash` become target-dependent via `TARGETS` (opencode = model-injected content; agents = raw content); extend the `--prune` path (`init.mjs:944-946`) to remove shared files when `targets.agents` is present; add `~/.agents` probes to the legacy-manifest synthesis loop (`init.mjs:913-930`) so crash-orphaned shared files enter the lifecycle.
+- [x] **3.1** Rework `cmdUpdate` per-target loop: replace the "agents only ever install to the opencode target" assumption (`init.mjs:960`) — `installedPath` and `wouldHash` become target-dependent via `TARGETS` (opencode = model-injected content; agents = raw content); extend the `--prune` path (`init.mjs:944-946`) to remove shared files when `targets.agents` is present; add `~/.agents` probes to the legacy-manifest synthesis loop (`init.mjs:913-930`) so crash-orphaned shared files enter the lifecycle.
     — **Why:** `update` must re-copy drifted shared copies or the AC "update copies only changed targets" fails; prune must not leave orphans; asymmetric probing (remove cleans `~/.agents`, update never maintains it) is the exact inconsistency `legacy-upgrade-target-probe` bans.
-    — **Done when:** `update` re-copies a drifted `~/.agents` copy and leaves the `opencode` copy untouched; a structural grep shows target dest constants referenced only in the `TARGETS` definition/accessors across `init.mjs`; `--dry-run` reports per-target drift; `bats tests/update.bats` green.
+    — **Done when:** `update` re-copies the shared copy on SOURCE drift and recomputes each target with its own transform (opencode = injected, agents = raw); per-target missing reports `(agents)`; dest constants referenced only in the `TARGETS` block (structural grep); `bats tests/update.bats` green. Installed-file drift alone is not repaired — pre-existing #379 semantics, identical for opencode.
     — **Consumers affected:** all manifest-tracked users.
-- [ ] **3.2** Extend `cmdRemove` (`init.mjs:885-895`) to probe `~/.agents/agents/<stem>.md` and `~/.agents/skills/<name>/` alongside the existing opencode + claude paths.
+    — **Done:** per-target loop resolves via TARGETS; unknown-key explicit no-op+warning replaces fallback dispatch; prune + legacy synthesis probe all TARGETS dirs (shared included); verified: source-drift re-copy gives opencode marker+model-line / agents marker-raw, dry-run missing lists `(agents)`, structural grep clean, update.bats green; files: installer/init.mjs; fixes: none
+- [x] **3.2** Extend `cmdRemove` (`init.mjs:885-895`) to probe `~/.agents/agents/<stem>.md` and `~/.agents/skills/<name>/` alongside the existing opencode + claude paths.
     — **Why:** remove must clean every probed target dir (LEARNINGS: `legacy-upgrade-target-probe` — probe every historical target, not just the default).
     — **Done when:** remove wipes all three destinations for a multi-target install and cleans the manifest; single-target installs only remove what exists.
     — **Consumers affected:** users uninstalling.
-- [ ] **3.3** Filter the update-path advisory visibility check (`checkStrictAllowlist` call, `init.mjs:1021-1026`) to entries carrying an `opencode` target.
+    — **Done:** remove iterates TARGETS dirs (opencode+claude+shared); verified tri-target install fully wiped by one remove; files: installer/init.mjs; fixes: none
+- [x] **3.3** Filter the update-path advisory visibility check (`checkStrictAllowlist` call, `init.mjs:1021-1026`) to entries carrying an `opencode` target.
     — **Why:** an agents-target-only user with a strict opencode allowlist otherwise gets misleading HIDDEN warnings for skills never installed to opencode (`advisory-check-full-catalog-noise` recurrence; exposure grows with this feature).
     — **Done when:** an agents-only manifest produces zero HIDDEN advisory lines from `update`; an opencode-target skill is still warned as before.
     — **Consumers affected:** update users.
+    — **Done:** advisory `sel` filtered to entries with `targets.opencode`; verified agents-only manifest + deny-all allowlist yields zero HIDDEN lines; files: installer/init.mjs; fixes: none
 
 ### Phase 4: tests + docs + gates
 
