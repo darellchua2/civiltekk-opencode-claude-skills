@@ -303,6 +303,33 @@
 - **Summary**: #434 review: dedup-target copies of single-homed policy keep pointer + skill-specific endpoint/skip clause only; compressed policy ladders inside copies are residual drift (genus of conditional-mode-blocks-supersede-all-restatements); glosses belong to consumers, not §-section owners
 - **Date**: 2026-09-19
 
+### Uncoordinated `execute.before` writers on `event.input` — vibeguard restore vs. plugin payload rewrites
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/concurrent-execute-before-writers-event-input.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #448 plan review: multiple plugins hooking `ctx.tool.hook("execute.before")` share `event.input` in glob order — payload-rewriting plugins must never write partial/truncated strings that could split a vibeguard `__VG_<CATEGORY>_<hash>__` placeholder (restoreDeep could not restore fragments); copy verbatim or skip
+- **Date**: 2026-09-20
+
+### `setup.sh --dry-run` under non-interactive stdin takes the skills-only path — plugin deploy is never previewed
+
+- **Category**: solution
+- **File**: `solutions/setup-sh-dry-run-menu-skips-plugin-deploy.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: #448 plan review (empirically traced): default/EOF menu path resolves to Quick/Skills-Only which never calls `deploy_plugins()` — use `--dry-run -y` for plugin-deploy previews; also `run_cmd` echoes the expanded `$HOME` path, never literal `~`, so grep gates must match the absolute form
+- **Date**: 2026-09-20
+
+### Fix-round PLAN sync stopped at the AC block — Technical Notes and gate trace left stale
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-fix-round-ac-only-sync.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: #448 re-review: behavior-changing fix synced the amended AC + code + tests but left PLANS/PLAN-448.md:79 stating the superseded drop rule and no GATE memo for the re-run — sweep every PLAN restatement (Technical Notes, step enumerations, gate trace) of a changed rule, not just the AC block
+- **Date**: 2026-09-20
+
 ### YAML guard via adjacency grep assumes key order and quoting
 
 - **Category**: anti-pattern
