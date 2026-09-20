@@ -59,18 +59,21 @@
 
 ### Phase 3: Decision + surface-explicit prose (AC2 + AC3)
 
-- [ ] **3.1** Write `LEARNINGS/decisions/app-scoped-skill-surface.md` + `_index.md` entry: two surfaces (root `skills/` = deployable, 146; `opencode_app/.opencode/skills/` = Docker-app project surface, 1: `github-runners-setup-skill` from #361); decision — KEEP the app-scoped skill + its allow (default per #361's gated-setup intent), accept the dead-in-user-deploys rule as the cost of the app sharing the deploy config base; revisit trigger — if the app grows more project skills, split the app config base or add an app-specific profile
+- [x] **3.1** Write `LEARNINGS/decisions/app-scoped-skill-surface.md` + `_index.md` entry: two surfaces (root `skills/` = deployable, 146; `opencode_app/.opencode/skills/` = Docker-app project surface, 1: `github-runners-setup-skill` from #361); decision — KEEP the app-scoped skill + its allow (default per #361's gated-setup intent), accept the dead-in-user-deploys rule as the cost of the app sharing the deploy config base; revisit trigger — if the app grows more project skills, split the app config base or add an app-specific profile
     — **Why:** AC2 — the recorded decision the ticket demands, with its trade-off and exit condition
     — **Done when:** file + index entry exist and reference #486 + #361
     — **Consumers affected:** future sessions; `skill-permission-allowlist.md:6` cites it
-- [ ] **3.2** Make every current-state count cite surface-explicit: `README.md:408` — "(106 allows)" → "(106 rules: 105 deployable + 1 app-scoped — `github-runners-setup-skill`, live only in the Docker app)" AND savings "36 hidden descriptions" → "36 hidden descriptions (1 app-scoped, never loaded in user deploys)"; `deploy/setup.sh:599` + `:3357` and `deploy/setup.ps1:71` + `:945` — "106-allow allowlist" → "106-allow allowlist (incl. 1 app-scoped skill)"; `LEARNINGS/decisions/skill-permission-allowlist.md:6` — "**106 allows**" → "**106 allows** (105 deployable + 1 app-scoped — see `app-scoped-skill-surface.md`)"
+    — **Done:** LEARNINGS/decisions/app-scoped-skill-surface.md written (surfaces, decision KEEP per #361, accepted consequence, revisit trigger, guard enforcement) + _index entry; files: LEARNINGS ×2; fixes: none
+- [x] **3.2** Make every current-state count cite surface-explicit: `README.md:408` — "(106 allows)" → "(106 rules: 105 deployable + 1 app-scoped — `github-runners-setup-skill`, live only in the Docker app)" AND savings "36 hidden descriptions" → "36 hidden descriptions (1 app-scoped, never loaded in user deploys)"; `deploy/setup.sh:599` + `:3357` and `deploy/setup.ps1:71` + `:945` — "106-allow allowlist" → "106-allow allowlist (incl. 1 app-scoped skill)"; `LEARNINGS/decisions/skill-permission-allowlist.md:6` — "**106 allows**" → "**106 allows** (105 deployable + 1 app-scoped — see `app-scoped-skill-surface.md`)"
     — **Why:** AC3 — counts that mix surfaces ship false arithmetic ("106−70=36 hidden" overcounts by one for user deploys) and re-teach the conflation this ticket fixes
     — **Done when:** every 1.2-listed current-state site carries the qualifier; dated narrative at `:3` untouched
     — **Consumers affected:** docs readers, downstream deployers
-- [ ] **3.3** Re-sweep: `grep -rnE '106[- ](allow|rules|allows)' README.md deploy/ LEARNINGS/ opencode_app/README.md` — every hit either carries the surface qualifier or is the exempt dated narrative
+    — **Done:** all 6 current-state sites annotated: README:408 (106 rules: 105 deployable + 1 app-scoped + savings note), setup.sh ×2 + setup.ps1 ×2 ("incl. 1 app-scoped skill"), decisions/skill-permission-allowlist.md:6 (105+1 + cross-ref); dated narrative :3 untouched; files: README.md, deploy/setup.sh, deploy/setup.ps1, LEARNINGS/decisions/skill-permission-allowlist.md; fixes: none
+- [x] **3.3** Re-sweep: `grep -rnE '106[- ](allow|rules|allows)' README.md deploy/ LEARNINGS/ opencode_app/README.md` — every hit either carries the surface qualifier or is the exempt dated narrative
     — **Why:** the plan's own anti-drift gate (docs-of-record included per the count-sweeps learning)
     — **Done when:** sweep output matches the expected-hit set from 1.2, all qualified
     — **Consumers affected:** none (verification)
+    — **Done:** re-sweep clean — sole unqualified hit is the exempt dated narrative (:3); skill_profiles + count_drift re-run green; files: none; fixes: none
 
 ### Phase 4: LEARNINGS + gates (AC4)
 
@@ -106,3 +109,5 @@
 `GATE 2ffcf6b+p1 lint=n.a. typecheck=n.a. build=n.a. unit=n.a. e2e=n.a` — evidence-only phase, no source changes.
 
 `GATE a89e9d5+p2 lint=n.a. typecheck=n.a. build=n.a. unit=t(8/8 skill_profiles incl. new guard + negative fixture) e2e=n.a` — test-only phase; the deliverable IS the test.
+
+`GATE a9bfcc7+p3 lint=n.a. typecheck=n.a. build=n.a. unit=t(skill_profiles 8/8 + count_drift 5/5 re-run; deploy edits comment-only) e2e=n.a`
