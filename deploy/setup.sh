@@ -332,6 +332,7 @@ PEONPING_ONLY=false       # --peonping (sound-notification installer only)
 ENABLE_AUTO_UPDATE=false
 UPDATE_SCHEDULE="manual"
 CHECK_UPDATE_ONLY=false
+CHECK_CATALOG_ONLY=false    # --check-catalog (models.dev drift check)
 KEEP_BACKUPS=5
 
 # Rollback mode (set by --rollback)
@@ -535,6 +536,9 @@ USAGE:
   --peonping              Install PeonPing sound notifications  Headless /
                           (menu option 5 as a flag)             scripted installs
 
+  --check-catalog         Compare provider-models.json with the live  Model-pin
+                          models.dev catalog (warnings only)     maintenance
+
   --rollback [TARGET]     Restore from a previous backup         Undo a bad deploy
                           TARGET:
                             (omitted)   Interactive picker
@@ -554,6 +558,7 @@ USAGE:
     -s, --skills-only     Skills-only deployment mode
     -u, --update          Update OpenCode CLI to latest version
     -P, --peonping        Install PeonPing sound notifications only
+    --check-catalog       Warn if provider model pins drifted from models.dev
     --rollback [TARGET]   Restore from previous backup (see SETUP MODES above)
 
   UPDATE MANAGEMENT:
@@ -839,6 +844,10 @@ parse_arguments() {
                 CHECK_UPDATE_ONLY=true
                 shift
                 ;;
+            --check-catalog)
+                CHECK_CATALOG_ONLY=true
+                shift
+                ;;
             -P|--peonping)
                 PEONPING_ONLY=true
                 shift
@@ -952,6 +961,7 @@ validate_mode_conflicts() {
     [ "$MIGRATE_ONLY" = true ] && modes+=("--migrate")
     [ "$ROLLBACK_MODE" = true ] && modes+=("--rollback")
     [ "$CHECK_UPDATE_ONLY" = true ] && modes+=("--check-update")
+    [ "$CHECK_CATALOG_ONLY" = true ] && modes+=("--check-catalog")
     [ "$PEONPING_ONLY" = true ] && modes+=("--peonping")
     if [ "${#modes[@]}" -gt 1 ]; then
         log_error "Mutually exclusive modes combined: ${modes[*]}. Choose one."
@@ -964,6 +974,7 @@ validate_mode_conflicts() {
         [ "$MIGRATE_ONLY" = true ] && packless+=("--migrate")
         [ "$ROLLBACK_MODE" = true ] && packless+=("--rollback")
         [ "$CHECK_UPDATE_ONLY" = true ] && packless+=("--check-update")
+        [ "$CHECK_CATALOG_ONLY" = true ] && packless+=("--check-catalog")
         [ "$PEONPING_ONLY" = true ] && packless+=("--peonping")
         if [ "${#packless[@]}" -gt 0 ]; then
             log_error "--enable-pack has no effect with ${packless[*]} (packs merge into the deployed config, which these modes never write). Drop --enable-pack or use a config-deploy mode."
@@ -3591,6 +3602,9 @@ build_plan() {
         PLAN_MODE="check-update"
         PLAN_STEPS+=("true|deps|Dependency check|check_dependencies_strict")
         PLAN_STEPS+=("true|check-update|Check for updates|check_for_updates_only")
+    elif [ "$CHECK_CATALOG_ONLY" = true ]; then
+        PLAN_MODE="check-catalog"
+        PLAN_STEPS+=("true|catalog-check|Check provider-models against models.dev|check_provider_catalog")
     elif [ "$MODELS_ONLY" = true ]; then
         PLAN_MODE="models-only"
         PLAN_STEPS+=("true|node-check|Node.js required|node_required")
@@ -3827,6 +3841,10 @@ setup_provider_credentials() {
         log_warn "opencode not found - skipping credential verification"
     fi
     return 0
+}
+
+check_provider_catalog() {
+    node "${DEPLOY_DIR}/regen-provider-models.mjs" --check
 }
 
 run_migration_only() {
@@ -4648,6 +4666,7 @@ main() {
             models-only)  echo ""; echo "Model resolution complete!";;
             migrate-only) echo ""; echo "Migration + model resolution complete!";;
             update)       echo ""; echo "Update complete!";;
+            check-catalog) echo ""; echo "Catalog check complete!";;
             peonping)     echo ""; echo "PeonPing setup complete!";;
         esac
     fi

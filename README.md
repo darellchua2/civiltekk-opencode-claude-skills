@@ -65,6 +65,11 @@ Two setup scripts are provided for different platforms:
 # Skills-only deployment (requires opencode-ai installed)
 ./deploy/setup.sh --skills-only
 
+# Check provider model pins against the live models.dev catalog (warnings only)
+./deploy/setup.sh --check-catalog
+# Regenerate installer/provider-models.json from models.dev (maintainer action)
+node deploy/regen-provider-models.mjs
+
 # Non-interactive mode
 ./deploy/setup.sh --yes
 
@@ -141,6 +146,7 @@ powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Help
 | `--quick` | `-Quick` | Copy config + skills only (skip dependency checks) |
 | `--skills-only` | `-SkillsOnly` | Deploy skills only (requires opencode-ai installed) |
 | `--update` | `-Update` | Update OpenCode CLI to latest version |
+| `--check-catalog` | — (bash only) | Warn if `installer/provider-models.json` drifted from the live models.dev catalog; regenerate with `node deploy/regen-provider-models.mjs` |
 | `--dry-run` | `-DryRun` | Preview all actions without making changes |
 | `--yes` | `-Yes` | Auto-accept all prompts (non-interactive) |
 | `--rollback [TARGET]` | `-Rollback [-RollbackTarget\|-RollbackArg <T>]` | Restore `~/.config/opencode/` from a previous backup. `TARGET`: `list`, `latest`, `TIMESTAMP` (e.g. `20260719_070926`), or `VERSION` (e.g. `1.76.0`). Always creates a pre-rollback safety backup first. |
