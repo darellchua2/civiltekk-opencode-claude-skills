@@ -1,4 +1,4 @@
-// ponytail-scoped.ts — OpenCode v2 wrapper plugin for ponytail with
+// opencode-ponytail-scoped.ts — OpenCode v2 wrapper plugin for ponytail with
 // agent-type-aware scoping.
 //
 // Wraps the vendored ponytail ruleset (./ponytail/) and adds what the stock

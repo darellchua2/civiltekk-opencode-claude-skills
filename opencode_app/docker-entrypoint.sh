@@ -108,7 +108,7 @@ fi
 
 # ── Ponytail (scoped wrapper plugin) ──────────────────────────────────────────
 # Default lazy-code intensity: lite | full | ultra | off (default: full).
-# Read by the ponytail-scoped.mjs plugin at load time.
+# Read by the opencode-ponytail-scoped.ts plugin at load time.
 export PONYTAIL_DEFAULT_MODE="${PONYTAIL_DEFAULT_MODE:-full}"
 
 # Regex of agent names that SKIP ruleset injection (read-only/research agents).

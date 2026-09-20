@@ -501,7 +501,7 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 
 ## Secret Masking (vibeguard)
 
-> **OpenCode v2 status:** shipped as a local V2 port (`plugins/vibeguard.ts` — engine ported from `opencode-vibeguard@0.1.0`, MIT; see `plugins/ATTRIBUTION.md`). Masking is **active** on v2; the npm pin was removed from the `plugins` array (double-registration guard). Verify with `OPENCODE_VIBEGUARD_DEBUG=1 opencode`. The `permissions` deny rules for `*.env` remain the second layer.
+> **OpenCode v2 status:** shipped as a local V2 port (`plugins/opencode-vibeguard.ts` — engine ported from `opencode-vibeguard@0.1.0`, MIT; see `plugins/ATTRIBUTION.md`). Masking is **active** on v2; the npm pin was removed from the `plugins` array (double-registration guard). Verify with `OPENCODE_VIBEGUARD_DEBUG=1 opencode`. The `permissions` deny rules for `*.env` remain the second layer.
 
 Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic — the LLM provider never sees plaintext secret values, but tools (bash, write, etc.) receive real values at execution time. It is the **universal masking layer** covering all agents (primary + subagents), regardless of individual `read` deny rules in their `permissions` arrays.
 
@@ -707,7 +707,7 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 
 > **OpenCode v2 status:** ported to the V2 plugin API (`session.hook("context")` injection, `command.transform` for the `/ponytail*` commands) — active on v2. Env-var controls are unchanged.
 
-[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder (YAGNI → reuse → stdlib → native → installed dep → one-liner → minimum-that-works). This repo ships a **scoped wrapper plugin** (`plugins/ponytail-scoped.ts`) instead of the stock npm adapter — it adds agent-type-aware scoping the upstream OpenCode adapter lacks:
+[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder (YAGNI → reuse → stdlib → native → installed dep → one-liner → minimum-that-works). This repo ships a **scoped wrapper plugin** (`plugins/opencode-ponytail-scoped.ts`) instead of the stock npm adapter — it adds agent-type-aware scoping the upstream OpenCode adapter lacks:
 
 - **Read-only/research agents skip injection** (`explore`, `general`, `autoresearch-research-subagent`, `explorer-subagent`, `requirements-specialist-subagent`, `discovery-specialist-subagent`, `technical-design-specialist-subagent`) — they aren't pushed toward minimal code.
 - **Per-agent mode overrides** via `PONYTAIL_AGENT_MODE_MAP` (JSON).
@@ -725,7 +725,7 @@ Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See 
 
 > **OpenCode v2 status:** ported to the V2 plugin API — the LEARNINGS manifest is auto-injected on v2.
 
-`plugins/learnings-autoinject.ts` closes the gap documented in `continuous-learning-skill`: *"OpenCode does NOT auto-scan LEARNINGS/ directories."* The `opencode-superlocalmemory` plugin auto-injects its **vector store**, but the git-committed `LEARNINGS/*.md` markdown files were never surfaced automatically — agents had to manually `glob`+`read`. This plugin injects a **compact manifest** (titles + paths + one-line summaries, ~200-400 tokens) into the system prompt at session start; the model `read()`s full bodies on demand.
+`plugins/opencode-learnings-autoinject.ts` closes the gap documented in `continuous-learning-skill`: *"OpenCode does NOT auto-scan LEARNINGS/ directories."* The `opencode-superlocalmemory` plugin auto-injects its **vector store**, but the git-committed `LEARNINGS/*.md` markdown files were never surfaced automatically — agents had to manually `glob`+`read`. This plugin injects a **compact manifest** (titles + paths + one-line summaries, ~200-400 tokens) into the system prompt at session start; the model `read()`s full bodies on demand.
 
 - **Same architecture as ponytail-scoped** — 4 hooks (`config`, `chat.message`, `experimental.chat.system.transform`, `command.execute.before`), same toggle pattern.
 - **Same off-set** — read-only/research agents skip injection (reuses ponytail's regex).
@@ -738,7 +738,7 @@ Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See 
 | `LEARNINGS_AUTOINJECT_OFF` | (read-only agents) | Regex of agent names to exclude |
 | `LEARNINGS_AUTOINJECT_MAX` | `30` | Cap on files in the manifest |
 
-Toggle per session: `/learnings`, `/learnings-on`, `/learnings-off`, `/learnings-refresh`. See `plugins/learnings-autoinject.README.md`.
+Toggle per session: `/learnings`, `/learnings-on`, `/learnings-off`, `/learnings-refresh`. See `plugins/opencode-learnings-autoinject.README.md`.
 
 ### Auto-Continue v2 (local plugin)
 
@@ -762,7 +762,7 @@ Deliberately out of scope (upgrade path if real bugs demand it): busy-stall abor
 
 > **OpenCode v2 status:** v2-native (`ctx.tool.hook("execute.before")`, same hook shape as vibeguard) — no npm dependency.
 
-`plugins/question-repair.ts` normalizes malformed `question` tool payloads before OpenCode's schema validator hard-fails them. Session-audit evidence (7 validation failures across glm-5.2/5.3 in 3 months, each only recovering on a retry round-trip) showed models occasionally emit payloads missing required fields. The plugin fills missing option `description` from `label` (and vice versa, first 5 words), missing `question` text from `header` (and vice versa, 30 chars), defaults `multiple` to `false`, and drops options/items that are beyond repair. Bounded by design: valid payloads pass through as the same reference (zero mutation), and beyond-repair inputs are returned untouched so the validator's error still surfaces. Truncating fills are vibeguard-placeholder-safe (never split `__VG_…__`). Payload-size hygiene lives in the deployed `AGENTS.md` §Question Tool Payloads (PR #447).
+`plugins/opencode-question-repair.ts` normalizes malformed `question` tool payloads before OpenCode's schema validator hard-fails them. Session-audit evidence (7 validation failures across glm-5.2/5.3 in 3 months, each only recovering on a retry round-trip) showed models occasionally emit payloads missing required fields. The plugin fills missing option `description` from `label` (and vice versa, first 5 words), missing `question` text from `header` (and vice versa, 30 chars), defaults `multiple` to `false`, and drops options/items that are beyond repair. Bounded by design: valid payloads pass through as the same reference (zero mutation), and beyond-repair inputs are returned untouched so the validator's error still surfaces. Truncating fills are vibeguard-placeholder-safe (never split `__VG_…__`). Payload-size hygiene lives in the deployed `AGENTS.md` §Question Tool Payloads (PR #447).
 
 | Env var | Default | Purpose |
 |---------|---------|---------|

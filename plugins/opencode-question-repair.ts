@@ -1,4 +1,4 @@
-// question-repair.ts — normalizes malformed `question` tool payloads before
+// opencode-question-repair.ts — normalizes malformed `question` tool payloads before
 // OpenCode's schema validator hard-fails them.
 //
 // Why this exists: session-audit evidence (opencode.db, Jun–Sep 2026, 1158
@@ -9,7 +9,7 @@
 // The prompt-hygiene rule (deploy/.AGENTS.md §Question Tool Payloads, PR #447)
 // reduces frequency; this plugin eliminates the residue.
 //
-// v2 API (mirrors the proven production usage in plugins/vibeguard.ts:490):
+// v2 API (mirrors the proven production usage in plugins/opencode-vibeguard.ts:490):
 //   ctx.tool.hook('execute.before', (event) => { ... event.input ... })
 // guarded on `event.tool === 'question'` (documented v2 plugins-guide shape).
 // Plain default export `{ id, setup }` — no runtime dependency on

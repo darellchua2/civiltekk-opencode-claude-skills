@@ -1,9 +1,9 @@
-// Unit tests for plugins/question-repair.ts — pure repair rules plus the hook
+// Unit tests for plugins/opencode-question-repair.ts — pure repair rules plus the hook
 // wiring (tool guard, reference-swap, no-mutation). Run:
 //   node --test tests/test_question_repair_plugin.test.ts
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import plugin, { normalizeQuestionInput } from '../plugins/question-repair.ts';
+import plugin, { normalizeQuestionInput } from '../plugins/opencode-question-repair.ts';
 
 // ── pure helpers ───────────────────────────────────────────────────────────────
 

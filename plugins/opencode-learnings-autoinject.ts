@@ -1,4 +1,4 @@
-// learnings-autoinject.ts — OpenCode v2 plugin that auto-injects a compact
+// opencode-learnings-autoinject.ts — OpenCode v2 plugin that auto-injects a compact
 // manifest of a project's LEARNINGS/*.md files into the system prompt.
 //
 // Closes the gap documented in continuous-learning-skill/SKILL.md:
