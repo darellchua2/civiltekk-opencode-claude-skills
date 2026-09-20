@@ -14,7 +14,7 @@ A multi-mode OpenCode configurator repository:
 opencode-config-template/
 ├── skills/                      # 146 skill directories (source of truth)
 ├── agents/                      # 34 subagent .md files (source of truth)
-├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings)
+├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings, auto-continue, question-repair)
 │   └── vibeguard.config.json    # Secret-masking regex patterns
 ├── deploy/                      # User-space deployment files
 │   ├── .AGENTS.md               # User-space subagent routing (deployed)
@@ -751,6 +751,18 @@ Toggle per session: `/learnings`, `/learnings-on`, `/learnings-off`, `/learnings
 | `OPENCODE_AUTO_CONTINUE_DEBUG` | `false` | `[opencode-auto-continue-v2]` diagnostics via the server log |
 
 Deliberately out of scope (upgrade path if real bugs demand it): busy-stall abort-first recovery (a parked prompt cannot unblock a hung v2 runner), tool-call loop fingerprinting, tool-call-as-raw-text scanning. Tests: `node --test tests/test_auto_continue_plugin.test.ts`.
+
+### Question Repair (local plugin)
+
+> **OpenCode v2 status:** v2-native (`ctx.tool.hook("execute.before")`, same hook shape as vibeguard) — no npm dependency.
+
+`plugins/question-repair.ts` normalizes malformed `question` tool payloads before OpenCode's schema validator hard-fails them. Session-audit evidence (7 validation failures across glm-5.2/5.3 in 3 months, each only recovering on a retry round-trip) showed models occasionally emit payloads missing required fields. The plugin fills missing option `description` from `label` (and vice versa, first 5 words), missing `question` text from `header` (and vice versa, 30 chars), defaults `multiple` to `false`, and drops options/items that are beyond repair. Bounded by design: valid payloads pass through as the same reference (zero mutation), and beyond-repair inputs are returned untouched so the validator's error still surfaces. Truncating fills are vibeguard-placeholder-safe (never split `__VG_…__`). Payload-size hygiene lives in the deployed `AGENTS.md` §Question Tool Payloads (PR #447).
+
+| Env var | Default | Purpose |
+|---------|---------|---------|
+| `OPENCODE_QUESTION_REPAIR_DEBUG` | `false` | `[question-repair]` loaded/repair markers via the server log |
+
+Deliberately out of scope: dismissed/aborted labeling (OpenCode core, by design), upstream stuck-running prompts, Docker endpoint verification (the plugin rides along via `opencode_app/Dockerfile:82` `COPY plugins/` but is not load-bearing there). Tests: `node --test tests/test_question_repair_plugin.test.ts`.
 
 ### Skill Architecture
 
