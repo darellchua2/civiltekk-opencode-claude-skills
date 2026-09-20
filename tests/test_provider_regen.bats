@@ -49,10 +49,12 @@ setup_catalog_primed_target() {
 @test "regen_is_byte_stable_on_second_run" {
   setup_catalog_primed_target
   node "$REGEN" --catalog "$FIXTURE"
-  cp "$TARGET" /tmp/opencode/regen-first.json
+  # mktemp, not a fixed /tmp path — CI runners have no /tmp/opencode.
+  local first; first="$(mktemp -d)/regen-first.json"
+  cp "$TARGET" "$first"
   node "$REGEN" --catalog "$FIXTURE"
-  cmp -s /tmp/opencode/regen-first.json "$TARGET"
-  rm -f /tmp/opencode/regen-first.json
+  cmp -s "$first" "$TARGET"
+  rm -rf "$(dirname "$first")"
 }
 
 @test "regen_refuses_to_drop_known_catalog_provider_missing_upstream" {
