@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.13.1](https://github.com/darellchua2/opencode-config-template/compare/v9.13.0...v9.13.1) (2026-09-20)
+
+### Bug Fixes
+
+* **agents:** reviewers never write LEARNINGS — return candidates as content ([#445](https://github.com/darellchua2/opencode-config-template/issues/445)) ([4fbc712](https://github.com/darellchua2/opencode-config-template/commit/4fbc71298ccfe2e5961b1c6687973708d48157a2))
+* **skills:** reviewer-baseline learning gate returns candidates instead of writing ([f592df9](https://github.com/darellchua2/opencode-config-template/commit/f592df97569e6b0b7b27b4cd325e7ac799c06648))
+* **tests:** harden reviewer write-guard to block-scoped scan ([#445](https://github.com/darellchua2/opencode-config-template/issues/445) review) ([f6184f3](https://github.com/darellchua2/opencode-config-template/commit/f6184f3c9c5011780d33fa173b7ad502e9b92199))
+
+### Documentation
+
+* **agents:** add question tool payload hygiene rule ([73edc3a](https://github.com/darellchua2/opencode-config-template/commit/73edc3ab99c1db8e2ccd720ba0c072bac8162b4e))
+* **agents:** arch reviewer sweep residue — name the orchestrator as LEARNINGS writer ([853ed41](https://github.com/darellchua2/opencode-config-template/commit/853ed416d6caec08b7dc3df2f19a042e1f6a9909))
+* **plan:** add PLAN-434.md for [#434](https://github.com/darellchua2/opencode-config-template/issues/434) ([a6583f2](https://github.com/darellchua2/opencode-config-template/commit/a6583f214ec06521914470e73917f2ad27467cae))
+* **plan:** fold review guards and Mode R resolutions into PLAN-434 ([03d885b](https://github.com/darellchua2/opencode-config-template/commit/03d885be8da078cf154d75747511a0c00de668d1))
+* **plan:** record merge-base gate — 351/351 bats, registry no-drift ([ee30837](https://github.com/darellchua2/opencode-config-template/commit/ee308373c2a543a05e23995ab1000adee61cf86e))
+* **plan:** trace Phase 1 gate on merged base ([0e19269](https://github.com/darellchua2/opencode-config-template/commit/0e19269f530e39afd6be4ac1baef101a8199bf96))
+* **skills:** apply [#434](https://github.com/darellchua2/opencode-config-template/issues/434) review — drop residual policy parenthetical in ticket-creation guard ([fe59c0e](https://github.com/darellchua2/opencode-config-template/commit/fe59c0e22cec18e3dbe49f2422518b3ef2bf3a9f)), closes [#361](https://github.com/darellchua2/opencode-config-template/issues/361)
+* **skills:** implement Phase 1 — MCP guard single-homed at jira-git-integration-skill ([f71736a](https://github.com/darellchua2/opencode-config-template/commit/f71736a1761cf9d152a9ccb87053933c85d72fca))
+* **skills:** implement Phase 2 — attribution + semver governance pointers in pr-creation-workflow ([b798738](https://github.com/darellchua2/opencode-config-template/commit/b79873805685c8dac4ec1de865b2def5ef2e28d1))
+* **skills:** implement Phase 3 — gh-cli fallback single statement in ticket-creation ([37e5651](https://github.com/darellchua2/opencode-config-template/commit/37e565189ec8c7dc60d8ec6de4bc39547ff45542))
+* **skills:** implement Phase 4 — pointer audit green, gates green, learning captured ([2b83a33](https://github.com/darellchua2/opencode-config-template/commit/2b83a3308cae10b11909ffe41c1369ffd6748bd4))
+
 ## [9.13.0](https://github.com/darellchua2/opencode-config-template/compare/v9.12.0...v9.13.0) (2026-09-19)
 
 ### Features

@@ -138,7 +138,7 @@ Before starting the review, assess scope:
 
 ## Post-Review Learning
 
-Run the gate defined in `reviewer-baseline-skill` §Mandatory Post-Review Learning Gate — blocking, every run. Architectural decisions discovered or recommended, systemic anti-patterns (same issue in 3+ files), and good patterns worth replicating are the qualifying findings; the `memory` tool is the primary store, `LEARNINGS/decisions|patterns|anti-patterns/` the curated secondary.
+Run the gate defined in `reviewer-baseline-skill` §Mandatory Post-Review Learning Gate — blocking, every run. Architectural decisions discovered or recommended, systemic anti-patterns (same issue in 3+ files), and good patterns worth replicating are the qualifying findings; the `memory` tool is the primary store, `LEARNINGS/decisions|patterns|anti-patterns/` the curated secondary (persisted by the orchestrator from your `LEARNINGS candidates:` block — never by you).
 
 ## Pattern Reference (cross-skill)
 
@@ -234,7 +234,7 @@ This complements `clean-architecture-skill`'s dependency rule. It does **not** w
 When your task is complete, return ONLY this structure:
 
 **Status:** [success | partial | failed]
-**Output:** [Architecture findings summary + learning entries saved]
+**Output:** [Architecture findings summary + `LEARNINGS candidates:` content block (per entry: Category / File / Confidence / Scope / Summary / Date — never written to disk)]
 **Summary:** [2-3 sentences max describing what was done, in plain human language per the Voice section]
 **Issues:** [blockers, warnings, or "None"]
 **Requirements Gaps:** `[{source: "file:line | PLAN step | design assumption", blocked_check: "<which gate/check could not be evaluated>", suggested_question: "...", recommended_answer: "..."}]` — Required. `[]` if none.
