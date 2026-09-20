@@ -6,11 +6,11 @@
 
 ## Acceptance Criteria
 
-- [ ] User and project scope installs land in Kimi-native dirs (`~/.kimi-code/{agents,skills}/`, `.kimi-code/{agents,skills}/`); a sample agent loads in Kimi Code CLI with `description` + body intact
-- [ ] Mappable `permissions` rules translate to `tools` / `disallowedTools`; unmappable ones are dropped with an explicit warning listing them per agent
-- [ ] Skills install verbatim
-- [ ] Transform unit tests cover both the mapped and dropped cases
-- [ ] `--dry-run` previews; README / `--help` synced
+- [x]- [ ] User and project scope installs land in Kimi-native dirs (`~/.kimi-code/{agents,skills}/`, `.kimi-code/{agents,skills}/`); a sample agent loads in Kimi Code CLI with `description` + body intact
+- [x]- [ ] Mappable `permissions` rules translate to `tools` / `disallowedTools`; unmappable ones are dropped with an explicit warning listing them per agent
+- [x]- [ ] Skills install verbatim
+- [x]- [ ] Transform unit tests cover both the mapped and dropped cases
+- [x]- [ ] `--dry-run` previews; README / `--help` synced
 
 ## Dependency & Consumer Map
 
@@ -70,18 +70,21 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 
 ### Phase 4: tests + docs + gates
 
-- [ ] **4.1** Add `tests/kimi_target.bats` (HOME-isolated): user install (translated frontmatter present — `FetchURL`/`WebSearch` names — permissions key preserved, body intact, no `model:` line), dropped-rule warning, verbatim skill, project install to `.kimi-code/`, project downgrade asserts (agents/claude targets), update idempotency + source-drift re-copy, user-scope remove probing, transform coverage for mapped vs dropped cases, and a derived guard pinning zero Kimi template variables (`${cwd}`/`${os}`/`${shell}`/`${now}`) in the translated corpus. Record a manual Kimi CLI load smoke in the PR body (structural bats pins are the CI proxy).
+- [x] **4.1** Add `tests/kimi_target.bats` (HOME-isolated): user install (translated frontmatter present — `FetchURL`/`WebSearch` names — permissions key preserved, body intact, no `model:` line), dropped-rule warning, verbatim skill, project install to `.kimi-code/`, project downgrade asserts (agents/claude targets), update idempotency + source-drift re-copy, user-scope remove probing, transform coverage for mapped vs dropped cases, and a derived guard pinning zero Kimi template variables (`${cwd}`/`${os}`/`${shell}`/`${now}`) in the translated corpus. Record a manual Kimi CLI load smoke in the PR body (structural bats pins are the CI proxy).
     — **Why:** the ticket's AC names transform coverage explicitly; bats is the only gate net.
     — **Done when:** new suite green; no writes outside isolated `$HOME`/tmp project.
     — **Consumers affected:** CI.
-- [ ] **4.2** Docs sync: README target table `kimi` row (native dirs, translation summary, link to Kimi agents doc, default-path-only note — `KIMI_CODE_HOME` env relocation is an optional follow-up), the lossy-mapping table (`webfetch→FetchURL`, `websearch→WebSearch`, `write→Write` currently unused, `skill`/`task`/`question` dropped — task-deny agents become auto-delegable in Kimi), the Kimi `${var}` body-template caveat, root `AGENTS.md` bullet, help text (Phase 1).
+    — **Done:** tests/kimi_target.bats — 11 tests all green (additive translation + preserved permissions/body, FetchURL/WebSearch registry names, dropped-rule warning, verbatim skills, update idempotency + translated source-drift re-copy, user-scope remove, project scope + artifact guard, downgrade pins, preset-flow die, corpus-level Kimi template-var guard); no writes outside isolated HOME/tmp project; files: tests/kimi_target.bats; fixes: none
+- [x] **4.2** Docs sync: README target table `kimi` row (native dirs, translation summary, link to Kimi agents doc, default-path-only note — `KIMI_CODE_HOME` env relocation is an optional follow-up), the lossy-mapping table (`webfetch→FetchURL`, `websearch→WebSearch`, `write→Write` currently unused, `skill`/`task`/`question` dropped — task-deny agents become auto-delegable in Kimi), the Kimi `${var}` body-template caveat, root `AGENTS.md` bullet, help text (Phase 1).
     — **Why:** repo documentation-sync rules.
     — **Done when:** `rg -i 'opencode, claude' README.md AGENTS.md installer/init.mjs` consistent (five values); kimi row cites the Kimi docs URL and the lossy table.
     — **Consumers affected:** users, docs readers.
-- [ ] **4.3** Full gate: all bats suites + `node --test` + pack/drift; `GATE` memo line for the pushed SHA.
+    — **Done:** README target table kimi row (native dirs, lossy mapping incl. FetchURL/WebSearch, task-deny auto-delegable note, KIMI_CODE_HOME default-only) + AGENTS.md bullet extended; five-value sweep consistent (die message init.mjs:693); files: README.md, AGENTS.md; fixes: none
+- [x] **4.3** Full gate: all bats suites + `node --test` + pack/drift; `GATE` memo line for the pushed SHA.
     — **Why:** pipeline gate contract.
     — **Done when:** every suite green; memo emitted.
     — **Consumers affected:** code review, PR creation.
+    — **Done:** full gate green: 70 bats ok across 5 suites, node --test green, pack/drift bats green; files: none (verification); fixes: none
 
 ## Technical Notes
 
