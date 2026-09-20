@@ -140,6 +140,14 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    it (file list + hunks) in the Task prompt. Fix findings: severity ≥
    Major mandatory; Minor by judgment. Relay any non-empty
    `Requirements Gaps` array per Step 7's relay rule before fixing.
+   **LEARNINGS capture is yours, not the reviewer's**: reviewers have no
+   write access — they return LEARNINGS candidates as report content (a
+   `LEARNINGS candidates:` block). For each candidate, write
+   `LEARNINGS/<category>/<slug>.md` in the worktree (skip if the file
+   already exists; suffix `-2` on a genuine distinct-entry collision),
+   append its `_index.md` entry, and commit them with the review-fix
+   commit — or a dedicated `chore(learnings)` commit when the review
+   found nothing to fix.
    **Bounded loop: max 2
    fix-and-re-review iterations** — exhaustion → halt per §Failure Policy.
 10. **PR + cleanup**: `pr-workflow-subagent` creates the PR **target

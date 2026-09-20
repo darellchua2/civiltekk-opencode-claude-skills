@@ -16,9 +16,6 @@ permissions:
   - action: edit
     resource: '*'
     effect: deny
-  - action: edit
-    resource: 'LEARNINGS/**'
-    effect: allow
   - action: glob
     resource: '*'
     effect: allow
@@ -231,11 +228,13 @@ Run the gate defined in `reviewer-baseline-skill` §Mandatory Post-Review Learni
 When your task is complete, return ONLY this structure:
 
 **Status:** [success | partial | failed]
-**Output:** [Findings by severity + target list + screenshots reviewed + coverage state + learning entries saved: N (anti-patterns/patterns/conventions/decisions/solutions)]
+**Output:** [Findings by severity + target list + screenshots reviewed + coverage state + `LEARNINGS candidates:` content block (per entry: Category / File / Confidence / Scope / Summary / Date — never written to disk)]
 **Summary:** [2-3 sentences max describing what was done]
 **Issues:** [blockers, warnings, or "None"]
 **Requirements Gaps:** `[{source: "file:line | PLAN step | design assumption", blocked_check: "<which check could not be evaluated>", suggested_question: "...", recommended_answer: "..."}]` — Required. `[]` if none (visual-only reviews without ticket/PLAN context return `[]`).
 **Patterns applied/violated:** `[{id, status, evidence}]` — Required. `[]` if none.
+
+**LEARNINGS candidates are report content, never writes.** You have no write access: include reusable patterns in the `LEARNINGS candidates:` block of your Output (Category / File / Confidence / Scope / Summary / Date per entry) — the orchestrator writes and commits them.
 
 **Status definitions:**
 - `success`: All requested axes reviewed at all requested breakpoints with evidence; all visual findings read natively (or verified via `image-analyzer-subagent` when delegated); consumer coverage complete

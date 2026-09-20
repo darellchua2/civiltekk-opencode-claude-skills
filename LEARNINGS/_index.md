@@ -302,3 +302,21 @@
 - **Scope**: project
 - **Summary**: #434 review: dedup-target copies of single-homed policy keep pointer + skill-specific endpoint/skip clause only; compressed policy ladders inside copies are residual drift (genus of conditional-mode-blocks-supersede-all-restatements); glosses belong to consumers, not §-section owners
 - **Date**: 2026-09-19
+
+### YAML guard via adjacency grep assumes key order and quoting
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/yaml-guard-adjacency-grep.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: Adjacency grep guards (`grep -A1 resource … | grep effect: allow`) miss effect-before-resource ordering, unquoted resources, and broader-glob allows; scan per-rule blocks bounded by `- action:` instead (#445 review: test_reviewer_no_writes.bats)
+- **Date**: 2026-09-20
+
+### Reviewer subagents return LEARNINGS candidates as content
+
+- **Category**: decision
+- **File**: `decisions/reviewer-learnings-return-as-content.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: Reviewer subagents hold no edit permissions — they emit `LEARNINGS candidates:` blocks (Category/File/Confidence/Scope/Summary/Date) and the pipeline orchestrator writes files, appends _index.md, and commits in the worktree (#445 single-writer rule)
+- **Date**: 2026-09-20

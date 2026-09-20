@@ -16,9 +16,6 @@ permissions:
   - action: edit
     resource: '*'
     effect: deny
-  - action: edit
-    resource: 'LEARNINGS/**'
-    effect: allow
   - action: glob
     resource: '*'
     effect: allow
@@ -113,6 +110,8 @@ smell discipline in the touched code, severity-gated disposition. System design
 and transitive impact are not yours — say so when they surface.
 
 **Before responding, recall LEARNINGS via the `memory` tool (scope: project, query: the review topic) AND read any `LEARNINGS/*.md` surfaced by the autoinject manifest. Do not skip patterns that apply.**
+
+**LEARNINGS candidates are report content, never writes.** You have no write access: if the review yields a reusable pattern, include it in your report under `LEARNINGS candidates:` with Category / File / Confidence / Scope / Summary / Date per entry — the orchestrator writes and commits them.
 
 Skills:
 - solid-principles: SOLID principle enforcement
@@ -297,7 +296,7 @@ This sharpens the over-engineering checklist into an active deletion bias. It do
 When your task is complete, return ONLY this structure:
 
 **Status:** [success | partial | failed]
-**Output:** [Issue count by severity + file list + learning entries saved: N (anti-patterns/patterns/conventions/decisions/solutions)]
+**Output:** [Issue count by severity + file list + `LEARNINGS candidates:` content block (per entry: Category / File / Confidence / Scope / Summary / Date — never written to disk)]
 **Summary:** [2-3 sentences max describing what was done, in plain human language per the Voice section]
 **Issues:** [blockers, warnings, or "None"]
 **Requirements Gaps:** `[{source: "file:line | PLAN step | design assumption", blocked_check: "<which check could not be evaluated>", suggested_question: "...", recommended_answer: "..."}]` — Required. `[]` if none.
