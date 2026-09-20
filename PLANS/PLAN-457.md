@@ -43,14 +43,16 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 
 ### Phase 2: lifecycle + regression
 
-- [ ] **2.1** Verify (pin in 3.1's suite) the TARGETS-driven lifecycle for claude agent entries: `update` drift re-copies translated content + missing reports `(claude)`; `remove` wipes `~/.claude/agents/<stem>.md`; legacy synthesis synthesizes `targets.claude` for agent files; prune parity (project-scope none — claude is user-only).
+- [x] **2.1** Verify (pin in 3.1's suite) the TARGETS-driven lifecycle for claude agent entries: `update` drift re-copies translated content + missing reports `(claude)`; `remove` wipes `~/.claude/agents/<stem>.md`; legacy synthesis synthesizes `targets.claude` for agent files; prune parity (project-scope none — claude is user-only).
     — **Why:** the table should carry a fourth mode for free; prove it rather than assume.
     — **Done when:** all behavioral checks green with no new code beyond 1.x. (Lifecycle pins live in 3.1's suite — the "2.3" reference in earlier drafts normalized to Phase 3.)
     — **Consumers affected:** claude-target users.
-- [ ] **2.2** Regression sweep: skills output for claude/both identical to pre-change; opencode/agents/kimi/kilo targets fully identical (trees + manifests); opencode project preset dry-run byte-identical. The claude-target agent install is the feature — asserted by 1.3/2.1 pins, not the sweep.
+    — **Done:** lifecycle verified: idempotent update, drift re-copies translated content, missing reports (claude), legacy synthesis synthesizes targets.claude, remove wipes ~/.claude/agents — zero new code beyond 1.x (claim held); files: none (verification); fixes: none
+- [x] **2.2** Regression sweep: skills output for claude/both identical to pre-change; opencode/agents/kimi/kilo targets fully identical (trees + manifests); opencode project preset dry-run byte-identical. The claude-target agent install is the feature — asserted by 1.3/2.1 pins, not the sweep.
     — **Why:** AC: skills output unchanged; no regression elsewhere.
     — **Done when:** sweeps identical (modulo `generatedAt`).
     — **Consumers affected:** existing users.
+    — **Done:** sweep: opencode/agents/kimi/kilo targets fully identical (trees+manifests); claude skills output identical for skill-only installs EXCEPT an empty ~/.claude/agents/ dir now created (cosmetic mkdir-parity side effect, documented); both-target manifest gains targets.claude hash + claude-side agent file = the feature itself; opencode side byte-identical; files: none (verification); fixes: none
 
 ### Phase 3: tests + docs + gates
 
