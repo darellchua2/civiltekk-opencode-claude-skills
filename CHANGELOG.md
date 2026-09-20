@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.20.0](https://github.com/darellchua2/opencode-config-template/compare/v9.19.6...v9.20.0) (2026-09-20)
+
+### Features
+
+* **skills:** implement Phases 1-2 — interim reviewer-skill allows (full +3, lean +26) with synced mirrors ([5555db1](https://github.com/darellchua2/opencode-config-template/commit/5555db17eb31607c430ce0895b75a974f03277ef)), closes [anomalyco/opencode#50149](https://github.com/anomalyco/opencode/issues/50149)
+
+### Bug Fixes
+
+* **docs:** review fixes — decision-record body counts refreshed, revert recipe complete, wording clarified ([783be6f](https://github.com/darellchua2/opencode-config-template/commit/783be6f24023dedc4f3ca2d6a333c745bcb15ea6))
+
+### Documentation
+
+* **learnings:** implement Phase 3-4 — count sweep, child-skill-gate pattern, decision update ([7137061](https://github.com/darellchua2/opencode-config-template/commit/713706150748af0914f271bbb82d8dd5bf8b3a7d))
+* **plan:** add PLAN-481.md for [#481](https://github.com/darellchua2/opencode-config-template/issues/481) ([7bcb492](https://github.com/darellchua2/opencode-config-template/commit/7bcb4924f2b26dd824ba5e4cb7dc2d48eac4cc58))
+* **plan:** apply review rulings to PLAN-481 (per-surface deltas 3/26, single-commit restructure, scope record) ([9e20799](https://github.com/darellchua2/opencode-config-template/commit/9e20799dc6eedf15f4995ad73ab9692a90935731))
+* **plan:** trace 3.1 — count sweep complete (residual mirror fixed) ([4b698f3](https://github.com/darellchua2/opencode-config-template/commit/4b698f3623bc29949a5be21ccedca2da91a76ef7))
+
 ## [9.19.6](https://github.com/darellchua2/opencode-config-template/compare/v9.19.5...v9.19.6) (2026-09-20)
 
 ### Bug Fixes
