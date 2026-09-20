@@ -127,3 +127,4 @@ _Gate per `verification-loop-skill` §The gate contract; lint/typecheck/build = 
 GATE 9ab5aaa lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — bats init/update/parse_arguments 49 ok, node --test green
 GATE 16c01a2 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — bats init/update/parse_arguments green, node --test green, 3-target regression sweep identical
 GATE e5f4a8f lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — bats 49 ok, node --test green, lifecycle behavioral checks green
+GATE 300b271 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — FINAL: 55 bats ok (init/update/parse_arguments/agents_target), node --test green, pack+drift bats green
