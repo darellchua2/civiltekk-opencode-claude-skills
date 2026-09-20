@@ -61,6 +61,8 @@ const USER_AGENTS_SHARED = join(os.homedir(), ".agents/agents");
 const USER_SKILLS_SHARED = join(os.homedir(), ".agents/skills");
 const USER_KIMI_AGENTS = join(os.homedir(), ".kimi-code/agents");
 const USER_KIMI_SKILLS = join(os.homedir(), ".kimi-code/skills");
+const USER_KILO_AGENTS = join(os.homedir(), ".config/kilo/agent"); // singular per Kilo docs
+const USER_KILO_SKILLS = join(os.homedir(), ".kilo/skills");
 
 // Per-target write contract (#453): user-scope dest dirs + transform mode.
 // SINGLE SITE for target dest/transform resolution — write/update/remove paths
@@ -71,6 +73,7 @@ const TARGETS = {
   claude: { skillsDir: USER_CLAUDE_SKILLS, skillMode: "model-strip" }, // agents skipped (#377; #457 adds them)
   agents: { agentsDir: USER_AGENTS_SHARED, skillsDir: USER_SKILLS_SHARED, agentMode: "verbatim", skillMode: "verbatim" },
   kimi: { agentsDir: USER_KIMI_AGENTS, skillsDir: USER_KIMI_SKILLS, projectAgentsDir: ".kimi-code/agents", projectSkillsDir: ".kimi-code/skills", agentMode: "kimi-translate", skillMode: "verbatim" },
+  kilo: { agentsDir: USER_KILO_AGENTS, skillsDir: USER_KILO_SKILLS, projectAgentsDir: ".kilo/agents", projectSkillsDir: ".kilo/skills", agentMode: "kilo-translate", skillMode: "verbatim" },
 };
 // derived from the table so a new target row can't skip validation (both = opencode+claude alias)
 const TARGET_VALUES = [...Object.keys(TARGETS), "both"];
@@ -429,8 +432,10 @@ export async function writeInstall(sel, opts, reg, depMap) {
       const tier = agentReg?.tier || "unassigned";
       if (!tierModels[tier]) tierModels[tier] = await tierToModel(tier, opts.provider);
       content = injectModelLine(content, await agentModel(a.stem, tier, opts.provider, projectOverrides));
-    } else {
+    } else if (pCfg.agentMode === "kimi-translate") {
       content = kimiAgentContent(content, (m) => console.error(`  kimi (${a.stem}): ${m}`));
+    } else if (pCfg.agentMode === "kilo-translate") {
+      content = kiloAgentContent(content, (m) => console.error(`  kilo (${a.stem}): ${m}`));
     }
     await writeFile(a.dst, content, "utf8");
   }
@@ -744,6 +749,8 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
           content = injectModelLine(content, await agentModel(stem, tier, opts.provider));
         } else if (cfg.agentMode === "kimi-translate") {
           content = kimiAgentContent(content, (m) => console.error(`  kimi (${stem}): ${m}`));
+        } else if (cfg.agentMode === "kilo-translate") {
+          content = kiloAgentContent(content, (m) => console.error(`  kilo (${stem}): ${m}`));
         }
         await writeFile(join(cfg.agentsDir, `${stem}.md`), content, "utf8");
         newEntries[stem] = { type: "agent", targets: { ...(newEntries[stem]?.targets || {}), [t]: sha256Hex(content) } };
@@ -944,17 +951,7 @@ function kimiAgentContent(content, warn) {
   }
   // minimal YAML subset parse of the permissions list:
   //   - action: <name> / resource: <glob> / effect: <allow|deny|ask>
-  const rules = [];
-  let cur = null;
-  for (let i = 1; i < closeIdx; i++) {
-    const a = lines[i].match(/^\s*-\s*action:\s*"?([\w:-]+)"?/);
-    if (a) { cur = { action: a[1] }; rules.push(cur); continue; }
-    if (!cur) continue;
-    const r = lines[i].match(/^\s+resource:\s*["']?([^"']+?)["']?\s*$/);
-    if (r) cur.resource = r[1];
-    const e = lines[i].match(/^\s+effect:\s*"?(\w+)"?/);
-    if (e) cur.effect = e[1];
-  }
+  const rules = parsePermissionRules(lines, closeIdx);
   const tools = new Set(), denied = new Set(), dropped = new Set();
   for (const r of rules) {
     if (!r.action || !r.effect) continue;
@@ -974,6 +971,82 @@ function kimiAgentContent(content, warn) {
   const insert = [];
   if (tools.size) insert.push("tools:", ...[...tools].sort().map((t) => `  - ${t}`));
   if (denied.size) insert.push("disallowedTools:", ...[...denied].sort().map((t) => `  - ${t}`));
+  return [...lines.slice(0, 1), ...insert, ...lines.slice(1)].join("\n");
+}
+
+// minimal YAML subset parse of a permissions list from frontmatter lines:
+//   - action: <name> / resource: <glob> / effect: <allow|deny|ask>
+function parsePermissionRules(lines, closeIdx) {
+  const rules = [];
+  let cur = null;
+  for (let i = 1; i < closeIdx; i++) {
+    const a = lines[i].match(/^\s*-\s*action:\s*"?([\w:-]+)"?/);
+    if (a) { cur = { action: a[1] }; rules.push(cur); continue; }
+    if (!cur) continue;
+    const r = lines[i].match(/^\s+resource:\s*["']?([^"']+?)["']?\s*$/);
+    if (r) cur.resource = r[1];
+    const e = lines[i].match(/^\s+effect:\s*"?(\w+)"?/);
+    if (e) cur.effect = e[1];
+  }
+  return rules;
+}
+
+// Kilo permission-type passthrough (#455): opencode action names match Kilo's
+// `permission` type names 1:1 for these; `task` gates subagent delegation.
+const KILO_PERMISSION_TYPES = new Set(["read", "edit", "bash", "glob", "grep", "task", "webfetch", "websearch", "todowrite", "todoread"]);
+
+// Translate an opencode agent file's `permissions` array into an additive Kilo
+// `permission:` map (#455). Same column-0 insertion strategy as kimi. Only
+// `resource: "*"` rules map — Kilo file-glob semantics differ for other
+// resources (dropped with a warning). Last rule wins per action, mirroring both
+// opencode's rule ordering and Kilo's last-match-wins evaluation. `disabled:`
+// renames to Kilo's `disable:` spelling. Body + existing keys stay byte-
+// identical (Kilo ignores unknown fields, e.g. `permissions` itself).
+function kiloAgentContent(content, warn) {
+  const lines = content.split(/\r?\n/);
+  if (lines[0]?.trim() !== "---") {
+    warn("no frontmatter — installed verbatim, permissions not translated");
+    return content;
+  }
+  let closeIdx = -1;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() === "---") { closeIdx = i; break; }
+  }
+  if (closeIdx === -1) {
+    warn("unterminated frontmatter — installed verbatim, permissions not translated");
+    return content;
+  }
+  if (/^permission:/m.test(lines.slice(1, closeIdx).join("\n"))) {
+    warn("frontmatter already declares permission — skipping permission translation");
+    return content;
+  }
+  const rules = parsePermissionRules(lines, closeIdx);
+  const map = {};
+  const dropped = new Set();
+  const narrowAllows = {};
+  for (const r of rules) {
+    if (!r.action || !r.effect) continue;
+    if (!KILO_PERMISSION_TYPES.has(r.action) || r.resource !== "*" || !["allow", "deny", "ask"].includes(r.effect)) {
+      dropped.add(`${r.action}(${r.resource ?? "*"})`);
+      if (r.effect === "allow" && r.resource && r.resource !== "*" && KILO_PERMISSION_TYPES.has(r.action)) {
+        (narrowAllows[r.action] ||= []).push(r.resource);
+      }
+      continue;
+    }
+    map[r.action] = r.effect; // last rule wins per action
+  }
+  if (dropped.size) warn(`no Kilo equivalent — dropped: ${[...dropped].sort().join(", ")}`);
+  for (const [action, res] of Object.entries(narrowAllows)) {
+    if (map[action] === "deny")
+      warn(`action '${action}' pinned deny — ${res.length} narrow allow(s) dropped (${res.join(", ")}): the agent may not perform its core task under Kilo`);
+  }
+  let renamed = false;
+  for (let i = 1; i < closeIdx; i++) {
+    if (/^disabled:/.test(lines[i])) { lines[i] = lines[i].replace(/^disabled:/, "disable:"); renamed = true; }
+  }
+  const insert = [];
+  if (Object.keys(map).length) insert.push("permission:", ...Object.keys(map).sort().map((k) => `  ${k}: ${map[k]}`));
+  if (!insert.length && !renamed && !dropped.size) return content;
   return [...lines.slice(0, 1), ...insert, ...lines.slice(1)].join("\n");
 }
 
@@ -1101,6 +1174,8 @@ async function cmdUpdate(args, opts) {
           wouldContent = injectModelLine(agent.content, await agentModel(name, tier, opts.provider));
         } else if (cfg.agentMode === "kimi-translate") {
           wouldContent = kimiAgentContent(agent.content, () => {}); // warnings already surfaced at install
+        } else if (cfg.agentMode === "kilo-translate") {
+          wouldContent = kiloAgentContent(agent.content, () => {}); // warnings already surfaced at install
         } else {
           wouldContent = agent.content; // shared target: verbatim, unpinned (#453)
         }
@@ -1330,6 +1405,9 @@ SCOPE
   Kimi target (--target kimi): Kimi Code native dirs ~/.kimi-code/{agents,skills}/
   (user) and .kimi-code/{agents,skills}/ (project); permissions translate additively
   to tools/disallowedTools (lossy — unmapped rules dropped with a warning).
+  Kilo target (--target kilo): Kilo Code dirs ~/.config/kilo/agent + ~/.kilo/skills/
+  (user), .kilo/{agents,skills}/ (project); permissions translate additively to a
+  permission: map (lossy — unmapped rules dropped with a warning).
   Project scope (--project): writes .opencode/{agents,skills}/ + opencode.json + models.json + AGENTS.md.
 
 FLAGS
@@ -1346,7 +1424,7 @@ FLAGS
   --prune              remove opencode-init-owned entries absent from the new set
   --permit             (user scope) backup opencode.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
-  --target <t>         (add) install target: opencode (default), claude, agents (shared ~/.agents/), kimi, or both (--format is a deprecated alias)
+  --target <t>         (add) install target: opencode (default), claude, agents (shared ~/.agents/), kimi, kilo, or both (--format is a deprecated alias)
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and
