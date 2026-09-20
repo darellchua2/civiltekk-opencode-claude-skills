@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.19.3](https://github.com/darellchua2/opencode-config-template/compare/v9.19.2...v9.19.3) (2026-09-20)
+
+### Bug Fixes
+
+* **deploy:** TTY-gate setup menu, add --peonping flag, validate mode conflicts ([#466](https://github.com/darellchua2/opencode-config-template/issues/466)) ([#479](https://github.com/darellchua2/opencode-config-template/issues/479)) ([7723674](https://github.com/darellchua2/opencode-config-template/commit/77236744ba803221a35f8899c930afed2221e3bb))
+
+### Documentation
+
+* **plan:** add PLAN-476.md for [#476](https://github.com/darellchua2/opencode-config-template/issues/476) ([5e88a85](https://github.com/darellchua2/opencode-config-template/commit/5e88a85bb782149587d0a44112c5c51ed59a95c8))
+* **plan:** gate memo for bae489b (review-fix round 1) ([ceeab24](https://github.com/darellchua2/opencode-config-template/commit/ceeab2495ebaadddf69844cc582fe5911649aebd))
+* **plan:** implement Phase 2 — isolation guard green on 1d509cb ([20a2767](https://github.com/darellchua2/opencode-config-template/commit/20a276763e8799b6b2f6816ece0c5104a7ac13ec))
+* **skills:** apply [#476](https://github.com/darellchua2/opencode-config-template/issues/476) review — fetch-then-write body append, parent exclusion ([bae489b](https://github.com/darellchua2/opencode-config-template/commit/bae489b924667ee3be60a885104f2846c9c300ea))
+* **skills:** implement Phase 1 — multi-ticket sequence handoff in ticket-creation ([1d509cb](https://github.com/darellchua2/opencode-config-template/commit/1d509cb7cc80409cb93c61ea95b033353b3fa7a4))
+
 ## [9.19.2](https://github.com/darellchua2/opencode-config-template/compare/v9.19.1...v9.19.2) (2026-09-20)
 
 ### Bug Fixes
