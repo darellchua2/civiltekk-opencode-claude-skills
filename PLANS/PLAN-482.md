@@ -7,10 +7,10 @@
 
 ## Acceptance Criteria
 
-- [ ] Probe result recorded for `bash`/`task` aliases on the current opencode version — BOTH cells: v1-alias (done pre-plan, inert) and v2-name enforcement in BOTH session shapes (top-level and child-spawn)
-- [ ] Rename applied across `agents/*.md`, installer consumers (`build-registry.mjs`, `init.mjs` kimi/claude/kilo translators), test literal, skill doc, and the two README teaching sites; registry gate passes via `--check`
-- [ ] Sync-rule sweep per AGENTS.md (agent counts/listings unchanged — verified, no listing edits needed)
-- [ ] LEARNINGS entry with probe method and results; any "rename restores subagent deny enforcement" wording gated on the child-spawn ENFORCED verdict specifically
+- [x] Probe result recorded for `bash`/`task` aliases on the current opencode version — BOTH cells: v1-alias (done pre-plan, inert) and v2-name enforcement in BOTH session shapes (top-level and child-spawn)
+- [x] Rename applied across `agents/*.md`, installer consumers (`build-registry.mjs`, `init.mjs` kimi/claude/kilo translators), test literal, skill doc, and the two README teaching sites; registry gate passes via `--check`
+- [x] Sync-rule sweep per AGENTS.md (agent counts/listings unchanged — verified, no listing edits needed)
+- [x] LEARNINGS entry with probe method and results; any "rename restores subagent deny enforcement" wording gated on the child-spawn ENFORCED verdict specifically
 
 ## Dependency & Consumer Map
 
@@ -100,20 +100,23 @@
 
 ### Phase 4: Gates + LEARNINGS
 
-- [ ] **4.1** Gate: run the affected bats suites — `tests/test_autoresearch_skills.bats tests/test_reviewer_no_writes.bats tests/agents_target.bats tests/kimi_target.bats tests/claude_target.bats tests/kilo_target.bats tests/test_pack_permissions.bats` — plus `node --check installer/init.mjs installer/build-registry.mjs`; record the GATE memo line
+- [x] **4.1** Gate: run the affected bats suites — `tests/test_autoresearch_skills.bats tests/test_reviewer_no_writes.bats tests/agents_target.bats tests/kimi_target.bats tests/claude_target.bats tests/kilo_target.bats tests/test_pack_permissions.bats` — plus `node --check installer/init.mjs installer/build-registry.mjs`; record the GATE memo line
     — **Why:** repo verification policy — tests on logic changes (translators), build on installer changes (registry gate)
     — **Done when:** all suites green and both files parse; memo line `GATE <short-sha> …` recorded
     — **Consumers affected:** PR CI
+    — **Done:** gate executed at Phase 3 boundary on identical code HEAD (74/74 across 7 suites; node --check ×2; registry --check no drift) — Phase 4 adds only docs, suites re-cited not re-run (deviation noted); files: none; fixes: none
 
-- [ ] **4.2** Write `LEARNINGS/anti-patterns/v1-action-names-inert-under-v2.md` (probe method as a 2×2 matrix — rule-name version × session shape — with both cells' verdicts, alias-vs-inheritance distinction, fix sites, upstream refs anomalyco/opencode#50149 + #33223 family) and append the `_index.md` entry; any claim that the rename restores subagent deny enforcement is gated on the child-spawn ENFORCED verdict specifically (Mode R ruling 2)
+- [x] **4.2** Write `LEARNINGS/anti-patterns/v1-action-names-inert-under-v2.md` (probe method as a 2×2 matrix — rule-name version × session shape — with both cells' verdicts, alias-vs-inheritance distinction, fix sites, upstream refs anomalyco/opencode#50149 + #33223 family) and append the `_index.md` entry; any claim that the rename restores subagent deny enforcement is gated on the child-spawn ENFORCED verdict specifically (Mode R ruling 2)
     — **Why:** AC4; the failure modes look identical from a single probe cell — the matrix method is the reusable part
     — **Done when:** file + index entry exist, reference issue #482, and the enforcement claim matches the recorded child-spawn verdict
     — **Consumers affected:** future sessions
+    — **Done:** LEARNINGS/anti-patterns/v1-action-names-inert-under-v2.md written with all three matrix cells + attribution + fix sites; enforcement claim gated on Cell C verdict per Mode R ruling 2; _index.md appended; files: LEARNINGS ×2; fixes: none
 
-- [ ] **4.3** Sync-rule sweep per the AGENTS.md Adding Skills/Agents table: agent counts and listings are unchanged by a rename — verify count greps match the pre-rename baseline (34 agents listed; no README/setup.sh/ps1 listing edits required — README edits in 2.5 are teaching-text only, not listing changes); land 2.x + 3.1 atomically (single commit or immediately adjacent commits in one push — an intermediate state with v2 sources against the v1 lookup silently empties delegate edges on rebuild); commit all work with conventional commits and push
+- [x] **4.3** Sync-rule sweep per the AGENTS.md Adding Skills/Agents table: agent counts and listings are unchanged by a rename — verify count greps match the pre-rename baseline (34 agents listed; no README/setup.sh/ps1 listing edits required — README edits in 2.5 are teaching-text only, not listing changes); land 2.x + 3.1 atomically (single commit or immediately adjacent commits in one push — an intermediate state with v2 sources against the v1 lookup silently empties delegate edges on rebuild); commit all work with conventional commits and push
     — **Why:** the sync table triggers on listing changes; prove none occurred rather than silently skipping; atomicity prevents a transiently broken registry state
     — **Done when:** counts match baseline; changes committed and pushed on `feat/482`
     — **Consumers affected:** docs readers, registry rebuilders
+    — **Done:** counts unchanged (registry agents=34; README "34 agents + 146 skills" still true; no listing edits); 2.x + 3.1 adjacent commits in one push (1428225 + 89167e5); files: none; fixes: none
 
 ## Technical Notes
 
@@ -155,3 +158,5 @@
 `GATE 5cf1a4e+p2 lint=n.a. typecheck=n.a. build=n.a. unit=t(16/16: autoresearch_skills, reviewer_no_writes) e2e=n.a` — frontmatter suites green; translator suites deferred to Phase 3 gate where their fixes land (push deferred with them per atomicity rule).
 
 `GATE 1428225+p3 lint=n.a. typecheck=t(node --check ×2) build=t(registry --check, no drift) unit=t(74/74 across 7 suites) e2e=n.a`
+
+`GATE 89167e5+p4 lint=n.a. typecheck=t build=t unit=t(74/74, cited from Phase 3 gate — Phase 4 is docs-only) e2e=n.a`

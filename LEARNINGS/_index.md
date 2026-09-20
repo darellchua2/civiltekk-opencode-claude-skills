@@ -500,3 +500,12 @@
 - **Scope**: project
 - **Summary**: frontmatter-vocabulary sweeps scoped to code dirs skip README/opencode_app teaching sites, and literal `action: task` greps pass vacuously over `action:"task"` — sweep repo-root *.md + opencode_app/ with form-insensitive patterns and named exclusions (#482)
 - **Date**: 2026-09-20
+
+### v1 frontmatter action names are inert under opencode v2
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/v1-action-names-inert-under-v2.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: `action: bash`/`action: task` rules do nothing on v2 (actions are `shell`/`subagent`) — v1 deny leaves the tool executable; rename restores enforcement (probe matrix: v1 child inert, v2 child enforced via tool filtering; distinct from the skill-action bug in #50149) (#482)
+- **Date**: 2026-09-20
