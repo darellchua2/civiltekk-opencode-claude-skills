@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.22.0](https://github.com/darellchua2/opencode-config-template/compare/v9.21.0...v9.22.0) (2026-09-20)
+
+### Features
+
+* **deploy:** deploy plan model + single executor with uniform epilogue ([#470](https://github.com/darellchua2/opencode-config-template/issues/470)) ([#490](https://github.com/darellchua2/opencode-config-template/issues/490)) ([6c81ed5](https://github.com/darellchua2/opencode-config-template/commit/6c81ed55f6be8cbcd867b7228f8a85435c3e4357)), closes [#379](https://github.com/darellchua2/opencode-config-template/issues/379) [#474](https://github.com/darellchua2/opencode-config-template/issues/474) [#379](https://github.com/darellchua2/opencode-config-template/issues/379) [#467](https://github.com/darellchua2/opencode-config-template/issues/467)
+
 ## [9.21.0](https://github.com/darellchua2/opencode-config-template/compare/v9.20.0...v9.21.0) (2026-09-20)
 
 ### Features
