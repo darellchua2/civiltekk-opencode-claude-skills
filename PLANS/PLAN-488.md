@@ -8,7 +8,7 @@
 
 _Inherited verbatim from #488 — the PLAN never rewrites ticket AC._
 
-- [ ] `verification-loop-skill` §The gate contract defines the two tiers, escalation anchors, the unsure→full rule, and the tier memo marker (canonical — other surfaces defer, no restating)
+- [x] `verification-loop-skill` §The gate contract defines the two tiers, escalation anchors, the unsure→full rule, and the tier memo marker (canonical — other surfaces defer, no restating)
 - [ ] `plan-execution-skill` 4c: light gate is the per-phase default; full gate on anchor hit / judgment / ticket exit gate; escalation reasons go to the WORK LOG; no logging for the light default
 - [ ] `worktree-pipeline-skill`: Step 8 references tiered gating; Step 9 review-fix commits trigger one full re-gate; Step 10's green citation requires the `tier=full` GATE line
 - [ ] Memo-format consumers (`pr-workflow-subagent`, `pr-creation-workflow-skill`) grepped and updated or verified compatible with the tier marker
@@ -32,18 +32,21 @@ _Every step is atomic and carries rationale. Any step missing a field is malform
 
 ### Phase 1: Canonical tiered-gate contract (verification-loop-skill)
 
-- [ ] **1.1** Add a "Tiered gating" subsection to §The gate contract defining: the light gate (scoped lint + typecheck + affected tests only), the full gate (existing LINT→TYPECHECK→BUILD→UNIT→E2E sequence with the FULL unit suite), one-directional escalation (light is the default and needs no justification; full is triggered, never justified away), the escalation anchors (dependency manifests, config/CI/deploy, entry points, schema/migrations, auth/security paths, cross-module Dependency & Consumer Map nodes), the unsure→full rule, and the ticket exit gate (last gate before PR per ticket runs full unconditionally)
+- [x] **1.1** Add a "Tiered gating" subsection to §The gate contract defining: the light gate (scoped lint + typecheck + affected tests only), the full gate (existing LINT→TYPECHECK→BUILD→UNIT→E2E sequence with the FULL unit suite), one-directional escalation (light is the default and needs no justification; full is triggered, never justified away), the escalation anchors (dependency manifests, config/CI/deploy, entry points, schema/migrations, auth/security paths, cross-module Dependency & Consumer Map nodes), the unsure→full rule, and the ticket exit gate (last gate before PR per ticket runs full unconditionally)
     — **Why:** this file is the canonical contract every other surface defers to; the tiers must exist here before executors can reference them without restating
     — **Done when:** one findable subsection defines light/full/anchors/unsure→full/exit-gate, and no other section of the file contradicts it
     — **Consumers affected:** plan-execution-skill 4c, worktree-pipeline-skill Steps 8–10, pr-workflow-subagent, pr-creation-workflow-skill, linting-subagent, eval-harness-skill
-- [ ] **1.2** Extend §Gate memo with the tier marker format `GATE <short-sha> tier=light|full lint=t typecheck=t build=t|- unit=t|-|n.a e2e=t|-|n.a` and state the push invariant: the pushed SHA must carry a green `tier=full` memo (exit gate plus any post-gate fix re-gate); include the n.a gloss — a memo axis with no applicable check records `n.a` (e.g. `unit=n.a` on a light gate with zero affected tests); `n.a` means non-applicable, never INCONCLUSIVE; `unit=n.a` is valid only on `tier=light` memos, since the full gate always runs the full unit suite the push-authorizing `tier=full` memo can never carry it
+    — **Done:** Tiered gating subsection added to §The gate contract (light/full definitions, anchors, unsure→full, exit gate, one-directional escalation); files: skills/verification-loop-skill/SKILL.md; fixes: none
+- [x] **1.2** Extend §Gate memo with the tier marker format `GATE <short-sha> tier=light|full lint=t typecheck=t build=t|- unit=t|-|n.a e2e=t|-|n.a` and state the push invariant: the pushed SHA must carry a green `tier=full` memo (exit gate plus any post-gate fix re-gate); include the n.a gloss — a memo axis with no applicable check records `n.a` (e.g. `unit=n.a` on a light gate with zero affected tests); `n.a` means non-applicable, never INCONCLUSIVE; `unit=n.a` is valid only on `tier=light` memos, since the full gate always runs the full unit suite the push-authorizing `tier=full` memo can never carry it
     — **Why:** the memo line is the cross-surface evidence currency; Step 10's PR-time citation keys off it; without the n.a gloss a docs-only light phase cannot record zero affected tests
     — **Done when:** the memo format block renders the tier token, the `-`/`n.a` conventions are reused (no new syntax), the push invariant is stated in one sentence, and the gloss covers light-only `unit=n.a` plus `n.a` ≠ INCONCLUSIVE
     — **Consumers affected:** plan-execution-skill (memo writer), worktree-pipeline Step 10 (citation), pr-creation-workflow-skill (PR Quality Checks slot)
-- [ ] **1.3** Create `tests/test_tiered_gating.bats` with assertions pinning the Phase-1 contract tokens in verification-loop-skill (`tier=light|full` in the memo example, the light-gate definition, unsure→full, exit gate) using case-insensitive greps over the historical spellings actually written; also pin the unchanged invariant that CI remains the only unconditional re-run (§Gate memo bullet — Phase 1 edits that very section)
+    — **Done:** memo format now carries `tier=light|full` and `unit=t|-|n.a`; n.a gloss present (light-only `unit=n.a`, `n.a` ≠ INCONCLUSIVE); push-invariant bullet added; files: skills/verification-loop-skill/SKILL.md; fixes: none
+- [x] **1.3** Create `tests/test_tiered_gating.bats` with assertions pinning the Phase-1 contract tokens in verification-loop-skill (`tier=light|full` in the memo example, the light-gate definition, unsure→full, exit gate) using case-insensitive greps over the historical spellings actually written; also pin the unchanged invariant that CI remains the only unconditional re-run (§Gate memo bullet — Phase 1 edits that very section)
     — **Why:** skill prose is this repo's runtime surface; the bats suite is its regression gate — and grep gates over prose false-green on case/anchor mismatches (LEARNINGS `case-sensitive-grep-gates-false-green`, `guard-regex-quote-shape-mismatch`)
     — **Done when:** the new bats file passes standalone via `bats tests/test_tiered_gating.bats` and mutation checks: deleting the Tiered gating subsection fails ≥1 assertion, deleting the CI-only-unconditional-rerun bullet fails the invariant assertion
     — **Consumers affected:** CI bats suite
+    — **Done:** 9 assertions green standalone; mutation canaries verified by running the target test alone — subsection deletion fails 5 tests, CI-bullet deletion fails 1, restore returns 9/9; files: tests/test_tiered_gating.bats; fixes: one grep was missing its file argument (caught by its own failing assertion, fixed)
 
 ### Phase 2: Executor integration (plan-execution-skill)
 
@@ -115,3 +118,9 @@ _Every step is atomic and carries rationale. Any step missing a field is malform
 - **Grep-gated tests false-green on case/spelling** → mitigated by case-insensitive patterns over the spellings actually written, plus mutation checks per phase (LEARNINGS `guard-regex-quote-shape-mismatch`).
 - **Existing bats tests pin old wording** → caught by 4.3 exit gate; fix in the same phase.
 - **Memo-format consumers missed by the sweep** → census runs case-insensitively across repo root and all config/doc dirs, not just the three edited files.
+
+## Trace
+
+_Per-step Done lines live inline; gate memo lines below (axes with no applicable command record n.a; tier=full per cross-module Consumer Map anchor)._
+
+
