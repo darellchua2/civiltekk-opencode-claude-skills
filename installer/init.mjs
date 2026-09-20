@@ -728,8 +728,9 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   // Write per active target, resolved from TARGETS (#453): dest dirs + transform
   // modes come from the table — no per-target bespoke branches. Written-content
   // hashes per entry (#379), keyed per target: agents → file bytes (model-
-  // injected for opencode, raw verbatim elsewhere — foreign targets stay
-  // unpinned), skills → written dir tree hash (post model-strip for claude).
+  // injected for opencode; kimi/kilo/claude translated per agentMode — foreign
+  // targets stay unpinned), skills → written dir tree hash (post model-strip
+  // for claude).
   const newEntries = {};
   for (const t of activeTargets(target)) {
     const cfg = TARGETS[t];
@@ -770,7 +771,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
 
   // update user-scope manifest (tracks ALL targets for uninstall/update). Agents are
   // recorded for every target whose TARGETS row carries an agentsDir (opencode,
-  // agents-shared, claude, kimi). entries merge
+  // agents-shared, claude, kimi, kilo). entries merge
   // per-target: re-installing to one target preserves the other target's record.
   await mkdir(USER_OC, { recursive: true });
   const prevManifest = (await readJsonMaybe(USER_MANIFEST)) || { agents: [], skills: [] };
@@ -1003,8 +1004,13 @@ function claudeAgentContent(content, stem, warn) {
   }
   const fm = lines.slice(1, closeIdx).join("\n");
   if (/^(tools|disallowedTools):/m.test(fm)) {
-    warn("frontmatter already declares tools/disallowedTools — skipping permission translation");
-    return content;
+    if (hasName) {
+      warn("frontmatter already declares tools/disallowedTools — skipping permission translation");
+      return content;
+    }
+    // still synthesize the required name (Claude Code cannot load without it)
+    warn("frontmatter already declares tools/disallowedTools — skipping permission translation; inserting required name only");
+    return [...lines.slice(0, 1), `name: ${stem}`, ...lines.slice(1)].join("\n");
   }
   const hasName = /^name:/m.test(fm);
   const rules = parsePermissionRules(lines, closeIdx);
@@ -1466,10 +1472,8 @@ SCOPE
   (user), .kilo/{agents,skills}/ (project); permissions translate additively to a
   permission: map (lossy — unmapped rules dropped with a warning).
   Claude target (--target claude): agents now install too — ~/.claude/agents/ with
-  a tools/disallowedTools allowlist translated from permissions (#457).
-  Kilo target (--target kilo): Kilo Code dirs ~/.config/kilo/agent + ~/.kilo/skills/
-  (user), .kilo/{agents,skills}/ (project); permissions translate additively to a
-  permission: map (lossy — unmapped rules dropped with a warning).
+  a tools/disallowedTools allowlist translated from permissions (lossy — unmapped
+  rules dropped with a warning; #457).
   Project scope (--project): writes .opencode/{agents,skills}/ + opencode.json + models.json + AGENTS.md.
 
 FLAGS

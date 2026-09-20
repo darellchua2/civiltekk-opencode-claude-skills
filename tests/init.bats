@@ -199,7 +199,6 @@ EOC
   local F="$HOME/.claude/agents/tdd-subagent.md"
   [ -f "$F" ]
   grep -q '^name: tdd-subagent' "$F"
-  echo "$output" | grep -qv "agent(s) skipped" || true
   ! grep -q "agent(s) skipped" <<< "$output"
 }
 
