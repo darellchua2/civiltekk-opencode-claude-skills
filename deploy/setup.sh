@@ -40,7 +40,6 @@
 #   -y, --yes           Auto-accept all prompts (non-interactive mode)
 #   -v, --verbose       Enable detailed debug output
 #   -u, --update        Update OpenCode CLI only (skip config/skills)
-#   -A, --enable-auto-update    Enable automatic opencode-ai updates
 #   -D, --disable-auto-update   Disable automatic updates
 #   -S, --schedule-update <schedule>  Set update schedule: daily|weekly|monthly|manual
 #   -C, --check-update  Check for available updates without installing
@@ -572,7 +571,8 @@ USAGE:
     --select              Pick deploy items interactively (per-item deploy)
     --list-items          Dump the deploy item catalog (skills/agents/…)
     --save-preset <name>  Save models.json + deploy-plan.json as a preset
-    --preset <name>       Deploy using a previously saved preset
+    --preset <name>       Restore a saved preset (models.json; deploy-plan.json
+                          is only consumed together with --select)
     --check-catalog       Warn if provider model pins drifted from models.dev
     --rollback [TARGET]   Restore from previous backup (see SETUP MODES above)
 
@@ -612,11 +612,10 @@ USAGE:
 
   SKILL PROFILE (deploy-time primary visibility):
     --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
-                           config's skill permissions (permissions array) to 46
-                           primary-visible
-                           skills + "*": "deny" (subagents unaffected — they
-                           self-scope via frontmatter allows); full deploys the
-                           shipped 106-allow allowlist (incl. 1 app-scoped skill) verbatim.
+                           config's skill permissions (permissions array) to the
+                           lean-profile skill set + "*": "deny" (subagents
+                           unaffected — they self-scope via frontmatter allows);
+                           full deploys the shipped allowlist verbatim.
 
   LOCAL LLM (gemma-4-E4B via llama.cpp in Docker):
     --enable-local-llm   Install local LLM inference server. Requires NVIDIA GPU,
@@ -727,7 +726,7 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (8):
+  MCP SERVERS:
     Auto-start (enabled by default):
       codegraph           Pre-indexed code knowledge graph (100% local)
       zai-web-reader      Web page content extraction (remote, needs ZAI_API_KEY)
@@ -2036,19 +2035,6 @@ setup_zai_api_key() {
 # Skills-only deploy: shared by the --skills-only flag path, menu option 2,
 # and the headless no-TTY default (#466). One body, three entry points —
 # duplicating it per site is how drift bugs are born (see #469).
-deploy_skills_only() {
-    # Thin wrapper retained for its structural bats pins (test_skills_only_parity).
-    # The plan executor (SKILLS_ONLY=true) runs the same steps via build_plan.
-    validate_opencode_install || return 1
-    check_dependencies_strict || return 1
-    setup_config || true
-    deploy_agents || true
-    # Plugin/shim membership is platform parity, not mode accident (#469).
-    deploy_plugins || true
-    setup_opencode_init_symlink || true
-    setup_learnings_dir || true
-    print_summary
-}
 
 # Setup PeonPing (AI agent sound notifications)
 setup_peonping() {
@@ -3466,7 +3452,7 @@ deploy_plugins() {
 # (action:"skill") inside the permissions array of the DEPLOYED config
 # (never the source opencode_app/opencode.json).
 #   lean (default) -> 70 primary-visible skills + "*": "deny"
-#   full           -> verified no-op (shipped 106-allow allowlist (incl. 1 app-scoped skill) stays verbatim)
+#   full           -> verified no-op (shipped allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
 # stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
 run_skill_profile() {
@@ -3692,6 +3678,9 @@ build_plan() {
         PLAN_MODE="skills-only"
         PLAN_STEPS+=("true|opencode-check|Validate opencode install|validate_opencode_install")
         PLAN_STEPS+=("true|deps|Dependency check|check_dependencies_strict")
+        if [ -n "$LOAD_PRESET_NAME" ]; then
+            PLAN_STEPS+=("true|load-preset|Load preset ${LOAD_PRESET_NAME}|load_user_preset")
+        fi
         PLAN_STEPS+=("true|config|Deploy config|setup_config")
         PLAN_STEPS+=("true|agents|Deploy agents|deploy_agents")
         PLAN_STEPS+=("true|plugins|Deploy plugins|deploy_plugins")
@@ -4039,6 +4028,9 @@ dump_catalog() {
 }
 
 save_user_preset() {
+    case "$SAVE_PRESET_NAME" in
+        */*|""|.*) log_error "Invalid preset name: '${SAVE_PRESET_NAME}'"; return 1 ;;
+    esac
     local preset_dir="${CONFIG_DIR}/presets/${SAVE_PRESET_NAME}"
     run_cmd mkdir -p "$preset_dir"
     if [ -f "$USER_MODELS_MAP" ]; then
@@ -4057,6 +4049,7 @@ load_user_preset() {
         return 1
     fi
     if [ -f "${preset_dir}/models.json" ]; then
+        node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "${preset_dir}/models.json" || { log_error "Preset models.json is not valid JSON"; return 1; }
         run_cmd cp "${preset_dir}/models.json" "${USER_MODELS_MAP}"
     fi
     if [ -f "${preset_dir}/deploy-plan.json" ]; then

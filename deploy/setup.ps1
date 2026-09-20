@@ -29,6 +29,7 @@ param(
     [string]$Preset,
     [string]$EnablePack,
     [string]$Provider,
+    [string]$SkillProfile,
     [switch]$Force
 )
 
@@ -84,6 +85,7 @@ if ($SavePreset)    { $forward += @("--save-preset", $SavePreset) }
 if ($Preset)        { $forward += @("--preset", $Preset) }
 if ($EnablePack)    { $forward += @("--enable-pack", $EnablePack) }
 if ($Provider)      { $forward += @("--provider", $Provider) }
+if ($SkillProfile)  { $forward += @("--skill-profile", $SkillProfile) }
 if ($Force)         { $forward += "--force" }
 if ($Rollback) {
     if ($RollbackTarget) { $forward += @("--rollback", $RollbackTarget) }
@@ -93,13 +95,12 @@ if ($Rollback) {
 # ── Forward everything to the bash implementation ──
 $setupSh = Join-Path $PSScriptRoot "setup.sh"
 if ($useWsl) {
-    # wsl.exe translates the current Windows directory automatically.
-    wsl.exe bash ./setup.sh @forward
+    # Resolve the script's real path inside WSL (the caller's cwd is NOT the
+    # script dir — README invokes from the repo root, the script lives in
+    # deploy/).
+    $wslScript = (wsl.exe wslpath -a "$($setupSh -replace '\\', '/')" | ForEach-Object { $_.Trim() })
+    wsl.exe bash "$wslScript" @forward
     exit $LASTEXITCODE
-}
-
-& $bashExe $setupSh @forward
-exit $LASTEXITCODE
 }
 
 & $bashExe $setupSh @forward

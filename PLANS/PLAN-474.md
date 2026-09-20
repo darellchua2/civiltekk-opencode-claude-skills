@@ -84,4 +84,4 @@ Epic #464; everything else landed (#465-#473). Final child.
 
 ## Gate Trace
 
-GATE (push head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 486 ok / 0 fail incl. 9 subcommand pins; node --test 30 pass / 0 fail; 6 obsolete ps1-internal pins flipped to delegation assertions — the thin launcher inherits D2/jsonc/count/hook/preview logic from bash by design; scope = deploy/setup.sh + deploy/setup.ps1 + README.md + tests/test_subcommands.bats + 5 flipped pin files)
+GATE (fix-round head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 486 ok / 0 fail; node --test 30 pass / 0 fail; review round 1: 1 BLOCK fixed — ps1 stray-brace/duplicate tail removed; 7 WARN fixed — -Help/-SkillProfile mapped, WSL wslpath resolution, .gitattributes LF pins, preset step survives every rebuild branch + help wording, remaining numeric claims de-numbered, dead deploy_skills_only deleted with parity pins re-pointed at the live step list, -A test sandboxed; preset name/JSON guards added; scope = deploy/setup.sh + deploy/setup.ps1 + .gitattributes + README.md + tests)

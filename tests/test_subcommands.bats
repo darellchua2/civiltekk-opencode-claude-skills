@@ -33,6 +33,9 @@ SETUP_PS1="deploy/setup.ps1"
   run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1; LIST_ITEMS=true; build_plan; run_plan" 2>/dev/null
   rm -rf "$d"
   [ "$status" -eq 0 ]
+  [[ "$output" == *'"skills"'* ]]
+  [[ "$output" == *'"agents"'* ]]
+  [[ "$output" == *'"packs"'* ]]
 }
 
 @test "preset_save_load_roundtrip" {
@@ -50,7 +53,11 @@ SETUP_PS1="deploy/setup.ps1"
 }
 
 @test "auto_update_flags_are_hinting_no_ops" {
-  run bash "$SETUP_SH" -A
+  # Sandboxed HOME (round-2 review): a no-op flag still falls through to the
+  # headless default path — never run setup.sh end-to-end against a real HOME.
+  local d; d="$(mktemp -d)"
+  run bash -c "export HOME='$d'; bash '$SETUP_SH' -A"
+  rm -rf "$d"
   [ "$status" -eq 0 ]
   [[ "$output" == *"Auto-update has been removed"* ]]
 }
