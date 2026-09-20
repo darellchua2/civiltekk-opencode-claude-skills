@@ -40,7 +40,7 @@ Per-session overrides take precedence over the env-var default.
 
 Read-only/research agents (`explore`, `general`, `explorer-subagent`,
 requirements/discovery specialists, etc.) skip injection — they don't act on
-LEARNINGS. The off-set regex mirrors `ponytail-scoped.ts` and can be overridden
+LEARNINGS. The off-set regex mirrors `opencode-ponytail-scoped.ts` and can be overridden
 via `LEARNINGS_AUTOINJECT_OFF`.
 
 ## What gets injected

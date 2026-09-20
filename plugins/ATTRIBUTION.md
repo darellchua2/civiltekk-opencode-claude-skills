@@ -44,7 +44,7 @@ This directory (`plugins/ponytail/`) contains code vendored and adapted from the
 - **Adaptation rationale:** vendoring (vs `require("@dietrichgebert/ponytail")`) keeps
   the Docker container air-gapped (no runtime npm fetch), removes the stock OpenCode
   adapter from the dependency tree (double-injection guard), and lets the wrapper
-  plugin (`../ponytail-scoped.ts`) add agent-type-aware scoping that the upstream
+  plugin (`../opencode-ponytail-scoped.ts`) add agent-type-aware scoping that the upstream
   adapter does not support on OpenCode.
 
 Re-vendor deliberately on upstream bumps: update `SKILL.md` from the new tag and

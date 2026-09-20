@@ -1,4 +1,4 @@
-// question-repair.ts — normalizes malformed `question` tool payloads before
+// opencode-question-repair.ts — normalizes malformed `question` tool payloads before
 // OpenCode's schema validator hard-fails them.
 //
 // Why this exists: session-audit evidence (opencode.db, Jun–Sep 2026, 1158

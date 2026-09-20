@@ -3241,8 +3241,8 @@ deploy_plugins() {
 
     # #456 migration: plugins renamed with the opencode- prefix — drop stale
     # pre-rename copies so the same plugin never loads twice.
-    for legacy in vibeguard ponytail-scoped question-repair learnings-autoinject; do
-        run_cmd rm -f "$PLUGINS_DEST_DIR/${legacy}.ts"
+    for legacy in vibeguard.ts ponytail-scoped.ts question-repair.ts learnings-autoinject.ts learnings-autoinject.README.md; do
+        run_cmd rm -f "$PLUGINS_DEST_DIR/$legacy"
     done
 
     # Copy each plugin subdirectory (skip dotfiles, _archived, node_modules).

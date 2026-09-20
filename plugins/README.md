@@ -8,8 +8,8 @@ plugin loader — no registration needed.
 | Prefix | Meaning | Deployed to OpenCode? |
 |--------|---------|----------------------|
 | `opencode-*.ts` | OpenCode runtime plugin (v2 `{ id, setup }` local port) | Yes — `deploy_plugins()` copies them to `~/.config/opencode/plugins/`; the Docker image `COPY`s the whole dir |
-| `kimi-*` | Reserved: future Kimi Code plugin ports | **Never** auto-deployed to OpenCode |
-| `kilo-*` | Reserved: future Kilo Code plugin ports | **Never** auto-deployed to OpenCode |
+| `kimi-*` | Reserved: future Kimi Code plugin ports | No (once the rule-4 filter lands) |
+| `kilo-*` | Reserved: future Kilo Code plugin ports | No (once the rule-4 filter lands) |
 
 Rules:
 
@@ -22,9 +22,11 @@ Rules:
    path (<project>/.opencode/ → deployed copies); renaming it breaks the
    Docker, setup.sh, and setup.ps1 legs at once.
 4. **Before the first `kimi-*`/`kilo-*` plugin lands**, restrict
-   `deploy_plugins()` (deploy/setup.sh) to `opencode-*.ts` + the `ponytail/`
-   vendored dir — deferred from #456 by decision (no foreign plugin exists yet;
-   no dead gating ships today).
+   `deploy_plugins()` (deploy/setup.sh) to `opencode-*.ts` + non-code support
+   files (`ponytail/` vendored dir, `ATTRIBUTION.md` — it holds the MIT license
+   texts for the vendored code; dropping it would ship MIT code without its
+   license). Deferred from #456 by decision; until then "never auto-deployed"
+   is by convention, not enforcement.
 5. Historical records (`LEARNINGS/`, `PLANS/`, `research/`) keep old paths —
    they are never rewritten.
 
