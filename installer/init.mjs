@@ -59,15 +59,18 @@ const USER_MANIFEST = join(USER_OC, ".skill-manifest.json");
 const USER_CLAUDE_SKILLS = join(os.homedir(), ".claude/skills");
 const USER_AGENTS_SHARED = join(os.homedir(), ".agents/agents");
 const USER_SKILLS_SHARED = join(os.homedir(), ".agents/skills");
+const USER_KIMI_AGENTS = join(os.homedir(), ".kimi-code/agents");
+const USER_KIMI_SKILLS = join(os.homedir(), ".kimi-code/skills");
 
 // Per-target write contract (#453): user-scope dest dirs + transform mode.
 // SINGLE SITE for target dest/transform resolution — write/update/remove paths
 // resolve via TARGETS, never inline constants (PLAN-453 structural gate).
 // Project-scope dest columns deferred to #454 (PLAN-453 Technical Notes).
 const TARGETS = {
-  opencode: { agentsDir: USER_AGENTS, skillsDir: USER_SKILLS, agentMode: "model-injected", skillMode: "verbatim" },
+  opencode: { agentsDir: USER_AGENTS, skillsDir: USER_SKILLS, projectAgentsDir: ".opencode/agents", projectSkillsDir: ".opencode/skills", agentMode: "model-injected", skillMode: "verbatim" },
   claude: { skillsDir: USER_CLAUDE_SKILLS, skillMode: "model-strip" }, // agents skipped (#377; #457 adds them)
   agents: { agentsDir: USER_AGENTS_SHARED, skillsDir: USER_SKILLS_SHARED, agentMode: "verbatim", skillMode: "verbatim" },
+  kimi: { agentsDir: USER_KIMI_AGENTS, skillsDir: USER_KIMI_SKILLS, projectAgentsDir: ".kimi-code/agents", projectSkillsDir: ".kimi-code/skills", agentMode: "kimi-translate", skillMode: "verbatim" },
 };
 // derived from the table so a new target row can't skip validation (both = opencode+claude alias)
 const TARGET_VALUES = [...Object.keys(TARGETS), "both"];
@@ -351,13 +354,20 @@ async function filesDiffer(p1, p2) {
 
 export async function writeInstall(sel, opts, reg, depMap) {
   const project = resolve(opts.project || process.cwd());
+  // project destinations resolve from TARGETS (#454); targets without project
+  // columns degrade to opencode (note printed by cmdAdd; the preset flow dies
+  // on non-opencode --target before reaching here)
+  const pTarget = TARGETS[opts.target]?.projectSkillsDir ? opts.target : "opencode";
+  const pCfg = TARGETS[pTarget];
+  const ocProject = pTarget === "opencode"; // gates opencode.json / models.json / AGENTS.md
   const ocDir = join(project, ".opencode");
-  const agentsDir = join(ocDir, "agents");
-  const skillsDir = join(ocDir, "skills");
+  const agentsDir = join(project, pCfg.projectAgentsDir);
+  const skillsDir = join(project, pCfg.projectSkillsDir);
+  const targetRoot = dirname(agentsDir); // .opencode | .kimi-code
   const ocFile = join(ocDir, "opencode.json"); // Phase 0.1: .opencode/opencode.json (highest precedence)
   const modelsFile = join(ocDir, "models.json");
   const agentsMd = join(project, "AGENTS.md");
-  const manifestFile = join(ocDir, ".opencode-init.manifest.json");
+  const manifestFile = join(targetRoot, ".opencode-init.manifest.json");
   const dry = !!opts.dryRun;
   const force = !!opts.force;
 
@@ -386,13 +396,11 @@ export async function writeInstall(sel, opts, reg, depMap) {
   }
 
   // opencode.json conflict
-  const ocConflict = existsSync(ocFile) && !(prevManifest.configPath === ocFile);
+  const ocConflict = ocProject && existsSync(ocFile) && !(prevManifest.configPath === ocFile);
   const manifest = {
     generatedAt: new Date().toISOString(),
     tool: "opencode-init",
-    configPath: ocFile,
-    modelsPath: modelsFile,
-    agentsMd,
+    ...(ocProject ? { configPath: ocFile, modelsPath: modelsFile, agentsMd } : {}),
     agents: sel.agents,
     skills: sel.skills,
     mcps: sel.mcps,
@@ -412,54 +420,66 @@ export async function writeInstall(sel, opts, reg, depMap) {
   await mkdir(agentsDir, { recursive: true });
   await mkdir(skillsDir, { recursive: true });
   const tierModels = {}; // tier -> model (cache; feeds the models.json artifact below)
-  const projectOverrides = await readJsonMaybe(join(ocDir, "agent-overrides.json")); // #401
+  const projectOverrides = ocProject ? await readJsonMaybe(join(ocDir, "agent-overrides.json")) : null; // #401
   for (const a of plan.agents) {
     await mkdir(dirname(a.dst), { recursive: true });
     let content = await readFile(a.src, "utf8");
-    const agentReg = reg.agents.find((x) => x.stem === a.stem);
-    const tier = agentReg?.tier || "unassigned";
-    if (!tierModels[tier]) tierModels[tier] = await tierToModel(tier, opts.provider);
-    content = injectModelLine(content, await agentModel(a.stem, tier, opts.provider, projectOverrides));
+    if (ocProject) {
+      const agentReg = reg.agents.find((x) => x.stem === a.stem);
+      const tier = agentReg?.tier || "unassigned";
+      if (!tierModels[tier]) tierModels[tier] = await tierToModel(tier, opts.provider);
+      content = injectModelLine(content, await agentModel(a.stem, tier, opts.provider, projectOverrides));
+    } else {
+      content = kimiAgentContent(content, (m) => console.error(`  kimi (${a.stem}): ${m}`));
+    }
     await writeFile(a.dst, content, "utf8");
   }
   for (const s of plan.skills) { await mkdir(dirname(s.dst), { recursive: true }); await cp(s.src, s.dst, { recursive: true, force: true }); }
 
-  // opencode.json
-  if (ocConflict && !force) {
-    console.error(`conflict (skipped, use --force): existing ${relative(project, ocFile)} not written by opencode-init`);
-    manifest.configPath = prevManifest.configPath ?? null; // claim only what we wrote (#412)
-  } else if (!existsSync(ocFile) || force || prevManifest.configPath === ocFile) {
-    const oc = await generateOpenencodeJson(sel, project);
-    await mkdir(ocDir, { recursive: true });
-    await writeFile(ocFile, JSON.stringify(oc, null, 2) + "\n", "utf8");
-  }
+  // opencode-specific artifacts (opencode target only — kimi project installs
+  // carry no opencode config; #454)
+  if (ocProject) {
+    // opencode.json
+    if (ocConflict && !force) {
+      console.error(`conflict (skipped, use --force): existing ${relative(project, ocFile)} not written by opencode-init`);
+      manifest.configPath = prevManifest.configPath ?? null; // claim only what we wrote (#412)
+    } else if (!existsSync(ocFile) || force || prevManifest.configPath === ocFile) {
+      const oc = await generateOpenencodeJson(sel, project);
+      await mkdir(ocDir, { recursive: true });
+      await writeFile(ocFile, JSON.stringify(oc, null, 2) + "\n", "utf8");
+    }
 
-  // models.json (deploy-side tier->model map for the tiers actually used) —
-  // conflict-gated like opencode.json: never clobber a hand-authored file (#412)
-  const modelsConflict = existsSync(modelsFile) && !(prevManifest.modelsPath === modelsFile);
-  if (modelsConflict && !force) {
-    console.error(`conflict (skipped, use --force): existing ${relative(project, modelsFile)} not written by opencode-init`);
-    manifest.modelsPath = prevManifest.modelsPath ?? null; // claim only what we wrote (#412)
-  } else if (!existsSync(modelsFile) || force || prevManifest.modelsPath === modelsFile) {
-    const usedTiers = [...new Set(sel.agents.map((stem) => reg.agents.find((x) => x.stem === stem)?.tier).filter(Boolean))];
-    const modelsMap = { "$comment": "Generated by opencode-init. Tier->model map for the agents installed in this project.", tiers: {} };
-    for (const t of usedTiers) modelsMap.tiers[t] = tierModels[t] || null;
-    await writeFile(modelsFile, JSON.stringify(modelsMap, null, 2) + "\n", "utf8");
-  }
+    // models.json (deploy-side tier->model map for the tiers actually used) —
+    // conflict-gated like opencode.json: never clobber a hand-authored file (#412)
+    const modelsConflict = existsSync(modelsFile) && !(prevManifest.modelsPath === modelsFile);
+    if (modelsConflict && !force) {
+      console.error(`conflict (skipped, use --force): existing ${relative(project, modelsFile)} not written by opencode-init`);
+      manifest.modelsPath = prevManifest.modelsPath ?? null; // claim only what we wrote (#412)
+    } else if (!existsSync(modelsFile) || force || prevManifest.modelsPath === modelsFile) {
+      const usedTiers = [...new Set(sel.agents.map((stem) => reg.agents.find((x) => x.stem === stem)?.tier).filter(Boolean))];
+      const modelsMap = { "$comment": "Generated by opencode-init. Tier->model map for the agents installed in this project.", tiers: {} };
+      for (const t of usedTiers) modelsMap.tiers[t] = tierModels[t] || null;
+      await writeFile(modelsFile, JSON.stringify(modelsMap, null, 2) + "\n", "utf8");
+    }
 
-  // AGENTS.md (Phase 3.5)
-  await writeFile(agentsMd, generateAgentsMd(sel, reg), "utf8");
+    // AGENTS.md (Phase 3.5)
+    await writeFile(agentsMd, generateAgentsMd(sel, reg), "utf8");
+  } else if (sel.mcps.length) {
+    console.error(`note: MCP servers are configured via opencode.json — skipped for ${pTarget} project installs`);
+  }
 
   // manifest
   await writeFile(manifestFile, JSON.stringify(manifest, null, 2) + "\n", "utf8");
 
-  console.log(`installed into ${project}:`);
-  console.log(`  agents:  ${sel.agents.length}  -> .opencode/agents/`);
-  console.log(`  skills:  ${sel.skills.length}  -> .opencode/skills/`);
+  console.log(`installed into ${project} (${pTarget} project target):`);
+  console.log(`  agents:  ${sel.agents.length}  -> ${pCfg.projectAgentsDir}`);
+  console.log(`  skills:  ${sel.skills.length}  -> ${pCfg.projectSkillsDir}`);
   console.log(`  mcps:    ${sel.mcps.length}`);
-  console.log(`  config:  ${relative(project, ocFile)}`);
-  console.log(`  models:  ${relative(project, modelsFile)}`);
-  console.log(`  rules:   ${relative(project, agentsMd)}`);
+  if (ocProject) {
+    console.log(`  config:  ${relative(project, ocFile)}`);
+    console.log(`  models:  ${relative(project, modelsFile)}`);
+    console.log(`  rules:   ${relative(project, agentsMd)}`);
+  }
   if (sel.warnings.length) console.log(`  warnings: ${sel.warnings.length}`);
   for (const w of sel.warnings) console.log(`    - ${w}`);
 }
@@ -567,20 +587,29 @@ function generateAgentsMd(sel, reg) {
 // Phase 3.7: prune manifest-owned entries not in the new set
 export async function doPrune(sel, opts) {
   const project = resolve(opts.project || process.cwd());
-  const ocDir = join(project, ".opencode");
-  const manifestFile = join(ocDir, ".opencode-init.manifest.json");
+  if (opts.target && !TARGET_VALUES.includes(opts.target))
+    die(`invalid target '${opts.target}'. Use: ${TARGET_VALUES.filter((t) => t !== "both").join(", ")}, or both.`, 2);
+  // manifest + dirs resolve from the TARGETS project columns (#454); relative
+  // columns only ever join against the explicit project root here
+  const pTarget = TARGETS[opts.target]?.projectSkillsDir ? opts.target : "opencode";
+  const pCfg = TARGETS[pTarget];
+  if (opts.target && opts.target !== "opencode" && pTarget === "opencode")
+    console.error(`note: --target ${opts.target} has no project destination; --prune uses opencode target.`);
+  const agentsDir = join(project, pCfg.projectAgentsDir);
+  const skillsDir = join(project, pCfg.projectSkillsDir);
+  const manifestFile = join(dirname(agentsDir), ".opencode-init.manifest.json");
   const prev = await readJsonMaybe(manifestFile);
   if (!prev) die("no manifest found — nothing to prune (opencode-init has not installed here).");
   const keep = { agents: new Set(sel.agents), skills: new Set(sel.skills) };
   const removed = [];
   for (const stem of (prev.agents || [])) {
     if (keep.agents.has(stem)) continue;
-    const f = join(ocDir, "agents", `${stem}.md`);
+    const f = join(agentsDir, `${stem}.md`);
     if (existsSync(f)) { await rm(f, { force: true }); removed.push(`agents/${stem}.md`); }
   }
   for (const sname of (prev.skills || [])) {
     if (keep.skills.has(sname)) continue;
-    const d = join(ocDir, "skills", sname);
+    const d = join(skillsDir, sname);
     if (existsSync(d)) { await rm(d, { recursive: true, force: true }); removed.push(`skills/${sname}/`); }
   }
   console.log(`pruned ${removed.length} previously-installed entries not in the new set:`);
@@ -646,13 +675,16 @@ async function cmdAdd(args, opts, reg, depMap) {
     if (opts.target !== undefined)
       die("cannot use --format and --target together (--format is deprecated; use --target)", 2);
     opts.target = opts.format;
-    console.error("warning: --format is deprecated; use --target (values: opencode, claude, agents, both)");
+    console.error(`warning: --format is deprecated; use --target (${TARGET_VALUES.join(", ")})`);
   }
 
   const project = opts.project === true ? process.cwd() : opts.project;
   if (project) {
-    if (opts.target && opts.target !== "opencode")
-      console.error(`note: --target ${opts.target} applies to user scope only; --project uses opencode target.`);
+    const tgt = opts.target || "opencode";
+    if (!TARGET_VALUES.includes(tgt))
+      die(`invalid target '${tgt}'. Use: ${TARGET_VALUES.filter((t) => t !== "both").join(", ")}, or both.`, 2);
+    if (tgt !== "opencode" && !TARGETS[tgt]?.projectSkillsDir)
+      console.error(`note: --target ${tgt} has no project destination; --project uses opencode target.`);
     opts.project = project;
     await writeInstall(sel, opts, reg, depMap);
     return;
@@ -664,7 +696,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const dry = !!opts.dryRun;
   const target = opts.target || "opencode";
   if (!TARGET_VALUES.includes(target))
-    die(`invalid target '${target}'. Use: opencode, claude, agents, or both.`, 2);
+    die(`invalid target '${target}'. Use: ${TARGET_VALUES.filter((t) => t !== "both").join(", ")}, or both.`, 2);
   const doOc = target === "opencode" || target === "both";
   const doClaude = target === "claude" || target === "both";
   const claudeSkipWarning = doClaude && sel.agents.length
@@ -710,6 +742,8 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
         if (cfg.agentMode === "model-injected") {
           const tier = reg.agents.find((a) => a.stem === stem)?.tier || "unassigned";
           content = injectModelLine(content, await agentModel(stem, tier, opts.provider));
+        } else if (cfg.agentMode === "kimi-translate") {
+          content = kimiAgentContent(content, (m) => console.error(`  kimi (${stem}): ${m}`));
         }
         await writeFile(join(cfg.agentsDir, `${stem}.md`), content, "utf8");
         newEntries[stem] = { type: "agent", targets: { ...(newEntries[stem]?.targets || {}), [t]: sha256Hex(content) } };
@@ -744,7 +778,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const manifest = {
     generatedAt: new Date().toISOString(),
     tool: "opencode-skill",
-    agents: (doOc || target === "agents") ? [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort() : (prevManifest.agents || []),
+    agents: (doOc || TARGETS[target]?.agentsDir) ? [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort() : (prevManifest.agents || []),
     skills: [...new Set([...(prevManifest.skills || []), ...sel.skills])].sort(),
     entries,
   };
@@ -876,6 +910,73 @@ function stripModelLine(content) {
   return [...lines.slice(0, 1), ...fmBody, ...lines.slice(closeIdx)].join("\n");
 }
 
+// Kimi tool-name map (#454): opencode permission action → Kimi tool name.
+// Verified against Kimi's tools reference 2026-09-20 — there is no `WebFetch`
+// (the fetch tool is `FetchURL`), and unknown names never match + warn.
+const KIMI_TOOL_MAP = {
+  read: "Read", edit: "Edit", write: "Write", bash: "Bash",
+  glob: "Glob", grep: "Grep", webfetch: "FetchURL", websearch: "WebSearch",
+};
+
+// Translate an opencode agent file's `permissions` array into additive Kimi
+// `tools:` / `disallowedTools:` frontmatter keys (#454). Insertion is at column
+// 0 immediately after the opening `---` (injectModelLine precedent — never
+// key-scanning, a `>-` folded scalar would corrupt otherwise). All existing
+// keys (incl. `permissions`, which Kimi ignores) and the body stay verbatim.
+// Deny wins on action conflicts; unmappable rules are dropped via warn().
+function kimiAgentContent(content, warn) {
+  const lines = content.split(/\r?\n/);
+  if (lines[0]?.trim() !== "---") {
+    warn("no frontmatter — installed verbatim, permissions not translated");
+    return content;
+  }
+  let closeIdx = -1;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() === "---") { closeIdx = i; break; }
+  }
+  if (closeIdx === -1) {
+    warn("unterminated frontmatter — installed verbatim, permissions not translated");
+    return content;
+  }
+  if (/^(tools|disallowedTools):/m.test(lines.slice(1, closeIdx).join("\n"))) {
+    warn("frontmatter already declares tools/disallowedTools — skipping permission translation");
+    return content;
+  }
+  // minimal YAML subset parse of the permissions list:
+  //   - action: <name> / resource: <glob> / effect: <allow|deny|ask>
+  const rules = [];
+  let cur = null;
+  for (let i = 1; i < closeIdx; i++) {
+    const a = lines[i].match(/^\s*-\s*action:\s*"?([\w:-]+)"?/);
+    if (a) { cur = { action: a[1] }; rules.push(cur); continue; }
+    if (!cur) continue;
+    const r = lines[i].match(/^\s+resource:\s*["']?([^"']+?)["']?\s*$/);
+    if (r) cur.resource = r[1];
+    const e = lines[i].match(/^\s+effect:\s*"?(\w+)"?/);
+    if (e) cur.effect = e[1];
+  }
+  const tools = new Set(), denied = new Set(), dropped = new Set();
+  for (const r of rules) {
+    if (!r.action || !r.effect) continue;
+    const tool = KIMI_TOOL_MAP[r.action];
+    const global = r.resource === "*";
+    const mcpGlob = typeof r.resource === "string" && r.resource.startsWith("mcp:");
+    if (!tool || (!global && !mcpGlob) || (r.effect !== "allow" && r.effect !== "deny")) {
+      dropped.add(`${r.action}(${r.resource ?? "*"})`);
+      continue;
+    }
+    if (r.effect === "deny") denied.add(mcpGlob ? "mcp__*" : tool);
+    else if (global) tools.add(tool); // allow on mcp:* is the default in Kimi — no key needed
+  }
+  for (const t of denied) tools.delete(t); // deny wins
+  if (dropped.size) warn(`no Kimi equivalent — dropped: ${[...dropped].sort().join(", ")}`);
+  if (!tools.size && !denied.size) return content;
+  const insert = [];
+  if (tools.size) insert.push("tools:", ...[...tools].sort().map((t) => `  - ${t}`));
+  if (denied.size) insert.push("disallowedTools:", ...[...denied].sort().map((t) => `  - ${t}`));
+  return [...lines.slice(0, 1), ...insert, ...lines.slice(1)].join("\n");
+}
+
 async function cmdRemove(args, opts) {
   const name = args[0];
   if (!name) die("remove: specify a skill or agent name.", 2);
@@ -998,6 +1099,8 @@ async function cmdUpdate(args, opts) {
         if (cfg.agentMode === "model-injected") {
           const tier = reg.agents.find((a) => a.stem === name)?.tier || "unassigned";
           wouldContent = injectModelLine(agent.content, await agentModel(name, tier, opts.provider));
+        } else if (cfg.agentMode === "kimi-translate") {
+          wouldContent = kimiAgentContent(agent.content, () => {}); // warnings already surfaced at install
         } else {
           wouldContent = agent.content; // shared target: verbatim, unpinned (#453)
         }
@@ -1105,6 +1208,10 @@ async function main() {
   }, reg, depMap);
 
   const project = resolve(opts.project || process.cwd());
+  // preset/init flow installs the opencode target only (#454); kimi project
+  // scope goes through `add --project --target kimi`
+  if (opts.target && opts.target !== "opencode")
+    die(`--target ${opts.target} is not supported here — preset/project installs use the opencode target (use 'add --project --target ${opts.target}' instead).`, 2);
   const globalDeploy = await detectGlobalDeploy();
 
   await summarize(sel, project, globalDeploy);
@@ -1220,6 +1327,9 @@ SCOPE
   opencode auto-discovers them — no opencode.json touch unless --permit.
   Agents target (--target agents): cross-tool shared dir ~/.agents/{agents,skills}/
   (scanned by Kimi Code and pi; files are verbatim, agents stay model-unpinned).
+  Kimi target (--target kimi): Kimi Code native dirs ~/.kimi-code/{agents,skills}/
+  (user) and .kimi-code/{agents,skills}/ (project); permissions translate additively
+  to tools/disallowedTools (lossy — unmapped rules dropped with a warning).
   Project scope (--project): writes .opencode/{agents,skills}/ + opencode.json + models.json + AGENTS.md.
 
 FLAGS
@@ -1236,7 +1346,7 @@ FLAGS
   --prune              remove opencode-init-owned entries absent from the new set
   --permit             (user scope) backup opencode.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
-  --target <t>         (add) install target: opencode (default), claude, agents (shared ~/.agents/), or both (--format is a deprecated alias)
+  --target <t>         (add) install target: opencode (default), claude, agents (shared ~/.agents/), kimi, or both (--format is a deprecated alias)
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and

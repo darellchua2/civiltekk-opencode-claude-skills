@@ -79,10 +79,10 @@ assert 'code-review-subagent' in m['agents'], m['agents']
   [ ! -e "${HOME}/.agents/skills/tdd-workflow-skill" ]
 }
 
-@test "agents target: invalid --target value dies listing all four" {
+@test "agents target: invalid --target value dies listing all five" {
   run $INIT add tdd-workflow-skill --target bogus --yes
   [ "$status" -ne 0 ]
-  echo "$output" | grep -q "Use: opencode, claude, agents, or both."
+  echo "$output" | grep -q "Use: opencode, claude, agents, kimi, or both."
 }
 
 @test "update: agents-target entry is idempotent without source mutation" {
@@ -120,7 +120,7 @@ EOF
   TMP_PROJ="$(mktemp -d)"
   run $INIT add tdd-workflow-skill --project "$TMP_PROJ" --target agents --yes
   [ "$status" -eq 0 ]
-  echo "$output" | grep -q "applies to user scope only"
+  echo "$output" | grep -q "has no project destination"
   [ -d "$TMP_PROJ/.opencode/skills/tdd-workflow-skill" ]
   [ ! -e "${HOME}/.agents" ]
   rm -rf "$TMP_PROJ"
