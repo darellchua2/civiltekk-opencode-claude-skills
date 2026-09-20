@@ -80,18 +80,21 @@ Cross-module consumers exist (tests, docs, bin) → architecture review selected
 
 ### Phase 4: tests + docs + gates
 
-- [ ] **4.1** Add bats coverage for the `agents` target: happy path (skills + agents), dry-run preview, update drift on a shared copy, remove probing — mirroring the 1.1 HOME-isolation mechanism.
+- [x] **4.1** Add bats coverage for the `agents` target: happy path (skills + agents), dry-run preview, update drift on a shared copy, remove probing — mirroring the 1.1 HOME-isolation mechanism.
     — **Why:** the AC requires lifecycle coverage; untested lifecycle code is where the probing regressions live.
     — **Done when:** new bats file green locally; no writes outside the isolated `$HOME`; includes an assert that `--project --target agents` keeps the existing note-and-opencode-downgrade (no `~/.agents` write, no new error).
     — **Consumers affected:** CI.
-- [ ] **4.2** Docs sync: README install section (new `agents` target + which tools read `~/.agents/`), `--help` text, root `AGENTS.md` §Repository Purpose target list.
+    — **Done:** tests/agents_target.bats — 6 tests (skill verbatim + manifest, agent unpinned, dry-run preview + no writes, source-mutation re-copy without model injection, tri-target remove wipe, --project note-and-downgrade with no ~/.agents write), all green; files: tests/agents_target.bats; fixes: none
+- [x] **4.2** Docs sync: README install section (new `agents` target + which tools read `~/.agents/`), `--help` text, root `AGENTS.md` §Repository Purpose target list.
     — **Why:** repo documentation-sync rules; undocumented installer surface breaks the repo's own contract (PLAN-418 precedent).
     — **Done when:** case-insensitive sweep of target-enumeration spellings (`rg -i 'opencode, claude|--target' README.md AGENTS.md installer/init.mjs`) shows all four values consistently, including the `init.mjs:652` die message; the README `agents`-target section cites the Kimi/pi doc URLs from the ticket and notes the Kimi skill-body placeholder-expansion caveat.
     — **Consumers affected:** users, docs readers.
-- [ ] **4.3** Full local gate: `bats tests/init.bats tests/update.bats tests/parse_arguments.bats` + new suite + `node --test tests/*.test.ts` + `bats tests/test_pack_permissions.bats tests/test_count_drift.bats`; record the `GATE <short-sha>` memo line for the pushed SHA.
+    — **Done:** README target table gained the `agents` row (Kimi/pi citations + placeholder caveat) + example; AGENTS.md §Repository Purpose extended; sweep confirms die message carries all four values; files: README.md, AGENTS.md; fixes: none
+- [x] **4.3** Full local gate: `bats tests/init.bats tests/update.bats tests/parse_arguments.bats` + new suite + `node --test tests/*.test.ts` + `bats tests/test_pack_permissions.bats tests/test_count_drift.bats`; record the `GATE <short-sha>` memo line for the pushed SHA.
     — **Why:** pipeline gate contract — the PR step cites this memo as its verification evidence.
     — **Done when:** every suite green; memo line emitted.
     — **Consumers affected:** code review (Step 9), PR creation (Step 10).
+    — **Done:** all suites green (55 bats core+new ok, node --test exit 0, pack/drift bats exit 0); files: none (verification); fixes: none
 
 ## Technical Notes
 

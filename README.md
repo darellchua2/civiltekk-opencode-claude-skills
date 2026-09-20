@@ -234,6 +234,9 @@ Skills follow the [Agent Skills](https://agentskills.io) open standard — the s
 # G. Install to Claude Code (~/.claude/skills/<name>/SKILL.md)
 npx github:darellchua2/opencode-config-template add solid-principles-skill --target claude
 
+# Install to the cross-tool shared dir (~/.agents/) — read by Kimi Code and pi
+npx github:darellchua2/opencode-config-template add solid-principles-skill --target agents
+
 # Install to both opencode and Claude Code
 npx github:darellchua2/opencode-config-template add solid-principles-skill --target both
 ```
@@ -242,6 +245,7 @@ npx github:darellchua2/opencode-config-template add solid-principles-skill --tar
 |--------|-------------|-------|
 | `opencode` (default) | `~/.config/opencode/{skills,agents}/` | Full opencode compat (model injection, strict-allowlist detection) |
 | `claude` | `~/.claude/skills/<name>/` | Skills only — agents are opencode-specific and skipped with a warning; `model:` lines stripped (Claude uses its own model selection) |
+| `agents` | `~/.agents/{skills,agents}/` | Cross-tool shared dir ([Kimi Code](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/agents.html) scans `~/.agents/agents/` + `~/.agents/skills/`; [pi](https://github.com/badlogic/pi-skills) scans `~/.agents/skills/`). Files install verbatim; agents stay model-unpinned. Note: Kimi expands shell-style placeholders (`$0`, `$1`, declared `$vars`) in skill bodies — skills with shell snippets carry the same exposure they already have in Claude Code |
 | `both` | Both paths above | Agents install to opencode only; skills go to both |
 
 > `--format` is a deprecated alias for `--target` — still accepted (values unchanged), prints a warning.
