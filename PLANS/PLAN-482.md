@@ -28,15 +28,17 @@
 
 ### Phase 1: Evidence
 
-- [ ] **1.1** Run the v2-name enforcement probe as TWO cells in one throwaway project (`/tmp/opencode/probe-v2/`): (a) top-level — temp agent `probe-shell-v2.md` (mode: primary, `action: shell, resource: '*', effect: deny`), `timeout 120 opencode run --agent probe-shell-v2` instructed to `echo probe-ok`; (b) child-spawn — a top-level run whose parent prompt instructs it to spawn a second probe agent (mode: subagent, same v2 deny rule) that runs `echo probe-ok`; record BOTH verdict lines (top-level ENFORCED/NOT_ENFORCED, child-spawn ENFORCED/NOT_ENFORCED); delete the temp project after
+- [x] **1.1** Run the v2-name enforcement probe as TWO cells in one throwaway project (`/tmp/opencode/probe-v2/`): (a) top-level — temp agent `probe-shell-v2.md` (mode: primary, `action: shell, resource: '*', effect: deny`), `timeout 120 opencode run --agent probe-shell-v2` instructed to `echo probe-ok`; (b) child-spawn — a top-level run whose parent prompt instructs it to spawn a second probe agent (mode: subagent, same v2 deny rule) that runs `echo probe-ok`; record BOTH verdict lines (top-level ENFORCED/NOT_ENFORCED, child-spawn ENFORCED/NOT_ENFORCED); delete the temp project after
     — **Why:** the incident and every deny rule's deployed purpose are child-spawn-shaped; a top-level ENFORCED verdict alone cannot distinguish "alias fixed" from "child-session rules wholesale broken upstream" (#50149 family) — the child cell is the only one that licenses the restoration claim
     — **Done when:** both verdict lines recorded under Technical Notes → Probe Evidence
     — **Consumers affected:** LEARNINGS entry (4.2), ticket close-out, #481 decision context
+    — **Done:** Cell B (top-level `opencode run`): NOT APPLICABLE — the CLI session shape is Code Mode with no shell tool at all (`Unknown tool 'shell'`); denial unmeasurable there. Cell C (child-spawn, agent harness): **ENFORCED** — v2-named `shell` deny removed the tool from the child session's toolset entirely (tool-list filtering; probe could not execute). Temp project + probe agent deleted; main checkout verified clean. files: /tmp only (removed); fixes: none
 
-- [ ] **1.2** Confirm the complete consumer inventory with a widened sweep: form-insensitive pattern `action:?\s*["']?\s*(bash|task)` across `agents/ skills/ installer/ deploy/ tests/` PLUS repo-root `*.md` and `opencode_app/`, and string-key `["']task["']` / `["']bash["']` across `installer/ deploy/ tests/`; exclusions: bash-binary detection (`deploy/setup.sh:271-284`, `deploy/setup.ps1:1341`) and migration-narrative mentions (`agents/opencode-v2-migration-subagent.md:117-118` documents the v1→v2 translation itself — keep verbatim)
+- [x] **1.2** Confirm the complete consumer inventory with a widened sweep: form-insensitive pattern `action:?\s*["']?\s*(bash|task)` across `agents/ skills/ installer/ deploy/ tests/` PLUS repo-root `*.md` and `opencode_app/`, and string-key `["']task["']` / `["']bash["']` across `installer/ deploy/ tests/`; exclusions: bash-binary detection (`deploy/setup.sh:271-284`, `deploy/setup.ps1:1341`) and migration-narrative mentions (`agents/opencode-v2-migration-subagent.md:117-118` documents the v1→v2 translation itself — keep verbatim)
     — **Why:** value-level references (`ruleRes("task")`) evade literal greps, and directory-scoped sweeps miss repo-root docs that teach the spelling (README.md:263, opencode_app/README.md:183) — both misses already happened in pre-plan scoping
     — **Done when:** inventory equals the Technical Notes list and the sweep surfaces no additional file
     — **Consumers affected:** scope of every Phase 2/3 step
+    — **Done:** form-insensitive sweep run — 34 agent files (incl. body examples in opencode-tooling/pr-workflow/discovery/code-review), README.md + opencode_app/README.md (1 each), skills/agent-introspection-debugging-skill (1), plus string-key refs (build-registry.mjs:182, init.mjs maps) from the pre-plan grep — inventory confirmed, zero new files. Meta-doc carve-outs recorded for 2.4: PLANS/PLAN-482.md and the LEARNINGS entries documenting this change legitimately quote the old names. files: none; fixes: none
 
 ### Phase 2: Source rename
 
@@ -106,7 +108,12 @@
 
 ## Technical Notes
 
-**Probe Evidence (pre-plan, session ses_f419ebf5effeFwc4mEhu0t2cP7):** spawned `code-review-subagent` (frontmatter `action: bash, resource: '*', effect: deny` at `agents/code-review-subagent.md:25-27`) instructed to run `git status --porcelain` — its tool is named `shell` and the command executed (exit 0). VERDICT: v1 `bash` deny inert (child-spawn shape). The 1.1 probe pair decides whether v2-named rules enforce at runtime on v2.0.11 in either session shape, or whether child-session rule application is wholesale-broken upstream (tie to anomalyco/opencode#50149). 1.1 verdicts recorded here at execution time.
+**Probe Evidence (all cells recorded):**
+- **Cell A** (v1 `bash` name, child-spawn): **INERT** — pre-plan, session ses_f419ebf5effeFwc4mEhu0t2cP7: `code-review-subagent` (frontmatter `action: bash deny`) had its `shell` tool present and it executed `git status --porcelain` (exit 0).
+- **Cell B** (v2 `shell` name, top-level `opencode run --agent`): **NOT APPLICABLE** — the CLI session runs Code Mode with no shell tool in the catalog (`Unknown tool 'shell'`); enforcement unmeasurable in that shape.
+- **Cell C** (v2 `shell` name, child-spawn via agent harness): **ENFORCED** — session ses_f41753befffeWYiwlqTFFLIoFk: probe subagent (mode: subagent, `action: shell, resource: '*', effect: deny`) received NO shell/bash tool in its tool list at all (filtered away); command could not be attempted. Enforcement mechanism = tool-list filtering.
+
+**Attribution (per Mode R ruling 2):** child-spawn cell ENFORCED with the v2 name vs INERT with the v1 name, same harness, same shape → the rename restores subagent deny enforcement on opencode v2.0.11. Claim licensed for 4.2 LEARNINGS and ticket close-out. 1.1 verdicts recorded at execution time (above).
 
 **Inventory (from 1.2, pre-confirmed + review-widened):**
 - `agents/*.md` — 34 files, `action: bash` + `action: task` occurrences (incl. body fenced examples in `opencode-tooling-subagent.md:173-185,363-379`)
@@ -129,3 +136,9 @@
 - **Post-rename enforcement may still be broken upstream** (child-session rule application). Mitigation: 1.1's child-spawn cell records the verdict; LEARNINGS and ticket wording claim only what that cell proved.
 - **kilo_target.bats pins emitted permission keys** (:29 `task: deny`, :44 `bash: ask`). Mitigation: they stay green only with 3.3 normalization — they are the regression tripwire; update expectations only if semantics change, in the same commit.
 - **Transient v2-sources/v1-lookup state.** Mitigation: 4.3 lands 2.x + 3.1 atomically.
+
+| Gate | Phase 1 (evidence-only: no source modified) |
+
+|------|-------------|
+
+`GATE 5cf1a4e lint=n.a. typecheck=n.a. build=n.a. unit=n.a. e2e=n.a` — evidence phase; no code touched.
