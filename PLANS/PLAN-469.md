@@ -70,4 +70,4 @@ None — standalone. Part of epic #464.
 
 ## Gate Trace
 
-GATE (push head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 433 ok / 0 fail incl. 4 new parity pins; node --test 30 pass / 0 fail; scope = deploy/setup.sh + tests/test_skills_only_parity.bats; ps1 untouched)
+GATE (fix-round head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 433 ok / 0 fail; node --test 30 pass / 0 fail; review round 1: 1 WARN fixed — setx dry-run log redacted the secret value (name-only, house redaction rule); 4 NOTEs: success-log truthfulness + ps1 window pin deferred as #470 riders, others documented; round-2 re-review not required, single-line mechanical fix; scope = deploy/setup.sh + tests/test_skills_only_parity.bats; ps1 untouched)

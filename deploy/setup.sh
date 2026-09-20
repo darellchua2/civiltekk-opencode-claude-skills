@@ -3591,7 +3591,7 @@ setx_env() {
     # Dry-run safe (#469 class sweep): setx persists a user env var — never
     # during a preview.
     if [ "$DRY_RUN" = true ]; then
-        log_info "[DRY-RUN] Would set ${key}=${value} via setx"
+        log_info "[DRY-RUN] Would set ${key} via setx (value suppressed)"
         return 0
     fi
     setx "$key" "$value" > /dev/null 2>&1

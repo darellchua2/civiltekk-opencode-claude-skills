@@ -17,6 +17,24 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### Gate success-log with the dry branch (early-return shape for new run_cmd gates)
+
+- **Category**: pattern
+- **File**: `patterns/gate-success-log-with-the-dry-branch.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: unconditional log_success after run_cmd claims completion in dry-run — new gates use the register_zai_auth early-return shape; legacy sites sweep into #470 (#469 review)
+- **Date**: 2026-09-20
+
+### Dry-run preview logs must not interpolate secret values
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/dry-run-logs-interpolating-secrets.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: new run_cmd-style gates copy "Would set K=V" shapes — fine for ports, a key leak for secrets; preview logs interpolate names only, values redacted (#469 review WARN)
+- **Date**: 2026-09-20
+
 ### Conditionally-armed detectors need an always-armed complement
 
 - **Category**: pattern
