@@ -14,7 +14,7 @@ permissions:
   - action: edit
     resource: '*'
     effect: deny
-  - action: bash
+  - action: shell
     resource: '*'
     effect: deny
   - action: webfetch

@@ -42,30 +42,35 @@
 
 ### Phase 2: Source rename
 
-- [ ] **2.1** Rename in all 34 `agents/*.md`: `action: bash` → `action: shell`; `action: task` → `action: subagent` (includes agent-body fenced examples, e.g. `opencode-tooling-subagent.md:173-185,363-379`)
+- [x] **2.1** Rename in all 34 `agents/*.md`: `action: bash` → `action: shell`; `action: task` → `action: subagent` (includes agent-body fenced examples, e.g. `opencode-tooling-subagent.md:173-185,363-379`)
     — **Why:** opencode v2 exposes the shell tool under action `shell` and delegation under `subagent`; the v1 rules are proven inert (probe, session ses_f419ebf5effeFwc4mEhu0t2cP7: tool `shell` executed despite `action: bash deny`)
     — **Done when:** form-insensitive grep over `agents/` (pattern from 1.2) returns only the excluded migration-narrative file
     — **Consumers affected:** opencode runtime, build-registry.mjs, init.mjs translators, test_autoresearch_skills.bats
+    — **Done:** sed rename across 34 agents/*.md (incl. body fenced examples); form-insensitive grep over agents/ returns only the excluded migration-narrative file; files: agents/*.md; fixes: none
 
-- [ ] **2.2** Update `tests/test_autoresearch_skills.bats:127` (`has('bash','*','deny')` → `has('shell','*','deny')`) plus any test-name/prose literals in that file referencing the old action
+- [x] **2.2** Update `tests/test_autoresearch_skills.bats:127` (`has('bash','*','deny')` → `has('shell','*','deny')`) plus any test-name/prose literals in that file referencing the old action
     — **Why:** the suite pins the frontmatter shape; leaving it red-fails the gate immediately after 2.1
     — **Done when:** no assertion-key `bash` references remain in the file
     — **Consumers affected:** CI bats gate
+    — **Done:** assertion key bash→shell at tests/test_autoresearch_skills.bats:127; no assertion-key bash refs remain; files: tests/test_autoresearch_skills.bats; fixes: none
 
-- [ ] **2.3** Update `skills/agent-introspection-debugging-skill/SKILL.md:42`: `(action: task)` → `(action: subagent)`
+- [x] **2.3** Update `skills/agent-introspection-debugging-skill/SKILL.md:42`: `(action: task)` → `(action: subagent)`
     — **Why:** docs must not re-teach the inert v1 name
     — **Done when:** form-insensitive grep over `skills/` returns 0 matches
     — **Consumers affected:** skill readers
+    — **Done:** doc mentions updated at SKILL.md:42 (action: subagent) and :46 (shell: deny row); files: skills/agent-introspection-debugging-skill/SKILL.md; fixes: none
 
-- [ ] **2.4** Zero-remaining sweep: repo-wide form-insensitive grep `action:?\s*["']?\s*(bash|task)` (excluding `.git`, `node_modules`, and the 1.2 exclusion list) = 0 matches
+- [x] **2.4** Zero-remaining sweep: repo-wide form-insensitive grep `action:?\s*["']?\s*(bash|task)` (excluding `.git`, `node_modules`, and the 1.2 exclusion list) = 0 matches
     — **Why:** rename-completeness proof cited in the gate memo; the form-insensitive pattern is required — the plain `action: task` form never matches the quoted `action:"task"` spelling and would pass vacuously
     — **Done when:** grep output is empty
     — **Consumers affected:** none (verification only)
+    — **Done:** form-insensitive sweep excluding carve-outs (migration narrative, PLANS/PLAN-482.md, LEARNINGS/) = 0 matches (grep exit 1); files: none; fixes: none
 
-- [ ] **2.5** Update the two README teaching sites: `README.md:263` and `opencode_app/README.md:183`: `action:"task"` → `action:"subagent"`
+- [x] **2.5** Update the two README teaching sites: `README.md:263` and `opencode_app/README.md:183`: `action:"task"` → `action:"subagent"`
     — **Why:** both teach readers to write present-tense config with the proven-inert v1 name — the exact bug class AC2's "every in-repo consumer" covers (Mode R ruling 1; LEARNINGS frontmatter-shape-change-blast-radius class 5)
     — **Done when:** form-insensitive grep over both files returns 0 matches (aside from unrelated prose)
     — **Consumers affected:** readers configuring subagent allowlists
+    — **Done:** README.md:263 and opencode_app/README.md:183 teach action:"subagent" now; files: README.md, opencode_app/README.md; fixes: none
 
 ### Phase 3: Installer consumers
 
@@ -142,3 +147,5 @@
 |------|-------------|
 
 `GATE 5cf1a4e lint=n.a. typecheck=n.a. build=n.a. unit=n.a. e2e=n.a` — evidence phase; no code touched.
+
+`GATE 5cf1a4e+p2 lint=n.a. typecheck=n.a. build=n.a. unit=t(16/16: autoresearch_skills, reviewer_no_writes) e2e=n.a` — frontmatter suites green; translator suites deferred to Phase 3 gate where their fixes land (push deferred with them per atomicity rule).

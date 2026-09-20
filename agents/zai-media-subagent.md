@@ -21,7 +21,7 @@ permissions:
   - action: grep
     resource: '*'
     effect: allow
-  - action: bash
+  - action: shell
     resource: '*'
     effect: ask
   - action: webfetch

@@ -20,7 +20,7 @@ permissions:
   - action: grep
     resource: '*'
     effect: allow
-  - action: bash
+  - action: shell
     resource: '*'
     effect: deny
   - action: question
@@ -32,16 +32,16 @@ permissions:
   - action: websearch
     resource: '*'
     effect: allow
-  - action: task
+  - action: subagent
     resource: '*'
     effect: deny
-  - action: task
+  - action: subagent
     resource: explore
     effect: allow
-  - action: task
+  - action: subagent
     resource: general
     effect: allow
-  - action: task
+  - action: subagent
     resource: image-analyzer-subagent
     effect: allow
   - action: skill
@@ -170,19 +170,19 @@ permissions:
   - action: edit
     resource: '*'
     effect: allow | ask | deny
-  - action: bash
+  - action: shell
     resource: '*'
     effect: ask
-  - action: bash
+  - action: shell
     resource: 'git status*'
     effect: allow
   - action: webfetch
     resource: '*'
     effect: deny
-  - action: task
+  - action: subagent
     resource: '*'
     effect: deny
-  - action: task
+  - action: subagent
     resource: 'reviewer-*'
     effect: allow
 hidden: true
@@ -360,23 +360,23 @@ When creating agents that need to spawn other agents, always configure `permissi
 **Common patterns:**
 ```yaml
 permissions:
-  - action: task
+  - action: subagent
     resource: '*'
     effect: allow                                          # Full access to all subagents
   # — or selective access: —
-  - action: task
+  - action: subagent
     resource: '*'
     effect: deny                                           # Deny all by default (first)
-  - action: task
+  - action: subagent
     resource: explore
     effect: allow                                          # Built-in explore
-  - action: task
+  - action: subagent
     resource: general
     effect: allow                                          # Built-in general
-  - action: task
+  - action: subagent
     resource: 'linting-subagent'
     effect: allow                                          # Specific custom subagent
-  - action: task
+  - action: subagent
     resource: 'reviewer-*'
     effect: allow                                          # Glob pattern matching
 ```

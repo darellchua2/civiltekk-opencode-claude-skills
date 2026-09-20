@@ -8,7 +8,7 @@ permissions:
   - action: edit
     resource: '*'
     effect: allow
-  - action: bash
+  - action: shell
     resource: '*'
     effect: allow
   - action: webfetch
@@ -23,10 +23,10 @@ permissions:
   - action: skill
     resource: unslop-skill
     effect: allow
-  - action: task
+  - action: subagent
     resource: '*'
     effect: deny
-  - action: task
+  - action: subagent
     resource: pptx-specialist-subagent
     effect: allow
 category: business

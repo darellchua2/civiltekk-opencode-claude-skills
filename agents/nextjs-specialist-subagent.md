@@ -21,7 +21,7 @@ permissions:
   - action: grep
     resource: '*'
     effect: allow
-  - action: bash
+  - action: shell
     resource: '*'
     effect: deny
   - action: question
@@ -33,7 +33,7 @@ permissions:
   - action: websearch
     resource: '*'
     effect: allow
-  - action: task
+  - action: subagent
     resource: '*'
     effect: deny
   - action: skill

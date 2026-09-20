@@ -15,7 +15,7 @@ permissions:
   - action: edit
     resource: '*'
     effect: allow
-  - action: bash
+  - action: shell
     resource: '*'
     effect: allow
   - action: webfetch
@@ -24,7 +24,7 @@ permissions:
   - action: websearch
     resource: '*'
     effect: allow
-  - action: task
+  - action: subagent
     resource: '*'
     effect: allow
   - action: skill

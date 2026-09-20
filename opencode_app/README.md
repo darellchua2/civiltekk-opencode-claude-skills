@@ -180,7 +180,7 @@ The Dockerfile does not install LibreOffice; these skills need the image extende
 
 ## Subagent Chaining
 
-OpenCode supports subagent-to-subagent delegation via the Task tool, controlled by the subagent-spawn permission rules in each agent `.md` frontmatter (`permissions` array, `action:"task"` rules). Key points:
+OpenCode supports subagent-to-subagent delegation via the Task tool, controlled by the subagent-spawn permission rules in each agent `.md` frontmatter (`permissions` array, `action:"subagent"` rules). Key points:
 
 - **Task tool** (subagent spawning) and **Skill tool** (skill loading) are separate systems with separate permissions
 - Agent name = filename minus `.md` (e.g., `code-review-subagent.md` -> `code-review-subagent`)

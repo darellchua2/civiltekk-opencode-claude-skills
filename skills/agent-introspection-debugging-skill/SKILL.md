@@ -39,9 +39,9 @@ For each needed tool: allowed in `permissions`? Any `deny` overriding it? `task`
 |-------|---------|-----|
 | Missing `read` allow | Can't read files | Add `{action: read, effect: allow}` |
 | Missing `glob` allow | Can't find files | Add glob allow rule |
-| Missing `task` targets | Can't spawn subagents | Allow the subagent names (action: task) |
+| Missing `subagent` targets | Can't spawn subagents | Allow the subagent names (action: subagent) |
 | `edit: deny` but must edit | Reads, never modifies | Allow edit (scoped to task paths) |
-| `bash: deny` on build agent | Can't run commands | Allow bash with caution |
+| `shell: deny` on build agent | Can't run commands | Allow shell with caution |
 | Skill name mismatch | Skill won't load | Match exact directory name |
 
 ## Step 4: Behavior Analysis
