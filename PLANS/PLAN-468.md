@@ -65,8 +65,9 @@ None — standalone data fix. #472 builds the freshness automation on top.
 
 ## Risks & Mitigation
 - **Pin-generation choice is a judgment call** (opus-5/sonnet-5/gpt-5.6): mitigated by tier semantics (fast/docs = newest small model) and every chosen id being verified present in the live catalog; users can override via models.json (documented flow).
+- **Resolved by Mode R relay (round 1)**: primary-tier semantics = flagship BASE id of the established line, NOT newest-release-anything — gpt-5.6 and claude-opus-5 are correct; `gpt-6-astra` / `claude-fable-5-1` are codename-suffixed, unpositioned lines (models.dev lore empty). Revisit when a plain `gpt-6` / `claude-opus-5-1` ships or models.dev gains positioning metadata.
 - **openai array is large (48 ids)**: harmless — membership list only; the guard uses it for validation, never selection.
 
 ## Gate Trace
 
-GATE (pending-push) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 413 ok / 0 fail incl. 4 new pin checks; node --test 30 pass / 0 fail; scope = installer/provider-models.json, installer/provider-presets.json, deploy/models.example.json, tests/test_provider_pins.bats)
+GATE (fix-round head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 414 ok / 0 fail — 5 pin checks after the malformed-shape fixture; node --test 30 pass / 0 fail; review rounds: 1 WARN fixed (fail-loudly shapes), 2 rounds, round-2 verdict merge-ready; Mode R gap confirmed in Risks)

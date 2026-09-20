@@ -27,10 +27,20 @@ const [modelsFile, presetsFile, tierMapFile] = process.argv.slice(1);
 const m = JSON.parse(fs.readFileSync(modelsFile, "utf8"));
 const pp = JSON.parse(fs.readFileSync(presetsFile, "utf8"));
 const presets = pp.presets || pp;
-const LOCAL = new Set(process.env.LOCAL_PRESETS.split(/\s+/).filter(Boolean));
+const LOCAL = new Set((process.env.LOCAL_PRESETS || "").split(/\s+/).filter(Boolean));
 const broken = [], uncovered = [];
 for (const [name, p] of Object.entries(presets)) {
-  if (!p || typeof p !== "object" || !p.primary) continue;
+  if (name.startsWith("$")) continue;
+  if (!p || typeof p !== "object" || Array.isArray(p)) {
+    broken.push(`${name}: preset entry is not an object — cannot check pins`);
+    continue;
+  }
+  if (!p.primary) {
+    // A preset object without .primary escapes every check below — fail loudly
+    // instead (the claude-haiku-4-6 class of silent green).
+    broken.push(`${name}: preset object has no "primary" pin`);
+    continue;
+  }
   const pins = [p.primary, ...Object.values(p.tiers || {})];
   const prefixes = new Set(pins.map(pin => pin.slice(0, pin.indexOf("/"))));
   const covered = [...prefixes].every(pfx => Array.isArray(m[pfx]));
@@ -62,11 +72,13 @@ if (all.length) throw new Error("unresolvable pins:\n  " + all.join("\n  "));
 '
 
 @test "provider_models_covers_all_remote_presets_with_nonempty_arrays" {
+  # Derived, not enumerated (derived-consistency-pins): every real provider
+  # key in provider-models.json must be a non-empty array — a future provider
+  # added to the data file is covered automatically.
   node -e '
     const m = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
-    for (const p of ["zai-coding-plan", "zai-custom", "anthropic", "openai"]) {
-      if (!Array.isArray(m[p]) || m[p].length === 0) throw new Error("missing/empty provider array: " + p);
-    }
+    const bad = Object.keys(m).filter(k => !k.startsWith("$") && !(Array.isArray(m[k]) && m[k].length > 0));
+    if (bad.length) throw new Error("missing/empty provider arrays: " + bad.join(", "));
   ' "$MODELS"
 }
 
@@ -83,10 +95,31 @@ if (all.length) throw new Error("unresolvable pins:\n  " + all.join("\n  "));
   # the checker must catch it (claude-haiku-4-6 is not in the catalog).
   local dir
   dir="$(mktemp -d)"
+  trap 'rm -rf "$dir"' EXIT
   cp "$MODELS" "$dir/models.json"
   sed 's/claude-haiku-4-5/claude-haiku-4-6/g' "$PRESETS" > "$dir/presets.json"
   run env LOCAL_PRESETS="$LOCAL_PRESETS" node -e "$PIN_CHECK" "$dir/models.json" "$dir/presets.json"
-  rm -rf "$dir"
   [ "$status" -ne 0 ]
   [[ "$output" == *"claude-haiku-4-6"* ]]
+}
+
+@test "malformed_preset_shapes_fail_the_check" {
+  # Committed fixture for the fail-loudly branches (round-2 review): a
+  # primary-less preset object must be reported, never silently skipped —
+  # that silent-skip is exactly what let the historical breakage through.
+  local dir
+  dir="$(mktemp -d)"
+  trap 'rm -rf "$dir"' EXIT
+  cp "$MODELS" "$dir/models.json"
+  cat > "$dir/presets.json" <<'JSON'
+{
+  "zai": { "primary": "zai-coding-plan/glm-5.3", "tiers": {} },
+  "broken-shape": { "label": "no primary key here" },
+  "not-an-object": "whoops"
+}
+JSON
+  run env LOCAL_PRESETS="$LOCAL_PRESETS" node -e "$PIN_CHECK" "$dir/models.json" "$dir/presets.json"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *'broken-shape: preset object has no "primary" pin'* ]]
+  [[ "$output" == *"not-an-object: preset entry is not an object"* ]]
 }
