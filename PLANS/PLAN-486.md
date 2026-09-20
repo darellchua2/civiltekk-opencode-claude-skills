@@ -6,10 +6,10 @@
 
 ## Acceptance Criteria
 
-- [ ] Guard added: full-profile allow resources validated against root `skills/` ∪ `opencode_app/.opencode/skills/` (extend `tests/skill_profiles.bats`) — genuinely dead rules fail CI
-- [ ] Decision recorded: keep the app-scoped skill + allow as a documented second surface (default, per #361's intent) vs relocate to root `skills/`
-- [ ] Count prose made surface-explicit where cited (README "106 allows", `LEARNINGS/decisions/skill-permission-allowlist.md`, setup.sh/ps1 "106-allow" comments) — savings derivation adjusted or annotated
-- [ ] LEARNINGS entry: two-skill-surfaces count conflation (extends the `delta-derived-from-single-surface` family)
+- [x] Guard added: full-profile allow resources validated against root `skills/` ∪ `opencode_app/.opencode/skills/` (extend `tests/skill_profiles.bats`) — genuinely dead rules fail CI
+- [x] Decision recorded: keep the app-scoped skill + allow as a documented second surface (default, per #361's intent) vs relocate to root `skills/`
+- [x] Count prose made surface-explicit where cited (README "106 allows", `LEARNINGS/decisions/skill-permission-allowlist.md`, setup.sh/ps1 "106-allow" comments) — savings derivation adjusted or annotated
+- [x] LEARNINGS entry: two-skill-surfaces count conflation (extends the `delta-derived-from-single-surface` family)
 
 ## Dependency & Consumer Map
 
@@ -77,14 +77,16 @@
 
 ### Phase 4: LEARNINGS + gates (AC4)
 
-- [ ] **4.1** Write `LEARNINGS/anti-patterns/two-surface-count-conflation.md` + `_index.md` entry: when a repo ships two surfaces of the same artifact kind, every count/guard/derivation must name its surface; single-surface derivations mint phantoms (this saga: the #481-review "phantom" call AND the #481-plan duplicate-delta miss were both single-surface errors); fix = union guard + disjointness assert + surface-explicit prose; convention: dated narratives keep their period-true counts, current-state claims go surface-explicit
+- [x] **4.1** Write `LEARNINGS/anti-patterns/two-surface-count-conflation.md` + `_index.md` entry: when a repo ships two surfaces of the same artifact kind, every count/guard/derivation must name its surface; single-surface derivations mint phantoms (this saga: the #481-review "phantom" call AND the #481-plan duplicate-delta miss were both single-surface errors); fix = union guard + disjointness assert + surface-explicit prose; convention: dated narratives keep their period-true counts, current-state claims go surface-explicit
     — **Why:** AC4 — the reusable half of this ticket; extends `delta-derived-from-single-surface`
     — **Done when:** file + index entry exist and reference #486
     — **Consumers affected:** future sessions
-- [ ] **4.2** Gate: full `bats tests/` + `node installer/build-registry.mjs --check` (registry scans root only by design — the app skill is intentionally absent from it; note in memo, not a change); record GATE memo; conventional commits + push
+    — **Done:** LEARNINGS/anti-patterns/two-surface-count-conflation.md written (both single-surface misses, union/disjointness/surface-explicit fixes, dated-narrative convention) + _index entry; files: LEARNINGS ×2; fixes: none
+- [x] **4.2** Gate: full `bats tests/` + `node installer/build-registry.mjs --check` (registry scans root only by design — the app skill is intentionally absent from it; note in memo, not a change); record GATE memo; conventional commits + push
     — **Why:** repo verification policy; count/prose/test changes fan out across suites
     — **Done when:** full suite green; memo line recorded; work committed and pushed on `feat/486`
     — **Consumers affected:** PR CI
+    — **Done:** full bats 435/435 green (incl. 2 new guard tests); registry --check "agents=34, skills=146, no drift" (app skill intentionally unregistered — plan note); committed and pushed; files: PLANS/PLAN-486.md; fixes: none
 
 ## Technical Notes
 
@@ -111,3 +113,5 @@
 `GATE a89e9d5+p2 lint=n.a. typecheck=n.a. build=n.a. unit=t(8/8 skill_profiles incl. new guard + negative fixture) e2e=n.a` — test-only phase; the deliverable IS the test.
 
 `GATE a9bfcc7+p3 lint=n.a. typecheck=n.a. build=n.a. unit=t(skill_profiles 8/8 + count_drift 5/5 re-run; deploy edits comment-only) e2e=n.a`
+
+`GATE f5bf109+p4 lint=n.a. typecheck=n.a. build=t(registry --check no drift) unit=t(435/435 full bats) e2e=n.a`
