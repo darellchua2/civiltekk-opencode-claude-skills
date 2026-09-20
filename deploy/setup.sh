@@ -1979,6 +1979,12 @@ deploy_skills_only() {
 
     setup_config || true
     deploy_agents || true
+    # Plugin/shim membership is platform parity, not mode accident (#469):
+    # ps1 -SkillsOnly has always shipped these (Deploy-Plugins +
+    # Setup-OpencodeInitShim via its config path). The opencode-* plugins
+    # include the default-enabled auto-continue hook.
+    deploy_plugins || true
+    setup_opencode_init_symlink || true
     setup_learnings_dir || true
     print_summary
 }
@@ -3582,6 +3588,12 @@ setx_env() {
     fi
 
     log_debug "Setting Windows env var: ${key} via setx"
+    # Dry-run safe (#469 class sweep): setx persists a user env var — never
+    # during a preview.
+    if [ "$DRY_RUN" = true ]; then
+        log_info "[DRY-RUN] Would set ${key}=${value} via setx"
+        return 0
+    fi
     setx "$key" "$value" > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         log_success "${key} set via setx (available in new terminals)"
@@ -4148,13 +4160,15 @@ setup_opencode_init_symlink() {
         return 0
     fi
     local user_bin="${HOME}/.local/bin"
-    mkdir -p "$user_bin"
+    # Dry-run safe (#469, same class as #467): bare mkdir/ln here would really
+    # create the PATH shim during a preview.
+    run_cmd mkdir -p "$user_bin"
     local link="${user_bin}/opencode-init"
     # Refresh if missing or pointing elsewhere; leave alone if already correct.
     if [ -L "$link" ] && [ "$(readlink -f "$link" 2>/dev/null)" = "$(readlink -f "$init_src" 2>/dev/null)" ]; then
         log_info "opencode-init symlink already correct at ${link}"
     else
-        ln -sf "$init_src" "$link"
+        run_cmd ln -sf "$init_src" "$link"
         log_success "opencode-init installed to ${link}"
     fi
     # PATH check (mirrors the markitdown pattern ~line 2587)
