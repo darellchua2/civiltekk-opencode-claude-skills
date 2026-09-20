@@ -81,3 +81,53 @@ teardown() {
     run parse_arguments --nonexistent
     [ "$status" -ne 0 ]
 }
+
+# =============================================================================
+# #466: --peonping flag + mode-conflict validation
+# =============================================================================
+
+@test "--peonping sets PEONPING_ONLY" {
+    parse_arguments --peonping
+    [ "$PEONPING_ONLY" = true ]
+}
+
+@test "-P is an alias for --peonping" {
+    parse_arguments -P
+    [ "$PEONPING_ONLY" = true ]
+}
+
+@test "help mentions peonping on both help surfaces" {
+    run bash "${PROJECT_ROOT}/deploy/setup.sh" --help
+    [ "$status" -eq 0 ]
+    count=$(echo "$output" | grep -ci peonping)
+    [ "$count" -ge 2 ]
+}
+
+@test "validate_mode_conflicts accepts each single mode" {
+    for mode in QUICK_SETUP SKILLS_ONLY UPDATE_ONLY MODELS_ONLY MIGRATE_ONLY ROLLBACK_MODE CHECK_UPDATE_ONLY PEONPING_ONLY; do
+        run bash -c "source '$SETUP_SH' >/dev/null 2>&1; $mode=true; validate_mode_conflicts"
+        [ "$status" -eq 0 ]
+    done
+}
+
+@test "conflicting modes die with a named error" {
+    run bash -c "source '$SETUP_SH' >/dev/null 2>&1; QUICK_SETUP=true; SKILLS_ONLY=true; validate_mode_conflicts"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"--quick --skills-only"* ]]
+    [[ "$output" == *"Mutually exclusive"* ]]
+}
+
+@test "enable-pack dies with modes that never deploy config" {
+    for mode in UPDATE_ONLY MODELS_ONLY MIGRATE_ONLY ROLLBACK_MODE CHECK_UPDATE_ONLY PEONPING_ONLY; do
+        run bash -c "source '$SETUP_SH' >/dev/null 2>&1; $mode=true; ENABLE_PACK=markitdown; validate_mode_conflicts"
+        [ "$status" -ne 0 ]
+        [[ "$output" == *"--enable-pack has no effect"* ]]
+    done
+}
+
+@test "enable-pack stays valid with config-deploying modes" {
+    for mode in QUICK_SETUP SKILLS_ONLY; do
+        run bash -c "source '$SETUP_SH' >/dev/null 2>&1; $mode=true; ENABLE_PACK=markitdown; validate_mode_conflicts"
+        [ "$status" -eq 0 ]
+    done
+}
