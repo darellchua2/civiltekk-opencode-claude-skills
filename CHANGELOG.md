@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.24.0](https://github.com/darellchua2/opencode-config-template/compare/v9.23.0...v9.24.0) (2026-09-20)
+
+### Features
+
+* **deploy:** models.dev regeneration script + --check-catalog drift check ([#472](https://github.com/darellchua2/opencode-config-template/issues/472)) ([#493](https://github.com/darellchua2/opencode-config-template/issues/493)) ([4f93b0d](https://github.com/darellchua2/opencode-config-template/commit/4f93b0d9baa853780b7892711804647745fbba50)), closes [#468-class](https://github.com/darellchua2/opencode-config-template/issues/468-class)
+
 ## [9.23.0](https://github.com/darellchua2/opencode-config-template/compare/v9.22.0...v9.23.0) (2026-09-20)
 
 ### Features
