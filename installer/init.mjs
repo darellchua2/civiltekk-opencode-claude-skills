@@ -587,6 +587,8 @@ function generateAgentsMd(sel, reg) {
 // Phase 3.7: prune manifest-owned entries not in the new set
 export async function doPrune(sel, opts) {
   const project = resolve(opts.project || process.cwd());
+  if (opts.target && !TARGET_VALUES.includes(opts.target))
+    die(`invalid target '${opts.target}'. Use: ${TARGET_VALUES.filter((t) => t !== "both").join(", ")}, or both.`, 2);
   // manifest + dirs resolve from the TARGETS project columns (#454); relative
   // columns only ever join against the explicit project root here
   const pTarget = TARGETS[opts.target]?.projectSkillsDir ? opts.target : "opencode";
