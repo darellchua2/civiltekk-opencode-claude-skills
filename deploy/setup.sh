@@ -2653,7 +2653,6 @@ setup_config() {
 # most distros.
 install_markitdown_mcp() {
     echo ""
-    log_info "Installing markitdown-mcp (upstream, PyPI)..."
 
     # Dry-run contract (#467): the pip uninstall/install below mutate the
     # user's site-packages — never during a preview.
@@ -2661,6 +2660,8 @@ install_markitdown_mcp() {
         echo "[DRY-RUN] Would ensure markitdown-mcp==0.0.1a7 (pip --user)"
         return 0
     fi
+
+    log_info "Installing markitdown-mcp (upstream, PyPI)..."
 
     # Migrate old installs: the retired vendored launcher must not linger on
     # PATH beside the new entry point (best-effort — absent is fine). PEP 668
@@ -2670,13 +2671,16 @@ install_markitdown_mcp() {
         || python3 -m pip uninstall -y --break-system-packages markitdown-local-mcp >/dev/null 2>&1 \
         || true
 
-    # Idempotency: skip the network round-trip when already installed AND
-    # importable — `pip show` alone hides broken installs (e.g. the mcp SDK
-    # dependency missing), which surfaces later as "MCP error -32000:
-    # Connection closed" when the server crashes on import.
-    if python3 -m pip show markitdown-mcp >/dev/null 2>&1 \
+    # Idempotency: skip the network round-trip when the PINNED version is
+    # already installed AND importable. Version-aware on purpose: a plain
+    # `pip show` + import probe passes for ANY installed version, so pin
+    # bumps would never reach machines with a working older alpha. `pip
+    # show` alone hides broken installs (e.g. the mcp SDK dependency
+    # missing), which surfaces later as "MCP error -32000: Connection
+    # closed" when the server crashes on import.
+    if python3 -m pip show markitdown-mcp 2>/dev/null | grep -qF "Version: 0.0.1a7" \
         && python3 -c "from markitdown_mcp.__main__ import main" >/dev/null 2>&1; then
-        log_success "markitdown-mcp already installed — skipping pip install"
+        log_success "markitdown-mcp 0.0.1a7 already installed — skipping pip install"
         return 0
     fi
 
@@ -2724,7 +2728,7 @@ install_markitdown_mcp() {
 }
 
 # Install docling-mcp (heavy ~3-4 GB) — only when --enable-pack docling is
-# requested. Unlike markitdown (local-dir pip install), docling-mcp comes from
+# requested. Like markitdown, docling-mcp comes from
 # PyPI. First convert downloads ~hundreds of MB of models from huggingface.co.
 install_docling() {
     if ! echo "$ENABLE_PACK" | grep -qw "docling"; then

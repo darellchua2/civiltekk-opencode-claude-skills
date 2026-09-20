@@ -2146,12 +2146,14 @@ function Install-MarkitdownMcp {
     # (Mirrors setup.sh install_markitdown_mcp.) Single python probe —
     # reused for the install below.
     if ($pythonCmd) {
-        & $pythonCmd.Name -m pip show markitdown-mcp *> $null
-        $pipOk = $LASTEXITCODE -eq 0
+        # Version-aware probe: a plain `pip show` passes for ANY installed
+        # version, so pin bumps would never reach working installs (#487).
+        $pipShow = (& $pythonCmd.Name -m pip show markitdown-mcp 2>$null) -join "`n"
+        $pipOk = ($LASTEXITCODE -eq 0) -and ($pipShow -like "*Version: 0.0.1a7*")
         & $pythonCmd.Name -c "from markitdown_mcp.__main__ import main" *> $null
         $importOk = $LASTEXITCODE -eq 0
         if ($pipOk -and $importOk) {
-            Write-LogSuccess "markitdown-mcp already installed - skipping pip install"
+            Write-LogSuccess "markitdown-mcp 0.0.1a7 already installed - skipping pip install"
             $global:LASTEXITCODE = 0
             return
         }
