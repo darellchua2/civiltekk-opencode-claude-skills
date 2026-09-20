@@ -5,11 +5,11 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] Multi-ticket creation prints a copy-pasteable `/run-worktree-pipeline` line in suggested order
-- [ ] Each position carries a one-line rationale; inferred orders labeled as inferred
-- [ ] User-stated dependencies produce `blocked-by: <ref>` body lines in dependent tickets at creation time
-- [ ] `worktree-pipeline-skill` unchanged (it already executes in given order and honors `blocked-by`)
-- [ ] `tests/test_skill_isolation.bats` stays green after the edit
+- [x] Multi-ticket creation prints a copy-pasteable `/run-worktree-pipeline` line in suggested order
+- [x] Each position carries a one-line rationale; inferred orders labeled as inferred
+- [x] User-stated dependencies produce `blocked-by: <ref>` body lines in dependent tickets at creation time
+- [x] `worktree-pipeline-skill` unchanged (it already executes in given order and honors `blocked-by`)
+- [x] `tests/test_skill_isolation.bats` stays green after the edit
 
 ## Dependency & Consumer Map
 
@@ -57,10 +57,11 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done:** multi-ticket example appended showing `blocked-by:` write-out and the suggested-sequence block; files: skills/ticket-creation-skill/SKILL.md; fixes: none
 
 ### Phase 2: Verify
-- [ ] **2.1** Run `bats tests/test_skill_isolation.bats` and confirm green
+- [x] **2.1** Run `bats tests/test_skill_isolation.bats` and confirm green
     — **Why:** AC-5; the isolation guard is the mechanical gate for any `skills/` edit.
     — **Done when:** bats exits 0 with all isolation tests passing.
     — **Consumers affected:** skill isolation contract enforcement (#437).
+    — **Done:** bats exited 0, 5/5 isolation tests ok on committed tree 1d509cb; files: (none changed); fixes: none
 
 ## Technical Notes
 - No frontmatter change → no `installer/build-registry.mjs` rerun, no `registry.json` commit.
@@ -79,4 +80,6 @@ None external. No `blocked-by:` tickets.
 ## Gate trace
 
 GATE 5e88a85 lint=t typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 1d509cb lint=t typecheck=n.a build=n.a unit=t e2e=n.a
+
 
