@@ -572,3 +572,21 @@
 - **Scope**: project
 - **Summary**: subagent skill loading resolves against merged config layers (global/project), not frontmatter skill allows — config-layer allows are the working unlock (#481 workaround for upstream #50149); includes the 3-step regression probe + revert-flip check
 - **Date**: 2026-09-20
+
+### Partial record refresh contradicts itself
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/partial-record-refresh-contradicts-itself.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: refreshing a decision record's header/update-block while leaving body counts stale creates in-file contradictions — refresh every count or freeze the body behind a dated historical label (#481 review)
+- **Date**: 2026-09-20
+
+### Count-literal sweeps must include docs-of-record
+
+- **Category**: pattern
+- **File**: `patterns/count-sweeps-include-docs-of-record.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: count-drift sweeps must include LEARNINGS/ (docs-of-record), and docs-of-record should cite search anchors not file:line — line refs rot within weeks (#481 review)
+- **Date**: 2026-09-20
