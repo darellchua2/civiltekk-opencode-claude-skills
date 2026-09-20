@@ -26,18 +26,21 @@ Cross-module consumers exist (tests, docs, bin) → architecture review selected
 
 ### Phase 1: Target table + validation + preview
 
-- [ ] **1.1** Extract the test contract from `tests/init.bats` + `tests/update.bats`: (a) how user-scope tests isolate `$HOME`, (b) every asserted dry-run JSON key for `add` and `update`.
+- [x] **1.1** Extract the test contract from `tests/init.bats` + `tests/update.bats`: (a) how user-scope tests isolate `$HOME`, (b) every asserted dry-run JSON key for `add` and `update`.
     — **Why:** backward-compat constraints (AC: no regression) and test-isolation mechanics gate every later step; discovering them mid-phase would force rework.
     — **Done when:** assertion inventory + HOME-isolation mechanism recorded in Technical Notes below.
     — **Consumers affected:** all later phases.
-- [ ] **1.2** Add `USER_AGENTS_SHARED`/`USER_SKILLS_SHARED` constants and a `TARGETS` table (target → user dest dirs + transform mode) as the single site destined to own target dest/transform resolution; extend `--target` validation (`init.mjs:651`) to accept `agents`; update the validation die message (`init.mjs:652`), the `--help` `--target` line, and the help SCOPE block (`~/.agents` mention, `init.mjs:1180-1182`).
+    — **Done:** contract inventory recorded in Technical Notes (HOME isolation: init.bats per-test `HOME="$TMP_PROJ/home"`, update.bats mktemp; update dry-run asserts per-entry `updated` bucket; add user-scope dry-run JSON unasserted — keys kept stable anyway); gates discovered: bats×3 + node --test, lint/typecheck/build n.a. (no tooling configured); files: PLANS/PLAN-453.md; fixes: none
+- [x] **1.2** Add `USER_AGENTS_SHARED`/`USER_SKILLS_SHARED` constants and a `TARGETS` table (target → user dest dirs + transform mode) as the single site destined to own target dest/transform resolution; extend `--target` validation (`init.mjs:651`) to accept `agents`; update the validation die message (`init.mjs:652`), the `--help` `--target` line, and the help SCOPE block (`~/.agents` mention, `init.mjs:1180-1182`).
     — **Why:** single source of per-target dest+transform unblocks the write path and lifecycle; validation is the public contract, and the die message enumerates its valid values.
     — **Done when:** `node installer/init.mjs add code-review-subagent --target agents --dry-run` exits 0 and names `~/.agents` paths; `--target bogus` still dies listing all four values; `bats tests/parse_arguments.bats` green.
     — **Consumers affected:** write path (Phase 2), update/remove (Phase 3), docs (Phase 4).
-- [ ] **1.3** Generalize the user-scope dry-run preview (`init.mjs:660-673`): per-target destinations; preserve every existing JSON key byte-for-byte for `opencode`/`claude`/`both`.
+    — **Done:** TARGETS table + shared constants added as the single dest/transform site; validation accepts `agents`; die message, --format warning, help SCOPE + --target lines updated; verified agents dry-run exit 0 naming ~/.agents (4 hits) and bogus target dying with all four values; files: installer/init.mjs; fixes: none
+- [x] **1.3** Generalize the user-scope dry-run preview (`init.mjs:660-673`): per-target destinations; preserve every existing JSON key byte-for-byte for `opencode`/`claude`/`both`.
     — **Why:** the preview JSON is an asserted contract (1.1 inventory); breaking keys fails gates and downstream scripts.
     — **Done when:** dry-run JSON for legacy targets has the identical key set as the 1.1 baseline; `agents` target preview lists `~/.agents` destinations; `bats tests/init.bats` green.
     — **Consumers affected:** bats suites, docs examples.
+    — **Done:** preview emits per-target `destinations` map; legacy `destination` key + all baseline keys preserved (both-target dry-run key diff checked: additive only, `destinations` new); files: installer/init.mjs; fixes: none
 
 ### Phase 2: agents-target install path
 
@@ -88,7 +91,7 @@ Cross-module consumers exist (tests, docs, bin) → architecture review selected
 
 - **Manifest schema is already multi-target** (`entries.<name>.targets.{opencode,claude}` with written-content hashes, #379/#400): this PLAN adds an `agents` key — no schema migration needed. Legacy manifests upgrade via the existing `cmdUpdate` synthesis path.
 - **Shared-dir collision risk:** `~/.agents/` may contain files owned by other tools (Kimi/pi). Current user-scope `add` overwrites installer-owned names without conflict checks; same behavior extends to `~/.agents/`. Mitigation for v1: document it; ownership tracking beyond the existing manifest is deferred.
-- **1.1 contract inventory:** _to be filled by step 1.1 during execution (asserted dry-run JSON keys + HOME-isolation mechanism)._
+- **1.1 contract inventory (filled by step 1.1):** HOME isolation — init.bats `export HOME="$TMP_PROJ/home"` (per-test), update.bats `export HOME="$(mktemp -d)"` (setup); `os.homedir()` reads env per fresh process, so overrides work. Dry-run JSON assertions — `update --dry-run` JSON must carry per-entry `updated` bucket (update.bats:44,100); `add` user-scope dry-run JSON keys are NOT bats-asserted (keep keys stable anyway for scripts/docs). Gate commands: no lint/typecheck/build configured (package.json `scripts: null`) → test gate = `bats tests/init.bats tests/update.bats tests/parse_arguments.bats` (+ new suite in Phase 4) + `node --test tests/*.test.ts`.
 - **Deliberately out of scope:** model pinning on foreign targets; `kimi`/`kilo` native targets (#454/#455 build on this table); MCP cross-platform config.
 - **Project-scope dest dimension deferred (descope of ticket Proposed-solution #1, Mode R ruling):** `TARGETS` maps target → **user** dest dirs + transform mode only. Rationale: zero current consumers (`--project` is opencode-only, `init.mjs:637-644`; the `agents` target writes `~/.agents/` user-scope), and Kimi's project-level `.agents/` scan has no consumer until #454. Seam for #454: (a) add a project dest mapping to `TARGETS`; (b) replace the hard-wired `--project`-forces-opencode branch with a table lookup; (c) decide whether note-and-downgrade becomes hard validation or per-target project support. Until then `--project` + non-opencode `--target` keeps the existing note-and-downgrade (asserted in 4.1).
 - **Mixed-version hazard (older binary × new manifest):** an older binary's update loop dispatches any non-opencode target key through the claude branch (`init.mjs:971-975`), so it may report `~/.agents` entries missing or re-copy `~/.claude` and overwrite the `agents` hash — self-healing on the next new-binary run, no data loss. Accepted; #454 must replace fallback dispatch with explicit target-key matching.
@@ -107,3 +110,8 @@ Cross-module consumers exist (tests, docs, bin) → architecture review selected
 | Tests pollute the real `$HOME` (`~/.agents`) | Mirror the existing bats HOME-isolation mechanism (1.1); 4.1 asserts isolation |
 | `~/.agents/` name collisions with other tools' files | Documented v1 behavior (same as installer-owned dirs); manifest tracks what we wrote |
 | Update loop regression on opencode-only agents | 2.3 regression sweep + 3.1 done-when asserts opencode copy untouched |
+
+## Gate Trace
+
+_Gate per `verification-loop-skill` §The gate contract; lint/typecheck/build = n.a. (no tooling configured in repo or CI — closest executable check is the unit suite, which exercises `init.mjs` end-to-end)._
+

@@ -57,6 +57,20 @@ const USER_SKILLS = join(USER_OC, "skills");
 const USER_CONFIG = join(USER_OC, "opencode.json");
 const USER_MANIFEST = join(USER_OC, ".skill-manifest.json");
 const USER_CLAUDE_SKILLS = join(os.homedir(), ".claude/skills");
+const USER_AGENTS_SHARED = join(os.homedir(), ".agents/agents");
+const USER_SKILLS_SHARED = join(os.homedir(), ".agents/skills");
+
+// Per-target write contract (#453): user-scope dest dirs + transform mode.
+// SINGLE SITE for target dest/transform resolution — write/update/remove paths
+// resolve via TARGETS, never inline constants (PLAN-453 structural gate).
+// Project-scope dest columns deferred to #454 (PLAN-453 Technical Notes).
+const TARGETS = {
+  opencode: { agentsDir: USER_AGENTS, skillsDir: USER_SKILLS, agentMode: "model-injected", skillMode: "verbatim" },
+  claude: { skillsDir: USER_CLAUDE_SKILLS, skillMode: "model-strip" }, // agents skipped (#377; #457 adds them)
+  agents: { agentsDir: USER_AGENTS_SHARED, skillsDir: USER_SKILLS_SHARED, agentMode: "verbatim", skillMode: "verbatim" },
+};
+const TARGET_VALUES = ["opencode", "claude", "both", "agents"];
+const activeTargets = (target) => (target === "both" ? ["opencode", "claude"] : [target]);
 
 // ─────────────────────────── arg parsing ────────────────────────────────
 const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps"]);
@@ -631,7 +645,7 @@ async function cmdAdd(args, opts, reg, depMap) {
     if (opts.target !== undefined)
       die("cannot use --format and --target together (--format is deprecated; use --target)", 2);
     opts.target = opts.format;
-    console.error("warning: --format is deprecated; use --target (values: opencode, claude, both)");
+    console.error("warning: --format is deprecated; use --target (values: opencode, claude, agents, both)");
   }
 
   const project = opts.project === true ? process.cwd() : opts.project;
@@ -648,8 +662,8 @@ async function cmdAdd(args, opts, reg, depMap) {
 async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const dry = !!opts.dryRun;
   const target = opts.target || "opencode";
-  if (!["opencode", "claude", "both"].includes(target))
-    die(`invalid target '${target}'. Use: opencode, claude, or both.`, 2);
+  if (!TARGET_VALUES.includes(target))
+    die(`invalid target '${target}'. Use: opencode, claude, agents, or both.`, 2);
   const doOc = target === "opencode" || target === "both";
   const doClaude = target === "claude" || target === "both";
   // Claude Code target installs skills only — surface the skip in the preview too (#377).
@@ -659,11 +673,16 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
 
   if (dry) {
     if (claudeSkipWarning) console.error(claudeSkipWarning);
+    const destinations = {};
+    for (const t of activeTargets(target))
+      destinations[t] = TARGETS[t].agentsDir ? dirname(TARGETS[t].agentsDir) : TARGETS[t].skillsDir;
     process.stdout.write(JSON.stringify({
       dryRun: true,
       scope: "user",
       target,
-      destination: doOc ? USER_OC : USER_CLAUDE_SKILLS,
+      // legacy single-destination key preserved for scripts (PLAN-453 step 1.1 contract)
+      destination: doOc ? USER_OC : (target === "agents" ? dirname(USER_AGENTS_SHARED) : USER_CLAUDE_SKILLS),
+      destinations,
       agents: sel.agents,
       skills: sel.skills,
       mcps: sel.mcps,
@@ -1179,6 +1198,8 @@ USAGE
 SCOPE
   User scope (default for 'add'): drops files into ~/.config/opencode/{agents,skills}/.
   opencode auto-discovers them — no opencode.json touch unless --permit.
+  Agents target (--target agents): cross-tool shared dir ~/.agents/{agents,skills}/
+  (scanned by Kimi Code and pi; files are verbatim, agents stay model-unpinned).
   Project scope (--project): writes .opencode/{agents,skills}/ + opencode.json + models.json + AGENTS.md.
 
 FLAGS
@@ -1195,7 +1216,7 @@ FLAGS
   --prune              remove opencode-init-owned entries absent from the new set
   --permit             (user scope) backup opencode.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
-  --target <t>         (add) install target: opencode (default), claude, or both (--format is a deprecated alias)
+  --target <t>         (add) install target: opencode (default), claude, agents (shared ~/.agents/), or both (--format is a deprecated alias)
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and
