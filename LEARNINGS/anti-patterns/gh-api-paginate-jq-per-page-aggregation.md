@@ -27,3 +27,5 @@ n=$(gh api orgs/ORG/actions/runners --paginate \
 Caught in #361 review: the github-runners-setup-skill dispatcher's idle-count
 used `[...]|length` under `--paginate` — validated at 4 runners (single page),
 would silently fall back to `ubuntu-latest` once the org crossed 100 runners.
+
+Twin without `--paginate`: a bare `gh api` existence/count scan reads page 1 only (REST default 30 items) — marker scans must stream `--paginate --jq '.[].body'` and `grep -cF` outside jq (#446 review: conflict-labeler comment-once check).
