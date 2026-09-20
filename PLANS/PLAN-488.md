@@ -9,7 +9,7 @@
 _Inherited verbatim from #488 — the PLAN never rewrites ticket AC._
 
 - [x] `verification-loop-skill` §The gate contract defines the two tiers, escalation anchors, the unsure→full rule, and the tier memo marker (canonical — other surfaces defer, no restating)
-- [ ] `plan-execution-skill` 4c: light gate is the per-phase default; full gate on anchor hit / judgment / ticket exit gate; escalation reasons go to the WORK LOG; no logging for the light default
+- [x] `plan-execution-skill` 4c: light gate is the per-phase default; full gate on anchor hit / judgment / ticket exit gate; escalation reasons go to the WORK LOG; no logging for the light default
 - [ ] `worktree-pipeline-skill`: Step 8 references tiered gating; Step 9 review-fix commits trigger one full re-gate; Step 10's green citation requires the `tier=full` GATE line
 - [ ] Memo-format consumers (`pr-workflow-subagent`, `pr-creation-workflow-skill`) grepped and updated or verified compatible with the tier marker
 - [ ] Full gate runs the full unit suite; light gate runs affected tests only
@@ -50,22 +50,26 @@ _Every step is atomic and carries rationale. Any step missing a field is malform
 
 ### Phase 2: Executor integration (plan-execution-skill)
 
-- [ ] **2.1** Rewrite 4c VERIFY to select the gate tier per the verification-loop contract by deference: light gate is the per-phase default; full gate when an anchor is hit, the agent judges risk high, or the agent is unsure; the ticket exit gate (the last gate of this PLAN run) is full
+- [x] **2.1** Rewrite 4c VERIFY to select the gate tier per the verification-loop contract by deference: light gate is the per-phase default; full gate when an anchor is hit, the agent judges risk high, or the agent is unsure; the ticket exit gate (the last gate of this PLAN run) is full
     — **Why:** the executor runs the gates; without this rewrite every phase still runs the full sequence regardless of what it touched
     — **Done when:** 4c names the tier selection and defers anchor definitions to the contract (no restating), and no 4c text implies the full sequence runs every phase
     — **Consumers affected:** every `/run-plan --gate` invocation; worktree-pipeline-skill Step 8
-- [ ] **2.2** Add the escalation logging rule to 4c/Traceability: one WORK LOG line per full-gate escalation naming the anchor or judgment reason; no logging for the light default
+    — **Done:** 4c rewritten to tier selection by deference (light default, anchors/judgment/unsure defer to contract, exit gate full, push invariant); files: skills/plan-execution-skill/SKILL.md; fixes: none
+- [x] **2.2** Add the escalation logging rule to 4c/Traceability: one WORK LOG line per full-gate escalation naming the anchor or judgment reason; no logging for the light default
     — **Why:** one-directional escalation must be auditable without burying every phase in ceremony
     — **Done when:** the rule appears once, tied to the existing WORK LOG mechanism
     — **Consumers affected:** PLAN trace-block readers; worktree-pipeline Step 10 citation
-- [ ] **2.3** Update the phase-advance invariant to "A phase advances ONLY when its applicable gate tier is green" and the 4c memo-line example to include `tier=`
+    — **Done:** escalation logging sentence added to 4c, tied to the existing WORK LOG (anchor/judgment reason; nothing for light); fixes: none
+- [x] **2.3** Update the phase-advance invariant to "A phase advances ONLY when its applicable gate tier is green" and the 4c memo-line example to include `tier=`
     — **Why:** stale invariant wording would contradict the tiered contract inside the same file
     — **Done when:** `grep` for the old unconditional phrasing returns nothing contradicting; memo example carries the tier token
     — **Consumers affected:** readers of the skill; existing tests pinning 4c wording (checked in 4.3)
-- [ ] **2.4** Extend `tests/test_tiered_gating.bats` with plan-execution assertions: light default present, exit-gate rule present, tier token in the memo example, escalation-logging rule present, and the unchanged "Never push red" rule in 4d (Phase 2 edits the surrounding text)
+    — **Done:** phase-advance invariant now reads "applicable gate tier is green"; 4c memo example carries tier=; fixes: none
+- [x] **2.4** Extend `tests/test_tiered_gating.bats` with plan-execution assertions: light default present, exit-gate rule present, tier token in the memo example, escalation-logging rule present, and the unchanged "Never push red" rule in 4d (Phase 2 edits the surrounding text)
     — **Why:** pin executor behavior so later edits cannot silently revert to full-gate-per-phase or drop the never-push-red invariant while rewriting 4c/4d
     — **Done when:** assertions pass standalone and mutation checks (deleting the 4c tier sentence, deleting the never-push-red sentence) each fail at least one
     — **Consumers affected:** CI bats suite
+    — **Done:** 5 new assertions (14 total green standalone); mutation checks: 4c deletion fails 4 tests, never-push-red deletion fails 1; fixes: none
 
 ### Phase 3: Orchestrator integration (worktree-pipeline-skill)
 

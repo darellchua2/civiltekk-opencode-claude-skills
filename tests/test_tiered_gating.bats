@@ -85,3 +85,31 @@ VL="$SKILLS_DIR/verification-loop-skill/SKILL.md"
 @test "tier1_gating_verification-loop_ci_only_unconditional_rerun_unchanged" {
   grep -qF 'only unconditional re-run' "$VL"
 }
+
+PE="$SKILLS_DIR/plan-execution-skill/SKILL.md"
+
+# =============================================================================
+# Phase 2 — executor integration (plan-execution-skill)
+# =============================================================================
+
+@test "tier2_gating_plan-execution_light_gate_default" {
+  [ -f "$PE" ]
+  grep -qF 'is the per-phase default' "$PE"
+}
+
+@test "tier2_gating_plan-execution_exit_gate_full" {
+  grep -qiF 'ticket exit gate' "$PE"
+  grep -qiF 'runs full unconditionally' "$PE"
+}
+
+@test "tier2_gating_plan-execution_memo_tier_token" {
+  grep -qF 'tier=light|full' "$PE"
+}
+
+@test "tier2_gating_plan-execution_escalation_logging" {
+  grep -qiF 'WORK LOG line naming the anchor' "$PE"
+}
+
+@test "tier2_gating_plan-execution_never_push_red_unchanged" {
+  grep -qF 'Never push red code' "$PE"
+}
