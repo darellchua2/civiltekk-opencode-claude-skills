@@ -7,7 +7,7 @@
 ## Acceptance Criteria
 
 - [ ] `--target agents` installs skills verbatim to `~/.agents/skills/` and agents verbatim to `~/.agents/agents/`
-- [ ] Target table drives dest dirs + transforms; existing `opencode` and `claude` target output is unchanged (no regression)
+- [ ] Target table drives dest dirs + transforms for **user-scope** installs; existing `opencode` and `claude` user-scope output is unchanged (no regression). Project-scope dest columns are **deferred to #454** (no current consumer — `--project` installs are opencode-only): `--project` stays opencode-only and keeps its existing note-and-downgrade behavior when combined with a non-opencode `--target` (no `~/.agents` write, no new error)
 - [ ] Manifest entries record per-target content hashes; `update` copies only changed targets; `remove` cleans every probed target dir
 - [ ] `--dry-run` previews new-target writes and writes nothing
 - [ ] `node --test` + `bats` gates pass; README / `--help` / installer counts synced per repo documentation-sync rules
@@ -16,7 +16,7 @@
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `installer/init.mjs` (`--target` validation, `writeUserScopeInstall`, `cmdUpdate`, `cmdRemove`, help text) | `installer/registry.json`, `installer/source.mjs`, `installer/tui-primitives.mjs` | `package.json` bin (`opencode-skill`, npx GitHub installs), `tests/init.bats`, `tests/update.bats`, `tests/parse_arguments.bats`, README install docs, root `AGENTS.md` §Repository Purpose | med |
+| `installer/init.mjs` (`--target` validation, `writeUserScopeInstall`, `cmdUpdate`, `cmdRemove`, help text) | `installer/registry.json`, `installer/source.mjs`, `installer/tui-primitives.mjs` | `package.json` bin (`opencode-skill`, npx GitHub installs), `tests/init.bats`, `tests/update.bats`, `tests/parse_arguments.bats`, `deploy/setup.sh:3339` (`add --all --yes`) + `:4134` (`update`), `deploy/setup.ps1:2299`/`:2891`, README install docs, root `AGENTS.md` §Repository Purpose | med |
 | User manifest `~/.config/opencode/.skill-manifest.json` (schema: `entries.<name>.targets` + new `agents` key) | `init.mjs` write path | `cmdUpdate` (per-target re-copy), `cmdRemove` (probing), legacy-manifest upgrade path | med |
 | `~/.agents/` install surface (new; `agents/` + `skills/`) | installer write path | Kimi Code CLI (reads `~/.agents/agents/` + `~/.agents/skills/`), pi (reads `~/.agents/skills/`) | low |
 
@@ -30,9 +30,9 @@ Cross-module consumers exist (tests, docs, bin) → architecture review selected
     — **Why:** backward-compat constraints (AC: no regression) and test-isolation mechanics gate every later step; discovering them mid-phase would force rework.
     — **Done when:** assertion inventory + HOME-isolation mechanism recorded in Technical Notes below.
     — **Consumers affected:** all later phases.
-- [ ] **1.2** Add `USER_AGENTS_SHARED`/`USER_SKILLS_SHARED` constants and a `TARGETS` table (target → dest dirs + transform mode); extend `--target` validation (`init.mjs:651`) to accept `agents`; update the `--help` `--target` line.
-    — **Why:** single source of per-target dest+transform unblocks the write path and lifecycle; validation is the public contract.
-    — **Done when:** `node installer/init.mjs add code-review-subagent --target agents --dry-run` exits 0 and names `~/.agents` paths; `--target bogus` still dies with usage; `bats tests/parse_arguments.bats` green.
+- [ ] **1.2** Add `USER_AGENTS_SHARED`/`USER_SKILLS_SHARED` constants and a `TARGETS` table (target → user dest dirs + transform mode) as the single site destined to own target dest/transform resolution; extend `--target` validation (`init.mjs:651`) to accept `agents`; update the validation die message (`init.mjs:652`), the `--help` `--target` line, and the help SCOPE block (`~/.agents` mention, `init.mjs:1180-1182`).
+    — **Why:** single source of per-target dest+transform unblocks the write path and lifecycle; validation is the public contract, and the die message enumerates its valid values.
+    — **Done when:** `node installer/init.mjs add code-review-subagent --target agents --dry-run` exits 0 and names `~/.agents` paths; `--target bogus` still dies listing all four values; `bats tests/parse_arguments.bats` green.
     — **Consumers affected:** write path (Phase 2), update/remove (Phase 3), docs (Phase 4).
 - [ ] **1.3** Generalize the user-scope dry-run preview (`init.mjs:660-673`): per-target destinations; preserve every existing JSON key byte-for-byte for `opencode`/`claude`/`both`.
     — **Why:** the preview JSON is an asserted contract (1.1 inventory); breaking keys fails gates and downstream scripts.
@@ -43,37 +43,41 @@ Cross-module consumers exist (tests, docs, bin) → architecture review selected
 
 - [ ] **2.1** Implement shared-target skill install: verbatim `cp` of the skill dir to `~/.agents/skills/<name>/`; manifest entry gains `targets.agents = hashSkillDir(dst)`.
     — **Why:** core value — pi and Kimi read `~/.agents/skills/`; verbatim copy is safe because both loaders ignore unknown frontmatter.
-    — **Done when:** `add --target agents --skills <name> --yes` creates the dir tree; manifest entry records `targets.agents`.
+    — **Done when:** `add --target agents --skills <name> --yes` creates the dir tree; the shared write path resolves dest + transform from `TARGETS` (no bespoke `writeAgentsFormat`-style branch beside `writeClaudeFormat`); manifest entry records `targets.agents`.
     — **Consumers affected:** `cmdUpdate`/`cmdRemove` (Phase 3), Kimi/pi users.
 - [ ] **2.2** Implement shared-target agent install: write raw `agent.content` (NO `injectModelLine`) to `~/.agents/agents/<stem>.md`; record `manifest.agents` for shared-target installs (extend the `doOc`-only condition at `init.mjs:716`); entry `targets.agents = sha256Hex(content)`.
     — **Why:** foreign targets ship agents unpinned (ticket #453 decision); the raw content hash differs from the opencode-injected hash by design — per-target hashes (#379) already accommodate this.
-    — **Done when:** installed file contains no `model:` line unless the source has one; manifest lists the stem; manifest `entries` carry both `opencode` and `agents` hashes after a `both`+`agents` install.
+    — **Done when:** installed file contains no `model:` line unless the source has one; manifest lists the stem; manifest `entries` carry both `opencode` and `agents` hashes after a `both`+`agents` install; the opencode agent write path (`init.mjs:681-688`) now resolves its dest + inject transform from `TARGETS` rather than inline constants.
     — **Consumers affected:** `cmdUpdate` (Phase 3), Kimi users.
 - [ ] **2.3** Regression sweep: in a temp `$HOME`, run full `add` for `opencode`, `claude`, and `both` and diff the manifests + written trees against the 1.1 baseline.
     — **Why:** AC demands zero regression on existing targets; a diff is the only objective proof.
-    — **Done when:** manifest key-sets and written-tree shapes identical to baseline (modulo `generatedAt`).
+    — **Done when:** manifest key-sets and written-tree shapes identical to baseline (modulo `generatedAt`); every remaining read/write site in `init.mjs` resolves per-target dest/transform via `TARGETS` (structural grep owned by 3.1).
     — **Consumers affected:** existing user installs.
 
 ### Phase 3: lifecycle (update / remove)
 
-- [ ] **3.1** Rework `cmdUpdate` per-target loop: replace the "agents only ever install to the opencode target" assumption (`init.mjs:960`) — `installedPath` and `wouldHash` become target-dependent (opencode = model-injected content; agents = raw content); extend the `--prune` path (`init.mjs:944-946`) to remove shared files when `targets.agents` is present.
-    — **Why:** `update` must re-copy drifted shared copies or the AC "update copies only changed targets" fails; prune must not leave orphans.
-    — **Done when:** `update` re-copies a drifted `~/.agents` copy and leaves the `opencode` copy untouched; `--dry-run` reports per-target drift; `bats tests/update.bats` green.
+- [ ] **3.1** Rework `cmdUpdate` per-target loop: replace the "agents only ever install to the opencode target" assumption (`init.mjs:960`) — `installedPath` and `wouldHash` become target-dependent via `TARGETS` (opencode = model-injected content; agents = raw content); extend the `--prune` path (`init.mjs:944-946`) to remove shared files when `targets.agents` is present; add `~/.agents` probes to the legacy-manifest synthesis loop (`init.mjs:913-930`) so crash-orphaned shared files enter the lifecycle.
+    — **Why:** `update` must re-copy drifted shared copies or the AC "update copies only changed targets" fails; prune must not leave orphans; asymmetric probing (remove cleans `~/.agents`, update never maintains it) is the exact inconsistency `legacy-upgrade-target-probe` bans.
+    — **Done when:** `update` re-copies a drifted `~/.agents` copy and leaves the `opencode` copy untouched; a structural grep shows target dest constants referenced only in the `TARGETS` definition/accessors across `init.mjs`; `--dry-run` reports per-target drift; `bats tests/update.bats` green.
     — **Consumers affected:** all manifest-tracked users.
 - [ ] **3.2** Extend `cmdRemove` (`init.mjs:885-895`) to probe `~/.agents/agents/<stem>.md` and `~/.agents/skills/<name>/` alongside the existing opencode + claude paths.
     — **Why:** remove must clean every probed target dir (LEARNINGS: `legacy-upgrade-target-probe` — probe every historical target, not just the default).
     — **Done when:** remove wipes all three destinations for a multi-target install and cleans the manifest; single-target installs only remove what exists.
     — **Consumers affected:** users uninstalling.
+- [ ] **3.3** Filter the update-path advisory visibility check (`checkStrictAllowlist` call, `init.mjs:1021-1026`) to entries carrying an `opencode` target.
+    — **Why:** an agents-target-only user with a strict opencode allowlist otherwise gets misleading HIDDEN warnings for skills never installed to opencode (`advisory-check-full-catalog-noise` recurrence; exposure grows with this feature).
+    — **Done when:** an agents-only manifest produces zero HIDDEN advisory lines from `update`; an opencode-target skill is still warned as before.
+    — **Consumers affected:** update users.
 
 ### Phase 4: tests + docs + gates
 
 - [ ] **4.1** Add bats coverage for the `agents` target: happy path (skills + agents), dry-run preview, update drift on a shared copy, remove probing — mirroring the 1.1 HOME-isolation mechanism.
     — **Why:** the AC requires lifecycle coverage; untested lifecycle code is where the probing regressions live.
-    — **Done when:** new bats file green locally; no writes outside the isolated `$HOME`.
+    — **Done when:** new bats file green locally; no writes outside the isolated `$HOME`; includes an assert that `--project --target agents` keeps the existing note-and-opencode-downgrade (no `~/.agents` write, no new error).
     — **Consumers affected:** CI.
 - [ ] **4.2** Docs sync: README install section (new `agents` target + which tools read `~/.agents/`), `--help` text, root `AGENTS.md` §Repository Purpose target list.
     — **Why:** repo documentation-sync rules; undocumented installer surface breaks the repo's own contract (PLAN-418 precedent).
-    — **Done when:** `rg -- '--target' README.md AGENTS.md installer/init.mjs` mentions all four values consistently.
+    — **Done when:** case-insensitive sweep of target-enumeration spellings (`rg -i 'opencode, claude|--target' README.md AGENTS.md installer/init.mjs`) shows all four values consistently, including the `init.mjs:652` die message; the README `agents`-target section cites the Kimi/pi doc URLs from the ticket and notes the Kimi skill-body placeholder-expansion caveat.
     — **Consumers affected:** users, docs readers.
 - [ ] **4.3** Full local gate: `bats tests/init.bats tests/update.bats tests/parse_arguments.bats` + new suite + `node --test tests/*.test.ts` + `bats tests/test_pack_permissions.bats tests/test_count_drift.bats`; record the `GATE <short-sha>` memo line for the pushed SHA.
     — **Why:** pipeline gate contract — the PR step cites this memo as its verification evidence.
@@ -86,6 +90,9 @@ Cross-module consumers exist (tests, docs, bin) → architecture review selected
 - **Shared-dir collision risk:** `~/.agents/` may contain files owned by other tools (Kimi/pi). Current user-scope `add` overwrites installer-owned names without conflict checks; same behavior extends to `~/.agents/`. Mitigation for v1: document it; ownership tracking beyond the existing manifest is deferred.
 - **1.1 contract inventory:** _to be filled by step 1.1 during execution (asserted dry-run JSON keys + HOME-isolation mechanism)._
 - **Deliberately out of scope:** model pinning on foreign targets; `kimi`/`kilo` native targets (#454/#455 build on this table); MCP cross-platform config.
+- **Project-scope dest dimension deferred (descope of ticket Proposed-solution #1, Mode R ruling):** `TARGETS` maps target → **user** dest dirs + transform mode only. Rationale: zero current consumers (`--project` is opencode-only, `init.mjs:637-644`; the `agents` target writes `~/.agents/` user-scope), and Kimi's project-level `.agents/` scan has no consumer until #454. Seam for #454: (a) add a project dest mapping to `TARGETS`; (b) replace the hard-wired `--project`-forces-opencode branch with a table lookup; (c) decide whether note-and-downgrade becomes hard validation or per-target project support. Until then `--project` + non-opencode `--target` keeps the existing note-and-downgrade (asserted in 4.1).
+- **Mixed-version hazard (older binary × new manifest):** an older binary's update loop dispatches any non-opencode target key through the claude branch (`init.mjs:971-975`), so it may report `~/.agents` entries missing or re-copy `~/.claude` and overwrite the `agents` hash — self-healing on the next new-binary run, no data loss. Accepted; #454 must replace fallback dispatch with explicit target-key matching.
+- **Kimi skill-body placeholder expansion:** Kimi expands `$0`/`$1`/declared `$<name>`/`${KIMI_SKILL_DIR}` placeholders in skill bodies — verbatim-copied skills with shell snippets carry the same exposure the claude target already has today; documented in the 4.2 README notes rather than treated as "verbatim is safe".
 - Per-target agents hashing: opencode = `sha256Hex(injected)`, agents = `sha256Hex(raw)` — both stored under their own key; `update` recomputes the same way (mirrors the claude skill-strip asymmetry at `init.mjs:973-974`).
 
 ## Dependencies
