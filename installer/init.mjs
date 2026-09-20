@@ -691,37 +691,48 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     return;
   }
 
-  // write to opencode paths
-  // written-content hashes per entry (#379): agents → injected file bytes;
-  // skills → written dir tree hash (post model-strip for the claude target).
+  // Write per active target, resolved from TARGETS (#453): dest dirs + transform
+  // modes come from the table — no per-target bespoke branches. Written-content
+  // hashes per entry (#379), keyed per target: agents → file bytes (model-
+  // injected for opencode, raw verbatim elsewhere — foreign targets stay
+  // unpinned), skills → written dir tree hash (post model-strip for claude).
   const newEntries = {};
-  if (doOc) {
-    await mkdir(USER_AGENTS, { recursive: true });
-    for (const stem of sel.agents) {
-      const agent = await readAgent(stem);
-      const tier = reg.agents.find((a) => a.stem === stem)?.tier || "unassigned";
-      const model = await agentModel(stem, tier, opts.provider);
-      const content = injectModelLine(agent.content, model);
-      await writeFile(join(USER_AGENTS, `${stem}.md`), content, "utf8");
-      newEntries[stem] = { type: "agent", targets: { opencode: sha256Hex(content) } };
+  for (const t of activeTargets(target)) {
+    const cfg = TARGETS[t];
+    if (t === "claude" && sel.agents.length)
+      console.error(`warning: ${sel.agents.length} agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)`);
+    if (cfg.agentsDir) {
+      await mkdir(cfg.agentsDir, { recursive: true });
+      for (const stem of sel.agents) {
+        const agent = await readAgent(stem);
+        let content = agent.content;
+        if (cfg.agentMode === "model-injected") {
+          const tier = reg.agents.find((a) => a.stem === stem)?.tier || "unassigned";
+          content = injectModelLine(content, await agentModel(stem, tier, opts.provider));
+        }
+        await writeFile(join(cfg.agentsDir, `${stem}.md`), content, "utf8");
+        newEntries[stem] = { type: "agent", targets: { ...(newEntries[stem]?.targets || {}), [t]: sha256Hex(content) } };
+      }
     }
-    await mkdir(USER_SKILLS, { recursive: true });
-    for (const sname of sel.skills) {
-      const skill = await readSkill(sname);
-      const dst = join(USER_SKILLS, sname);
-      await cp(skill.dir, dst, { recursive: true, force: true });
-      newEntries[sname] = { type: "skill", targets: { opencode: await hashSkillDir(dst) } };
+    if (cfg.skillsDir) {
+      await mkdir(cfg.skillsDir, { recursive: true });
+      for (const sname of sel.skills) {
+        const skill = await readSkill(sname);
+        const dst = join(cfg.skillsDir, sname);
+        await cp(skill.dir, dst, { recursive: true, force: true });
+        if (cfg.skillMode === "model-strip") {
+          const skillMd = join(dst, "SKILL.md");
+          if (existsSync(skillMd))
+            await writeFile(skillMd, stripModelLine(await readFile(skillMd, "utf8")), "utf8");
+        }
+        newEntries[sname] = { type: "skill", targets: { ...(newEntries[sname]?.targets || {}), [t]: await hashSkillDir(dst) } };
+      }
     }
-  }
-
-  // write to Claude paths (same SKILL.md format — straight directory copy)
-  if (doClaude) for (const [n, ent] of Object.entries(await writeClaudeFormat(sel))) {
-    newEntries[n] = { type: ent.type, targets: { ...(newEntries[n]?.targets || {}), ...ent.targets } };
   }
 
   // update user-scope manifest (tracks ALL targets for uninstall/update). Agents are
-  // recorded only for targets that actually install them (opencode/both) —
-  // claude-only installs place no agent files anywhere (#377). entries merge
+  // recorded only for targets that actually install them (opencode, agents, or both) —
+  // claude-only installs still place no agent files anywhere (#377). entries merge
   // per-target: re-installing to one target preserves the other target's record.
   await mkdir(USER_OC, { recursive: true });
   const prevManifest = (await readJsonMaybe(USER_MANIFEST)) || { agents: [], skills: [] };
@@ -732,7 +743,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const manifest = {
     generatedAt: new Date().toISOString(),
     tool: "opencode-skill",
-    agents: doOc ? [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort() : (prevManifest.agents || []),
+    agents: (doOc || target === "agents") ? [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort() : (prevManifest.agents || []),
     skills: [...new Set([...(prevManifest.skills || []), ...sel.skills])].sort(),
     entries,
   };
@@ -742,6 +753,12 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     console.log(`installed (opencode) → ${USER_OC}:`);
     console.log(`  agents:  ${sel.agents.length}  -> ~/.config/opencode/agents/`);
     console.log(`  skills:  ${sel.skills.length}  -> ~/.config/opencode/skills/`);
+  }
+  if (doClaude) console.log(`  claude:  ${sel.skills.length}  -> ~/.claude/skills/`);
+  if (target === "agents") {
+    console.log(`installed (agents, shared) → ${dirname(USER_AGENTS_SHARED)}:`);
+    console.log(`  agents:  ${sel.agents.length}  -> ~/.agents/agents/`);
+    console.log(`  skills:  ${sel.skills.length}  -> ~/.agents/skills/`);
   }
   if (sel.warnings.length) for (const w of sel.warnings) console.log(`  - ${w}`);
 
@@ -856,30 +873,6 @@ function stripModelLine(content) {
   if (closeIdx === -1) return content;
   const fmBody = lines.slice(1, closeIdx).filter((l) => !/^model\s*:/.test(l));
   return [...lines.slice(0, 1), ...fmBody, ...lines.slice(closeIdx)].join("\n");
-}
-
-async function writeClaudeFormat(sel) {
-  await mkdir(USER_CLAUDE_SKILLS, { recursive: true });
-  // Claude Code target installs skills only (#377): agents are opencode-specific
-  // and Claude Code silently ignores agent files written as SKILL.md.
-  if (sel.agents.length)
-    console.error(`warning: ${sel.agents.length} agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)`);
-  let count = 0;
-  const entries = {};
-  for (const sname of sel.skills) {
-    const skill = await readSkill(sname);
-    const dst = join(USER_CLAUDE_SKILLS, sname);
-    await cp(skill.dir, dst, { recursive: true, force: true });
-    // strip model: from SKILL.md for Claude compat (one source skill has it)
-    const skillMd = join(dst, "SKILL.md");
-    if (existsSync(skillMd)) {
-      await writeFile(skillMd, stripModelLine(await readFile(skillMd, "utf8")), "utf8");
-    }
-    entries[sname] = { type: "skill", targets: { claude: await hashSkillDir(dst) } };
-    count++;
-  }
-  console.log(`  claude:  ${count}  -> ~/.claude/skills/`);
-  return entries;
 }
 
 async function cmdRemove(args, opts) {

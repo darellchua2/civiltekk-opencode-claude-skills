@@ -44,18 +44,21 @@ Cross-module consumers exist (tests, docs, bin) → architecture review selected
 
 ### Phase 2: agents-target install path
 
-- [ ] **2.1** Implement shared-target skill install: verbatim `cp` of the skill dir to `~/.agents/skills/<name>/`; manifest entry gains `targets.agents = hashSkillDir(dst)`.
+- [x] **2.1** Implement shared-target skill install: verbatim `cp` of the skill dir to `~/.agents/skills/<name>/`; manifest entry gains `targets.agents = hashSkillDir(dst)`.
     — **Why:** core value — pi and Kimi read `~/.agents/skills/`; verbatim copy is safe because both loaders ignore unknown frontmatter.
     — **Done when:** `add --target agents --skills <name> --yes` creates the dir tree; the shared write path resolves dest + transform from `TARGETS` (no bespoke `writeAgentsFormat`-style branch beside `writeClaudeFormat`); manifest entry records `targets.agents`.
     — **Consumers affected:** `cmdUpdate`/`cmdRemove` (Phase 3), Kimi/pi users.
-- [ ] **2.2** Implement shared-target agent install: write raw `agent.content` (NO `injectModelLine`) to `~/.agents/agents/<stem>.md`; record `manifest.agents` for shared-target installs (extend the `doOc`-only condition at `init.mjs:716`); entry `targets.agents = sha256Hex(content)`.
+    — **Done:** shared skill install verified (dir tree created, manifest `targets.agents` recorded); write loop resolves dest+transform from `TARGETS` — `writeClaudeFormat` folded into the table loop and deleted, no bespoke branch; files: installer/init.mjs; fixes: none
+- [x] **2.2** Implement shared-target agent install: write raw `agent.content` (NO `injectModelLine`) to `~/.agents/agents/<stem>.md`; record `manifest.agents` for shared-target installs (extend the `doOc`-only condition at `init.mjs:716`); entry `targets.agents = sha256Hex(content)`.
     — **Why:** foreign targets ship agents unpinned (ticket #453 decision); the raw content hash differs from the opencode-injected hash by design — per-target hashes (#379) already accommodate this.
     — **Done when:** installed file contains no `model:` line unless the source has one; manifest lists the stem; manifest `entries` carry both `opencode` and `agents` hashes after a `both`+`agents` install; the opencode agent write path (`init.mjs:681-688`) now resolves its dest + inject transform from `TARGETS` rather than inline constants.
     — **Consumers affected:** `cmdUpdate` (Phase 3), Kimi users.
-- [ ] **2.3** Regression sweep: in a temp `$HOME`, run full `add` for `opencode`, `claude`, and `both` and diff the manifests + written trees against the 1.1 baseline.
+    — **Done:** shared agent install verified (raw content written, 0 `model:` lines, manifest.agents records stem); dual-target install carries differing opencode(injected)/agents(raw) hashes; opencode write path resolves via TARGETS; files: installer/init.mjs; fixes: none
+- [x] **2.3** Regression sweep: in a temp `$HOME`, run full `add` for `opencode`, `claude`, and `both` and diff the manifests + written trees against the 1.1 baseline.
     — **Why:** AC demands zero regression on existing targets; a diff is the only objective proof.
     — **Done when:** manifest key-sets and written-tree shapes identical to baseline (modulo `generatedAt`); every remaining read/write site in `init.mjs` resolves per-target dest/transform via `TARGETS` (structural grep owned by 3.1).
     — **Consumers affected:** existing user installs.
+    — **Done:** old(main) vs new per opencode/claude/both — manifests identical modulo generatedAt, written trees identical; the opencode-target ~/.claude "DIFF" was a both-sides-missing artifact (confirmed neither writes it); dir-creation semantics kept byte-compatible (unconditional mkdir per active target); files: none (verification); fixes: none
 
 ### Phase 3: lifecycle (update / remove)
 
