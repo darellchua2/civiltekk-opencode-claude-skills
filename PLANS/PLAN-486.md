@@ -28,14 +28,16 @@
 
 ### Phase 1: Evidence (recorded pre-plan)
 
-- [ ] **1.1** Verify surfaces and deploy-copy behavior: full allows (106) ⊆ root(146 SKILL.md dirs) ∪ app(1: `github-runners-setup-skill`); dead = none; root∩app = ∅; `deploy/setup.sh:1519` copies root `skills/` only (app skill never reaches user deploys); raw root readdir = 147 because `skills/_archived` exists — guards MUST filter by `SKILL.md` presence
+- [x] **1.1** Verify surfaces and deploy-copy behavior: full allows (106) ⊆ root(146 SKILL.md dirs) ∪ app(1: `github-runners-setup-skill`); dead = none; root∩app = ∅; `deploy/setup.sh:1519` copies root `skills/` only (app skill never reaches user deploys); raw root readdir = 147 because `skills/_archived` exists — guards MUST filter by `SKILL.md` presence
     — **Why:** every later step's correctness (guard semantics, prose claims) hangs on these derived facts living in the ticket trail, not session memory
     — **Done when:** the facts above are recorded under Technical Notes → Surface Evidence
     — **Consumers affected:** guard design (2.1), prose wording (3.2)
-- [ ] **1.2** Enumerate every 106-citing surface: `README.md:408`, `deploy/setup.sh:599` + `:3357`, `deploy/setup.ps1:71` + `:945`, `LEARNINGS/decisions/skill-permission-allowlist.md:6` (current-state) — with `:3` of the same file EXEMPT as a dated #481 narrative ("full +3 → 106 allows" was true then; dated narratives stay, current-state claims go surface-explicit)
+    — **Done:** verified in worktree @ 35dd2543: allows=106 ⊆ root(146 SKILL.md dirs)∪app(1); dead=none; root∩app=none; raw root readdir=147 incl. skills/_archived (filter by SKILL.md); deploy/setup.sh:1519 copies root surface only — all recorded under Technical Notes → Surface Evidence; files: none; fixes: none
+- [x] **1.2** Enumerate every 106-citing surface: `README.md:408`, `deploy/setup.sh:599` + `:3357`, `deploy/setup.ps1:71` + `:945`, `LEARNINGS/decisions/skill-permission-allowlist.md:6` (current-state) — with `:3` of the same file EXEMPT as a dated #481 narrative ("full +3 → 106 allows" was true then; dated narratives stay, current-state claims go surface-explicit)
     — **Why:** the sweep scope must be complete before editing; the dated-vs-current distinction prevents the partial-record-refresh anti-pattern in reverse (falsifying history)
     — **Done when:** the list is recorded under Technical Notes and 3.3's re-sweep uses it as the expected-hit set
     — **Consumers affected:** scope of 3.2
+    — **Done:** expected-hit set recorded under Technical Notes → 106-cite sites; dated-narrative exemption (decisions :3) noted; files: PLANS/PLAN-486.md (Technical Notes append); fixes: none
 
 ### Phase 2: Union guard (AC1)
 
@@ -84,6 +86,8 @@
 
 **Origin:** flagged as "phantom allow" in #481 code review; corrected on investigation — not a dead rule, a second surface. Both misses in this saga (the phantom call, the #481-plan 26-vs-3 duplicate delta) were single-surface derivations.
 
+**106-cite sites (1.2 expected-hit set):** `README.md:408` (allows parenthetical + savings derivation), `deploy/setup.sh:599` + `:3357`, `deploy/setup.ps1:71` + `:945`, `LEARNINGS/decisions/skill-permission-allowlist.md:6` (current-state Pattern). EXEMPT: `decisions/skill-permission-allowlist.md:3` — dated #481 narrative ("full +3 → 106 allows"), period-true, stays.
+
 **Registry scope (no change):** `installer/build-registry.mjs` scans root `skills/` only; the app skill is intentionally absent from `registry.json` (npx add serves the deployable surface). The union guard reads directories directly, independent of the registry.
 
 ## Dependencies
@@ -95,3 +99,5 @@
 - **Guard false-greens via `_archived`.** Mitigation: helper filters by `SKILL.md` presence (1.1 evidence baked into the implementation).
 - **Negative fixture drift (phantom name already exists someday).** Mitigation: `not-a-real-skill` mirrors the existing typo-guard fixture name; overlap assert also guards the inverse.
 - **Prose qualifiers rot as counts drift.** Mitigation: sites carry the qualifier inline next to the number, and the count-sweeps learning's re-derive rule covers them.
+
+`GATE 2ffcf6b+p1 lint=n.a. typecheck=n.a. build=n.a. unit=n.a. e2e=n.a` — evidence-only phase, no source changes.
