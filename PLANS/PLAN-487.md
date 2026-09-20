@@ -28,6 +28,8 @@ _Before writing steps, list each touched file/module and who consumes it. Codegr
 | `opencode_app/mcp-servers/markitdown-local-mcp/` (delete) | config + both setup scripts no longer referencing it | `THIRD_PARTY_LICENSES.md` §4 and README prose (text refs only) | low |
 | `deploy/packs/pack-markitdown.json` (`$comment` only) | script rename for accurate comment | `deploy/merge-packs.mjs` ignores `$comment`; `tests/test_pack_permissions.bats` merge behavior | low |
 | `tests/test_pack_permissions.bats`, `tests/test_setup_ps1_vars.bats` | final script/config shape (Phases 1–2) | CI bats suite | medium |
+| `opencode_app/README.md` (Docker bake section, lines ~152–163) | Dockerfile swap (2.1); vendored dir deletion (2.2) | Docker users deciding what is safe to convert; repo AGENTS.md sync rule (mandatory file for Dockerfile changes) | medium |
+| repo-root `AGENTS.md` (Office Document Extraction Routing, markitdown tier-1 row) | docs phase (residual note) | every routing agent in every session (auto-injected instructions) | low |
 | Docs: `README.md`, `THIRD_PARTY_LICENSES.md`, `skills/markitdown-mcp-skill/SKILL.md`, `agents/office-document-router-subagent.md`, `agents/documentation-subagent.md`, `CHANGELOG.md` | final implementation shape | end users; routing agents | low |
 
 Cross-module consumers exist (opencode runtime, CI, deployed user machines) — architecture review selected at plan review.
@@ -52,7 +54,7 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Consumers affected:** full-setup users, `--enable-pack markitdown` users, test_pack_permissions.bats hook assertions.
 - [ ] **1.4** Mirror steps 1.2–1.3 in `deploy/setup.ps1`: rename `Install-LocalMcpLaunchers` → `Install-MarkitdownMcp`, same probe/install/uninstall-old/PATH-warn shape (Windows script dir `%APPDATA%\Python\Scripts`), update `Set-Configuration` + `Invoke-PackMerger` call sites and help text.
     — **Why:** platform parity is a repo invariant (#469) — a bash-only swap breaks Windows deploys silently.
-    — **Done when:** `grep -c 'Install-LocalMcpLaunchers' deploy/setup.ps1` returns zero; both call sites reference `Install-MarkitdownMcp`.
+    — **Done when:** `grep -c 'Install-LocalMcpLaunchers' deploy/setup.ps1` returns zero; both call sites reference `Install-MarkitdownMcp`; parity grep `grep -n 'markitdown-local-mcp' deploy/setup.ps1` returns only the intentional uninstall-migration reference.
     — **Consumers affected:** Windows users, Invoke-PackMerger, test_pack_permissions.bats / test_setup_ps1_vars.bats greps.
 - [ ] **1.5** Update the `$comment` in `deploy/packs/pack-markitdown.json` to describe the PyPI install (behavior keys unchanged).
     — **Why:** the comment documents the install mechanism; leaving it stale misleads the next maintainer.
@@ -65,20 +67,20 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Why:** the image must bake the same server the config spawns; container isolation makes the `mcp[cli]` co-install unnecessary there.
     — **Done when:** no reference to `/tmp/markitdown-local-mcp` remains; RUN layer pins the PyPI package.
     — **Consumers affected:** `docker compose build` (opencode_app/README.md).
-- [ ] **2.2** `git rm -r opencode_app/mcp-servers/markitdown-local-mcp/` after Phases 1–2 confirm zero references.
+- [ ] **2.2** `git rm -r opencode_app/mcp-servers/markitdown-local-mcp/` after Phases 1–2 confirm zero references on **functional surfaces only** (`opencode_app/opencode.json`, non-uninstall lines of `deploy/setup.sh`/`deploy/setup.ps1`, `opencode_app/Dockerfile`, `deploy/packs/pack-markitdown.json`).
     — **Why:** the vendored source is the thing being retired; deleting it while anything still references it breaks grep-based tests and docs.
-    — **Done when:** `grep -rn 'markitdown-local-mcp' --include='*' .` in the worktree returns only intentional references (uninstall lines in setup scripts, historical CHANGELOG entries).
+    — **Done when:** the functional-surface grep returns zero matches. (The exhaustive repo-wide zero-reference sweep is gate 5.6, after Phases 3–4 update the test and doc surfaces.)
     — **Consumers affected:** THIRD_PARTY_LICENSES.md §4 and README prose (Phase 4 rewrites them).
 
 ### Phase 3: Tests
 
-- [ ] **3.1** Update `tests/test_pack_permissions.bats`: replace `pip show markitdown-local-mcp` greps with `pip show markitdown-mcp`, re-verify the `run_pack_merger()` hook sed-range and dry-run-safety assertions against the renamed function body.
+- [ ] **3.1** Update `tests/test_pack_permissions.bats`: replace `pip show markitdown-local-mcp` greps with `pip show markitdown-mcp`, scrub the line-74 merge fixture (`"command": ["markitdown-local-mcp"]` → `["markitdown-mcp"]`), re-verify the `run_pack_merger()` hook sed-range and dry-run-safety assertions against the renamed function body.
     — **Why:** these greps are the mechanical guard that setup.sh installs the launcher on enable; stale greps false-green the CI gate.
     — **Done when:** `bats tests/test_pack_permissions.bats` passes.
     — **Consumers affected:** CI.
-- [ ] **3.2** Update `tests/test_setup_ps1_vars.bats`: replace the `Join-Path $RepoDir "opencode_app\mcp-servers\markitdown-local-mcp"` assertion with one asserting the new PyPI pin appears in setup.ps1.
-    — **Why:** the test pins platform parity of the launcher install; it must assert the new mechanism.
-    — **Done when:** `bats tests/test_setup_ps1_vars.bats` passes.
+- [ ] **3.2** Update `tests/test_setup_ps1_vars.bats`: replace the `Join-Path $RepoDir "opencode_app\mcp-servers\markitdown-local-mcp"` assertion with fixed-string assertions (`grep -qF`) for BOTH clauses in setup.ps1 — the `markitdown-mcp==0.0.1a7` pin AND the `mcp[cli]>=2.1.1,<3.0.0` co-install.
+    — **Why:** the test pins platform parity of the launcher install; a pin-only assertion would false-green a setup.ps1 that drops `mcp[cli]`, silently breaking AC6's docling coexistence on Windows (the Linux `pip check` in 5.5 cannot catch it). `-qF` because `[` in `mcp[cli]` and the comma in the range are regex metacharacters.
+    — **Done when:** `bats tests/test_setup_ps1_vars.bats` passes; both clauses asserted.
     — **Consumers affected:** CI.
 - [ ] **3.3** Run the full bats suite; fix any collateral failures (e.g. `test_markitdown_skill`, `test_mcp_count_consistency` greps) without weakening assertions.
     — **Why:** AC7 requires the suite green; collateral grep drift must surface now, not in CI.
@@ -103,6 +105,14 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Why:** the repo's release flow reads CHANGELOG; behavior changes must be user-visible there.
     — **Done when:** entry present under the unreleased section in Conventional-Commits style.
     — **Consumers affected:** release tooling, users reading release notes.
+- [ ] **4.5** Rewrite the Docker bake section of `opencode_app/README.md` (lines ~152–163): describe the PyPI `markitdown-mcp==0.0.1a7` install, remove the link into the deleted `mcp-servers/markitdown-local-mcp/README.md`, drop the "no `markitdown[all]`, no `azure-*`, no `SpeechRecognition`, no `youtube-transcript-api` installed" claim, and restate the audio/YouTube residual.
+    — **Why:** this is the Docker doc of record; the swap makes its privacy claims false and its link dead, and repo AGENTS.md lists this file as a mandatory sync target for Dockerfile changes.
+    — **Done when:** no `markitdown-local-mcp` reference remains in the file; the residual caveat is present.
+    — **Consumers affected:** Docker users; documentation-consistency checks.
+- [ ] **4.6** Add a one-line residual note to the repo-root `AGENTS.md` Office Document Extraction Routing section: markitdown tier-1 now runs upstream `markitdown[all]` — audio file inputs upload to Google Speech and YouTube URLs contact YouTube; born-digital office docs remain local.
+    — **Why:** AGENTS.md is the declared single source of truth for routing and currently markets tier-1 markitdown as "no cloud"; agents relying on that claim would feed it audio/YouTube inputs unknowingly.
+    — **Done when:** the routing section carries the residual note; no absolute "local-only/no cloud" claim remains for markitdown.
+    — **Consumers affected:** every routing agent (auto-injected instructions).
 
 ### Phase 5: Verification gates
 
@@ -126,6 +136,10 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Why:** AC5/AC6 are end-to-end claims — spawn + handshake + coexistence can only be proven by running the real server.
     — **Done when:** handshake returns a JSON-RPC result with serverInfo; `pip check` clean for both packages.
     — **Consumers affected:** this machine's broken markitdown + docling installs (repaired as a side effect).
+- [ ] **5.6** Exhaustive zero-reference sweep: `grep -rn 'markitdown-local-mcp' .` in the worktree returns only the allowlisted references — setup-script uninstall-migration lines and historical CHANGELOG entries.
+    — **Why:** the repo-wide gate can only pass after Phases 3–4 update the test and doc surfaces; running it here (not at 2.2) keeps every phase's gate satisfiable at its own position.
+    — **Done when:** grep output contains no functional or stale-doc reference outside the allowlist.
+    — **Consumers affected:** CI grep guards; future maintainers grepping for the old name.
 
 ## Technical Notes
 
