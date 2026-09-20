@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.19.0](https://github.com/darellchua2/opencode-config-template/compare/v9.18.0...v9.19.0) (2026-09-20)
+
+### Features
+
+* **plugins:** opencode-* prefix + per-platform naming convention ([#456](https://github.com/darellchua2/opencode-config-template/issues/456)) ([#463](https://github.com/darellchua2/opencode-config-template/issues/463)) ([36c98b9](https://github.com/darellchua2/opencode-config-template/commit/36c98b95f88743cfc132b5391c8ceca8b66f8139))
+
 ## [9.18.0](https://github.com/darellchua2/opencode-config-template/compare/v9.17.0...v9.18.0) (2026-09-20)
 
 ### Features
