@@ -27,14 +27,20 @@ SETUP_PS1="deploy/setup.ps1"
 }
 
 @test "env_file_dry_run_leaves_bytes_unchanged" {
-  local d before after
+  local d before after escape
   d="$(mktemp -d)"
   mkdir -p "$d/repo"
   printf 'LLM_PORT=1234\nOTHER=x\n' > "$d/repo/.env"
   before="$(md5sum < "$d/repo/.env")"
-  HOME="$d" REPO_DIR="$d/repo" bash -c "source '$SETUP_SH' >/dev/null 2>&1; DRY_RUN=true; setup_local_llm_env" >/dev/null 2>&1
+  # Sandbox-escape detector: the worktree .env (untracked user config) must be
+  # untouched afterwards — a source-time REPO_DIR clobber would mutate it here.
+  if [ -f .env ]; then escape="$(md5sum < .env)"; fi
+  # REPO_DIR is assigned AFTER source on purpose: setup.sh:70 unconditionally
+  # reassigns it from SCRIPT_DIR, clobbering any env-prefix sandbox (#467).
+  HOME="$d" bash -c "source '$SETUP_SH' >/dev/null 2>&1; DRY_RUN=true; REPO_DIR='$d/repo'; setup_local_llm_env" >/dev/null 2>&1
   after="$(md5sum < "$d/repo/.env")"
   [ "$before" = "$after" ]
+  if [ -n "$escape" ]; then [ "$escape" = "$(md5sum < .env)" ]; fi
   rm -rf "$d"
 }
 
@@ -43,16 +49,26 @@ SETUP_PS1="deploy/setup.ps1"
   d="$(mktemp -d)"
   mkdir -p "$d/repo"
   printf 'LLM_PORT=1234\n' > "$d/repo/.env"
-  HOME="$d" REPO_DIR="$d/repo" bash -c "source '$SETUP_SH' >/dev/null 2>&1; DRY_RUN=false; setup_local_llm_env" >/dev/null 2>&1
-  grep -q '^LLM_PORT=' "$d/repo/.env"
-  ! grep -q '^LLM_PORT=1234$' "$d/repo/.env"
+  HOME="$d" bash -c "source '$SETUP_SH' >/dev/null 2>&1; DRY_RUN=false; REPO_DIR='$d/repo'; setup_local_llm_env" >/dev/null 2>&1
+  grep -q '^LLM_PORT=17851' "$d/repo/.env"
+  # Negated assertions (`! grep`) are errexit-exempt and can NEVER fail a bats
+  # test — use run + explicit status instead (#467 round 1).
+  run grep -q '^LLM_PORT=1234$' "$d/repo/.env"
+  [ "$status" -eq 1 ]
   rm -rf "$d"
 }
 
 @test "setup_sh_models_only_passes_dry_run_to_manifest_update" {
-  # The exact invocation line must carry the DRY_RUN-conditional flag —
-  # cmdUpdate gates writes AND prune on !dry (init.mjs), so this is sufficient.
-  grep -F 'init.mjs" update ${PROVIDER:+--provider ${PROVIDER}} ${DRY_RUN:+--dry-run}' "$SETUP_SH"
+  # Conditional-assignment form, pinned positively AND by banning the
+  # ${DRY_RUN:+...} spelling that expanded on the string "false" and silently
+  # dried real models-only runs (#467 round 1 BLOCK).
+  grep -F '[ "$DRY_RUN" = true ] && dry_arg="--dry-run"' "$SETUP_SH"
+  grep -F '${dry_arg}' "$SETUP_SH"
+  run grep -Fc '${DRY_RUN:+--dry-run}' "$SETUP_SH"
+  [ "$status" -eq 1 ]
+  # Semantics pin documenting WHY the spelling is banned:
+  run bash -c 'DRY_RUN=false; echo ${DRY_RUN:+expanded}'
+  [ "$output" = "expanded" ]
 }
 
 @test "setup_ps1_models_only_passes_dry_run_to_manifest_update" {

@@ -17,6 +17,33 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### Negated assertions are errexit-exempt — they can never fail a bats test
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/negated-assertions-errexit-exempt.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: `! grep …` as an assertion line never fails under set -e — assert absence with `run` + explicit status check (#467 review)
+- **Date**: 2026-09-20
+
+### Env-prefix sandboxing of globals a sourced script reassigns is clobbered
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/bats-source-sandbox-clobbered-globals.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: `REPO_DIR=x bash -c "source setup.sh; …"` dies at source time — assign sandbox globals after source and md5-pin the real target as an escape detector (#467 review)
+- **Date**: 2026-09-20
+
+### `${VAR:+word}` gates on non-emptiness, not truth — banned on boolean strings
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/colon-plus-on-boolean-string-flags.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: with DRY_RUN="false" (non-empty), `${DRY_RUN:+--dry-run}` expands on every run — real models-only deploys became silent previews; use `[ "$FLAG" = true ] && arg=` (#467 review BLOCK)
+- **Date**: 2026-09-20
+
 ### Menu-case-to-flag extraction must re-derive the menu path's free preconditions
 
 - **Category**: pattern

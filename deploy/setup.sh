@@ -4222,7 +4222,12 @@ main() {
         # Dry-run safe (#467): the resolver above stages a preview; the manifest
         # update must not re-apply for real. cmdUpdate gates writes and prune
         # on !dry (init.mjs), so the flag is sufficient.
-        node "${INSTALLER_DIR}/init.mjs" update ${PROVIDER:+--provider ${PROVIDER}} ${DRY_RUN:+--dry-run}
+        # NOTE: a conditional-expansion gate (${VAR:+word} form) would expand on
+        # the non-empty string "false" and permanently dry real runs — the
+        # explicit comparison form below is deliberate (see test_dry_run_leaks).
+        local dry_arg=""
+        [ "$DRY_RUN" = true ] && dry_arg="--dry-run"
+        node "${INSTALLER_DIR}/init.mjs" update ${PROVIDER:+--provider ${PROVIDER}} ${dry_arg}
         rc=$?
         if [ "$rc" -ne 0 ]; then
             log_warn "manifest update skipped (exit ${rc}) — pre-#379 installs: one full ./deploy/setup.sh run adopts the manifest"
