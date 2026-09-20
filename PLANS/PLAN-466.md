@@ -81,4 +81,4 @@ None — standalone. Part of epic #464.
 
 ## Gate Trace
 
-GATE (fix-round head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 424 ok / 0 fail — 10 new pins after the no-mode enable-pack case; node --test 30 pass / 0 fail; review: 0 BLOCK / 0 WARN / 6 NOTE, NOTEs 1/2/4/5 applied, 3/6 documented as accepted; Mode R: fail-closed exit-1 on headless network failure CONFIRMED, fork documented at the abort site + notice flag list)
+GATE (fix-round head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 423 ok / 0 fail — 9 new tests (7 parser incl. the no-mode enable-pack assertion, 2 headless); node --test 30 pass / 0 fail; review: 0 BLOCK / 0 WARN / 6 NOTE, NOTEs 1/2/4/5 applied, 3/6 documented as accepted; Mode R: fail-closed exit-1 on headless network failure CONFIRMED, fork documented at the abort site + notice flag list)
