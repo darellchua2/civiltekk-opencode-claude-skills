@@ -2285,8 +2285,8 @@ setup_nodejs() {
 
     if prompt_yes_no "Install/switch to Node.js v24?" "y"; then
         log_info "Installing Node.js v24..."
-        run_cmd "nvm install 24"
-        run_cmd "nvm use 24"
+        run_cmd "nvm install 26"
+        run_cmd "nvm use 26"
 
         if command_exists node; then
             log_success "Node.js $(node --version) installed and active"

@@ -1489,8 +1489,8 @@ function Install-NodeJS {
     if (Test-CommandExists "nvm") {
         Write-LogInfo "nvm-windows is installed"
         Write-LogInfo "Installing Node.js v24 via nvm..."
-        Invoke-WithDryRun "nvm install 24"
-        Invoke-WithDryRun "nvm use 24"
+        Invoke-WithDryRun "nvm install 26"
+        Invoke-WithDryRun "nvm use 26"
 
         if (Test-CommandExists "node") {
             $nv = & node --version 2>$null
