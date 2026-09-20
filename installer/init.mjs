@@ -69,7 +69,8 @@ const TARGETS = {
   claude: { skillsDir: USER_CLAUDE_SKILLS, skillMode: "model-strip" }, // agents skipped (#377; #457 adds them)
   agents: { agentsDir: USER_AGENTS_SHARED, skillsDir: USER_SKILLS_SHARED, agentMode: "verbatim", skillMode: "verbatim" },
 };
-const TARGET_VALUES = ["opencode", "claude", "both", "agents"];
+// derived from the table so a new target row can't skip validation (both = opencode+claude alias)
+const TARGET_VALUES = [...Object.keys(TARGETS), "both"];
 const activeTargets = (target) => (target === "both" ? ["opencode", "claude"] : [target]);
 
 // ─────────────────────────── arg parsing ────────────────────────────────
@@ -666,10 +667,10 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     die(`invalid target '${target}'. Use: opencode, claude, agents, or both.`, 2);
   const doOc = target === "opencode" || target === "both";
   const doClaude = target === "claude" || target === "both";
-  // Claude Code target installs skills only — surface the skip in the preview too (#377).
   const claudeSkipWarning = doClaude && sel.agents.length
     ? `warning: ${sel.agents.length} agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)`
     : null;
+  // Claude Code target installs skills only — surface the skip in the preview too (#377).
 
   if (dry) {
     if (claudeSkipWarning) console.error(claudeSkipWarning);
@@ -699,8 +700,8 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const newEntries = {};
   for (const t of activeTargets(target)) {
     const cfg = TARGETS[t];
-    if (t === "claude" && sel.agents.length)
-      console.error(`warning: ${sel.agents.length} agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)`);
+    if (t === "claude" && claudeSkipWarning)
+      console.error(claudeSkipWarning);
     if (cfg.agentsDir) {
       await mkdir(cfg.agentsDir, { recursive: true });
       for (const stem of sel.agents) {
@@ -965,7 +966,7 @@ async function cmdUpdate(args, opts) {
       if (prune && !dry) {
         for (const t of Object.keys(ent.targets)) {
           const cfg = TARGETS[t];
-          if (!cfg) continue;
+          if (!cfg) { console.error(`warning: pruning '${name}': unknown install target '${t}' — its files (if any) were left in place`); continue; }
           const p = ent.type === "agent"
             ? (cfg.agentsDir ? join(cfg.agentsDir, `${name}.md`) : null)
             : (cfg.skillsDir ? join(cfg.skillsDir, name) : null);

@@ -130,3 +130,5 @@ GATE e5f4a8f lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — bats 49 ok,
 GATE 300b271 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — FINAL: 55 bats ok (init/update/parse_arguments/agents_target), node --test green, pack+drift bats green
 
 AC ticked at 4dd8779+trace: all five verified by Phases 1-4 (agents-target installs + manifest, table-driven paths w/ structural gate + regression sweep, per-target hashes/update/remove, dry-run, gates+docs).
+
+**Review round 1 (code-review-subagent, 0 BLOCK / 1 WARN / 4 NOTE):** WARN fixed — 4 hand-verified behaviors pinned as bats cases in agents_target.bats (bogus-target die, update idempotency, zero-HIDDEN advisory, unknown-key warned no-op); NOTEs applied — TARGET_VALUES derived from TARGETS keys (derived-consistency-pins), claude skip-warning single-sourced, prune-path unknown-key now warns. NOTE left as-is: destinations map granularity (inherited legacy contract, changing risks consumers). Requirements Gaps: none.

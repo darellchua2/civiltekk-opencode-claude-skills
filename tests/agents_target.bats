@@ -79,6 +79,43 @@ assert 'code-review-subagent' in m['agents'], m['agents']
   [ ! -e "${HOME}/.agents/skills/tdd-workflow-skill" ]
 }
 
+@test "agents target: invalid --target value dies listing all four" {
+  run $INIT add tdd-workflow-skill --target bogus --yes
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q "Use: opencode, claude, agents, or both."
+}
+
+@test "update: agents-target entry is idempotent without source mutation" {
+  $INIT add code-review-subagent --target agents --yes --no-deps >/dev/null 2>&1
+  run $INIT update
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "updated 0 · unchanged 1"
+}
+
+@test "update: agents-only manifest produces zero HIDDEN advisory lines" {
+  mkdir -p "${HOME}/.config/opencode"
+  echo '{"permissions":[{"action":"skill","resource":"*","effect":"deny"}]}' > "${HOME}/.config/opencode/opencode.json"
+  $INIT add tdd-workflow-skill --target agents --yes >/dev/null 2>&1
+  run $INIT update
+  [ "$status" -eq 0 ]
+  ! echo "$output" | grep -q "HIDDEN"
+}
+
+@test "update: unknown manifest target key is a warned no-op (never fallback dispatch)" {
+  $INIT add tdd-workflow-skill --target agents --yes >/dev/null 2>&1
+  python3 - "$MANIFEST" <<'EOF'
+import json, os, sys
+p = sys.argv[1]
+m = json.load(open(p))
+m["entries"]["tdd-workflow-skill"]["targets"]["bogus"] = "sha256:deadbeef"
+json.dump(m, open(p, "w"), indent=2)
+EOF
+  run $INIT update
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "unknown install target 'bogus'"
+  [ -f "${HOME}/.agents/skills/tdd-workflow-skill/SKILL.md" ]
+}
+
 @test "agents target: --project keeps note-and-downgrade (no ~/.agents write)" {
   TMP_PROJ="$(mktemp -d)"
   run $INIT add tdd-workflow-skill --project "$TMP_PROJ" --target agents --yes
