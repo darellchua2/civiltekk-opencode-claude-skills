@@ -16,6 +16,42 @@
 ## Entries
 
 <!-- Entries are appended here automatically when new learnings are saved -->
+### PLAN consumer-map row without an owning step
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-consumer-map-row-without-step.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: a Dependency & Consumer Map row naming a consumer with no owning implementation step is a silent coverage hole — walk every map row to a step at plan review (#487 arch review)
+- **Date**: 2026-09-21
+
+### Done-when gate escapes its phase
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/done-when-gate-escapes-its-phase.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: a done-whose pass condition depends on later-phase edits is unsatisfiable at its own step — scope gates to current phase state, exhaustive sweeps to the final gate phase (#487)
+- **Date**: 2026-09-21
+
+### Idempotency probe version-blindness defeats the pin-bump ritual
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/idempotency-probe-version-blind.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: pip show + import probes skip install for ANY installed version, so pin bumps never reach working installs — probe must assert the pinned version (#487 code review)
+- **Date**: 2026-09-21
+
+### markitdown-mcp upstream facts (alpha pin, co-install, residual)
+
+- **Category**: solution
+- **File**: `solutions/markitdown-mcp-alpha-pin-upstream-facts.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: upstream publishes only alphas (latest 0.0.1a7) — exact pin installs without --pre; requires markitdown[all] + mcp>=2.1.1,<3; coexists with docling-mcp 3.x on mcp 2.x; stdio default; bump ritual spans 3 files
+- **Date**: 2026-09-21
+
 
 ### Gate success-log with the dry branch (early-return shape for new run_cmd gates)
 

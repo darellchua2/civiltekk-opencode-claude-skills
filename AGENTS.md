@@ -113,7 +113,7 @@ When a subagent needs domain knowledge, the primary loads the skill, extracts re
 
 | Tier | Engine | Best for | Enable |
 |------|--------|----------|--------|
-| 1 | markitdown (MCP) | Fast text dumps of born-digital docs (~1s/50 pages, no cloud) | `--enable-pack markitdown` |
+| 1 | markitdown (MCP) | Fast text dumps of born-digital docs (~1s/50 pages; local conversion, plugins off — note: audio inputs upload to Google Speech and YouTube URLs contact YouTube, #487) | `--enable-pack markitdown` |
 | 2 | docling (CLI or MCP) | Layout-aware: complex tables, multi-column, scanned PDFs | CLI `pip install --user docling` (ask consent, ~3-4 GB); MCP `--enable-pack docling` |
 | 3 | image-analyzer-subagent | Visual understanding: charts, diagrams, screenshots | always available (native multimodal) |
 | 4 | pdf-specialist-skill | Structured PDF data: forms, fillable fields, OCR-as-purpose | load skill |

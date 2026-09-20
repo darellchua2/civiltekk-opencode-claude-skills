@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+* **deploy:** swap markitdown to the official `markitdown-mcp` from PyPI (#487) — replaces the vendored `markitdown-local-mcp` launcher (deleted). Server command is now `markitdown-mcp` (stdio, `MARKITDOWN_ENABLE_PLUGINS=false` kept); setup installs `markitdown-mcp==0.0.1a7` with `mcp[cli]>=2.1.1,<3.0.0` co-installed so markitdown and docling share one MCP SDK 2.x. Residual (documented): cloud extras are present-but-dormant; audio file inputs upload to Google Speech and YouTube URLs contact YouTube.
+
 ## [9.20.0](https://github.com/darellchua2/opencode-config-template/compare/v9.19.6...v9.20.0) (2026-09-20)
 
 ### Features

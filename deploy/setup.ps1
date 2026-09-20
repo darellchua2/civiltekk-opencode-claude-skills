@@ -1782,9 +1782,13 @@ function Set-Configuration {
                 Write-LogSuccess "vibeguard.config.json deployed (secret masking active)"
                 $script:vgDeployed = $true
             }
-            # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
+            # Install the upstream markitdown MCP server (#487: markitdown-mcp from PyPI)
+            # only when the pack is requested — the server ships disabled:true, and
+            # markitdown[all] is a large install, so never on a plain deploy.
             # Best-effort — non-fatal on offline/pip-missing.
-            Install-LocalMcpLaunchers
+            if ($EnablePack -match '(^|,)markitdown(,|$)') {
+                Install-MarkitdownMcp
+            }
 
             # Install docling-mcp if --enable-pack docling was requested (PLAN-GIT-308).
             # Heavy (~3-4 GB) — only runs when explicitly opted in.
@@ -1919,12 +1923,12 @@ function Invoke-PackMerger {
         return
     }
 
-    # Install-on-enable: markitdown's Python launcher is pip-installed, not
-    # baked into the target config — without this the enabled server fails to
-    # spawn. Mirrors the sh hook in Invoke-PackMerger (setup.sh). Skipped in
+    # Install-on-enable: markitdown's Python server is pip-installed from PyPI,
+    # not baked into the target config — without this the enabled server fails
+    # to spawn. Mirrors the sh hook in Invoke-PackMerger (setup.sh). Skipped in
     # dry-run (nothing real is deployed) and when the pack wasn't requested.
     if ((-not $DryRun) -and ($EnablePack -match '(^|,)markitdown(,|$)')) {
-        Install-LocalMcpLaunchers
+        Install-MarkitdownMcp
     }
 
     # Best-effort hook: must not leak pip's exit code into the caller's
@@ -2097,46 +2101,67 @@ function Invoke-Migration {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LOCAL MCP LAUNCHER INSTALL (PLAN-GIT-262)
+# MARKITDOWN MCP INSTALL (#487 — upstream markitdown-mcp from PyPI)
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Install in-repo Python-based MCP launchers (currently: markitdown-local-mcp)
-# onto the user's PATH so OpenCode can spawn them via the `command` field in
-# opencode.json. Uses pip (already a soft dep). Mirrors install_local_mcp_launchers()
-# in setup.sh.
-function Install-LocalMcpLaunchers {
-    # bash inlines ${SCRIPT_DIR}/../opencode_app/... (setup.sh:2580); derive from
-    # $RepoDir the same way $SourceConfig is (:135). There is no $AppDir variable.
-    $launcherDir = Join-Path $RepoDir "opencode_app\mcp-servers\markitdown-local-mcp"
+# Install the official markitdown-mcp MCP server (microsoft/markitdown) from
+# PyPI onto the user's PATH so OpenCode can spawn it via the `command` field in
+# opencode.json. Replaces the former in-repo vendored launcher
+# (markitdown-local-mcp) — #487. Uses pip (already a soft dep). Mirrors
+# install_markitdown_mcp() in setup.sh.
+#
+# Why the exact pin: upstream publishes only alpha releases; plain `pip
+# install markitdown-mcp` fails because pip skips pre-releases. Bump ritual:
+# the pin appears in deploy/setup.sh, deploy/setup.ps1, and
+# opencode_app/Dockerfile — bump all three together.
+#
+# Why the mcp[cli] co-install: docling-mcp>=3.0 requires mcp[cli]>=2.0,<3.0 and
+# upstream markitdown-mcp requires mcp>=2.1.1,<3.0.0 — one shared SDK 2.x for
+# both servers (the retired vendored pin mcp<2.0 was mutually exclusive with
+# docling and broke both).
+function Install-MarkitdownMcp {
+    # Dry-run contract (#467): the pip uninstall/install below mutate the
+    # user's site-packages — never during a preview.
+    if ($DryRun) {
+        Write-Host "[DRY-RUN] Would ensure markitdown-mcp==0.0.1a7 (pip --user)" -ForegroundColor Cyan
+        $global:LASTEXITCODE = 0
+        return
+    }
+
+    # Migrate old installs: the retired vendored launcher must not linger on
+    # PATH beside the new entry point (best-effort — absent is fine). PEP 668
+    # retry mirrors the install path below.
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
+    if ($pythonCmd) {
+        & $pythonCmd.Name -m pip uninstall -y markitdown-local-mcp *> $null
+        if ($LASTEXITCODE -ne 0) {
+            & $pythonCmd.Name -m pip uninstall -y --break-system-packages markitdown-local-mcp *> $null
+        }
+    }
 
     # Idempotency: skip the network round-trip when already installed AND
     # importable — `pip show` alone hides broken installs (missing mcp SDK
     # dep), which surfaces later as "MCP error -32000: Connection closed".
-    # (Mirrors setup.sh install_local_mcp_launchers.) Single python probe —
+    # (Mirrors setup.sh install_markitdown_mcp.) Single python probe —
     # reused for the install below.
-    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
-    if (-not $pythonCmd) { $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue }
     if ($pythonCmd) {
-        & $pythonCmd.Name -m pip show markitdown-local-mcp *> $null
-        $pipOk = $LASTEXITCODE -eq 0
-        & $pythonCmd.Name -c "from markitdown_local_mcp.__main__ import main" *> $null
+        # Version-aware probe: a plain `pip show` passes for ANY installed
+        # version, so pin bumps would never reach working installs (#487).
+        $pipShow = (& $pythonCmd.Name -m pip show markitdown-mcp 2>$null) -join "`n"
+        $pipOk = ($LASTEXITCODE -eq 0) -and ($pipShow -like "*Version: 0.0.1a7*")
+        & $pythonCmd.Name -c "from markitdown_mcp.__main__ import main" *> $null
         $importOk = $LASTEXITCODE -eq 0
         if ($pipOk -and $importOk) {
-            Write-LogSuccess "markitdown-local-mcp already installed - skipping pip install"
+            Write-LogSuccess "markitdown-mcp 0.0.1a7 already installed - skipping pip install"
             $global:LASTEXITCODE = 0
             return
         }
     }
 
-    if (-not (Test-Path $launcherDir)) {
-        Write-LogWarn "markitdown-local-mcp launcher source not found at $launcherDir - skipping"
-        $global:LASTEXITCODE = 0
-        return
-    }
-
     # Prerequisite: python + pip (probed above)
     if (-not $pythonCmd) {
-        Write-LogWarn "python not found - cannot install markitdown-local-mcp. Install Python 3.10+ and re-run."
+        Write-LogWarn "python not found - cannot install markitdown-mcp. Install Python 3.10+ and re-run."
         $global:LASTEXITCODE = 0
         return
     }
@@ -2145,24 +2170,24 @@ function Install-LocalMcpLaunchers {
     # Install (network required; non-fatal if offline). PEP 668
     # (externally-managed-environment, Debian 12+/Ubuntu 23.04+) blocks plain
     # `pip install --user` - retry once with --break-system-packages (--user
-    # keeps the install isolated to ~/.local, which is the risk PEP 668 guards).
-    Write-LogInfo "$python -m pip install --user --force-reinstall $launcherDir"
-    $pipOut = & $python -m pip install --user --force-reinstall --no-warn-script-location $launcherDir 2>&1
+    # keeps the install isolated to the user site).
+    Write-LogInfo "$python -m pip install --user 'markitdown-mcp==0.0.1a7' 'mcp[cli]>=2.1.1,<3.0.0'"
+    $pipOut = & $python -m pip install --user --no-warn-script-location "markitdown-mcp==0.0.1a7" "mcp[cli]>=2.1.1,<3.0.0" 2>&1
     $pipRetry = $null
     if ($LASTEXITCODE -ne 0 -and (($pipOut | Out-String) -match 'externally-managed-environment')) {
         Write-LogInfo "PEP 668 externally-managed environment detected - retrying with --break-system-packages"
-        $pipRetry = & $python -m pip install --user --break-system-packages --force-reinstall --no-warn-script-location $launcherDir 2>&1
+        $pipRetry = & $python -m pip install --user --break-system-packages --no-warn-script-location "markitdown-mcp==0.0.1a7" "mcp[cli]>=2.1.1,<3.0.0" 2>&1
     }
     if ($LASTEXITCODE -eq 0) {
-        Write-LogSuccess "markitdown-local-mcp installed"
+        Write-LogSuccess "markitdown-mcp installed"
         # Windows console-script lands in %APPDATA%\Python\Scripts - warn if not on PATH
         $userScripts = Join-Path $env:APPDATA "Python\Scripts"
         if (-not ($env:PATH -like "*$userScripts*")) {
-            Write-LogWarn "$userScripts is not on your PATH. Add it to use markitdown-local-mcp:"
+            Write-LogWarn "$userScripts is not on your PATH. Add it to use markitdown-mcp:"
             Write-Host "    setx PATH `"$userScripts;%PATH%`"" -ForegroundColor Yellow
         }
     } else {
-        Write-LogWarn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) - OpenCode will work without it. Re-run setup when online to enable."
+        Write-LogWarn "pip install failed for markitdown-mcp (offline?). The server is opt-in (disabled: true) - OpenCode will work without it. Re-run setup when online to enable."
         if ($null -eq $pipRetry) { $pipRetry = $pipOut }
         Write-LogWarn "pip output (last 3 lines):"
         ($pipRetry | Out-String).Trim() -split "`r?`n" | Select-Object -Last 3 | ForEach-Object { Write-LogWarn "  pip: $_" }
@@ -2173,7 +2198,7 @@ function Install-LocalMcpLaunchers {
 }
 
 # Install docling-mcp (heavy ~3-4 GB) — only when --enable-pack docling is
-# requested. Unlike markitdown (local-dir pip install), docling-mcp comes from
+# requested. Like markitdown, docling-mcp comes from
 # PyPI. First convert downloads ~hundreds of MB of models from huggingface.co.
 # Mirrors install_docling() in setup.sh.
 function Install-Docling {

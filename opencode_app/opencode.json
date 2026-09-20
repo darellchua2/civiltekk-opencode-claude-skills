@@ -796,7 +796,7 @@
             "markitdown": {
                 "type": "local",
                 "command": [
-                    "markitdown-local-mcp"
+                    "markitdown-mcp"
                 ],
                 "environment": {
                     "MARKITDOWN_ENABLE_PLUGINS": "false"

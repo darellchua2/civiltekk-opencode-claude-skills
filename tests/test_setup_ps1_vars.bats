@@ -22,8 +22,14 @@ SETUP_PS1="deploy/setup.ps1"
   ! grep -q 'Join-Path \$AppDir' "$SETUP_PS1"
 }
 
-@test "setup_ps1_launcher_dir_derived_from_repo_dir" {
-  grep -qE 'Join-Path \$RepoDir "opencode_app\\mcp-servers\\markitdown-local-mcp"' "$SETUP_PS1"
+@test "setup_ps1_installs_pinned_markitdown_mcp_with_mcp_cli" {
+  # #487: setup.ps1 must install the exact PyPI pin AND the mcp[cli]
+  # co-install (docling-mcp shares the mcp 2.x SDK; dropping the clause
+  # breaks docling on Windows, undetectable by the Linux pip check gate).
+  # Fixed-string match: '[' in 'mcp[cli]' and the comma in the range are
+  # regex metacharacters.
+  grep -qF 'markitdown-mcp==0.0.1a7' "$SETUP_PS1"
+  grep -qF 'mcp[cli]>=2.1.1,<3.0.0' "$SETUP_PS1"
 }
 
 @test "setup_ps1_resolver_dry_run_passes_preview_dir" {

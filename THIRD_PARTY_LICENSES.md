@@ -151,20 +151,23 @@ SOFTWARE.
   We do not copy wjgoarxiv's files verbatim; the contract shape is the
   contribution cited here.
 
-## 4. microsoft/markitdown
+## 4. microsoft/markitdown + markitdown-mcp
 
 **Upstream:** <https://github.com/microsoft/markitdown>
 **License:** MIT
 **Copyright:** Copyright (c) Microsoft Corporation.
 
-### What we vendor
+### How we consume it (#487)
 
-- **`opencode_app/mcp-servers/markitdown-local-mcp/`** — a ~60-line MCP wrapper
-  that depends on the upstream `markitdown` library (constrained to local-only
-  extras: `[pdf,docx,pptx,xlsx,xls,outlook]`). The wrapper source itself is
-  newly authored for this repo; **no upstream markitdown-mcp source code is
-  copied verbatim**. The upstream library is consumed as a pip dependency at
-  install time, not embedded.
+- **`markitdown-mcp` (PyPI, pinned `==0.0.1a7`)** — the official MCP server is
+  installed from PyPI at deploy time (setup.sh / setup.ps1) and baked into the
+  Docker image. **No upstream markitdown or markitdown-mcp source code lives in
+  this repo** — the former in-repo wrapper (`opencode_app/mcp-servers/
+  markitdown-local-mcp/`) was retired in #487.
+- The server pulls `markitdown[all]`; its cloud-capable extras are present but
+  dormant (Azure converters require constructor kwargs that are never passed).
+  Accepted residual: audio inputs upload to Google Speech, YouTube URLs contact
+  YouTube — documented in the root README.
 
 ### MIT License (upstream, verbatim)
 
