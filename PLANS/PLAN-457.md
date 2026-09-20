@@ -90,3 +90,4 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 ## Gate Trace
 
 _Plan review round 1 (architecture-review-subagent): approved-with-notes; 2 required amendments applied — F1 `name: <stem>` synthesis added (Claude Code requires name+description; corpus census 0/34 carry name) with pre-existing-name guard + 3.1 assertion; F2 task→Task done-when reworded (corpus-inert: all task rules are deny+narrow-allow, Task must be ABSENT). Gap rulings adopted: F3 deny strategy mirrors kimi (disallowedTools + deny-wins; Technical Note corrected), F4 destinations.claude = ~/.claude + legacy-key decision documented, F5 suite renamed claude_target.bats, F6 stale-comment sweep added to 1.1/1.3. Stale-comment sites: init.mjs :73 row comment, :710, :775-778 manifest comment._
+GATE 11f3556 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — 84 bats ok (die-pin + #377 flip), node --test green
