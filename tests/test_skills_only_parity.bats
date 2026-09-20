@@ -35,10 +35,10 @@ SETUP_PS1="deploy/setup.ps1"
   rm -rf "$d"
 }
 
-@test "ps1_skills_only_reachable_path_chains_plugins_and_shim" {
-  # setup.ps1:1832-1833 — the config path -SkillsOnly runs must keep both.
-  local region
-  region="$(sed -n '1825,1840p' "$SETUP_PS1")"
-  echo "$region" | grep -q 'Deploy-Plugins'
-  echo "$region" | grep -q 'Setup-OpencodeInitShim'
+@test "ps1_skills_only_forwards_to_bash_skills_only" {
+  # #474: skills-only parity is structural — the launcher forwards
+  # -SkillsOnly to setup.sh's --skills-only, whose body is pinned above.
+  grep -q '\$SkillsOnly' "$SETUP_PS1"
+  grep -qF '"--skills-only"' "$SETUP_PS1"
+  grep -q 'setup.sh' "$SETUP_PS1"
 }

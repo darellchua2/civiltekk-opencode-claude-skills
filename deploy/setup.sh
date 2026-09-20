@@ -335,6 +335,9 @@ UPDATE_SCHEDULE="manual"
 CHECK_UPDATE_ONLY=false
 CHECK_CATALOG_ONLY=false    # --check-catalog (models.dev drift check)
 SELECT_ITEMS=false          # --select (per-item deploy picker)
+LIST_ITEMS=false            # --list-items (registry catalog dump)
+SAVE_PRESET_NAME=""         # --save-preset <name>
+LOAD_PRESET_NAME=""         # --preset <name>
 KEEP_BACKUPS=5
 
 # Rollback mode (set by --rollback)
@@ -349,7 +352,7 @@ FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
 ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,docling,chrome-devtools)
-SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 46 skills; full = shipped 105 verbatim)
+SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary-visible skills per deploy/skill-profiles.json; full = the shipped opencode.json skill set)
 ENABLE_LOCAL_LLM=false   # --enable-local-llm (gemma-4-E4B via llama.cpp, requires NVIDIA GPU)
 ENABLE_VLLM=false        # --enable-vllm (vLLM Docker server, requires >12GB VRAM)
 
@@ -538,6 +541,9 @@ USAGE:
   --peonping              Install PeonPing sound notifications  Headless /
                           (menu option 5 as a flag)             scripted installs
 
+  SUBCOMMANDS (aliases over the flags):
+    install | update | rollback | peonping | llm | plan | check-catalog
+
   --select                Pick skills/agents/packs/plugins per item   Custom
                           (interactive picker; emits a deploy plan)  deploys
 
@@ -564,11 +570,14 @@ USAGE:
     -u, --update          Update OpenCode CLI to latest version
     -P, --peonping        Install PeonPing sound notifications only
     --select              Pick deploy items interactively (per-item deploy)
+    --list-items          Dump the deploy item catalog (skills/agents/…)
+    --save-preset <name>  Save models.json + deploy-plan.json as a preset
+    --preset <name>       Deploy using a previously saved preset
     --check-catalog       Warn if provider model pins drifted from models.dev
     --rollback [TARGET]   Restore from previous backup (see SETUP MODES above)
 
   UPDATE MANAGEMENT:
-    -A, --enable-auto-update      Enable automatic opencode-ai updates
+    -A, --enable-auto-update      (removed) schedule updates externally, e.g. cron
     -D, --disable-auto-update     Disable automatic updates
     -S, --schedule-update <schedule>  Set update check frequency:
                                       daily, weekly, monthly, manual (default)
@@ -637,7 +646,7 @@ USAGE:
     ./setup.sh -y -q                # Quick setup, non-interactive
 
   Provider packs (deploy-time MCP toggle):
-    ./setup.sh --enable-pack autodesk             # Enable all 4 Autodesk MCP servers
+    ./setup.sh --enable-pack autodesk             # Enable the Autodesk MCP servers
     ./setup.sh --enable-pack autodesk,markitdown   # Enable multiple packs
     ./setup.sh --quick --enable-pack markitdown   # Combine with other modes
 
@@ -823,7 +832,10 @@ parse_arguments() {
                 shift
                 ;;
             -A|--enable-auto-update)
-                ENABLE_AUTO_UPDATE=true
+                # Auto-update was removed (#474): accepted no-op so existing
+                # scripts keep working.
+                ENABLE_AUTO_UPDATE=false
+                echo "Auto-update has been removed - schedule updates externally, e.g. cron: ./setup.sh --update"
                 shift
                 ;;
             -D|--disable-auto-update)
@@ -837,7 +849,9 @@ parse_arguments() {
                 fi
                 case "$2" in
                     daily|weekly|monthly|manual)
+                        # Removed with auto-update (#474): accepted no-op with a hint.
                         UPDATE_SCHEDULE="$2"
+                        echo "Auto-update has been removed - this flag is accepted but does nothing."
                         ;;
                     *)
                         log_error "Invalid --schedule-update value: '$2' (allowed: daily, weekly, monthly, manual)"
@@ -947,6 +961,58 @@ parse_arguments() {
                 PROVIDER="vllm"
                 shift
                 ;;
+            --list-items)
+                LIST_ITEMS=true
+                shift
+                ;;
+            --save-preset)
+                if [ $# -lt 2 ] || [ -z "$2" ]; then
+                    log_error "--save-preset requires a name"
+                    exit 1
+                fi
+                SAVE_PRESET_NAME="$2"
+                shift 2
+                ;;
+            --preset)
+                if [ $# -lt 2 ] || [ -z "$2" ]; then
+                    log_error "--preset requires a name"
+                    exit 1
+                fi
+                LOAD_PRESET_NAME="$2"
+                shift 2
+                ;;
+            install)
+                shift
+                ;;
+            update)
+                UPDATE_ONLY=true
+                shift
+                ;;
+            rollback)
+                ROLLBACK_MODE=true
+                shift
+                if [ $# -gt 0 ] && [[ "$1" != -* ]]; then
+                    ROLLBACK_TARGET="$1"
+                    shift
+                fi
+                ;;
+            peonping)
+                PEONPING_ONLY=true
+                shift
+                ;;
+            llm)
+                ENABLE_LOCAL_LLM=true
+                ENABLE_VLLM=true
+                shift
+                ;;
+            plan)
+                SELECT_ITEMS=true
+                shift
+                ;;
+            check-catalog)
+                CHECK_CATALOG_ONLY=true
+                shift
+                ;;
             *)
                 log_error "Unknown option: $1"
                 echo "Use -h or --help for usage information"
@@ -974,6 +1040,8 @@ validate_mode_conflicts() {
     [ "$CHECK_CATALOG_ONLY" = true ] && modes+=("--check-catalog")
     [ "$PEONPING_ONLY" = true ] && modes+=("--peonping")
     [ "$SELECT_ITEMS" = true ] && modes+=("--select")
+    [ "$LIST_ITEMS" = true ] && modes+=("--list-items")
+    [ -n "$SAVE_PRESET_NAME" ] && modes+=("--save-preset")
     if [ "${#modes[@]}" -gt 1 ]; then
         log_error "Mutually exclusive modes combined: ${modes[*]}. Choose one."
         exit 1
@@ -1863,24 +1931,6 @@ download_file() {
 ################################################################################
 
 # Show spinning progress
-show_progress() {
-    local message="$1"
-    local pid=$2
-    local delay=0.1
-    local spinstr='|/-\'
-
-    echo -n "${message} "
-
-    while ps -p $pid > /dev/null 2>&1; do
-        local temp=${spinstr#?}
-        printf " [%c]  " "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-
-    printf "    \b\b\b\b"
-}
 
 ################################################################################
 # SETUP FUNCTIONS
@@ -3616,6 +3666,12 @@ build_plan() {
     elif [ "$CHECK_CATALOG_ONLY" = true ]; then
         PLAN_MODE="check-catalog"
         PLAN_STEPS+=("true|catalog-check|Check provider-models against models.dev|check_provider_catalog")
+    elif [ "$LIST_ITEMS" = true ]; then
+        PLAN_MODE="list-items"
+        PLAN_STEPS+=("true|dump-catalog|Dump the deploy item catalog|dump_catalog")
+    elif [ -n "$SAVE_PRESET_NAME" ]; then
+        PLAN_MODE="save-preset"
+        PLAN_STEPS+=("true|save-preset|Save user preset|save_user_preset")
     elif [ "$MODELS_ONLY" = true ]; then
         PLAN_MODE="models-only"
         PLAN_STEPS+=("true|node-check|Node.js required|node_required")
@@ -3644,6 +3700,9 @@ build_plan() {
     else
         PLAN_MODE="full"
         PLAN_STEPS+=("true|deps|Dependency check|check_dependencies_strict")
+        if [ -n "$LOAD_PRESET_NAME" ]; then
+            PLAN_STEPS+=("true|load-preset|Load preset ${LOAD_PRESET_NAME}|load_user_preset")
+        fi
         if [ "$QUICK_SETUP" = false ]; then
             PLAN_STEPS+=("false|gh-cli|Set up GitHub CLI|setup_github_cli")
             PLAN_STEPS+=("false|zai-key|Configure Z.AI API key|setup_zai_api_key")
@@ -3965,6 +4024,43 @@ apply_selected_packs_extras() {
     # deleted under dry-run.
     if [ "$failed" -eq 0 ] && [ "$DRY_RUN" != true ]; then
         rm -f "$SELECT_PLAN_FILE"
+    fi
+    return 0
+}
+
+dump_catalog() {
+    node -e '
+        const r = require(process.argv[1]);
+        const out = { skills: {}, agents: {}, packs: [], plugins: [], extras: ["local-llm", "vllm"] };
+        for (const s of r.skills) { (out.skills[s.category || "Uncategorized"] ||= []).push(s.name); }
+        for (const a of r.agents) { (out.agents[a.tier || "unassigned"] ||= []).push(a.stem); }
+        console.log(JSON.stringify(out, null, 2));
+    ' "${REPO_DIR}/installer/registry.json"
+}
+
+save_user_preset() {
+    local preset_dir="${CONFIG_DIR}/presets/${SAVE_PRESET_NAME}"
+    run_cmd mkdir -p "$preset_dir"
+    if [ -f "$USER_MODELS_MAP" ]; then
+        run_cmd cp "$USER_MODELS_MAP" "${preset_dir}/models.json"
+    fi
+    if [ -f "$SELECT_PLAN_FILE" ]; then
+        run_cmd cp "$SELECT_PLAN_FILE" "${preset_dir}/deploy-plan.json"
+    fi
+    log_success "Preset '${SAVE_PRESET_NAME}' saved to ${preset_dir}"
+}
+
+load_user_preset() {
+    local preset_dir="${CONFIG_DIR}/presets/${LOAD_PRESET_NAME}"
+    if [ ! -d "$preset_dir" ]; then
+        log_error "Preset not found: ${preset_dir}"
+        return 1
+    fi
+    if [ -f "${preset_dir}/models.json" ]; then
+        run_cmd cp "${preset_dir}/models.json" "${USER_MODELS_MAP}"
+    fi
+    if [ -f "${preset_dir}/deploy-plan.json" ]; then
+        run_cmd cp "${preset_dir}/deploy-plan.json" "${SELECT_PLAN_FILE}"
     fi
     return 0
 }
@@ -4345,73 +4441,6 @@ check_for_updates_only() {
 }
 
 # Perform auto-update
-auto_update_opencode() {
-    # Check if auto-update is enabled
-    if [ "$ENABLE_AUTO_UPDATE" = false ]; then
-        log_info "Auto-update is disabled"
-        return 0
-    fi
-
-    # Check if enough time has passed
-    if ! should_check_for_updates; then
-        log_info "Skipping auto-update (scheduled time not reached)"
-        return 0
-    fi
-
-    log_info "Checking for opencode-ai updates..."
-
-    # Get current version
-    local current_version
-    if ! command_exists opencode; then
-        log_warn "opencode-ai is not installed"
-        return 1
-    fi
-    current_version=$(opencode --version 2>/dev/null || echo "unknown")
-
-    # Get latest version
-    local latest_version
-    latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
-
-    if [ "$latest_version" = "unknown" ]; then
-        log_error "Could not fetch latest version from npm registry"
-        log_info "Check your internet connection and try again"
-        return 1
-    fi
-
-    log_info "Current version: v${current_version}"
-    log_info "Latest version: v${latest_version}"
-
-    # Check if update is needed
-    if [ "$current_version" = "$latest_version" ]; then
-        log_success "opencode-ai is already up to date!"
-        update_last_check_time
-        return 0
-    fi
-
-    log_info "Update available: v${current_version} → v${latest_version}"
-
-    # Create backup before update
-    create_backup_before_update
-
-    # Perform update
-    log_info "Auto-updating opencode-ai to v${latest_version}..."
-    run_cmd "npm install -g opencode-ai@${latest_version}"
-
-    # Verify update
-    local new_version
-    new_version=$(opencode --version 2>/dev/null || echo "unknown")
-
-    if [ "$new_version" = "$latest_version" ]; then
-        log_success "opencode-ai updated successfully to v${new_version}"
-        update_last_check_time
-    else
-        log_error "Update failed. Current version: v${new_version}"
-        return 1
-    fi
-
-    echo "" >> "$UPDATE_LOG"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Auto-update: v${current_version} → v${new_version}" >> "$UPDATE_LOG"
-}
 
 ################################################################################
 # SUMMARY AND REPORTING
@@ -4713,10 +4742,6 @@ main() {
             fi
         fi
     fi
-    if [ "$ENABLE_AUTO_UPDATE" = true ] && [ "$PLAN_MODE" = "full" ]; then
-        log_info "Auto-update is enabled (schedule: ${UPDATE_SCHEDULE})"
-        auto_update_opencode
-    fi
 
     # Interactive menu — only the full path ever showed it (historically gated
     # on QUICK/SKILLS/AUTO_ACCEPT; single-step modes had exited earlier, which
@@ -4789,6 +4814,8 @@ main() {
             migrate-only) echo ""; echo "Migration + model resolution complete!";;
             update)       echo ""; echo "Update complete!";;
             check-catalog) echo ""; echo "Catalog check complete!";;
+            list-items) echo ""; echo "Catalog dump complete!";;
+            save-preset) echo ""; echo "Preset saved!";;
             peonping)     echo ""; echo "PeonPing setup complete!";;
         esac
     fi

@@ -1,45 +1,45 @@
 #!/usr/bin/env bats
 
-# StrictMode undefined-variable guard for deploy/setup.ps1 (issue #465).
-# setup.ps1 runs under Set-StrictMode -Version Latest but no pwsh exists on
-# Linux CI, so these are STATIC pins: every variable read in code must be
-# either assigned somewhere in the file or bound by a param() block.
-# Regression: $AppDir (rename leftover) and $DryRunPreviewDir (never defined,
-# and the resolver was never told --preview-dir so dry-run staged nothing).
+# deploy/setup.ps1 pins (#465 origin; #474 made the ps1 a thin launcher).
+# The #465 StrictMode regressions lived in the native-PowerShell duplicate,
+# which #474 replaced with a bootstrap that forwards everything to
+# setup.sh — so the behavior pins flip to delegation assertions, and the
+# class-level undefined-variable scan still guards the (small) launcher.
 
 SETUP_PS1="deploy/setup.ps1"
+SETUP_SH="deploy/setup.sh"
 
 # =============================================================================
 # The two #465 instances, pinned as literals
 # =============================================================================
 
-@test "setup_ps1_defines_dry_run_preview_dir_at_script_scope" {
-  count=$(grep -cE '^\$DryRunPreviewDir = Join-Path \$ConfigDir "\.dry-run-preview"$' "$SETUP_PS1")
-  [ "$count" -eq 1 ]
+@test "setup_ps1_defines_no_dry_run_preview_dir_itself" {
+  # #474: the launcher has no staging of its own — the preview-dir machinery
+  # lives in setup.sh and is inherited by delegation.
+  run grep -qE '^\$DryRunPreviewDir' "$SETUP_PS1"
+  [ "$status" -ne 0 ]
+  grep -q 'DRY_RUN_PREVIEW_DIR' "$SETUP_SH"
 }
 
 @test "setup_ps1_has_no_appdir_reference" {
   ! grep -q 'Join-Path \$AppDir' "$SETUP_PS1"
 }
 
-@test "setup_ps1_installs_pinned_markitdown_mcp_with_mcp_cli" {
-  # #487: setup.ps1 must install the exact PyPI pin AND the mcp[cli]
-  # co-install (docling-mcp shares the mcp 2.x SDK; dropping the clause
-  # breaks docling on Windows, undetectable by the Linux pip check gate).
-  # Fixed-string match: '[' in 'mcp[cli]' and the comma in the range are
-  # regex metacharacters.
-  grep -qF 'markitdown-mcp==0.0.1a7' "$SETUP_PS1"
-  grep -qF 'mcp[cli]>=2.1.1,<3.0.0' "$SETUP_PS1"
+@test "setup_ps1_delegates_the_487_pinned_install_to_bash" {
+  # #487's exact PyPI pin + mcp[cli] co-install live in setup.sh now (the
+  # Linux pip gate covers them there); the launcher keeps no pip logic.
+  grep -qF 'markitdown-mcp==0.0.1a7' "$SETUP_SH"
+  run grep -qF 'markitdown-mcp==0.0.1a7' "$SETUP_PS1"
+  [ "$status" -ne 0 ]
 }
 
-@test "setup_ps1_resolver_dry_run_passes_preview_dir" {
-  # resolve-models.mjs writes NOTHING on bare --dry-run; the pack merger and
-  # skill profile read the staged preview, so --preview-dir must be passed.
-  grep -q -- '--preview-dir' "$SETUP_PS1"
-  grep -q 'resolverArgs += @("--dry-run", "--preview-dir"' "$SETUP_PS1"
-  # The stale-preview clear is a separate clause of the same fix — pin it too
-  # (bash: rm -rf "$DRY_RUN_PREVIEW_DIR" before staging, setup.sh:3008).
-  grep -q 'Remove-Item \$DryRunPreviewDir -Recurse -Force' "$SETUP_PS1"
+@test "setup_ps1_resolver_dry_run_inherited_by_delegation" {
+  # resolve-models.mjs writes NOTHING on bare --dry-run; the resolver's
+  # --preview-dir staging lives in setup.sh (pinned there) and the launcher
+  # forwards --dry-run verbatim.
+  grep -q -- '--preview-dir' "$SETUP_SH"
+  grep -q '\$DryRun' "$SETUP_PS1"
+  grep -q -- '"--dry-run"' "$SETUP_PS1"
 }
 
 # =============================================================================
