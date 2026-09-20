@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.15.0](https://github.com/darellchua2/opencode-config-template/compare/v9.14.1...v9.15.0) (2026-09-20)
+
+### Features
+
+* **installer:** per-target table + agents target (shared ~/.agents/) ([#453](https://github.com/darellchua2/opencode-config-template/issues/453)) ([#458](https://github.com/darellchua2/opencode-config-template/issues/458)) ([29397ca](https://github.com/darellchua2/opencode-config-template/commit/29397ca64e19cd9c9381e0c2d9ac431ad4132233))
+
+### Documentation
+
+* remove stale plans ([c2ac30d](https://github.com/darellchua2/opencode-config-template/commit/c2ac30ded24cab24c2f82c84d2169069c6d6aa4c))
+
 ## [9.14.1](https://github.com/darellchua2/opencode-config-template/compare/v9.14.0...v9.14.1) (2026-09-20)
 
 ### Bug Fixes
