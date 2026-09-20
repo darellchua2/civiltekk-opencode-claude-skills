@@ -16,3 +16,7 @@ the step runs; put exhaustive end-state sweeps in the final gate phase.
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-21
+
+Recurrence (2026-09-21, #471 review): PLAN Done said 8/8 while enumerating 7
+pins — the AC's idempotent-skip pin was silently swapped out for a duplicate
+dual-id pin; the count matched, the enumeration didn't.
