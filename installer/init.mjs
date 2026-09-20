@@ -57,6 +57,7 @@ const USER_SKILLS = join(USER_OC, "skills");
 const USER_CONFIG = join(USER_OC, "opencode.json");
 const USER_MANIFEST = join(USER_OC, ".skill-manifest.json");
 const USER_CLAUDE_SKILLS = join(os.homedir(), ".claude/skills");
+const USER_CLAUDE_AGENTS = join(os.homedir(), ".claude/agents");
 const USER_AGENTS_SHARED = join(os.homedir(), ".agents/agents");
 const USER_SKILLS_SHARED = join(os.homedir(), ".agents/skills");
 const USER_KIMI_AGENTS = join(os.homedir(), ".kimi-code/agents");
@@ -70,7 +71,7 @@ const USER_KILO_SKILLS = join(os.homedir(), ".kilo/skills");
 // Project-scope dest columns deferred to #454 (PLAN-453 Technical Notes).
 const TARGETS = {
   opencode: { agentsDir: USER_AGENTS, skillsDir: USER_SKILLS, projectAgentsDir: ".opencode/agents", projectSkillsDir: ".opencode/skills", agentMode: "model-injected", skillMode: "verbatim" },
-  claude: { skillsDir: USER_CLAUDE_SKILLS, skillMode: "model-strip" }, // agents skipped (#377; #457 adds them)
+  claude: { agentsDir: USER_CLAUDE_AGENTS, skillsDir: USER_CLAUDE_SKILLS, agentMode: "claude-translate", skillMode: "model-strip" }, // #457: agents install translated
   agents: { agentsDir: USER_AGENTS_SHARED, skillsDir: USER_SKILLS_SHARED, agentMode: "verbatim", skillMode: "verbatim" },
   kimi: { agentsDir: USER_KIMI_AGENTS, skillsDir: USER_KIMI_SKILLS, projectAgentsDir: ".kimi-code/agents", projectSkillsDir: ".kimi-code/skills", agentMode: "kimi-translate", skillMode: "verbatim" },
   kilo: { agentsDir: USER_KILO_AGENTS, skillsDir: USER_KILO_SKILLS, projectAgentsDir: ".kilo/agents", projectSkillsDir: ".kilo/skills", agentMode: "kilo-translate", skillMode: "verbatim" },
@@ -704,13 +705,8 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     die(`invalid target '${target}'. Use: ${TARGET_VALUES.filter((t) => t !== "both").join(", ")}, or both.`, 2);
   const doOc = target === "opencode" || target === "both";
   const doClaude = target === "claude" || target === "both";
-  const claudeSkipWarning = doClaude && sel.agents.length
-    ? `warning: ${sel.agents.length} agent(s) skipped — Claude Code target installs skills only (agents are opencode-specific)`
-    : null;
-  // Claude Code target installs skills only — surface the skip in the preview too (#377).
 
   if (dry) {
-    if (claudeSkipWarning) console.error(claudeSkipWarning);
     const destinations = {};
     for (const t of activeTargets(target))
       destinations[t] = TARGETS[t].agentsDir ? dirname(TARGETS[t].agentsDir) : TARGETS[t].skillsDir;
@@ -719,7 +715,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
       scope: "user",
       target,
       // legacy single-destination key preserved for scripts (PLAN-453 step 1.1 contract)
-      destination: doOc ? USER_OC : (target === "agents" ? dirname(TARGETS.agents.agentsDir) : TARGETS.claude.skillsDir),
+    destination: doOc ? USER_OC : (target === "agents" ? dirname(TARGETS.agents.agentsDir) : target === "claude" ? dirname(TARGETS.claude.agentsDir) : dirname(TARGETS.kimi.agentsDir)),
       destinations,
       agents: sel.agents,
       skills: sel.skills,
@@ -732,13 +728,12 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   // Write per active target, resolved from TARGETS (#453): dest dirs + transform
   // modes come from the table — no per-target bespoke branches. Written-content
   // hashes per entry (#379), keyed per target: agents → file bytes (model-
-  // injected for opencode, raw verbatim elsewhere — foreign targets stay
-  // unpinned), skills → written dir tree hash (post model-strip for claude).
+  // injected for opencode; kimi/kilo/claude translated per agentMode — foreign
+  // targets stay unpinned), skills → written dir tree hash (post model-strip
+  // for claude).
   const newEntries = {};
   for (const t of activeTargets(target)) {
     const cfg = TARGETS[t];
-    if (t === "claude" && claudeSkipWarning)
-      console.error(claudeSkipWarning);
     if (cfg.agentsDir) {
       await mkdir(cfg.agentsDir, { recursive: true });
       for (const stem of sel.agents) {
@@ -751,6 +746,8 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
           content = kimiAgentContent(content, (m) => console.error(`  kimi (${stem}): ${m}`));
         } else if (cfg.agentMode === "kilo-translate") {
           content = kiloAgentContent(content, (m) => console.error(`  kilo (${stem}): ${m}`));
+        } else if (cfg.agentMode === "claude-translate") {
+          content = claudeAgentContent(content, stem, (m) => console.error(`  claude (${stem}): ${m}`));
         }
         await writeFile(join(cfg.agentsDir, `${stem}.md`), content, "utf8");
         newEntries[stem] = { type: "agent", targets: { ...(newEntries[stem]?.targets || {}), [t]: sha256Hex(content) } };
@@ -773,8 +770,8 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   }
 
   // update user-scope manifest (tracks ALL targets for uninstall/update). Agents are
-  // recorded only for targets that actually install them (opencode, agents, or both) —
-  // claude-only installs still place no agent files anywhere (#377). entries merge
+  // recorded for every target whose TARGETS row carries an agentsDir (opencode,
+  // agents-shared, claude, kimi, kilo). entries merge
   // per-target: re-installing to one target preserves the other target's record.
   await mkdir(USER_OC, { recursive: true });
   const prevManifest = (await readJsonMaybe(USER_MANIFEST)) || { agents: [], skills: [] };
@@ -796,7 +793,10 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     console.log(`  agents:  ${sel.agents.length}  -> ~/.config/opencode/agents/`);
     console.log(`  skills:  ${sel.skills.length}  -> ~/.config/opencode/skills/`);
   }
-  if (doClaude) console.log(`  claude:  ${sel.skills.length}  -> ~/.claude/skills/`);
+  if (doClaude) {
+    console.log(`  claude:  ${sel.skills.length}  -> ~/.claude/skills/`);
+    console.log(`  claude:  ${sel.agents.length}  -> ~/.claude/agents/`);
+  }
   if (target === "agents") {
     console.log(`installed (agents, shared) → ${dirname(TARGETS.agents.agentsDir)}:`);
     console.log(`  agents:  ${sel.agents.length}  -> ~/.agents/agents/`);
@@ -969,6 +969,67 @@ function kimiAgentContent(content, warn) {
   if (dropped.size) warn(`no Kimi equivalent — dropped: ${[...dropped].sort().join(", ")}`);
   if (!tools.size && !denied.size) return content;
   const insert = [];
+  if (tools.size) insert.push("tools:", ...[...tools].sort().map((t) => `  - ${t}`));
+  if (denied.size) insert.push("disallowedTools:", ...[...denied].sort().map((t) => `  - ${t}`));
+  return [...lines.slice(0, 1), ...insert, ...lines.slice(1)].join("\n");
+}
+
+// Claude Code tool-name map (#457): opencode action → Claude tool (registry
+// names; `task` gates subagent delegation — corpus-inert today, see PLAN-457).
+const CLAUDE_TOOL_MAP = {
+  read: "Read", write: "Write", edit: "Edit", bash: "Bash",
+  glob: "Glob", grep: "Grep", webfetch: "WebFetch", websearch: "WebSearch", task: "Task",
+};
+
+// Translate an opencode agent file's `permissions` array into additive Claude
+// Code agent frontmatter (#457), mirroring the kimi deny strategy: `tools:`
+// from `*`-resource allow rules, `disallowedTools:` from `*`-resource deny
+// rules (deny wins). Claude permission enforcement lives in settings, so
+// ask/globbed/`skill`/`question` rules are dropped with a warning. Synthesizes
+// `name: <stem>` (Claude requires name+description; the corpus carries no
+// name). Same column-0 insertion strategy; body + existing keys verbatim.
+function claudeAgentContent(content, stem, warn) {
+  const lines = content.split(/\r?\n/);
+  if (lines[0]?.trim() !== "---") {
+    warn("no frontmatter — installed verbatim, permissions not translated");
+    return content;
+  }
+  let closeIdx = -1;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() === "---") { closeIdx = i; break; }
+  }
+  if (closeIdx === -1) {
+    warn("unterminated frontmatter — installed verbatim, permissions not translated");
+    return content;
+  }
+  const fm = lines.slice(1, closeIdx).join("\n");
+  const hasName = /^name:/m.test(fm);
+  if (/^(tools|disallowedTools):/m.test(fm)) {
+    if (hasName) {
+      warn("frontmatter already declares tools/disallowedTools — skipping permission translation");
+      return content;
+    }
+    // still synthesize the required name (Claude Code cannot load without it)
+    warn("frontmatter already declares tools/disallowedTools — skipping permission translation; inserting required name only");
+    return [...lines.slice(0, 1), `name: ${stem}`, ...lines.slice(1)].join("\n");
+  }
+  const rules = parsePermissionRules(lines, closeIdx);
+  const tools = new Set(), denied = new Set(), dropped = new Set();
+  for (const r of rules) {
+    if (!r.action || !r.effect) continue;
+    const tool = CLAUDE_TOOL_MAP[r.action];
+    if (!tool || r.resource !== "*" || !["allow", "deny"].includes(r.effect)) {
+      dropped.add(`${r.action}(${r.resource ?? "*"})`);
+      continue;
+    }
+    if (r.effect === "deny") denied.add(tool);
+    else tools.add(tool);
+  }
+  for (const t of denied) tools.delete(t); // deny wins
+  if (dropped.size) warn(`no Claude agent-frontmatter equivalent — dropped: ${[...dropped].sort().join(", ")}`);
+  if (!tools.size && !denied.size && hasName) return content;
+  const insert = [];
+  if (!hasName) insert.push(`name: ${stem}`);
   if (tools.size) insert.push("tools:", ...[...tools].sort().map((t) => `  - ${t}`));
   if (denied.size) insert.push("disallowedTools:", ...[...denied].sort().map((t) => `  - ${t}`));
   return [...lines.slice(0, 1), ...insert, ...lines.slice(1)].join("\n");
@@ -1176,6 +1237,8 @@ async function cmdUpdate(args, opts) {
           wouldContent = kimiAgentContent(agent.content, () => {}); // warnings already surfaced at install
         } else if (cfg.agentMode === "kilo-translate") {
           wouldContent = kiloAgentContent(agent.content, () => {}); // warnings already surfaced at install
+        } else if (cfg.agentMode === "claude-translate") {
+          wouldContent = claudeAgentContent(agent.content, name, () => {}); // warnings already surfaced at install
         } else {
           wouldContent = agent.content; // shared target: verbatim, unpinned (#453)
         }
@@ -1408,6 +1471,9 @@ SCOPE
   Kilo target (--target kilo): Kilo Code dirs ~/.config/kilo/agent + ~/.kilo/skills/
   (user), .kilo/{agents,skills}/ (project); permissions translate additively to a
   permission: map (lossy — unmapped rules dropped with a warning).
+  Claude target (--target claude): agents now install too — ~/.claude/agents/ with
+  a tools/disallowedTools allowlist translated from permissions (lossy — unmapped
+  rules dropped with a warning; #457).
   Project scope (--project): writes .opencode/{agents,skills}/ + opencode.json + models.json + AGENTS.md.
 
 FLAGS
