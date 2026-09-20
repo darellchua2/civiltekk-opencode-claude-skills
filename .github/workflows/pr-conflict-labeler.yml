@@ -10,6 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  contents: read # checkout needs it — explicit block sets unlisted scopes to none
   issues: write
   pull-requests: write
 

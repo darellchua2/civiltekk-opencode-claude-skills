@@ -320,3 +320,21 @@
 - **Scope**: project
 - **Summary**: Reviewer subagents hold no edit permissions — they emit `LEARNINGS candidates:` blocks (Category/File/Confidence/Scope/Summary/Date) and the pipeline orchestrator writes files, appends _index.md, and commits in the worktree (#445 single-writer rule)
 - **Date**: 2026-09-20
+
+### Explicit `permissions:` block + checkout without `contents: read`
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/explicit-permissions-block-checkout-403.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: Explicit `permissions:` sets unlisted scopes to none — `actions/checkout` 403s under `contents: none`; pair scoped blocks with `contents: read` and pin it in workflow-shape bats tests (#446 review)
+- **Date**: 2026-09-20
+
+### jq @tsv needs sentinels for nullable columns
+
+- **Category**: pattern
+- **File**: `patterns/jq-tsv-sentinel-for-nullable-columns.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: `jq @tsv` + `IFS=$'\t' read` collapses empty cells and shifts later columns; emit `// "false"` sentinels for nullable columns in the jq program (#446 conflict labeler)
+- **Date**: 2026-09-20

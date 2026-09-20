@@ -25,6 +25,7 @@ WORKFLOW=".github/workflows/pr-conflict-labeler.yml"
   [ -f "$WORKFLOW" ]
   grep -q "cron:" "$WORKFLOW"                       # daily schedule
   grep -q "workflow_dispatch" "$WORKFLOW"           # manual verification
+  grep -q "contents: read" "$WORKFLOW"              # explicit block → unlisted scopes are none; checkout 403s without it
   grep -q "issues: write" "$WORKFLOW"
   grep -q "pull-requests: write" "$WORKFLOW"
   grep -q "pr-conflict-labeler.sh" "$WORKFLOW"      # wired to the script
@@ -41,10 +42,12 @@ WORKFLOW=".github/workflows/pr-conflict-labeler.yml"
     '#!/usr/bin/env bash' \
     'LOG="${LOG:?}"' \
     'case "$1 $2" in' \
-    '  "api "*) case "$2" in' \
-    '    *"/labels/conflicted"*) exit 1;;' \
-    '    *"/comments"*) echo 0;;' \
-    '    *) exit 0;; esac;;' \
+    '  "api "*)' \
+    '    case "$*" in' \
+    '      *"--paginate"*"issues/9/comments"*) printf "page-one filler\n<!-- pr-conflict-labeler -->\n";; \' \
+    '      *"/labels/conflicted"*) exit 1;; \' \
+    '      *"/comments"*) echo "[]";; \' \
+    '      *) exit 0;; esac;;' \
     'esac' \
     'case "$1 $2" in' \
     '  "pr list") cat "$FIXTURE";; \' \
@@ -57,7 +60,8 @@ WORKFLOW=".github/workflows/pr-conflict-labeler.yml"
     $'1\tUNKNOWN\tUNKNOWN\tfalse' \
     $'2\tUNKNOWN\tDIRTY\tfalse' \
     $'3\tUNKNOWN\tCONFLICTING\ttrue' \
-    $'4\tUNKNOWN\tBEHIND\ttrue' > "$fixture"
+    $'4\tUNKNOWN\tBEHIND\ttrue' \
+    $'9\tUNKNOWN\tDIRTY\tfalse' > "$fixture"
   LOG="$log" FIXTURE="$fixture" PATH="$stub:$PATH" \
     GITHUB_REPOSITORY="acme/repo" bash "$SCRIPT" > /dev/null
   # PR 2: newly conflicted → labeled + commented
@@ -66,6 +70,9 @@ WORKFLOW=".github/workflows/pr-conflict-labeler.yml"
   grep -q "comment pr comment 3" "$log"
   # PR 4: resolved → label removed
   grep -q "edit pr edit 4 --repo acme/repo --remove-label conflicted" "$log"
+  # PR 9: marker lives past page 1 (chatty PR) → labeled but NOT re-commented
+  grep -q "edit pr edit 9 --repo acme/repo --add-label conflicted" "$log"
+  ! grep -q "comment pr comment 9" "$log"
   # PR 1: UNKNOWN → untouched
   ! grep -q "edit pr edit 1" "$log"
   ! grep -q "comment pr comment 1" "$log"
