@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.25.1](https://github.com/darellchua2/opencode-config-template/compare/v9.25.0...v9.25.1) (2026-09-20)
+
+### Bug Fixes
+
+* **docs:** review fixes — repoint deploy-path cite to deploy_content anchor, soften shadowing claim ([f5ca655](https://github.com/darellchua2/opencode-config-template/commit/f5ca6557db1b4861e9c72c1f0bf2efc2b81575b7))
+
+### Documentation
+
+* **learnings:** implement Phase 4 — two-surface-count-conflation learning + plan complete ([67b9a0b](https://github.com/darellchua2/opencode-config-template/commit/67b9a0bd4ca747454fad5188111a81d2a9c7d293))
+* **plan:** add PLAN-486.md for [#486](https://github.com/darellchua2/opencode-config-template/issues/486) ([2ffcf6b](https://github.com/darellchua2/opencode-config-template/commit/2ffcf6b477778247cfe19a20381ab7c83427978d))
+* **plan:** implement Phase 1 — surface evidence + 106-cite site inventory ([a89e9d5](https://github.com/darellchua2/opencode-config-template/commit/a89e9d52d1595bfc1aa2da233a981e2e19b277f6))
+* **skills:** implement Phase 3 — two-surface decision record + surface-explicit count prose ([f5bf109](https://github.com/darellchua2/opencode-config-template/commit/f5bf109a404d4c103be2fe7e1609106253584d40)), closes [#481](https://github.com/darellchua2/opencode-config-template/issues/481)
+
 ## [9.25.0](https://github.com/darellchua2/opencode-config-template/compare/v9.24.0...v9.25.0) (2026-09-20)
 
 ### Features
