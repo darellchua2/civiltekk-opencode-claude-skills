@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.18.0](https://github.com/darellchua2/opencode-config-template/compare/v9.17.0...v9.18.0) (2026-09-20)
+
+### Features
+
+* **installer:** claude agents install target — ~/.claude/agents/ with tools translation ([#457](https://github.com/darellchua2/opencode-config-template/issues/457)) ([#462](https://github.com/darellchua2/opencode-config-template/issues/462)) ([79a4f49](https://github.com/darellchua2/opencode-config-template/commit/79a4f49c78b6d103b9815aa9b333ae521a19b35b))
+
 ## [9.17.0](https://github.com/darellchua2/opencode-config-template/compare/v9.16.0...v9.17.0) (2026-09-20)
 
 ### Features
