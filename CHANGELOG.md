@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.19.5](https://github.com/darellchua2/opencode-config-template/compare/v9.19.4...v9.19.5) (2026-09-20)
+
+### Bug Fixes
+
+* **deploy:** ship plugins + init shim in bash skills-only (ps1 parity) ([#469](https://github.com/darellchua2/opencode-config-template/issues/469)) ([#483](https://github.com/darellchua2/opencode-config-template/issues/483)) ([c8409cb](https://github.com/darellchua2/opencode-config-template/commit/c8409cb918a701d863b83a5050b03781851dcf71)), closes [#467](https://github.com/darellchua2/opencode-config-template/issues/467)
+
 ## [9.19.4](https://github.com/darellchua2/opencode-config-template/compare/v9.19.3...v9.19.4) (2026-09-20)
 
 ### Bug Fixes
