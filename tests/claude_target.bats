@@ -126,3 +126,25 @@ EOF
   echo "$output" | grep -q '"destinations"'
   [ ! -e "${HOME}/.claude" ]
 }
+
+@test "claude agents: pre-existing tools key still gets required name synthesis" {
+  cp "$AGENT_SRC" "${AGENT_SRC}.bats-bak"
+  sed -i '2i tools: Read, Grep' "$AGENT_SRC"
+  run $INIT add code-review-subagent --target claude --yes --no-deps
+  mv "${AGENT_SRC}.bats-bak" "$AGENT_SRC"
+  [ "$status" -eq 0 ]
+  local F="${HOME}/.claude/agents/code-review-subagent.md"
+  grep -q '^name: code-review-subagent' "$F"
+  ! grep -q '^  - WebFetch' "$F"
+}
+
+@test "claude agents: pre-existing name + tools returns verbatim" {
+  cp "$AGENT_SRC" "${AGENT_SRC}.bats-bak"
+  sed -i '2i name: custom-name\ntools: Read, Grep' "$AGENT_SRC"
+  run $INIT add code-review-subagent --target claude --yes --no-deps
+  mv "${AGENT_SRC}.bats-bak" "$AGENT_SRC"
+  [ "$status" -eq 0 ]
+  local F="${HOME}/.claude/agents/code-review-subagent.md"
+  grep -q '^name: custom-name' "$F"
+  ! grep -q '^  - WebFetch' "$F"
+}

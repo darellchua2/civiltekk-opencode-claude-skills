@@ -1003,6 +1003,7 @@ function claudeAgentContent(content, stem, warn) {
     return content;
   }
   const fm = lines.slice(1, closeIdx).join("\n");
+  const hasName = /^name:/m.test(fm);
   if (/^(tools|disallowedTools):/m.test(fm)) {
     if (hasName) {
       warn("frontmatter already declares tools/disallowedTools — skipping permission translation");
@@ -1012,7 +1013,6 @@ function claudeAgentContent(content, stem, warn) {
     warn("frontmatter already declares tools/disallowedTools — skipping permission translation; inserting required name only");
     return [...lines.slice(0, 1), `name: ${stem}`, ...lines.slice(1)].join("\n");
   }
-  const hasName = /^name:/m.test(fm);
   const rules = parsePermissionRules(lines, closeIdx);
   const tools = new Set(), denied = new Set(), dropped = new Set();
   for (const r of rules) {
