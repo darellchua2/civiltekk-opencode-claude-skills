@@ -546,6 +546,21 @@
             "effect": "allow"
         },
         {
+            "action": "skill",
+            "resource": "reviewer-baseline-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "language-review-checklists-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "uiux-review-skill",
+            "effect": "allow"
+        },
+        {
             "action": "codegraph*",
             "resource": "*",
             "effect": "allow"

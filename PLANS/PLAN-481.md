@@ -27,41 +27,49 @@
 
 ### Phase 1: Evidence & decision record
 
-- [ ] **1.1** Verify BOTH deltas programmatically: union of the 4 reviewer agents' frontmatter `action: skill` allows minus lean (=26: code-review 17, uiux 6, language 18, architecture 11, union 33) AND minus full (=3: `reviewer-baseline-skill`, `uiux-review-skill`, `language-review-checklists-skill`); assert both counts and record the lists in Technical Notes
+- [x] **1.1** Verify BOTH deltas programmatically: union of the 4 reviewer agents' frontmatter `action: skill` allows minus lean (=26: code-review 17, uiux 6, language 18, architecture 11, union 33) AND minus full (=3: `reviewer-baseline-skill`, `uiux-review-skill`, `language-review-checklists-skill`); assert both counts and record the lists in Technical Notes
     — **Why:** the two arrays hold different memberships — a single union−X derivation silently duplicates entries in the other array while Set-based guards pass green (review finding B1)
     — **Done when:** computation prints union−lean=26 and union−full=3 with the exact lists, recorded in Technical Notes
     — **Consumers affected:** scope of every Phase 2 step
-- [ ] **1.2** Record the mechanism-probe evidence (DONE pre-plan, session ses_f41646fd7ffe3ZtRmEBAeEBb7n): project-layer allow appended after global deny-all → child subagent's `skill` tool call returned `loaded`; harness simultaneously surfaced the skill to the primary catalog (confirming the primary-visibility cost)
+    — **Done:** node computation: union=33 | union-lean=26 | union-full=3 (language-review-checklists-skill, reviewer-baseline-skill, uiux-review-skill); existing full dupes: none — recorded in Delta arithmetic; files: none; fixes: none
+- [x] **1.2** Record the mechanism-probe evidence (DONE pre-plan, session ses_f41646fd7ffe3ZtRmEBAeEBb7n): project-layer allow appended after global deny-all → child subagent's `skill` tool call returned `loaded`; harness simultaneously surfaced the skill to the primary catalog (confirming the primary-visibility cost)
     — **Why:** the workaround is only valid because config-level allows provably restore child loading; the evidence must live in the ticket trail, not session memory
     — **Done when:** evidence block present in Technical Notes
     — **Consumers affected:** decision rationale, LEARNINGS entry
+    — **Done:** mechanism-probe evidence block already in Technical Notes (pre-plan); files: none; fixes: none
 
 ### Phase 2: Config + mirror sync (ONE atomic commit)
 
-- [ ] **2.1** Add exactly the union−full skills (3) as `{"action":"skill","resource":"<id>","effect":"allow"}` rules to `opencode_app/opencode.json`, merged into the existing alphabetical allow block after the deny-all (104→107 rules, 103→106 allows)
+- [x] **2.1** Add exactly the union−full skills (3) as `{"action":"skill","resource":"<id>","effect":"allow"}` rules to `opencode_app/opencode.json`, merged into the existing alphabetical allow block after the deny-all (104→107 rules, 103→106 allows)
     — **Why:** full profile is the deploy source; the fail-closed guard requires every lean key to ship here; adding already-present entries would duplicate rules silently
     — **Done when:** node count of skill rules = 107 with zero duplicate resources; JSON parses (no comments — JSONC anti-pattern); deny-all remains the first skill rule
     — **Consumers affected:** apply-skill-profile.mjs, Docker app, deploys
-- [ ] **2.2** Append the union−lean skills (26) to `deploy/skill-profiles.json` `lean` (44→70), alphabetical
+    — **Done:** 3 rules inserted after gsap-frameworks block; full allows=106, dupes=none, deny-all first, JSON parses; files: opencode_app/opencode.json (+15); fixes: none
+- [x] **2.2** Append the union−lean skills (26) to `deploy/skill-profiles.json` `lean` (44→70), alphabetical
     — **Why:** default deploy is lean — the workaround only reaches user machines through this list
     — **Done when:** `lean.length` = 70, every entry matches a skill directory on disk, lean ⊆ full allows
     — **Consumers affected:** setup.sh lean deploys, skill_profiles.bats
-- [ ] **2.3** Update `tests/skill_profiles.bats` literals: `-eq 44` → `-eq 70`, expected string `"44 deny-ok non-skill-ok"` → `"70 deny-ok non-skill-ok"`, header comments, test names — same commit as 2.1/2.2
+    — **Done:** lean rebuilt 44→70 sorted, every entry matches a skill dir (suite green), lean⊆full=true; files: deploy/skill-profiles.json (+28/−1); fixes: none
+- [x] **2.3** Update `tests/skill_profiles.bats` literals: `-eq 44` → `-eq 70`, expected string `"44 deny-ok non-skill-ok"` → `"70 deny-ok non-skill-ok"`, header comments, test names — same commit as 2.1/2.2
     — **Why:** per-push CI runs the suite; a Phase-2 push with new counts against old pins is red by construction (review finding B2)
     — **Done when:** grep shows only 70-based literals; suite green
     — **Consumers affected:** CI bats gate
-- [ ] **2.4** Update deploy prose literals: `deploy/setup.sh:3356` "lean (default) -> 44 primary-visible skills" → 70; `deploy/setup.sh:3359` + `deploy/setup.ps1:71,945` "107-allow allowlist" → "106-allow allowlist" (already stale vs disk 103; re-derive, never hand-copy) — same commit
+    — **Done:** bats literals 44→70 at all six sites (header ×2, test names ×2, -eq, expected-string); suite green; files: tests/skill_profiles.bats; fixes: none
+- [x] **2.4** Update deploy prose literals: `deploy/setup.sh:3356` "lean (default) -> 44 primary-visible skills" → 70; `deploy/setup.sh:3359` + `deploy/setup.ps1:71,945` "107-allow allowlist" → "106-allow allowlist" (already stale vs disk 103; re-derive, never hand-copy) — same commit
     — **Why:** hyphenated "107-allow" evades the plain sweep pattern; these sites were stale before this change (review finding M1)
     — **Done when:** grep `[0-9]+[- ](allow|primary-visible)` over deploy/ shows only derived numbers
     — **Consumers affected:** maintainers
-- [ ] **2.5** Update `README.md` + `opencode_app/README.md` in the same commit: (a) `README.md:408` region — "103 allows" → "106 allows", "only 44 primary-visible skills" → "only 70 primary-visible skills", "~5.4k tokens saved per session" → "~3.2k tokens saved per session (~36 fewer descriptions × ~90 tokens/description)" derived as (full allows 106 − lean 70) × basis; (b) profile-section note: 26 reviewer-baseline skills temporarily primary-visible as the #481 workaround for upstream anomalyco/opencode#50149; the 28 non-reviewer agents' frontmatter skill allows remain non-functional under lean until the upstream fix (this note is the deferral record); revert = remove from `deploy/skill-profiles.json` lean + redeploy; (c) `README.md:420` "Subagents are profile-immune" gains the unverified-for-skill-action caveat + workaround pointer
+    — **Done:** setup.sh:3356 44→70 + 107-allow→106-allow; setup.ps1:70 46→70 (pre-existing drift) + :71,:945 107→106; files: deploy/setup.sh, deploy/setup.ps1; fixes: none
+- [x] **2.5** Update `README.md` + `opencode_app/README.md` in the same commit: (a) `README.md:408` region — "103 allows" → "106 allows", "only 44 primary-visible skills" → "only 70 primary-visible skills", "~5.4k tokens saved per session" → "~3.2k tokens saved per session (~36 fewer descriptions × ~90 tokens/description)" derived as (full allows 106 − lean 70) × basis; (b) profile-section note: 26 reviewer-baseline skills temporarily primary-visible as the #481 workaround for upstream anomalyco/opencode#50149; the 28 non-reviewer agents' frontmatter skill allows remain non-functional under lean until the upstream fix (this note is the deferral record); revert = remove from `deploy/skill-profiles.json` lean + redeploy; (c) `README.md:420` "Subagents are profile-immune" gains the unverified-for-skill-action caveat + workaround pointer
     — **Why:** stale savings/token claims ship false at merge; the residual broken set needs a durable deferral record; the profile-immunity claim needs the same caveat users get in LEARNINGS (review M1 + m1, Mode R rulings 1+2)
     — **Done when:** all three README edits present; numbers re-derive from disk
     — **Consumers affected:** docs readers, downstream deployers
-- [ ] **2.6** Registry gate: `node installer/build-registry.mjs --check` exits 0 (registry serializes no skill permissions — no drift expected; drift = investigate before committing)
+    — **Done:** README.md: counts 103→106 / 44→70 ×2, savings restated ~3.2k with derivation, interim-workaround note + deferral record added, :420 profile-immunity caveat added; opencode_app/README.md has no profile section (verified — no counts there); files: README.md; fixes: none
+- [x] **2.6** Registry gate: `node installer/build-registry.mjs --check` exits 0 (registry serializes no skill permissions — no drift expected; drift = investigate before committing)
     — **Why:** verifies the config edit touched nothing the registry derives
     — **Done when:** `--check` exits 0
     — **Consumers affected:** registry consumers
+    — **Done:** node installer/build-registry.mjs --check exits 0 ("registry OK (agents=34, skills=146, no drift)"); files: none; fixes: none
 
 ### Phase 3: Verification sweep
 
@@ -109,3 +117,5 @@
 - **Primary-context token cost regresses lean's purpose.** Mitigation: README restates revised savings with derivation; documented revert trigger (upstream fix) + per-upgrade probe.
 - **Duplicate full-profile rules via wrong-delta copy.** Mitigation: 1.1 asserts both deltas; 2.1's done-when includes a duplicate-resource check.
 - **Upstream fix lands and behavior changes shape.** Mitigation: probe is config-agnostic (expects `loaded`); revert procedure documented at the profile file.
+
+`GATE 9e20799+p2 lint=n.a. typecheck=n.a. build=t(registry --check no drift) unit=t(27/27: skill_profiles, count_drift, markitdown, mcp_count) e2e=n.a`
