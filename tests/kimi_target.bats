@@ -7,7 +7,7 @@
 REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
 INIT="node ${REPO}/installer/init.mjs"
 AGENT_SRC="${REPO}/agents/code-review-subagent.md"
-WEB_AGENT="$(basename "$(rg -l 'action: websearch' "${REPO}/agents/" | head -1)" .md)"
+WEB_AGENT="$(basename "$(grep -rl 'action: websearch' "${REPO}/agents/" | sort | head -1)" .md)"
 
 setup() {
   export HOME="$(mktemp -d)"
