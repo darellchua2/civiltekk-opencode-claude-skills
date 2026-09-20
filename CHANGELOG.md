@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.25.0](https://github.com/darellchua2/opencode-config-template/compare/v9.24.0...v9.25.0) (2026-09-20)
+
+### Features
+
+* **deploy:** per-item deploy picker — OpenTUI dashboard, linear + headless drivers ([#473](https://github.com/darellchua2/opencode-config-template/issues/473)) ([#494](https://github.com/darellchua2/opencode-config-template/issues/494)) ([50e1bb7](https://github.com/darellchua2/opencode-config-template/commit/50e1bb7dc8db0e3ad692bcc6ca33c20267424b74))
+
 ## [9.24.0](https://github.com/darellchua2/opencode-config-template/compare/v9.23.0...v9.24.0) (2026-09-20)
 
 ### Features
