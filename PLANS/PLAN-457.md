@@ -25,13 +25,13 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 
 ### Phase 1: claude agents translation + wiring
 
-- [ ] **1.1** Give `TARGETS.claude` an `agentsDir: ~/.claude/agents` + `agentMode: "claude-translate"` (skills columns unchanged; no project columns — `--project --target claude` keeps its downgrade note); help SCOPE + `--target` prose mention claude agents (die message derives).
+- [ ] **1.1** Give `TARGETS.claude` an `agentsDir: ~/.claude/agents` + `agentMode: "claude-translate"` (skills columns unchanged; no project columns — `--project --target claude` keeps its downgrade note); help SCOPE + `--target` prose mention claude agents (die message derives); sweep stale #377 comments (TARGETS row comment `:73`, dry-run warning site, manifest comment `:775-778`).
     — **Why:** the table is the resolution site; user-scope-only mirrors the ticket AC.
-    — **Done when:** `add code-review-subagent --target claude --dry-run` exits 0 listing `~/.claude/agents` among destinations; `--project --target claude` still prints the downgrade note (existing pin).
+    — **Done when:** `add code-review-subagent --target claude --dry-run` exits 0 with `destinations.claude` = `~/.claude` (dirname of agentsDir — existing convention); legacy `destination` key for an agents-only claude selection reports `~/.claude` (explicit decision: agents-only selections report the agents parent, matching kimi/kilo behavior); `--project --target claude` still prints the downgrade note (existing pin); no stale "skills only"/"no agent files" comments remain.
     — **Consumers affected:** install/update/remove paths (1.3, Phase 2), docs (Phase 3).
-- [ ] **1.2** Implement `claudeAgentContent(content, warn)` via the shared parser: mappable `allow` rules with `resource: "*"` become a `tools:` comma-separated allowlist (`read→Read, write→Write, edit→Edit, bash→Bash, glob→Glob, grep→Grep, webfetch→WebFetch, websearch→WebSearch, task→Task` — Claude Code registry names); everything else (deny, ask, `skill`/`question`, globbed/mcp resources) is dropped + warned per agent (Claude Code permission enforcement lives in settings, not agent frontmatter — a deny cannot be carried, so nothing deny-ish is emitted); column-0 insertion after opening `---`; guards: frontmatter-less/unterminated → verbatim + warn; pre-existing `tools:` key → warn + skip. No `model:` injection ever (claude agents unpinned, epic decision).
-    — **Why:** the issue's design — Claude gets an allowlist; deny semantics have no frontmatter home and must not silently masquerade.
-    — **Done when:** transform verified on 3 real agents (code-review-subagent: Read present, `skill(...)`/`read(mcp:*)` dropped; opencode-tooling-subagent: `task→Task` mapped; zai-media-subagent: ask dropped + warned); body bytes unchanged; kimi/kilo suites green (shared parser untouched).
+- [ ] **1.2** Implement `claudeAgentContent(content, warn)` via the shared parser, **mirroring the kimi deny strategy** (architecture-review Gap 2 ruling): mappable `allow` rules with `resource: "*"` → additive `tools:` YAML list (`read→Read, write→Write, edit→Edit, bash→Bash, glob→Glob, grep→Grep, webfetch→WebFetch, websearch→WebSearch, task→Task` — the `task→Task` entry is corpus-inert today: all 23 agents with task rules use deny+narrow allows, so narrow allows drop + warn and `Task` must be ABSENT from emitted lists); `resource: "*"` deny rules → `disallowedTools:` list, deny wins on action conflicts; everything else (ask, `skill`/`question`, globbed/mcp resources) dropped + warned per agent (Claude Code permission enforcement lives in settings, not agent frontmatter); **synthesize `name: <stem>`** (Claude Code requires name+description; 0/34 corpus agents carry one) — guarded: pre-existing real `name:` → keep + no synthesis; column-0 insertion after opening `---`; guards: frontmatter-less/unterminated → verbatim + warn; pre-existing `tools:`/`disallowedTools:` keys → warn + skip translation. No `model:` injection ever.
+    — **Why:** name+description are Claude Code's required agent fields (unknown-key tolerance covers extra keys, never missing required ones); the deny strategy mirrors kimi for cross-transform consistency (Claude frontmatter supports `disallowedTools:`).
+    — **Done when:** transform verified on 3 real agents (code-review-subagent: `name: code-review-subagent` synthesized, Read in tools, `skill(...)`/`read(mcp:*)` dropped+warned, `Task` absent; opencode-tooling-subagent: narrow task allows dropped+warned, `Task` absent; zai-media-subagent: ask dropped + warned); body bytes unchanged; kimi/kilo suites green (shared parser untouched).
     — **Consumers affected:** install + update would-content (1.3), Claude users.
 - [ ] **1.3** Wire `claude-translate` into the user-scope install loop, `cmdUpdate` would-content, and remove the now-obsolete claude skip-warning from both the dry-run preview (`claudeSkipWarning`) and the write loop; flip the #377 pins in `tests/init.bats:194-201` to assert the new behavior (agent installs to `~/.claude/agents/`, translated, no skip warning).
     — **Why:** #377's skills-only rationale was revisited and reversed by ticket #457 (Alternatives section); leaving the warning would contradict the install.
@@ -40,9 +40,9 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 
 ### Phase 2: lifecycle + regression
 
-- [ ] **2.1** Verify (pin in 2.3's suite) the TARGETS-driven lifecycle for claude agent entries: `update` drift re-copies translated content + missing reports `(claude)`; `remove` wipes `~/.claude/agents/<stem>.md`; legacy synthesis synthesizes `targets.claude` for agent files; prune parity (project-scope none — claude is user-only).
+- [ ] **2.1** Verify (pin in 3.1's suite) the TARGETS-driven lifecycle for claude agent entries: `update` drift re-copies translated content + missing reports `(claude)`; `remove` wipes `~/.claude/agents/<stem>.md`; legacy synthesis synthesizes `targets.claude` for agent files; prune parity (project-scope none — claude is user-only).
     — **Why:** the table should carry a fourth mode for free; prove it rather than assume.
-    — **Done when:** all behavioral checks green with no new code beyond 1.x.
+    — **Done when:** all behavioral checks green with no new code beyond 1.x. (Lifecycle pins live in 3.1's suite — the "2.3" reference in earlier drafts normalized to Phase 3.)
     — **Consumers affected:** claude-target users.
 - [ ] **2.2** Regression sweep: skills output for claude/both identical to pre-change; opencode/agents/kimi/kilo targets fully identical (trees + manifests); opencode project preset dry-run byte-identical. The claude-target agent install is the feature — asserted by 1.3/2.1 pins, not the sweep.
     — **Why:** AC: skills output unchanged; no regression elsewhere.
@@ -51,7 +51,7 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 
 ### Phase 3: tests + docs + gates
 
-- [ ] **3.1** Add `tests/claude_agents.bats` (HOME-isolated): translated `tools:` allowlist (comma form), dropped-rules warning, no `model:` line, body-byte integrity, `both` target installs agents too, update idempotency + source-drift re-copy, remove wipe, dry-run preview, `--project --target claude` downgrade retained.
+- [ ] **3.1** Add `tests/claude_target.bats` (HOME-isolated; family naming per arch review F5): synthesized `name:` assertion, translated `tools:` list, `disallowedTools:` deny-carry (mirrored kimi strategy), dropped-rules warning, `Task` absence on deny+narrow agents, no `model:` line, body-byte integrity, `both` target installs agents too, update idempotency + source-drift re-copy, remove wipe, dry-run preview, `--project --target claude` downgrade retained.
     — **Why:** ticket AC; the #377 flip needs its own net.
     — **Done when:** suite green; no writes outside isolated `$HOME`.
     — **Consumers affected:** CI.
@@ -67,8 +67,8 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 ## Technical Notes
 
 - **#377 reversal is the point of this ticket** (its Alternatives section): the original skills-only decision predates the transform machinery; `kimi`/`kilo` proved cross-loader agent translation cheap. `tests/init.bats:194-201` pins are flipped deliberately (1.3), not silently.
-- **Tools allowlist is comma-separated** (Claude Code's canonical agent-file form); unknown frontmatter keys (incl. `permissions`, `mode`, `steps`) stay verbatim — Claude Code ignores them (same precedent as #453's claude skills work: "other unknown frontmatter fields are safely ignored").
-- **Deny/ask rules cannot be carried** — Claude Code's permission model lives in `settings.json`, not agent frontmatter; dropping them is fail-open at the agent-file level, which is why every drop is named in a per-agent warning.
+- **`tools:`/`disallowedTools:` are YAML lists** (mirroring the kimi transform; Claude Code accepts both list and comma forms — the list form keeps the two transforms structurally identical). Deny-carry mirrors kimi deny-wins; unknown frontmatter keys (incl. `permissions`, `mode`, `steps`) stay verbatim — Claude Code ignores them (same precedent as #453's claude skills work).
+- **`name:` synthesis** — Claude Code requires name+description in agent frontmatter; corpus agents carry neither a `name:` (0/34) — synthesized from the stem, guarded against pre-existing names. The description (also required) exists in 34/34 corpus agents.
 - **Deliberately out of scope:** project-scope claude agents (`.claude/agents/` in-repo — user-scope only per ticket AC); model pinning; `settings.json` permission synthesis.
 
 ## Dependencies
@@ -81,4 +81,9 @@ Cross-module consumers exist (tests, docs, deploy scripts) → architecture revi
 |------|------------|
 | #377 pin flip hides a skills regression | 2.2 sweeps skills output separately from agent behavior; skills path untouched by 1.x |
 | Deny-rule loss surprises users | Per-agent dropped-rules warning (1.2) + README note that Claude permission enforcement lives in settings |
-| Comma-form vs array-form `tools:` | Comma-separated is Claude Code's documented agent-file form; 3.1 asserts the emitted form |
+| Comma-form vs array-form `tools:` | Resolved: YAML list form, mirroring kimi (Claude Code accepts both); 3.1 asserts the emitted form |
+| `name:` synthesis collides with a future corpus `name:` | Guarded skip+warn on pre-existing real name (1.2); corpus census 0/34 |
+
+## Gate Trace
+
+_Plan review round 1 (architecture-review-subagent): approved-with-notes; 2 required amendments applied — F1 `name: <stem>` synthesis added (Claude Code requires name+description; corpus census 0/34 carry name) with pre-existing-name guard + 3.1 assertion; F2 task→Task done-when reworded (corpus-inert: all task rules are deny+narrow-allow, Task must be ABSENT). Gap rulings adopted: F3 deny strategy mirrors kimi (disallowedTools + deny-wins; Technical Note corrected), F4 destinations.claude = ~/.claude + legacy-key decision documented, F5 suite renamed claude_target.bats, F6 stale-comment sweep added to 1.1/1.3. Stale-comment sites: init.mjs :73 row comment, :710, :775-778 manifest comment._
