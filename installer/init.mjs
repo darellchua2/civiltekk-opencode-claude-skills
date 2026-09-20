@@ -1023,15 +1023,23 @@ function kiloAgentContent(content, warn) {
   const rules = parsePermissionRules(lines, closeIdx);
   const map = {};
   const dropped = new Set();
+  const narrowAllows = {};
   for (const r of rules) {
     if (!r.action || !r.effect) continue;
     if (!KILO_PERMISSION_TYPES.has(r.action) || r.resource !== "*" || !["allow", "deny", "ask"].includes(r.effect)) {
       dropped.add(`${r.action}(${r.resource ?? "*"})`);
+      if (r.effect === "allow" && r.resource && r.resource !== "*" && KILO_PERMISSION_TYPES.has(r.action)) {
+        (narrowAllows[r.action] ||= []).push(r.resource);
+      }
       continue;
     }
     map[r.action] = r.effect; // last rule wins per action
   }
   if (dropped.size) warn(`no Kilo equivalent — dropped: ${[...dropped].sort().join(", ")}`);
+  for (const [action, res] of Object.entries(narrowAllows)) {
+    if (map[action] === "deny")
+      warn(`action '${action}' pinned deny — ${res.length} narrow allow(s) dropped (${res.join(", ")}): the agent may not perform its core task under Kilo`);
+  }
   let renamed = false;
   for (let i = 1; i < closeIdx; i++) {
     if (/^disabled:/.test(lines[i])) { lines[i] = lines[i].replace(/^disabled:/, "disable:"); renamed = true; }

@@ -41,7 +41,7 @@ assert 'code-review-subagent' in m['agents'], m['agents']
 @test "kilo target: ask effect maps to Kilo ask (zai-media-subagent)" {
   run $INIT add zai-media-subagent --target kilo --yes --no-deps
   [ "$status" -eq 0 ]
-  grep -q ': ask' "${HOME}/.config/kilo/agent/zai-media-subagent.md"
+  grep -q '^  bash: ask' "${HOME}/.config/kilo/agent/zai-media-subagent.md"
 }
 
 @test "kilo target: unmappable permission rules are dropped with a warning" {
