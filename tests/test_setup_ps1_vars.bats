@@ -31,6 +31,9 @@ SETUP_PS1="deploy/setup.ps1"
   # skill profile read the staged preview, so --preview-dir must be passed.
   grep -q -- '--preview-dir' "$SETUP_PS1"
   grep -q 'resolverArgs += @("--dry-run", "--preview-dir"' "$SETUP_PS1"
+  # The stale-preview clear is a separate clause of the same fix — pin it too
+  # (bash: rm -rf "$DRY_RUN_PREVIEW_DIR" before staging, setup.sh:3008).
+  grep -q 'Remove-Item \$DryRunPreviewDir -Recurse -Force' "$SETUP_PS1"
 }
 
 # =============================================================================
@@ -60,7 +63,10 @@ auto = {'true','false','null','args','_','LASTEXITCODE','Matches','Error',
         'MyInvocation','PSItem','env','global','script','host','Input',
         'ErrorActionPreference','InformationPreference','VerbosePreference',
         'WarningPreference','ErrorAction','ProgressPreference','HOME',
-        'PROFILE','PSScriptRoot','IsWindows','IsLinux','IsMacOS','PSVersionTable'}
+        'PROFILE','PSScriptRoot','PSVersionTable'}
+# Deliberately NOT whitelisted: $IsWindows/$IsLinux/$IsMacOS — automatic only
+# in PowerShell Core. setup.ps1 targets 5.1+ (:27), where they are undefined
+# under StrictMode, so a future `if ($IsWindows)` must FAIL this audit.
 undefined = sorted(all_vars - assigned - param_vars - auto)
 assert not undefined, f"undefined variables in {sys.argv[1]}: {undefined}"
 PYEOF
