@@ -1,0 +1,27 @@
+name: PR conflict labeler
+
+# #446: flag open PRs whose base has drifted into conflict. Daily sweep;
+# workflow_dispatch allows manual verification without waiting a day.
+# Never a required check — labels/comments only.
+
+on:
+  schedule:
+    - cron: "17 3 * * *" # daily, off-peak minute
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  label-conflicts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Flag PRs whose base has drifted into conflict
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: bash .github/scripts/pr-conflict-labeler.sh
