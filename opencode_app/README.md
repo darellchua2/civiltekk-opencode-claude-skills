@@ -149,17 +149,16 @@ CodeGraph is a pre-indexed code knowledge graph MCP server enabled by default. I
 
 See the main `README.md` for full details on MCP tools, supported languages, and subagent integration.
 
-## markitdown MCP (PLAN-GIT-262)
+## markitdown MCP (#487)
 
-The privacy-hardened `markitdown` MCP launcher is **baked into the Docker image at build time** in the Dockerfile's `python-deps` stage: the source is COPY'd to `/tmp/markitdown-local-mcp` and installed with the rest of the pip floors into `/opt/python-env`. The `markitdown-local-mcp` binary lands in `/opt/python-env/bin`, which is first on `PATH` in the runtime stage — no entrypoint changes needed.
+The official [`markitdown-mcp`](https://pypi.org/project/markitdown-mcp/) server is **baked into the Docker image at build time** in the Dockerfile's `python-deps` stage: pip installs the pinned PyPI package (`markitdown-mcp==0.0.1a7` — upstream publishes only alphas) into `/opt/python-env`. The `markitdown-mcp` binary lands in `/opt/python-env/bin`, which is first on `PATH` in the runtime stage — no entrypoint changes needed.
 
 The server ships as `disabled: true` (opt-in). To enable inside the container, edit `opencode_app/opencode.json` and set `mcp.servers.markitdown.disabled` to `false`, then rebuild.
 
-**Privacy guarantees** (see [`opencode_app/mcp-servers/markitdown-local-mcp/README.md`](mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis):
-- Structural dep exclusion — no `markitdown[all]`, no `azure-*`, no `SpeechRecognition`, no `youtube-transcript-api` installed
-- `enable_plugins=False` hard-coded in launcher
-- Local file conversions make zero TCP calls (verifiable via `ss -tnp`)
-- User-supplied `http:`/`https:` URIs trigger a single `requests.get()` — equivalent to built-in `webfetch`, no Microsoft endpoints
+**Privacy posture** (details in the root `README.md` markitdown note):
+- stdio transport only (the default; `--http` is never passed); plugins off via `MARKITDOWN_ENABLE_PLUGINS=false`
+- Local document conversions (PDF/DOCX/PPTX/XLSX/MSG/...) make zero network calls; Azure converters never register
+- Cloud-capable extras (`markitdown[all]`) are present on disk but dormant; **residual:** audio file inputs upload to Google Speech, YouTube URLs contact YouTube
 
 ## PPTX Workflow (BT-142)
 

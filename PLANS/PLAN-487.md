@@ -99,30 +99,36 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 4: Documentation
 
-- [ ] **4.1** Rewrite README.md markitdown mentions (skills table, MCP table, PLAN-GIT-262 trust-boundary note, telemetry note): upstream note stating stdio default, plugins off via env, cloud extras present-but-dormant (Azure never registers without kwargs), and the explicit residual — audio file inputs upload to Google Speech, YouTube URLs contact YouTube.
+- [x] **4.1** Rewrite README.md markitdown mentions (skills table, MCP table, PLAN-GIT-262 trust-boundary note, telemetry note): upstream note stating stdio default, plugins off via env, cloud extras present-but-dormant (Azure never registers without kwargs), and the explicit residual — audio file inputs upload to Google Speech, YouTube URLs contact YouTube.
     — **Why:** the repo advertises a privacy posture; docs must state the new, honest one or the trust-boundary claim is false.
     — **Done when:** no README line claims "local-only, privacy-hardened" for markitdown; residual caveat present.
     — **Consumers affected:** end users evaluating packs; documentation-consistency tests if any grep these lines.
-- [ ] **4.2** Rewrite `THIRD_PARTY_LICENSES.md` §4: drop the vendored-wrapper paragraphs, keep markitdown MIT attribution and add markitdown-mcp attribution.
+    — **Done:** README.md reworded: pack tables, trust-boundary note rewritten as upstream note (PyPI pin, stdio, plugins-off, dormant Azure, audio/YouTube residual), telemetry note updated; fixes: none
+- [x] **4.2** Rewrite `THIRD_PARTY_LICENSES.md` §4: drop the vendored-wrapper paragraphs, keep markitdown MIT attribution and add markitdown-mcp attribution.
     — **Why:** license inventory must match shipped code; the wrapper's MIT text describes deleted code.
     — **Done when:** no paragraph describes the in-repo wrapper; both upstream packages attributed.
     — **Consumers affected:** license compliance readers.
-- [ ] **4.3** Prose pass on `skills/markitdown-mcp-skill/SKILL.md`, `agents/office-document-router-subagent.md`, `agents/documentation-subagent.md`: swap launcher/privacy wording for the upstream mechanism; keep skill names and routing intact.
+    — **Done:** THIRD_PARTY_LICENSES §4 rewritten: vendored-wrapper paragraphs dropped, PyPI consumption + residual documented, MIT attribution kept; fixes: none
+- [x] **4.3** Prose pass on `skills/markitdown-mcp-skill/SKILL.md`, `agents/office-document-router-subagent.md`, `agents/documentation-subagent.md`: swap launcher/privacy wording for the upstream mechanism; keep skill names and routing intact.
     — **Why:** agents route by these docs; stale "privacy-hardened launcher" text misleads routing decisions while names must stay stable for the permission grants.
     — **Done when:** `bats tests/test_markitdown_skill.bats` passes; no doc claims the vendored launcher exists.
     — **Consumers affected:** office-document-router-subagent, documentation-subagent, pptx/xlsx specialists (skill grants unchanged).
-- [ ] **4.4** Add a CHANGELOG.md entry: swap to upstream markitdown-mcp, the 0.0.1a7 pin, mcp[cli] co-install, deleted vendored dir, and the audio/YouTube residual caveat.
+    — **Done:** SKILL.md (reference link, binary name, config snippet, privacy note + guarantees table, command-not-found + residual sections) and office-document-router prose updated; documentation-subagent needed no change (skill-name refs only); fixes: none
+- [x] **4.4** Add a CHANGELOG.md entry: swap to upstream markitdown-mcp, the 0.0.1a7 pin, mcp[cli] co-install, deleted vendored dir, and the audio/YouTube residual caveat.
     — **Why:** the repo's release flow reads CHANGELOG; behavior changes must be user-visible there.
     — **Done when:** entry present under the unreleased section in Conventional-Commits style.
     — **Consumers affected:** release tooling, users reading release notes.
-- [ ] **4.5** Rewrite the Docker bake section of `opencode_app/README.md` (lines ~152–163): describe the PyPI `markitdown-mcp==0.0.1a7` install, remove the link into the deleted `mcp-servers/markitdown-local-mcp/README.md`, drop the "no `markitdown[all]`, no `azure-*`, no `SpeechRecognition`, no `youtube-transcript-api` installed" claim, and restate the audio/YouTube residual.
+    — **Done:** CHANGELOG [Unreleased] entry added (swap, pin, co-install, residual); fixes: none
+- [x] **4.5** Rewrite the Docker bake section of `opencode_app/README.md` (lines ~152–163): describe the PyPI `markitdown-mcp==0.0.1a7` install, remove the link into the deleted `mcp-servers/markitdown-local-mcp/README.md`, drop the "no `markitdown[all]`, no `azure-*`, no `SpeechRecognition`, no `youtube-transcript-api` installed" claim, and restate the audio/YouTube residual.
     — **Why:** this is the Docker doc of record; the swap makes its privacy claims false and its link dead, and repo AGENTS.md lists this file as a mandatory sync target for Dockerfile changes.
     — **Done when:** no `markitdown-local-mcp` reference remains in the file; the residual caveat is present.
     — **Consumers affected:** Docker users; documentation-consistency checks.
-- [ ] **4.6** Add a one-line residual note to the repo-root `AGENTS.md` Office Document Extraction Routing section: markitdown tier-1 now runs upstream `markitdown[all]` — audio file inputs upload to Google Speech and YouTube URLs contact YouTube; born-digital office docs remain local.
+    — **Done:** opencode_app/README.md Docker-bake section rewritten (PyPI pin, dead link removed, false privacy claims replaced with residual); fixes: none
+- [x] **4.6** Add a one-line residual note to the repo-root `AGENTS.md` Office Document Extraction Routing section: markitdown tier-1 now runs upstream `markitdown[all]` — audio file inputs upload to Google Speech and YouTube URLs contact YouTube; born-digital office docs remain local.
     — **Why:** AGENTS.md is the declared single source of truth for routing and currently markets tier-1 markitdown as "no cloud"; agents relying on that claim would feed it audio/YouTube inputs unknowingly.
     — **Done when:** the routing section carries the residual note; no absolute "local-only/no cloud" claim remains for markitdown.
     — **Consumers affected:** every routing agent (auto-injected instructions).
+    — **Done:** AGENTS.md tier-1 routing row residual note added; fixes: none
 
 ### Phase 5: Verification gates
 

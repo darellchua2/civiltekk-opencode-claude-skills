@@ -359,7 +359,7 @@ The remaining 5 ship `disabled: true` and are opt-in:
 |--------|------|---------|
 | `atlassian` | local (npx mcp-remote) | JIRA and Confluence (first use opens browser OAuth) |
 | `next-devtools` | local (npx) | Next.js DevTools integration |
-| `markitdown` | local | Document-to-Markdown (local-only) |
+| `markitdown` | local | Document-to-Markdown (upstream markitdown-mcp, stdio) |
 | `docling` | local | Layout-aware document extraction (~3-4 GB) |
 | `chrome-devtools` | local | Live Chrome automation |
 
@@ -380,7 +380,7 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 | Pack | Servers enabled | Requires |
 |------|----------------|----------|
 | `autodesk` | **adds** autodesk-revit, autodesk-model-data, autodesk-fusion, autodesk-help (not in base config) | `AUTODESK_API_KEY` |
-| `markitdown` | markitdown | Python launcher (auto-installed by `setup.sh`; baked into Docker image) |
+| `markitdown` | markitdown | Python server (upstream `markitdown-mcp` from PyPI, pinned; auto-installed by `setup.sh`; baked into Docker image) |
 | `docling` | docling | Python + `docling-mcp[local]` (~3-4 GB; first convert downloads models from huggingface.co) |
 | `nextjs` | next-devtools | A running Next.js dev server |
 | `chrome-devtools` | chrome-devtools | Chrome stable installed locally (privacy-hardened: telemetry + CrUX OFF by default) |
@@ -424,7 +424,7 @@ Key properties:
 - Typo-guarded: a lean key that doesn't match a real skill directory or the shipped allowlist fails the deploy closed.
 
 
-> **Note — `markitdown` MCP server (PLAN-GIT-262).** Privacy-hardened document-to-Markdown converter (PDF/DOCX/PPTX/XLSX/XLS/Outlook MSG + image EXIF). Vendored launcher at `opencode_app/mcp-servers/markitdown-local-mcp/` depends **only** on local converter extras — no `markitdown[all]`, no Azure SDKs, no Google Speech, no YouTube API. `enable_plugins=False` is hard-coded. User-supplied `http:`/`https:` URIs are fetched via a single `requests.get()` (no telemetry headers, no Microsoft endpoints — equivalent to built-in `webfetch`). See [`opencode_app/mcp-servers/markitdown-local-mcp/README.md`](opencode_app/mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis.
+> **Note — `markitdown` MCP server (#487).** Official [`markitdown-mcp`](https://pypi.org/project/markitdown-mcp/) from PyPI (pinned `==0.0.1a7` — upstream publishes only alphas). Document-to-Markdown (PDF/DOCX/PPTX/XLSX/XLS/Outlook MSG + image EXIF) over stdio (the default transport; `--http` is never passed). `MARKITDOWN_ENABLE_PLUGINS=false` is set in the server env (also upstream's own default). The package installs `markitdown[all]`, so cloud-capable extras are present on disk but **dormant by configuration**: Azure converters never register (their constructor kwargs are never passed). Accepted residual: an **audio file** input uploads to Google Speech and a **YouTube URL** input contacts YouTube — stick to document formats when you need zero egress. Local file conversions make no network calls; user-supplied `http:`/`https:` URIs are fetched via a single `requests.get()` (equivalent to built-in `webfetch` — user-initiated, not telemetry).
 
 > **Note — `filesystem` MCP server has been permanently removed.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` was redundant and caused tool-selection ambiguity (the model would call `read_mcp_resource` instead of the built-in `Read` tool). Do not re-add it to project `opencode.json` files.
 
@@ -433,7 +433,7 @@ Key properties:
 > - **`chrome-devtools`** — Google's `chrome-devtools-mcp` sends usage statistics and Chrome UX Report (CrUX) trace URLs to Google **by default**, plus polls the npm registry for updates. Hardened with `--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers` (strips sensitive request headers before they reach the LLM), and `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1` (kills the update poll).
 > - **`next-devtools`** — Vercel's `next-devtools-mcp` collects anonymous telemetry (tool names, error events, session metadata) by default, storing a local client ID in `~/.next-devtools-mcp/`. Hardened with `NEXT_TELEMETRY_DISABLED=1`.
 >
-> The enabled remote/`zai-*` servers send data **by design** (that is their function, not telemetry); `codegraph` is purely local with no telemetry layer. Mermaid diagrams ship as inline fenced code blocks (rendered client-side by GitHub/VS Code — no MCP server); `markitdown` and `docling` are already pinned to local-only conversion (`MARKITDOWN_ENABLE_PLUGINS=false`, `DOCLING_CONVERSION_MODE=local`). One unavoidable residual: every `npx -y <pkg>` first run hits the npm registry to download — not telemetry, but it is a phone-home; pre-install packages globally (`npm i -g`) and drop `npx` to avoid it.
+> The enabled remote/`zai-*` servers send data **by design** (that is their function, not telemetry); `codegraph` is purely local with no telemetry layer. Mermaid diagrams ship as inline fenced code blocks (rendered client-side by GitHub/VS Code — no MCP server); `docling` is pinned to local conversion (`DOCLING_CONVERSION_MODE=local`) and `markitdown` runs the official PyPI server with plugins off (`MARKITDOWN_ENABLE_PLUGINS=false`) — its cloud extras are present-but-dormant, with the audio/YouTube input residual documented in the markitdown note above. One unavoidable residual: every `npx -y <pkg>` first run hits the npm registry to download — not telemetry, but it is a phone-home; pre-install packages globally (`npm i -g`) and drop `npx` to avoid it.
 
 ## Language Server Protocol (LSP)
 
