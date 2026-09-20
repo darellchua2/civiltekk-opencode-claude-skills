@@ -68,14 +68,16 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 2: Docker + vendored removal
 
-- [ ] **2.1** In `opencode_app/Dockerfile`: drop the `COPY opencode_app/mcp-servers/markitdown-local-mcp ...` line and replace the pip install of the local dir with `pip install markitdown-mcp==0.0.1a7`; update the PLAN-GIT-262 comment.
+- [x] **2.1** In `opencode_app/Dockerfile`: drop the `COPY opencode_app/mcp-servers/markitdown-local-mcp ...` line and replace the pip install of the local dir with `pip install markitdown-mcp==0.0.1a7`; update the PLAN-GIT-262 comment.
     — **Why:** the image must bake the same server the config spawns; container isolation makes the `mcp[cli]` co-install unnecessary there.
     — **Done when:** no reference to `/tmp/markitdown-local-mcp` remains; RUN layer pins the PyPI package.
     — **Consumers affected:** `docker compose build` (opencode_app/README.md).
-- [ ] **2.2** `git rm -r opencode_app/mcp-servers/markitdown-local-mcp/` after Phases 1–2 confirm zero references on **functional surfaces only** (`opencode_app/opencode.json`, non-uninstall lines of `deploy/setup.sh`/`deploy/setup.ps1`, `opencode_app/Dockerfile`, `deploy/packs/pack-markitdown.json`).
+    — **Done:** COPY dropped, RUN layer pins `markitdown-mcp==0.0.1a7`, comment rewritten with the three-file bump ritual; files: opencode_app/Dockerfile; fixes: none
+- [x] **2.2** `git rm -r opencode_app/mcp-servers/markitdown-local-mcp/` after Phases 1–2 confirm zero references on **functional surfaces only** (`opencode_app/opencode.json`, non-uninstall lines of `deploy/setup.sh`/`deploy/setup.ps1`, `opencode_app/Dockerfile`, `deploy/packs/pack-markitdown.json`).
     — **Why:** the vendored source is the thing being retired; deleting it while anything still references it breaks grep-based tests and docs.
     — **Done when:** the functional-surface grep returns zero matches. (The exhaustive repo-wide zero-reference sweep is gate 5.6, after Phases 3–4 update the test and doc surfaces.)
     — **Consumers affected:** THIRD_PARTY_LICENSES.md §4 and README prose (Phase 4 rewrites them).
+    — **Done:** functional-surface grep clean, 5 vendored files git-rm'd; files: opencode_app/mcp-servers/markitdown-local-mcp/; fixes: none
 
 ### Phase 3: Tests
 
