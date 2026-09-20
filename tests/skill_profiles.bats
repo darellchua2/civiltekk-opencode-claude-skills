@@ -63,7 +63,8 @@ console.log(p.lean.filter(k=>!allow.has(k)).join(' '));")
 @test "skill-profiles: every shipped skill allow resolves on a skill surface (root ∪ app)" {
     bad=$(dead_allows "${PROJECT_ROOT}/opencode_app/opencode.json")
     [ -z "$bad" ] || { echo "dead allow rules (no SKILL.md on root or app surface): $bad"; return 1; }
-    # inverse failure: a skill dir on BOTH surfaces shadows ambiguously in the Docker app
+    # inverse failure: a skill dir on BOTH surfaces collides (precedence
+    # unverified upstream; the assert is conservative under any rule)
     overlap=$(node -e "
 const fs=require('fs');
 const dirs=(p)=>fs.readdirSync(p).filter(d=>fs.existsSync(p+'/'+d+'/SKILL.md'));

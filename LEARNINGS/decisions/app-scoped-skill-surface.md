@@ -11,7 +11,9 @@ Keep both skill surfaces and the app-scoped allow as-is (#486, default per
 #361's intent):
 
 - **Root `skills/`** — the deployable surface (146 dirs with `SKILL.md`).
-  Copied to `~/.config/opencode/skills/` by `deploy/setup.sh:1519`; feeds
+  Copied to `~/.config/opencode/skills/` by the deploy path (`deploy_content()`
+  via the installer CLI — search-anchor `deploy_content` in `deploy/setup.sh`,
+  #379; not the `restore` branch's `cp`); feeds
   `installer/build-registry.mjs` (registry) and the `npx add` flow.
 - **`opencode_app/.opencode/skills/`** — the Docker-app project surface
   (exactly 1: `github-runners-setup-skill`, #361). Discovered only by
@@ -29,8 +31,9 @@ instead of accumulating dead-in-user-deploy rules.
 
 `tests/skill_profiles.bats` (#486) validates every shipped skill allow
 against the UNION of both surfaces (dead rules fail CI) and asserts the
-surfaces stay disjoint (a same-named dir on both would shadow ambiguously
-in the Docker app). Guards filter by `SKILL.md` presence — raw `skills/`
+surfaces stay disjoint (a same-named dir on both surfaces collides;
+project-vs-global precedence is unverified upstream — the assert is
+conservative under any rule). Guards filter by `SKILL.md` presence — raw `skills/`
 readdir includes the `_archived` legacy dir.
 
 ## Context
