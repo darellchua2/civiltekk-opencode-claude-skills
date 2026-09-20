@@ -17,6 +17,33 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### node -e argv has no script-name slot — slice(2) shifts args silently
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/node-e-argv-has-no-script-name-slot.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: under node -e, argv = [execPath, ...args] — slice(2) dropped the first arg and a sibling test PASSED on shifted meaningless inputs (false green, #468)
+- **Date**: 2026-09-20
+
+### Guard error branches need negative fixtures in the same change
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/guard-error-branches-need-negative-fixtures.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: a guard fix that adds fail-loudly branches ships a committed negative fixture per branch — manual runs don't survive the next refactor (#468 round 2)
+- **Date**: 2026-09-20
+
+### Prefix-keyed guards silently exempt every unknown shape
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/prefix-keyed-guard-silent-exemption.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: guards keyed by known prefixes exempt-by-omission — the #281 zai-only arrays let a nonexistent anthropic pin ship; unknown shapes must FAIL and exemptions must be named allowlists (#468)
+- **Date**: 2026-09-20
+
 ### PS 5.1-targeting audits must not whitelist PSCore-only automatics
 
 - **Category**: anti-pattern
