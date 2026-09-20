@@ -35,7 +35,7 @@ file without its `_index.md` entry.
     — **Why:** the carve-out is the exact license for the two wrong-checkout writes observed
     — **Done when:** `grep -A1 -E "resource: ['\"]?LEARNINGS" agents/*.md` shows no `effect: allow` in either file
     — **Consumers affected:** every Step 9 review; no other agent touched (arch/language reviewers never had the carve-out)
-    — **Done:** edit/LEARNINGS allow block deleted from both reviewers; blanket edit:* deny now covers it; guard test enforces both quote shapes; fixes: none
+    — **Done:** edit/LEARNINGS allow block deleted from both reviewers; blanket edit:* deny now covers it; fixes: review round 1 — guard hardened from adjacency grep to block-scoped any-edit-allow scan (key-order/quote/glob agnostic); negative-tested against reordered/unquoted/broadglob regressions — first cut missed action-on-open-line, caught by own negative test and fixed; fixes: none
 - [x] **1.2** Add the delivery contract to both reviewer bodies next to the existing LEARNINGS recall line: candidates are returned in the report (Category / File / Confidence / Scope / Summary / Date); the agent has no write access
     — **Why:** grilled decision (a) — delivery by content, never by writes
     — **Done when:** both bodies state candidates-returned-as-content; neither instructs persisting
@@ -45,7 +45,7 @@ file without its `_index.md` entry.
     — **Why:** closes the capture loop after write access is gone (patterns must still persist)
     — **Done when:** Step 9 text names the collect-and-commit duty explicitly
     — **Consumers affected:** all future pipeline runs
-    — **Done:** Step 9 gained the collect-and-commit duty (write LEARNINGS/<category>/<slug>.md + _index.md entry, commit with review-fix commit); fixes: none
+    — **Done:** Step 9 gained the collect-and-commit duty; fixes: review round 1 — added clean-review `chore(learnings)` commit anchor + slug-collision skip/suffix clause
 - [x] **1.4** New guard test `tests/test_reviewer_no_writes.bats`: no reviewer agent carries an `edit` allow on `LEARNINGS/**` (single- and double-quoted resource shapes)
     — **Why:** mechanical-enforcement doctrine — the regression this ticket fixes must be guard-proofed
     — **Done when:** test green on the fixed tree; grep logic covers both quote spellings (guard-regex-quote-shape-mismatch learning)
