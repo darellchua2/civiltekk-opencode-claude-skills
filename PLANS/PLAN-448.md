@@ -34,19 +34,22 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 1: question-repair plugin + proof
 
-- [ ] **1.1** Create `plugins/question-repair.ts` — plain default export `{ id: 'question-repair', setup }` registering `ctx.tool.hook('execute.before')` guarded on `event.tool === 'question'`, plus an exported pure `normalizeQuestionInput(input)` helper; when `OPENCODE_QUESTION_REPAIR_DEBUG=1`, setup logs a one-time `question-repair: loaded` marker and each repair fires one line
+- [x] **1.1** Create `plugins/question-repair.ts` — plain default export `{ id: 'question-repair', setup }` registering `ctx.tool.hook('execute.before')` guarded on `event.tool === 'question'`, plus an exported pure `normalizeQuestionInput(input)` helper; when `OPENCODE_QUESTION_REPAIR_DEBUG=1`, setup logs a one-time `question-repair: loaded` marker and each repair fires one line
     — **Why:** the plugin is the deliverable; exporting the pure helper mirrors the `opencode-auto-continue-v2.ts` pattern that `tests/test_auto_continue_plugin.test.ts` imports, and keeps the hook shell a thin guard + reference-swap (`if (repaired !== event.input) event.input = repaired`); the loaded-marker gives step 2.2 a deterministic assertion target (setup runs at session start, no model behavior needed)
-    — **Done when:** `node --check plugins/question-repair.ts` passes and the file exports both the pure function and a `{ id, setup }` default export
+    — **Done when:** the plugin parses on import in the `node --test` run (repo precedent: `node --check` applies to `.mjs` only — release.yml:55 — since check mode cannot strip TS types) and the file exports both the pure function and a `{ id, setup }` default export
+    — **Done:** wrote plugins/question-repair.ts (pure normalizeQuestionInput + {id,setup} hook with question-guard, placeholder-safe truncating fills, debug knob); files: plugins/question-repair.ts; fixes: gate spec corrected — node --check replaced by node --test import-parse (check mode cannot strip TS types; fix #1)
     — **Consumers affected:** opencode runtime plugin loader, `deploy_plugins()` copy, step 1.2's test import
 
-- [ ] **1.2** Add `tests/test_question_repair_plugin.test.ts` — `node:test` + `assert/strict` covering: description filled from label; label filled from first 5 words of description; question filled from header (and header from question, truncated to 30 chars); options missing both fields dropped; items without options dropped; all-items-dropped and non-object inputs returned as the original reference; valid payloads returned as the same reference (no mutation); truncating fills leave `__VG_…__` vibeguard placeholders intact (copy verbatim, never split); `multiple` defaulted to `false`; hook fires only for `event.tool === 'question'` (fake ctx capturing the hook)
+- [x] **1.2** Add `tests/test_question_repair_plugin.test.ts` — `node:test` + `assert/strict` covering: description filled from label; label filled from first 5 words of description; question filled from header (and header from question, truncated to 30 chars); options missing both fields dropped; items without options dropped; all-items-dropped and non-object inputs returned as the original reference; valid payloads returned as the same reference (no mutation); truncating fills leave `__VG_…__` vibeguard placeholders intact (copy verbatim, never split); `multiple` defaulted to `false`; hook fires only for `event.tool === 'question'` (fake ctx capturing the hook)
     — **Why:** ticket ACs 1–3 plus the no-mutation and tool-guard guarantees need executable proof; one of the fixtures reproduces a real audited failure (missing `questions[1].question` from the 2026-08-16 "Storage design" call). Unit tests prove AC 1 up to field-shape conformance — that shape proxy plus step 2.2's live run together discharge AC 1's "renders"
     — **Done when:** `node --test tests/test_question_repair_plugin.test.ts` exits 0 with every test green
+    — **Done:** 11/11 green incl. audited fixture, placeholder-safety, no-mutation, hook-guard; files: tests/test_question_repair_plugin.test.ts; fixes: none
     — **Consumers affected:** `node --test` suite (CI + local gates)
 
-- [ ] **1.3** Run the regression gate: full `bats tests/` suite plus the new `node --test` file in the same session
+- [x] **1.3** Run the regression gate: full `bats tests/` suite plus the new `node --test` file in the same session
     — **Why:** proves AC 4's "without affecting other tools" — the repo's established surface (351 bats tests) must stay green alongside the new proof
     — **Done when:** full bats suite reports 0 failures and the new test file is green in the same run; record the `GATE <short-sha> …` memo line
+    — **Done:** bats 351/351 + node --test 11/11 in the same session; files: none (verification); fixes: none
     — **Consumers affected:** none (read-only verification)
 
 ### Phase 2: deploy pickup, load proof, docs
@@ -92,3 +95,7 @@ None external. Single ticket, no `blocked-by:` refs.
 | Truncating fill splits a vibeguard `__VG_…__` placeholder → mask fragment renders in the UI (no leak; the mask holds) | Placeholder-aware fills copy verbatim when the source contains `__VG`; dedicated fixture test (step 1.2) |
 | Plugin copies but silently never loads (the #387 class of failure) | Step 2.2 debug-knob load smoke asserts `question-repair: loaded` from the deployed file |
 | Plugin count/log drift concerns | `deploy_plugins()` has no fixed count constant — nothing to sync |
+
+## Gate Trace
+
+- GATE 69532dc lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — bats 351/351, node --test tests/test_question_repair_plugin.test.ts 11/11 (Phase 1, first try)
