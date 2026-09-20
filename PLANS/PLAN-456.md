@@ -67,3 +67,4 @@ Thin consumer map: renames + reference sweep, no logic change → zero plan revi
 | Missed reference breaks a test or doc | 1.2's rg sweep is the mechanical gate; node --test import failure is loud |
 | Vibeguard masking silently breaks on rename | AC-3: runtime DEBUG verification (replace-counts > 0) in the gate phase |
 | Deploy copy misses a renamed plugin | AC-2: dry-run cp-line proof (learning: `-y` is mandatory for the deploy path) |
+GATE 2136870 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — FINAL: 96 bats ok, node --test green (plugin imports on renamed paths), deploy dry-run pickup proven
