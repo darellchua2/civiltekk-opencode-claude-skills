@@ -53,13 +53,16 @@ SETUP_PS1="deploy/setup.ps1"
 }
 
 @test "auto_update_flags_are_hinting_no_ops" {
-  # Sandboxed HOME (round-2 review): a no-op flag still falls through to the
-  # headless default path — never run setup.sh end-to-end against a real HOME.
-  local d; d="$(mktemp -d)"
-  run bash -c "export HOME='$d'; bash '$SETUP_SH' -A"
-  rm -rf "$d"
+  # Pin at parse level: -A prints the migration hint and leaves
+  # ENABLE_AUTO_UPDATE=false. (Executing main end-to-end would depend on the
+  # host's opencode install — the CI runner has none, so validate fails.)
+  run bash -c "source '$SETUP_SH' >/dev/null 2>&1; parse_arguments -A"
   [ "$status" -eq 0 ]
   [[ "$output" == *"Auto-update has been removed"* ]]
+  run bash -c "source '$SETUP_SH' >/dev/null 2>&1; parse_arguments -A; [ \"\$ENABLE_AUTO_UPDATE\" = false ]"
+  [ "$status" -eq 0 ]
+  run grep -q 'auto_update_opencode' "$SETUP_SH"
+  [ "$status" -ne 0 ]
 }
 
 @test "show_progress_deleted" {
