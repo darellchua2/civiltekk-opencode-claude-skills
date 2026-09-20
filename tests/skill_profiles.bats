@@ -6,6 +6,9 @@
 #   4. apply-skill-profile.mjs lean rewrites a scratch deployed config to
 #      exactly 70 allow rules + a skill deny-all-first; full leaves the
 #      shipped permissions array verbatim. Non-skill rules are never touched.
+#   5. every shipped skill allow resolves on a skill surface (root skills/ ∪
+#      opencode_app/.opencode/skills) and the surfaces stay disjoint (#486)
+#   6. the dead-allow guard itself fails on a phantom rule (negative fixture)
 # Note: these tests intentionally do NOT assert the shipped skill-allow count
 # (count-drift tests own disk counts; allowlist size is profile-dependent).
 
@@ -21,6 +24,19 @@ teardown() {
 
 lean_keys() {
     node -e "console.log(require('${PROJECT_ROOT}/deploy/skill-profiles.json').lean.join('\n'))"
+}
+
+# #486: skill-allow resources in an opencode.json must resolve to a SKILL.md dir
+# on SOME surface — root skills/ (deployable) ∪ opencode_app/.opencode/skills/
+# (Docker-app project surface). Raw readdir is NOT enough: skills/_archived is
+# a legacy non-skill dir, so membership is tested by SKILL.md presence.
+dead_allows() { # $1 = opencode.json path; prints allow resources matching no surface
+    node -e "
+const fs=require('fs');
+const dirs=(p)=>fs.readdirSync(p).filter(d=>fs.existsSync(p+'/'+d+'/SKILL.md'));
+const union=new Set([...dirs('${PROJECT_ROOT}/skills'),...dirs('${PROJECT_ROOT}/opencode_app/.opencode/skills')]);
+const c=require('$1');
+console.log(c.permissions.filter(r=>r.action==='skill'&&r.effect==='allow'&&r.resource!=='*').map(r=>r.resource).filter(r=>!union.has(r)).join(' '));"
 }
 
 @test "skill-profiles: lean has exactly 70 keys" {
@@ -42,6 +58,30 @@ const c=require('${PROJECT_ROOT}/opencode_app/opencode.json');
 const allow=new Set(c.permissions.filter(r=>r.action==='skill'&&r.effect==='allow'&&r.resource!=='*').map(r=>r.resource));
 console.log(p.lean.filter(k=>!allow.has(k)).join(' '));")
     [ -z "$bad" ] || { echo "not in shipped skill allows: $bad"; return 1; }
+}
+
+@test "skill-profiles: every shipped skill allow resolves on a skill surface (root ∪ app)" {
+    bad=$(dead_allows "${PROJECT_ROOT}/opencode_app/opencode.json")
+    [ -z "$bad" ] || { echo "dead allow rules (no SKILL.md on root or app surface): $bad"; return 1; }
+    # inverse failure: a skill dir on BOTH surfaces shadows ambiguously in the Docker app
+    overlap=$(node -e "
+const fs=require('fs');
+const dirs=(p)=>fs.readdirSync(p).filter(d=>fs.existsSync(p+'/'+d+'/SKILL.md'));
+const root=dirs('${PROJECT_ROOT}/skills');
+const app=dirs('${PROJECT_ROOT}/opencode_app/.opencode/skills');
+console.log(root.filter(d=>app.includes(d)).join(' '));")
+    [ -z "$overlap" ] || { echo "skill on BOTH surfaces (ambiguous shadowing): $overlap"; return 1; }
+}
+
+@test "skill-profiles: dead-allow guard fails on a phantom rule (negative fixture)" {
+    scratch="${TEST_HOME}/opencode.json"
+    node -e "
+const fs=require('fs');
+const c=JSON.parse(fs.readFileSync('${PROJECT_ROOT}/opencode_app/opencode.json','utf8'));
+c.permissions.push({action:'skill',resource:'not-a-real-skill',effect:'allow'});
+fs.writeFileSync('${scratch}',JSON.stringify(c,null,2));"
+    bad=$(dead_allows "$scratch")
+    [ "$bad" = "not-a-real-skill" ] || { echo "guard missed phantom (got: '${bad}')"; return 1; }
 }
 
 @test "apply-skill-profile: lean rewrites scratch config to 70 allows + deny-all-first" {

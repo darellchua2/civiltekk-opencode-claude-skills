@@ -41,18 +41,21 @@
 
 ### Phase 2: Union guard (AC1)
 
-- [ ] **2.1** Add a `dead_allows()` helper (node one-liner, `lean_keys()` style: takes a config path, prints skill-allow resources that match no `SKILL.md` dir on either surface) + positive test `"skill-profiles: every shipped skill allow resolves on a skill surface (root ∪ app)"` asserting BOTH dead = ∅ AND root∩app = ∅ (name collision would shadow ambiguously in the Docker app); update the file header coverage comment
+- [x] **2.1** Add a `dead_allows()` helper (node one-liner, `lean_keys()` style: takes a config path, prints skill-allow resources that match no `SKILL.md` dir on either surface) + positive test `"skill-profiles: every shipped skill allow resolves on a skill surface (root ∪ app)"` asserting BOTH dead = ∅ AND root∩app = ∅ (name collision would shadow ambiguously in the Docker app); update the file header coverage comment
     — **Why:** AC1 — this is the guard that would have caught a genuinely dead rule shipping silently; the disjointness half prevents the inverse failure (same-named skill on both surfaces)
     — **Done when:** test green against the real files; header comment lists the new coverage
     — **Consumers affected:** CI bats gate
-- [ ] **2.2** Add negative fixture `"skill-profiles: dead-allow guard fails on a phantom rule"` — scratch config (mktemp copy + injected `not-a-real-skill` allow, mirroring the typo-guard pattern at the bottom of the file) → `dead_allows()` must report exactly the phantom
+    — **Done:** dead_allows() helper (SKILL.md-presence filter, both surfaces) + positive test asserting dead=∅ AND root∩app=∅; header coverage items 5-6 added; files: tests/skill_profiles.bats; fixes: none
+- [x] **2.2** Add negative fixture `"skill-profiles: dead-allow guard fails on a phantom rule"` — scratch config (mktemp copy + injected `not-a-real-skill` allow, mirroring the typo-guard pattern at the bottom of the file) → `dead_allows()` must report exactly the phantom
     — **Why:** an error branch with no negative fixture false-greens on regressions (LEARNINGS guard-error-branches-need-negative-fixtures)
     — **Done when:** the negative test green (phantom reported exactly)
     — **Consumers affected:** CI bats gate
-- [ ] **2.3** Run `bats tests/skill_profiles.bats` — all tests green (now 8)
+    — **Done:** negative fixture: scratch config + injected not-a-real-skill allow → helper reports exactly the phantom (mirrors typo-guard pattern); files: tests/skill_profiles.bats; fixes: none
+- [x] **2.3** Run `bats tests/skill_profiles.bats` — all tests green (now 8)
     — **Why:** phase gate before prose work rides the same PR
     — **Done when:** suite passes 8/8
     — **Consumers affected:** PR CI
+    — **Done:** bats tests/skill_profiles.bats → 8/8 ok (guard ok 4, negative ok 5); files: none; fixes: none
 
 ### Phase 3: Decision + surface-explicit prose (AC2 + AC3)
 
@@ -101,3 +104,5 @@
 - **Prose qualifiers rot as counts drift.** Mitigation: sites carry the qualifier inline next to the number, and the count-sweeps learning's re-derive rule covers them.
 
 `GATE 2ffcf6b+p1 lint=n.a. typecheck=n.a. build=n.a. unit=n.a. e2e=n.a` — evidence-only phase, no source changes.
+
+`GATE a89e9d5+p2 lint=n.a. typecheck=n.a. build=n.a. unit=t(8/8 skill_profiles incl. new guard + negative fixture) e2e=n.a` — test-only phase; the deliverable IS the test.
