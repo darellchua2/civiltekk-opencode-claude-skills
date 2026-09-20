@@ -73,10 +73,11 @@
 
 ### Phase 3: Verification sweep
 
-- [ ] **3.1** LEARNINGS verification sweep with the corrected pattern: `grep -rnE '[0-9]+[- ](allow|primary-visible)' tests/ deploy/ README.md opencode_app/README.md` + `grep -rnE '\-eq [0-9]+|"[0-9]+ deny-ok' tests/` + `grep -rn "skill director" README.md opencode_app/README.md tests/` — every hit either matches the new derived numbers or is unrelated
+- [x] **3.1** LEARNINGS verification sweep with the corrected pattern: `grep -rnE '[0-9]+[- ](allow|primary-visible)' tests/ deploy/ README.md opencode_app/README.md` + `grep -rnE '\-eq [0-9]+|"[0-9]+ deny-ok' tests/` + `grep -rn "skill director" README.md opencode_app/README.md tests/` — every hit either matches the new derived numbers or is unrelated
     — **Why:** the plan's own anti-drift gate, with the regex shape fixed to catch hyphenated forms (review M1)
     — **Done when:** sweep shows no stale count anywhere
     — **Consumers affected:** none (verification)
+    — **Done:** sweep run with corrected pattern; caught + fixed one additional mirror (setup.ps1:1938 44→70); residual grep clean; suite re-run green; files: deploy/setup.ps1; fixes: none
 
 ### Phase 4: LEARNINGS + gates
 
