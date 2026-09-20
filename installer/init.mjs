@@ -921,7 +921,7 @@ function stripModelLine(content) {
 // Verified against Kimi's tools reference 2026-09-20 — there is no `WebFetch`
 // (the fetch tool is `FetchURL`), and unknown names never match + warn.
 const KIMI_TOOL_MAP = {
-  read: "Read", edit: "Edit", write: "Write", bash: "Bash",
+  read: "Read", edit: "Edit", write: "Write", shell: "Bash",
   glob: "Glob", grep: "Grep", webfetch: "FetchURL", websearch: "WebSearch",
 };
 
@@ -975,10 +975,11 @@ function kimiAgentContent(content, warn) {
 }
 
 // Claude Code tool-name map (#457): opencode action → Claude tool (registry
-// names; `task` gates subagent delegation — corpus-inert today, see PLAN-457).
+// names; `subagent` gates subagent delegation — active since the #482 v2
+// rename, see PLAN-482).
 const CLAUDE_TOOL_MAP = {
-  read: "Read", write: "Write", edit: "Edit", bash: "Bash",
-  glob: "Glob", grep: "Grep", webfetch: "WebFetch", websearch: "WebSearch", task: "Task",
+  read: "Read", write: "Write", edit: "Edit", shell: "Bash",
+  glob: "Glob", grep: "Grep", webfetch: "WebFetch", websearch: "WebSearch", subagent: "Task",
 };
 
 // Translate an opencode agent file's `permissions` array into additive Claude
@@ -1052,9 +1053,11 @@ function parsePermissionRules(lines, closeIdx) {
   return rules;
 }
 
-// Kilo permission-type passthrough (#455): opencode action names match Kilo's
-// `permission` type names 1:1 for these; `task` gates subagent delegation.
+// Kilo permission-type passthrough (#455): opencode v2 action names alias to
+// Kilo's v1-style `permission` type names (shell→bash, subagent→task) at
+// emission; `subagent` gates subagent delegation.
 const KILO_PERMISSION_TYPES = new Set(["read", "edit", "bash", "glob", "grep", "task", "webfetch", "websearch", "todowrite", "todoread"]);
+const KILO_ACTION_ALIAS = { shell: "bash", subagent: "task" };
 
 // Translate an opencode agent file's `permissions` array into an additive Kilo
 // `permission:` map (#455). Same column-0 insertion strategy as kimi. Only
@@ -1087,14 +1090,15 @@ function kiloAgentContent(content, warn) {
   const narrowAllows = {};
   for (const r of rules) {
     if (!r.action || !r.effect) continue;
-    if (!KILO_PERMISSION_TYPES.has(r.action) || r.resource !== "*" || !["allow", "deny", "ask"].includes(r.effect)) {
+    const kiloKey = KILO_ACTION_ALIAS[r.action] || r.action; // opencode v2 name → Kilo's v1-style key
+    if (!KILO_PERMISSION_TYPES.has(kiloKey) || r.resource !== "*" || !["allow", "deny", "ask"].includes(r.effect)) {
       dropped.add(`${r.action}(${r.resource ?? "*"})`);
-      if (r.effect === "allow" && r.resource && r.resource !== "*" && KILO_PERMISSION_TYPES.has(r.action)) {
-        (narrowAllows[r.action] ||= []).push(r.resource);
+      if (r.effect === "allow" && r.resource && r.resource !== "*" && KILO_PERMISSION_TYPES.has(kiloKey)) {
+        (narrowAllows[kiloKey] ||= []).push(r.resource);
       }
       continue;
     }
-    map[r.action] = r.effect; // last rule wins per action
+    map[kiloKey] = r.effect; // last rule wins per action
   }
   if (dropped.size) warn(`no Kilo equivalent — dropped: ${[...dropped].sort().join(", ")}`);
   for (const [action, res] of Object.entries(narrowAllows)) {

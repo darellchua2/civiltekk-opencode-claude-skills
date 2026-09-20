@@ -9,7 +9,7 @@ permissions:
   - action: edit
     resource: '*'
     effect: allow
-  - action: bash
+  - action: shell
     resource: '*'
     effect: allow
   - action: question
@@ -39,7 +39,7 @@ permissions:
   - action: skill
     resource: markitdown-mcp-skill
     effect: allow
-  - action: task
+  - action: subagent
     resource: image-analyzer-subagent
     effect: allow
 category: docs

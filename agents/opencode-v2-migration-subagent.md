@@ -23,7 +23,7 @@ permissions:
   - action: grep
     resource: '*'
     effect: allow
-  - action: bash
+  - action: shell
     resource: '*'
     effect: allow
   - action: webfetch
@@ -32,10 +32,10 @@ permissions:
   - action: websearch
     resource: '*'
     effect: allow
-  - action: task
+  - action: subagent
     resource: '*'
     effect: deny
-  - action: task
+  - action: subagent
     resource: explore
     effect: allow
   - action: skill

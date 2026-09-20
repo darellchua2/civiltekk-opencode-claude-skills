@@ -22,7 +22,7 @@ permissions:
   - action: grep
     resource: '*'
     effect: allow
-  - action: bash
+  - action: shell
     resource: '*'
     effect: allow
   - action: webfetch
@@ -34,16 +34,16 @@ permissions:
   - action: question
     resource: '*'
     effect: deny
-  - action: task
+  - action: subagent
     resource: '*'
     effect: deny
-  - action: task
+  - action: subagent
     resource: image-analyzer-subagent
     effect: allow
-  - action: task
+  - action: subagent
     resource: xlsx-specialist-subagent
     effect: allow
-  - action: task
+  - action: subagent
     resource: explore
     effect: allow
   - action: skill

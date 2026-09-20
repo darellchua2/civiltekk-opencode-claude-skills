@@ -124,7 +124,7 @@ rules=fm['permissions']
 def has(action, resource, effect):
     return any(r['action']==action and r['resource']==resource and r['effect']==effect for r in rules)
 assert has('edit','*','deny'), 'edit must deny *'
-assert has('bash','*','deny'), 'bash must be deny'
+assert has('shell','*','deny'), 'shell must be deny'
 assert has('webfetch','*','allow'), 'webfetch must be allow'
 assert has('websearch','*','allow'), 'websearch must be allow'
 "

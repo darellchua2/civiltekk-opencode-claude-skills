@@ -12,19 +12,19 @@ permissions:
   - action: websearch
     resource: '*'
     effect: allow
-  - action: task
+  - action: subagent
     resource: '*'
     effect: deny
-  - action: task
+  - action: subagent
     resource: pptx-specialist-subagent
     effect: allow
-  - action: task
+  - action: subagent
     resource: docx-creation-subagent
     effect: allow
-  - action: task
+  - action: subagent
     resource: startup-ceo-subagent
     effect: allow
-  - action: task
+  - action: subagent
     resource: xlsx-specialist-subagent
     effect: allow
   - action: skill
