@@ -71,7 +71,7 @@ PACK_SERVERS="markitdown:markitdown docling:docling chrome-devtools:chrome-devto
   dir="$(mktemp -d)"
   cat > "$dir/opencode.json" <<'EOF'
 {
-  "mcp": { "servers": { "markitdown": { "type": "local", "command": ["markitdown-local-mcp"], "disabled": true } } },
+  "mcp": { "servers": { "markitdown": { "type": "local", "command": ["markitdown-mcp"], "disabled": true } } },
   "permissions": [
     { "action": "codegraph*", "resource": "*", "effect": "deny" },
     { "action": "markitdown*", "resource": "*", "effect": "deny" }
@@ -122,13 +122,17 @@ EOF
 # =============================================================================
 
 @test "setup_sh_installer_has_installed_check" {
-  grep -q 'pip show markitdown-local-mcp' "$SETUP"
+  grep -q 'pip show markitdown-mcp' "$SETUP"
+  # #487: the install command must carry the exact alpha pin AND the
+  # mcp[cli] co-install (docling-mcp shares the mcp 2.x SDK).
+  grep -qF 'markitdown-mcp==0.0.1a7' "$SETUP"
+  grep -qF 'mcp[cli]>=2.1.1,<3.0.0' "$SETUP"
 }
 
 @test "setup_sh_run_pack_merger_gates_install_on_enable_pack" {
   # hook must be dry-run-safe and keyed to the markitdown pack
   grep -q 'grep -qw "markitdown"' "$SETUP"
-  grep -q 'install_local_mcp_launchers' "$SETUP"
+  grep -q 'install_markitdown_mcp' "$SETUP"
   local hook
   hook="$(sed -n '/run_pack_merger()/,/^}/p' "$SETUP" | grep -A2 'grep -qw "markitdown"')"
   [[ "$hook" == *'DRY_RUN'* ]]
@@ -138,8 +142,8 @@ EOF
   grep -q 'mergeRc = \$LASTEXITCODE' "$SETUP_PS1"
   # EnablePack regex gate: '(^|,)markitdown(,|$)'
   grep -qF ',)markitdown(,' "$SETUP_PS1"
-  grep -q 'Install-LocalMcpLaunchers' "$SETUP_PS1"
-  grep -q 'pip show markitdown-local-mcp' "$SETUP_PS1"
+  grep -q 'Install-MarkitdownMcp' "$SETUP_PS1"
+  grep -q 'pip show markitdown-mcp' "$SETUP_PS1"
 }
 
 @test "installer_has_pep668_break_system_packages_fallback" {
@@ -155,15 +159,15 @@ EOF
 }
 
 @test "setup_ps1_hook_resets_lastexitcode_for_caller" {
-  # Invoke-PackMerger's install hook + Install-LocalMcpLaunchers early returns
+  # Invoke-PackMerger's install hook + Install-MarkitdownMcp early returns
   # must reset $global:LASTEXITCODE = 0 (best-effort) — the caller checks it
   # right after (Invoke-DeployAgents 'Provider-pack application failed').
   local fn
   fn="$(sed -n '/function Invoke-PackMerger/,/^}/p' "$SETUP_PS1")"
-  [[ "$fn" == *'Install-LocalMcpLaunchers'* ]]
+  [[ "$fn" == *'Install-MarkitdownMcp'* ]]
   [[ "$fn" == *'$global:LASTEXITCODE = 0'* ]]
   local inst
-  inst="$(sed -n '/function Install-LocalMcpLaunchers/,/^}/p' "$SETUP_PS1")"
+  inst="$(sed -n '/function Install-MarkitdownMcp/,/^}/p' "$SETUP_PS1")"
   [ "$(grep -c 'global:LASTEXITCODE = 0' <<<"$inst")" -ge 3 ]
 }
 

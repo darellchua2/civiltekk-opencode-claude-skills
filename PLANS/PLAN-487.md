@@ -81,18 +81,21 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 3: Tests
 
-- [ ] **3.1** Update `tests/test_pack_permissions.bats`: replace `pip show markitdown-local-mcp` greps with `pip show markitdown-mcp`, scrub the line-74 merge fixture (`"command": ["markitdown-local-mcp"]` → `["markitdown-mcp"]`), re-verify the `run_pack_merger()` hook sed-range and dry-run-safety assertions against the renamed function body.
+- [x] **3.1** Update `tests/test_pack_permissions.bats`: replace `pip show markitdown-local-mcp` greps with `pip show markitdown-mcp`, scrub the line-74 merge fixture (`"command": ["markitdown-local-mcp"]` → `["markitdown-mcp"]`), re-verify the `run_pack_merger()` hook sed-range and dry-run-safety assertions against the renamed function body.
     — **Why:** these greps are the mechanical guard that setup.sh installs the launcher on enable; stale greps false-green the CI gate.
     — **Done when:** `bats tests/test_pack_permissions.bats` passes.
     — **Consumers affected:** CI.
-- [ ] **3.2** Update `tests/test_setup_ps1_vars.bats`: replace the `Join-Path $RepoDir "opencode_app\mcp-servers\markitdown-local-mcp"` assertion with fixed-string assertions (`grep -qF`) for BOTH clauses in setup.ps1 — the `markitdown-mcp==0.0.1a7` pin AND the `mcp[cli]>=2.1.1,<3.0.0` co-install.
+    — **Done:** pip-show greps, line-74 fixture, install-on-enable hook name, and the LASTEXITCODE-reset assertion (test 10, found by the full-suite gate) all updated; files: tests/test_pack_permissions.bats; fixes: stale `Install-LocalMcpLaunchers` assertion at line 167 missed in the first pass
+- [x] **3.2** Update `tests/test_setup_ps1_vars.bats`: replace the `Join-Path $RepoDir "opencode_app\mcp-servers\markitdown-local-mcp"` assertion with fixed-string assertions (`grep -qF`) for BOTH clauses in setup.ps1 — the `markitdown-mcp==0.0.1a7` pin AND the `mcp[cli]>=2.1.1,<3.0.0` co-install.
     — **Why:** the test pins platform parity of the launcher install; a pin-only assertion would false-green a setup.ps1 that drops `mcp[cli]`, silently breaking AC6's docling coexistence on Windows (the Linux `pip check` in 5.5 cannot catch it). `-qF` because `[` in `mcp[cli]` and the comma in the range are regex metacharacters.
     — **Done when:** `bats tests/test_setup_ps1_vars.bats` passes; both clauses asserted.
     — **Consumers affected:** CI.
-- [ ] **3.3** Run the full bats suite; fix any collateral failures (e.g. `test_markitdown_skill`, `test_mcp_count_consistency` greps) without weakening assertions.
+    — **Done:** test replaced with `setup_ps1_installs_pinned_markitdown_mcp_with_mcp_cli` asserting both clauses via `-qF`; files: tests/test_setup_ps1_vars.bats; fixes: none
+- [x] **3.3** Run the full bats suite; fix any collateral failures (e.g. `test_markitdown_skill`, `test_mcp_count_consistency` greps) without weakening assertions.
     — **Why:** AC7 requires the suite green; collateral grep drift must surface now, not in CI.
     — **Done when:** full `bats tests/` exits 0 (or only pre-existing failures documented as such).
     — **Consumers affected:** CI, verification gate memo.
+    — **Done:** full 30-file per-file sweep green (29 rc=0 + test_pack_permissions after fix); collateral findings fixed: (a) dry-run leak — installer performed a real pip install under `--dry-run` (test_headless_default hang), guarded in both scripts per #467; (b) stale function-name assertion in test_pack_permissions test 10; files: deploy/setup.sh, deploy/setup.ps1, tests/test_pack_permissions.bats; fixes: dry-run guard (gate fix 1), stale assertion (gate fix 2)
 
 ### Phase 4: Documentation
 

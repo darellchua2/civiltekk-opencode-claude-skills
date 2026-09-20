@@ -2116,6 +2116,14 @@ function Invoke-Migration {
 # both servers (the retired vendored pin mcp<2.0 was mutually exclusive with
 # docling and broke both).
 function Install-MarkitdownMcp {
+    # Dry-run contract (#467): the pip uninstall/install below mutate the
+    # user's site-packages — never during a preview.
+    if ($DryRun) {
+        Write-Host "[DRY-RUN] Would ensure markitdown-mcp==0.0.1a7 (pip --user)" -ForegroundColor Cyan
+        $global:LASTEXITCODE = 0
+        return
+    }
+
     # Migrate old installs: the retired vendored launcher must not linger on
     # PATH beside the new entry point (best-effort — absent is fine).
     $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
