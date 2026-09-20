@@ -9,7 +9,9 @@
 - [ ] `@opentui/core` pinned exact `0.5.11` in package.json with regenerated lockfile (committed); prebuilt native binaries via its optionalDependencies — no build step, core TS API, no JSX
 - [ ] New pure module `installer/deploy-plan-items.mjs`: builds the selectable item inventory (skills by category from registry.json, agents by tier, MCP packs from deploy/packs, plugins = opencode-* dir listing, extras) + the dependency DAG (dependency-map.json requiresSkills; pack ⇒ its matching skill) + `buildSelectionPlan(choices)` → plan JSON with auto-included dependencies and per-inclusion `lockedBy`/`reason` records
 - [ ] Three drivers over that module with IDENTICAL plan output for identical selections: (a) OpenTUI dashboard `tui.mjs select-items` — DAG-ordered groups (environment, identity, content: skills/agents/packs/plugins, extras), locked items visibly disabled with the reason, arrow/space/enter keys; (b) linear readline fallback (Node < 26.4 or opentui import failure) — same order, sequential prompts; (c) headless `--print-plan --skills a,b --agents x --packs p --plugins q --extras llm,vllm --defaults` — zero TTY reads
-- [ ] setup.sh integration: `--select` flag + menu-context picker writes the selection plan to `$CONFIG_DIR/deploy-plan.json`; the full-path plan gains conditional steps deploying FROM the selection (skills/agents via `init.mjs add <names>` — requiresSkills auto-install, packs merged, plugins deployed, extras configured); headless full path unchanged (blanket deploy)
+- [ ] setup.sh integration (arch-amended B1/B2): `--select` is BASH-ONLY in v1 (ps1 parity = #474) and PROVISIONS the dashboard dep before the picker runs (network-gated `npm ci --omit=dev` in the repo root — fresh clones have no node_modules, so without provisioning the dashboard never renders; non-critical step, linear fallback on failure, pinned). The picker writes `$CONFIG_DIR/deploy-plan.json`; consumption is gated on THIS RUN's flag (never file existence alone — a stale plan must never alter later blanket/headless runs), the file is consumed ONCE (unlinked after successful consumption, never under dry-run), and `--select` with no written plan is CRITICAL (an empty deploy must not report success); headless full path unchanged (blanket deploy)
+- [ ] DAG single-source (arch W1/W2): buildSelectionPlan WRAPS init.mjs's exported `resolveSelection` (agent.requiresSkills + delegatesTo + skill.requiresSkills + impliesMcp) with provenance ({item, source: direct|locked-by:<id>, reason}) — NO forked edge set; pack⇒skill edges DROPPED (pack JSONs declare no skills)
+- [ ] opencode-ai Node-26 tolerance verified at execution time (npm view engines + post-install `opencode --version` bats pin)
 - [ ] bats (tests/test_select_items.bats): DAG auto-include + lock reasons (pure-module pins), print-plan determinism, linear≡print-plan equivalence (piped answers), headless zero-TTY, nvm 26 pins (both scripts), opentui exact-pin + lockfile presence, setup wiring
 - [ ] Full gate green (npm install regenerates package-lock.json — committed per repo convention)
 
@@ -17,12 +19,13 @@
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `package.json` + package-lock.json | — | npm ci (CI has no node_modules need for opentui — bats is bash) | medium — new runtime dep, native optionalDeps |
+| `package.json` + package-lock.json | provisioning step (B1) | CI: the bats job runs NO npm ci (opentui never imported there — intentional Node-24 CI divergence, documented); npm ci lives in release.yml (one linux native per main push); `npx add` users pay prod-dep download cost (accepted — Gap 3: regular dependencies + provisioning) | medium — new runtime dep, native optionalDeps |
 | `installer/deploy-plan-items.mjs` (new, pure) | registry.json, dependency-map.json, deploy/packs, plugins dir | both TUI drivers, --print-plan, setup.sh deploy-from-selection | low |
 | `deploy/tui.mjs` select-items flow | deploy-plan-items; @opentui/core (dashboard only) | setup.sh --select / menu | medium |
 | `deploy/setup.sh` + `deploy/setup.ps1` nvm 26 | — | fresh installs | low |
 | `deploy/setup.sh` select/plan-consumption steps | #470 executor; init.mjs add <names> | interactive full path | medium |
 | `tests/test_select_items.bats` (new) | all of the above | CI | low |
+| `tests/test_plan_executor.bats` + `deploy_delegate.bats` | new steps APPEND to build_plan (no interleaving — arch W4) | CI | low |
 
 ## Implementation Phases
 
@@ -37,7 +40,7 @@
     — **Consumers affected:** fresh installs get Node 26.
 
 ### Phase 2: pure plan-item module + three drivers
-- [ ] **2.1** installer/deploy-plan-items.mjs: `buildInventory()` (skills grouped by registry category, agents by tier, packs from deploy/packs/pack-*.json names, plugins from deploy/plugins/opencode-* dirs, extras fixed list) + `dependencyLocks()` (requiresSkills edges; pack ⇒ matching skill; recorded as {item, requires, reason}) + `buildSelectionPlan(choices)` (validates, auto-includes required deps, annotates each inclusion with why: direct|locked-by:<id>) — pure, no I/O beyond caller-passed data
+- [ ] **2.1** installer/deploy-plan-items.mjs: `buildInventory()` (skills by registry category, agents by tier, packs from deploy/packs, opencode-* plugins, extras) + `buildSelectionPlan(choices)` WRAPPING init.mjs's exported `resolveSelection` (single closure: agent.requiresSkills + delegatesTo + skill.requiresSkills + impliesMcp) extended with provenance ({item, source: direct|locked-by:<id>, reason}) — NO forked edge set, NO pack⇒skill edges (packs declare no skills — arch W2); pure, caller-passed data only
     — **Why:** All three drivers render/produce over the same pure core — the identical-output AC becomes testable without a TTY.
     — **Done when:** pins in 2.1 exercise inventory + locks + auto-include directly (node -e over the module with fixture data).
     — **Consumers affected:** tui.mjs flows, setup.sh consumption.
@@ -45,9 +48,9 @@
     — **Why:** The ticket's three drivers; identical plan output is the AC.
     — **Done when:** equivalence pin (2.1): linear piped answers vs print-plan flags → identical plan JSON; dashboard import failure falls back (pin: FORCE_LINEAR=1 or mocked import failure).
     — **Consumers affected:** setup.sh --select; tests.
-- [ ] **2.3** setup.sh: `--select` flag → interactive full path runs `tui.mjs select-items --out "$CONFIG_DIR/deploy-plan.json"` (non-critical plan step before content), then conditional steps `deploy_selected_content` (init.mjs add <skills/agents>, packs, plugins, extras from the plan) — skipped cleanly when no plan file exists (headless/full-blanket unchanged); menu unchanged (option 3 gains the picker after provider selection)
+- [ ] **2.3** setup.sh (arch B1/B2/W5/W6/W7): (a) PROVISIONING step before the picker — network-gated, non-critical `npm ci --omit=dev` in the repo root (fresh clones have no node_modules; without it the dashboard never renders), linear fallback on failure, pinned; (b) `--select` → picker writes `$CONFIG_DIR/deploy-plan.json` (dry-run reads a PRE-SEEDED plan only, previews consumption, writes nothing — extends test_dry_run_leaks); (c) consumption gated on `--select`-THIS-RUN + file exists, unlinked after successful consumption (never under dry-run); `--select` with no written plan = CRITICAL; (d) linear driver EOF aborts non-zero (prompt-eof rule); (e) skills-only EXCLUDES --select (pinned per-mode traces)
     — **Why:** The picker must deploy what it selects — otherwise dead UI.
-    — **Done when:** wiring pins; an end-to-end dry-run with a pre-seeded plan file deploys exactly the selected skill (2.1).
+    — **Done when:** wiring + provisioning + consume-once pins; DRY-RUN with a pre-seeded plan PREVIEWS exactly the selected items and writes nothing (arch W6); executor/headless/parity suites stay green (arch W4).
     — **Consumers affected:** interactive full-path users; headless unchanged.
 
 ### Phase 3: pins + full gate
