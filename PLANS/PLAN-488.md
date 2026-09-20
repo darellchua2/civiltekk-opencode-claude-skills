@@ -124,3 +124,4 @@ _Every step is atomic and carries rationale. Any step missing a field is malform
 _Per-step Done lines live inline; gate memo lines below (axes with no applicable command record n.a; tier=full per cross-module Consumer Map anchor)._
 
 
+GATE 3933316 tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a
