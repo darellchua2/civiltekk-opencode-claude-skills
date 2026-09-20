@@ -108,6 +108,7 @@ MODELS_DEFAULT_MAP="${INSTALLER_DIR}/models.default.json"
 PROVIDER_PRESETS="${INSTALLER_DIR}/provider-presets.json"
 # Global user overrides (~/.config/opencode/)
 USER_MODELS_MAP="${CONFIG_DIR}/models.json"
+SELECT_PLAN_FILE="${CONFIG_DIR}/deploy-plan.json"
 USER_OVERRIDES="${CONFIG_DIR}/agent-overrides.json"
 # Project-local overrides (repo root .opencode/)
 PROJECT_MODELS_MAP="${REPO_DIR}/.opencode/models.json"
@@ -333,6 +334,7 @@ ENABLE_AUTO_UPDATE=false
 UPDATE_SCHEDULE="manual"
 CHECK_UPDATE_ONLY=false
 CHECK_CATALOG_ONLY=false    # --check-catalog (models.dev drift check)
+SELECT_ITEMS=false          # --select (per-item deploy picker)
 KEEP_BACKUPS=5
 
 # Rollback mode (set by --rollback)
@@ -536,6 +538,9 @@ USAGE:
   --peonping              Install PeonPing sound notifications  Headless /
                           (menu option 5 as a flag)             scripted installs
 
+  --select                Pick skills/agents/packs/plugins per item   Custom
+                          (interactive picker; emits a deploy plan)  deploys
+
   --check-catalog         Compare provider-models.json with the live  Model-pin
                           models.dev catalog (warnings only)     maintenance
 
@@ -558,6 +563,7 @@ USAGE:
     -s, --skills-only     Skills-only deployment mode
     -u, --update          Update OpenCode CLI to latest version
     -P, --peonping        Install PeonPing sound notifications only
+    --select              Pick deploy items interactively (per-item deploy)
     --check-catalog       Warn if provider model pins drifted from models.dev
     --rollback [TARGET]   Restore from previous backup (see SETUP MODES above)
 
@@ -846,6 +852,10 @@ parse_arguments() {
                 ;;
             --check-catalog)
                 CHECK_CATALOG_ONLY=true
+                shift
+                ;;
+            --select)
+                SELECT_ITEMS=true
                 shift
                 ;;
             -P|--peonping)
@@ -3645,8 +3655,20 @@ build_plan() {
         PLAN_STEPS+=("false|vllm|Configure vLLM|setup_vllm")
         PLAN_STEPS+=("false|provider|Select model provider|setup_model_provider")
         PLAN_STEPS+=("false|credentials|Capture provider credentials|setup_provider_credentials")
-        PLAN_STEPS+=("true|agents|Deploy agents|deploy_agents")
-        PLAN_STEPS+=("true|plugins|Deploy plugins|deploy_plugins")
+        if [ "$SELECT_ITEMS" = true ]; then
+            # Per-item picker (#473): selection replaces the blanket content
+            # deploy. Steps APPEND here (never interleave — deploy_delegate
+            # line-order pin); consumption gates on THIS RUN's flag + the plan
+            # file (a stale plan from a prior run must never alter this one).
+            PLAN_STEPS+=("false|provision-tui|Provision picker dependencies|provision_picker_deps")
+            PLAN_STEPS+=("true|select-items|Select items to deploy|run_item_picker")
+            PLAN_STEPS+=("true|deploy-selected-skills|Deploy selected skills|deploy_selected_skills")
+            PLAN_STEPS+=("true|deploy-selected-agents|Deploy selected agents|deploy_selected_agents")
+            PLAN_STEPS+=("false|apply-selected-extras|Apply selected packs and extras|apply_selected_packs_extras")
+        else
+            PLAN_STEPS+=("true|agents|Deploy agents|deploy_agents")
+            PLAN_STEPS+=("true|plugins|Deploy plugins|deploy_plugins")
+        fi
         PLAN_STEPS+=("false|init-symlink|Install opencode-init shim|setup_opencode_init_symlink")
         PLAN_STEPS+=("false|learnings|Set up learnings directory|setup_learnings_dir")
         PLAN_STEPS+=("false|shell-vars|Set up shell variables|setup_shell_vars")
@@ -3845,6 +3867,79 @@ setup_provider_credentials() {
 
 check_provider_catalog() {
     node "${DEPLOY_DIR}/regen-provider-models.mjs" --check
+}
+
+# ── Per-item picker steps (#473) ──
+provision_picker_deps() {
+    # The dashboard dep is only needed interactively; fresh clones have no
+    # node_modules, so provision it here (network-gated, non-critical — the
+    # picker falls back to linear prompts when this fails).
+    if [ -d "${REPO_DIR}/node_modules/@opentui/core" ]; then
+        return 0
+    fi
+    log_info "Provisioning picker dependencies (npm ci --omit=dev)..."
+    if (cd "${REPO_DIR}" && npm ci --omit=dev >/dev/null 2>&1); then
+        return 0
+    fi
+    log_warn "npm ci failed - the picker falls back to linear prompts"
+    return 1
+}
+
+run_item_picker() {
+    if [ "$DRY_RUN" = true ]; then
+        # W6: dry-run reads a PRE-SEEDED plan only — it never runs the picker
+        # (which would write one for real) and previews the consumption.
+        if [ ! -f "$SELECT_PLAN_FILE" ]; then
+            log_warn "Dry-run --select: no pre-seeded plan at ${SELECT_PLAN_FILE} - nothing to preview"
+            return 1
+        fi
+        log_info "[DRY-RUN] Would deploy items from ${SELECT_PLAN_FILE}:"
+        node -e 'const p=require(process.argv[1]); for (const g of ["skills","agents","mcps"]) console.log("  "+g+": "+((p[g]||[]).map(i=>i.name).join(", ")||"(none)"))' "$SELECT_PLAN_FILE" 2>/dev/null || true
+        return 0
+    fi
+    node "$TUI_SCRIPT" select-items --out "$SELECT_PLAN_FILE"
+}
+
+deploy_selected_group() {
+    # $1 = plan group (skills|agents). Direct picks only — locked-by items are
+    # pulled in automatically by init.mjs add's requiresSkills closure (#439).
+    [ -f "$SELECT_PLAN_FILE" ] || { log_error "No selection plan at ${SELECT_PLAN_FILE}"; return 1; }
+    local names
+    names=$(node -e 'const p=require(process.argv[1]); console.log((p[process.argv[2]]||[]).filter(i=>i.source==="direct").map(i=>i.name).join(" "))' "$SELECT_PLAN_FILE" "$1")
+    [ -z "$names" ] && { log_info "No $1 selected"; return 0; }
+    # shellcheck disable=SC2086 — intentional word splitting: one add per name
+    for name in $names; do
+        node "${INSTALLER_DIR}/init.mjs" add "$name" ${PROVIDER:+--provider ${PROVIDER}} || return 1
+    done
+    return 0
+}
+
+deploy_selected_skills() {
+    deploy_selected_group skills
+}
+
+deploy_selected_agents() {
+    deploy_selected_group agents
+}
+
+apply_selected_packs_extras() {
+    local packs
+    packs=$(node -e 'const p=require(process.argv[1]); console.log((p.packs||[]).join(","))' "$SELECT_PLAN_FILE" 2>/dev/null)
+    if [ -n "$packs" ]; then
+        ENABLE_PACK="$packs" run_pack_merger || log_warn "pack merge failed (non-critical)"
+    fi
+    for e in $(node -e 'const p=require(process.argv[1]); console.log((p.extras||[]).join(" "))' "$SELECT_PLAN_FILE" 2>/dev/null); do
+        case "$e" in
+            local-llm) setup_local_llm || log_warn "local LLM setup failed (non-critical)" ;;
+            vllm)      setup_vllm || log_warn "vLLM setup failed (non-critical)" ;;
+        esac
+    done
+    # Consume-once (B2): the plan is spent after a successful deployment —
+    # never deleted under dry-run.
+    if [ "$DRY_RUN" != true ]; then
+        rm -f "$SELECT_PLAN_FILE"
+    fi
+    return 0
 }
 
 run_migration_only() {
