@@ -6,11 +6,11 @@
 
 ## Acceptance Criteria
 
-- [ ] `--target agents` installs skills verbatim to `~/.agents/skills/` and agents verbatim to `~/.agents/agents/`
-- [ ] Target table drives dest dirs + transforms for **user-scope** installs; existing `opencode` and `claude` user-scope output is unchanged (no regression). Project-scope dest columns are **deferred to #454** (no current consumer — `--project` installs are opencode-only): `--project` stays opencode-only and keeps its existing note-and-downgrade behavior when combined with a non-opencode `--target` (no `~/.agents` write, no new error)
-- [ ] Manifest entries record per-target content hashes; `update` copies only changed targets; `remove` cleans every probed target dir
-- [ ] `--dry-run` previews new-target writes and writes nothing
-- [ ] `node --test` + `bats` gates pass; README / `--help` / installer counts synced per repo documentation-sync rules
+- [x] `--target agents` installs skills verbatim to `~/.agents/skills/` and agents verbatim to `~/.agents/agents/`
+- [x] Target table drives dest dirs + transforms for **user-scope** installs; existing `opencode` and `claude` user-scope output is unchanged (no regression). Project-scope dest columns are **deferred to #454** (no current consumer — `--project` installs are opencode-only): `--project` stays opencode-only and keeps its existing note-and-downgrade behavior when combined with a non-opencode `--target` (no `~/.agents` write, no new error)
+- [x] Manifest entries record per-target content hashes; `update` copies only changed targets; `remove` cleans every probed target dir
+- [x] `--dry-run` previews new-target writes and writes nothing
+- [x] `node --test` + `bats` gates pass; README / `--help` / installer counts synced per repo documentation-sync rules
 
 ## Dependency & Consumer Map
 
@@ -128,3 +128,5 @@ GATE 9ab5aaa lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — bats init/u
 GATE 16c01a2 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — bats init/update/parse_arguments green, node --test green, 3-target regression sweep identical
 GATE e5f4a8f lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — bats 49 ok, node --test green, lifecycle behavioral checks green
 GATE 300b271 lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. — FINAL: 55 bats ok (init/update/parse_arguments/agents_target), node --test green, pack+drift bats green
+
+AC ticked at 4dd8779+trace: all five verified by Phases 1-4 (agents-target installs + manifest, table-driven paths w/ structural gate + regression sweep, per-target hashes/update/remove, dry-run, gates+docs).
