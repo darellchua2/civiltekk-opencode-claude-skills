@@ -1951,8 +1951,10 @@ setup_zai_api_key() {
         log_error "No valid ZAI_API_KEY provided"
 
         if ! prompt_yes_no "Continue without API key? Some MCP services will not work." "n"; then
-            log_error "Setup cancelled. Please run this script again with your API key."
-            exit 1
+            # Non-critical plan step (#470): return, never exit — the executor
+            # warns and continues, and the epilogue still runs.
+            log_warn "Skipping Z.AI key setup - re-run this script to configure it."
+            return 1
         fi
     else
         log_success "API Key accepted: ${ZAI_API_KEY:0:8}...${ZAI_API_KEY: -4}"
@@ -2679,6 +2681,13 @@ install_markitdown_mcp() {
 
     if ! python3 -m pip --version >/dev/null 2>&1; then
         log_warn "pip not available for python3 — cannot install markitdown-mcp. Install pip and re-run."
+        return 0
+    fi
+
+    # Dry-run safe (#470 class sweep): this is a real network install into the
+    # user's Python user-site — never during a preview.
+    if [ "$DRY_RUN" = true ]; then
+        log_info "[DRY-RUN] Would pip install markitdown-local-mcp from ${launcher_dir}"
         return 0
     fi
 
@@ -3700,6 +3709,9 @@ update_manifest() {
 }
 
 run_migration_only() {
+    # NOTE: run_migration currently has no failure path (all returns 0); if it
+    # gains one, propagate it here — this critical step would otherwise mask it
+    # with run_resolver's status.
     run_cmd "mkdir -p ${AGENTS_DEST_DIR}"
     run_migration
     run_resolver
@@ -4044,8 +4056,12 @@ check_for_updates_only() {
     fi
 
     update_last_check_time
-    echo "" >> "$UPDATE_LOG"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Update check: v${current_version} (latest: v${latest_version})" >> "$UPDATE_LOG"
+    # Trailing appends must not become the function's return status (#470
+    # review): a failed log write would flip the critical check-update step.
+    mkdir -p "$(dirname "$UPDATE_LOG")" 2>/dev/null || true
+    echo "" >> "$UPDATE_LOG" 2>/dev/null || true
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Update check: v${current_version} (latest: v${latest_version})" >> "$UPDATE_LOG" 2>/dev/null || true
+    return 0
 }
 
 # Perform auto-update
@@ -4389,6 +4405,10 @@ main() {
             echo "=== OpenCode Skills Deployment v${SCRIPT_VERSION} ==="
             echo ""
             ;;
+        update)
+            echo "=== OpenCode CLI Updater v${SCRIPT_VERSION} ==="
+            echo ""
+            ;;
         full)
             echo "=== OpenCode Configuration Setup v${SCRIPT_VERSION} ==="
             echo ""
@@ -4479,11 +4499,8 @@ main() {
         build_plan   # rebuild: the menu may have changed the mode (#470)
     fi
 
-    # ── Execute the plan (#470) ──
-    if ! run_plan; then
-        PLAN_CRITICAL_FAILED=true
-    fi
-
+    # ── Execute the plan (#470) — failure state lands in PLAN_FAILED_CRITICAL ──
+    run_plan || true
     # Mode completion lines (truthful: only when no critical step failed)
     if [ -z "$PLAN_FAILED_CRITICAL" ]; then
         case "$PLAN_MODE" in

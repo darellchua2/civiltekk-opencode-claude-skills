@@ -51,6 +51,25 @@
 - **Scope**: project
 - **Summary**: upstream publishes only alphas (latest 0.0.1a7) — exact pin installs without --pre; requires markitdown[all] + mcp>=2.1.1,<3; coexists with docling-mcp 3.x on mcp 2.x; stdio default; bump ritual spans 3 files
 - **Date**: 2026-09-21
+<!-- Entries are appended here automatically when new learnings are saved -->
+
+### set -E would arm the ERR trap inside plan steps — never add it while dispatch-by-call
+
+- **Category**: solution
+- **File**: `solutions/errtrace-would-arm-the-err-trap-inside-steps.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: setup.sh's ERR trap is un-armed inside functions precisely because set -E is absent — adding it would route every deliberate step return 1 through error_handler's exit, bypassing the executor + epilogue (#470 review)
+- **Date**: 2026-09-20
+
+### Plan step functions must return, never exit
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-step-functions-must-return.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: sweep every step function for bare exit when introducing a single executor — setup_zai_api_key's exit 1 bypassed the epilogue on headless -y, deterministically (#470 review)
+- **Date**: 2026-09-20
 
 
 ### AC cross-references must resolve to a real artifact

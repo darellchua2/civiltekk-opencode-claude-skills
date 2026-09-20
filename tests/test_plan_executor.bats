@@ -149,6 +149,25 @@ JSON
     rm -rf "$d"
 }
 
+@test "d2_decline_stale_model_key_deletion_is_expected" {
+    # Arch review requirement: with no --provider, the resolver DELETES a stale
+    # explicit "model" key (resolve-models.mjs:293-295) — that is documented
+    # resolver behavior on the declined file, NOT a decline-contract bug. Pin
+    # it so a future change is a conscious decision (LEARNINGS
+    # decisions/resolver-omit-config-src-preserve-contract.md).
+    local d; d="$(mktemp -d)"
+    mkdir -p "$d/.config/opencode"
+    cat > "$d/.config/opencode/opencode.json" <<'JSON'
+{ "model": "stale/old", "custom_user_key": "keep-me" }
+JSON
+    bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        DRY_RUN=false; SKIP_CONFIG_COPY=true; RESOLVER_CONFIG_ONLY=true
+        run_resolver" >/dev/null 2>&1
+    # Top-level model key deleted (agents.*.model keys legitimately remain).
+    node -e 'const c=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if (c.model !== undefined) { console.error("stale top-level model survived:", c.model); process.exit(1); } if (c.custom_user_key !== "keep-me") { console.error("custom key lost"); process.exit(1); }' "$d/.config/opencode/opencode.json"
+    rm -rf "$d"
+}
+
 @test "truthful_exit_models_only_failing_node_check_exits_nonzero" {
     local d; d="$(mktemp -d)"
     run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
@@ -173,6 +192,15 @@ JSON
     config=$(echo "$output" | grep -n "Plan step: Deploy config" | head -1 | cut -d: -f1)
     agents=$(echo "$output" | grep -n "Plan step: Deploy agents" | head -1 | cut -d: -f1)
     plugins=$(echo "$output" | grep -n "Plan step: Deploy plugins" | head -1 | cut -d: -f1)
-    [ -n "$oc" ] && [ -n "$deps" ] && [ -n "$config" ] && [ -n "$agents" ] && [ -n "$plugins" ]
-    [ "$oc" -lt "$deps" ] && [ "$deps" -lt "$config" ] && [ "$config" -lt "$agents" ] && [ "$agents" -lt "$plugins" ]
+    # One assertion per line — &&-chained assertions only enforce the final
+    # link under bats errexit (bats-and-chain LEARNINGS).
+    [ -n "$oc" ]
+    [ -n "$deps" ]
+    [ -n "$config" ]
+    [ -n "$agents" ]
+    [ -n "$plugins" ]
+    [ "$oc" -lt "$deps" ]
+    [ "$deps" -lt "$config" ]
+    [ "$config" -lt "$agents" ]
+    [ "$agents" -lt "$plugins" ]
 }
