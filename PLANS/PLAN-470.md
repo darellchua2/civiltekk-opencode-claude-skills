@@ -6,7 +6,7 @@
 **Arch review**: round 1 executed (3 BLOCK + 3 WARN amendments applied below; D2 mechanism execution-proven both directions; 2 Mode R gaps confirmed)
 
 ## Acceptance Criteria
-- [ ] A plan model (ordered step list: `critical|id|label|function`) is built by `build_plan()` from the existing mode flags; every mode maps to its step list — **including per-mode preconditions as steps**: skills-only = validate_opencode_install(C) + check_dependencies(C) + config(C) + agents(C) + plugins(C) + symlink + learnings; models-only = node_check(C) + provider + resolver-config-only(C) + manifest-update(**non-critical**, #379 warn-and-continue); migrate-only = node_check(C) + run_migration_only(C, folds the AGENTS_DEST_DIR pre-mkdir) + resolver(C); full/quick/single-step modes per the table in Technical Notes
+- [ ] A plan model (ordered step list: `critical|id|label|function`) is built by `build_plan()` from the existing mode flags; every mode maps to its step list per **the mode→steps table in Technical Notes** — including per-mode preconditions as steps: skills-only = validate_opencode_install(C) + check_dependencies(C) + config(C) + agents(C) + plugins(C) + symlink + learnings; models-only = node_check(C) + provider + resolver-config-only(C) + manifest-update(**non-critical**, #379 warn-and-continue); migrate-only = node_check(C) + run_migration_only(C, folds the AGENTS_DEST_DIR pre-mkdir) + resolver(C); **check-update = check_for_updates_only(C)**; full/quick/update/rollback/peonping per the same table
 - [ ] A single executor `run_plan()` runs the steps: non-critical failure → warn + continue; critical failure → stop stepping, record; the epilogue then ALWAYS runs (zip backup + cleanup + summary + next-steps for content modes; mode completion for single-step modes) and the exit code is truthful — non-zero iff a critical step failed
 - [ ] Old flags keep working as aliases (they are the plan generators); README examples unchanged; the interactive menu only sets flags (options 4/5 stop duplicating step calls inline); the #466 TTY notice sets SKILLS_ONLY instead of calling deploy_skills_only
 - [ ] Flag conflicts die at plan validation — BEFORE the network check and menu render: `build_plan` runs once immediately after validate_enable_pack (fail-fast: conflicts + PLAN_MODE), and again after the menu mutates flags; network check / auto-update / menu stay gated on the flag conditions exactly as today (single-step modes never see them, preserving `--skills-only` as the offline/headless escape path)
@@ -58,11 +58,11 @@
     — **Consumers affected:** CI.
 
 ### Phase 2: main() restructure
-- [ ] **2.1** Rewrite main(): parse_arguments → validate_enable_pack → **build_plan (fail-fast validation pass)** → header (keyed off PLAN_MODE) → [network check / auto-update / TTY-gated menu — gated on the SAME flag conditions as today; menu options only SET flags] → **build_plan (rebuild after menu)** → run_plan → uniform epilogue → truthful exit. Remove the six early-exit blocks + duplicated step calls; headless no-TTY notice sets SKILLS_ONLY; keep the AUTO_ACCEPT-gated "Press Enter to exit..."
+- [ ] **2.1** Rewrite main(): parse_arguments → validate_enable_pack → **build_plan (fail-fast validation pass)** → header (keyed off PLAN_MODE) → [network check / auto-update / TTY-gated menu — gated on the SAME flag conditions as today; menu options only SET flags] → **build_plan (rebuild after menu)** → run_plan → uniform epilogue → truthful exit. Remove all **seven** early-exit blocks (rollback :4212, update-only :4218, models-only :4226, peonping-only :4259, migrate-only :4272, skills-only :4287, check-update-only :4301) + duplicated step calls; check-update becomes a single-step plan mode (check_for_updates_only, critical); headless no-TTY notice sets SKILLS_ONLY; keep the AUTO_ACCEPT-gated "Press Enter to exit..."
     — **Why:** The core: every path = plan → execute → epilogue → honest exit, with single-step modes never gaining gates they were designed to skip.
     — **Done when:** per-mode dry-run traces pass (3.1d); no `|| true` step calls remain in main; skills-only gains cleanup_old_backups + print_next_steps (documented, benign); `bash -n` green.
     — **Consumers affected:** every deploy path.
-- [ ] **2.2** Verify setup.ps1 untouched, README unchanged; PR body discloses: (a) behavior changes — models-only resolver failure now stops before manifest update; update/peonping/migrate failures flip exit 0 → truthful 1; headless -y over existing config now PRESERVES user content (D2) — **bash only**; (b) D2 Windows divergence (setup.ps1:1856) + models-only/migrate stock-base deferred, both tracked
+- [ ] **2.2** Verify setup.ps1 untouched, README unchanged; PR body discloses: (a) behavior changes — models-only resolver failure now stops before manifest update; update/peonping/migrate/**check-update** failures flip exit 0 → truthful 1; headless -y over existing config now PRESERVES user content (D2) — **bash only**; (b) D2 Windows divergence (setup.ps1:1856) + models-only/migrate stock-base deferred, both tracked
     — **Why:** Arch F5/F9 + Mode R conditions — the deferral must be honest, not silent.
     — **Done when:** diff scope clean; PR body contains both disclosures.
     — **Consumers affected:** none.
@@ -78,7 +78,23 @@
     — **Consumers affected:** none.
 
 ## Technical Notes
-- Criticality: critical = opencode install check, deps check (skills-only), node check (models/migrate), config write, agents deploy (incl. resolver), plugins, migration, resolver-config-only, single-step modes' functions. NON-critical = env setup (gh/zai/nvm/nodejs/opencode install), local_llm, vllm, provider selection, symlink, learnings, shell_vars, **manifest update** (#379 contract: pre-#379 installs warn + exit 0 — reclassified per arch F1).
+
+### Mode → steps table (authoritative for 1.1 + 1.6 pins; re-derived from main()'s branch bodies)
+
+| Mode (flags) | Steps in order (C = critical) |
+|---|---|
+| full (default/menu 3) | setup_github_cli, setup_zai_api_key, setup_nvm, setup_nodejs, setup_opencode (all non-C) → setup_config(C) → setup_local_llm → setup_vllm → setup_model_provider → deploy_agents(C) → deploy_plugins(C) → setup_opencode_init_symlink → setup_learnings_dir → setup_shell_vars |
+| quick (`-q`/menu 1) | setup_config(C) → setup_local_llm → setup_vllm → setup_model_provider → deploy_agents(C) → deploy_plugins(C) → setup_opencode_init_symlink → setup_learnings_dir → setup_shell_vars (no env steps) |
+| skills-only (`-s`/menu 2/headless default) | validate_opencode_install(C) → check_dependencies(C) → setup_config(C) → deploy_agents(C) → deploy_plugins(C) → setup_opencode_init_symlink → setup_learnings_dir |
+| models-only (`--models-only`) | node_check(C) → setup_model_provider → resolve_models_config_only(C) → update_manifest(**non-C**, #379) |
+| migrate-only (`--migrate`) | node_check(C) → run_migration_only(C, folds AGENTS_DEST_DIR pre-mkdir) → run_resolver(C) |
+| update (`-u`) | update_opencode_cli(C) |
+| rollback (`--rollback`) | rollback(C) |
+| peonping (`-P`) | check_dependencies(C) → setup_peonping |
+| check-update (`-C`) | check_for_updates_only(C) |
+
+### Criticality + mechanics
+- Criticality: critical = "broken afterwards or wrong/missing content deployed"; non-critical = "feature absent but installation usable" (or #379's decided warn-and-continue).
 - Epilogue: zip backup only for content modes (full/quick/skills-only); single-step modes print their completion lines. "Uniform" = every path ends in summary + honest exit, not identical text.
 - build_plan runs twice (F3): validation pass pre-network/menu; rebuild post-menu. Pure function of the flags.
 - D2 mechanism: resolve-models.mjs :280-285 fallback + :463-468 configPatched write gate — execution-proven during arch review. Stale-key deletion (:293-295) pinned as expected.

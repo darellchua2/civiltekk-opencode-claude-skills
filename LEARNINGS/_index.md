@@ -53,6 +53,24 @@
 - **Date**: 2026-09-21
 
 
+### AC cross-references must resolve to a real artifact
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/dangling-cross-reference-in-ac.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: an AC pointing at "the table in Technical Notes" that doesn't exist passes every per-step atomicity check — verify reference targets, add a reference-target check to the authoring self-check (#470 r2)
+- **Date**: 2026-09-20
+
+### Recount claimed structural counts in PLANs
+
+- **Category**: convention
+- **File**: `conventions/plan-counted-structural-removals-recount.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: "remove the six early-exit blocks" — main() has seven; the uncounted seventh carried the ticket's own swallowed-exit defect. Name every element; a count is a scope claim (#470 r2)
+- **Date**: 2026-09-20
+
 ### Gate success-log with the dry branch (early-return shape for new run_cmd gates)
 
 - **Category**: pattern
