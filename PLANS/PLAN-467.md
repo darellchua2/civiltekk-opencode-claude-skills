@@ -72,4 +72,4 @@ None — standalone. Part of epic #464.
 
 ## Gate Trace
 
-GATE (push head) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 429 ok / 0 fail incl. 6 new leak pins with positive controls; node --test 30 pass / 0 fail; scope = deploy/setup.sh + deploy/setup.ps1 + tests/test_dry_run_leaks.bats)
+GATE (fix-round head 9c8b3e8) lint=- typecheck=- build=- unit=t e2e=n.a.  (bash -n ok; bats 429 ok / 0 fail; node --test 30 pass / 0 fail; review round 1: 1 BLOCK fixed — ${DRY_RUN:+--dry-run} expanded on the string "false", always-drying real models-only runs → dry_arg comparison form; 1 WARN fixed — REPO_DIR env-prefix clobbered at source, pins reassigned post-source + worktree-.env escape detector; +1 self-found: negated ! grep assertions are errexit-exempt; round 2 verdict merge-ready, 0 new issues)

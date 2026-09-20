@@ -17,6 +17,15 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### Conditionally-armed detectors need an always-armed complement
+
+- **Category**: pattern
+- **File**: `patterns/conditionally-armed-detectors-need-always-armed-twin.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: a guard armed only under local machine state (worktree .env exists) never fires in CI — pair it with a state-independent positive control covering the same regression class (#467 round 2)
+- **Date**: 2026-09-20
+
 ### Negated assertions are errexit-exempt — they can never fail a bats test
 
 - **Category**: anti-pattern
