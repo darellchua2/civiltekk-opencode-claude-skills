@@ -5,10 +5,10 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] A fixture payload missing an option `description` validates and renders after normalization
-- [ ] Option entries missing both fields are dropped, not passed through
-- [ ] Valid payloads pass through unchanged (no mutation)
-- [ ] Plugin deploys via `deploy/setup.sh` and loads without affecting other tools
+- [x] A fixture payload missing an option `description` validates and renders after normalization
+- [x] Option entries missing both fields are dropped, not passed through
+- [x] Valid payloads pass through unchanged (no mutation)
+- [x] Plugin deploys via `deploy/setup.sh` and loads without affecting other tools
 
 ## Dependency & Consumer Map
 
