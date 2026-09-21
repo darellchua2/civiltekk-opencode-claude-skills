@@ -11,10 +11,10 @@ _Inherited verbatim from #488 — the PLAN never rewrites ticket AC._
 - [x] `verification-loop-skill` §The gate contract defines the two tiers, escalation anchors, the unsure→full rule, and the tier memo marker (canonical — other surfaces defer, no restating)
 - [x] `plan-execution-skill` 4c: light gate is the per-phase default; full gate on anchor hit / judgment / ticket exit gate; escalation reasons go to the WORK LOG; no logging for the light default
 - [x] `worktree-pipeline-skill`: Step 8 references tiered gating; Step 9 review-fix commits trigger one full re-gate; Step 10's green citation requires the `tier=full` GATE line
-- [ ] Memo-format consumers (`pr-workflow-subagent`, `pr-creation-workflow-skill`) grepped and updated or verified compatible with the tier marker
-- [ ] Full gate runs the full unit suite; light gate runs affected tests only
-- [ ] Unchanged: never-push-red, CI as only unconditional re-run, unconditional Step 9 code review
-- [ ] bats suite passes; changed behavior is covered by tests
+- [x] Memo-format consumers (`pr-workflow-subagent`, `pr-creation-workflow-skill`) grepped and updated or verified compatible with the tier marker
+- [x] Full gate runs the full unit suite; light gate runs affected tests only
+- [x] Unchanged: never-push-red, CI as only unconditional re-run, unconditional Step 9 code review
+- [x] bats suite passes; changed behavior is covered by tests
 
 ## Dependency & Consumer Map
 
@@ -96,18 +96,21 @@ _Every step is atomic and carries rationale. Any step missing a field is malform
 
 ### Phase 4: Memo-consumer sweep + suite green
 
-- [ ] **4.1** Census every GATE-memo consumer: case-insensitive `grep -rniE 'GATE (<short-sha>|<sha>)|lint=t|tier=light|tier=full'` across `agents/ skills/ deploy/ installer/ opencode_app/ tests/ README.md AGENTS.md MIGRATION.md` and record the hit list with update/no-change classification in the WORK LOG; name the deliberate no-change exclusions up front — `PLANS/`, `LEARNINGS/`, `CHANGELOG.md` are immutable run history (historical trace memos stay tierless by design; never rewrite them on a re-run)
+- [x] **4.1** Census every GATE-memo consumer: case-insensitive `grep -rniE 'GATE (<short-sha>|<sha>)|lint=t|tier=light|tier=full'` across `agents/ skills/ deploy/ installer/ opencode_app/ tests/ README.md AGENTS.md MIGRATION.md` and record the hit list with update/no-change classification in the WORK LOG; name the deliberate no-change exclusions up front — `PLANS/`, `LEARNINGS/`, `CHANGELOG.md` are immutable run history (historical trace memos stay tierless by design; never rewrite them on a re-run)
     — **Why:** the format change has blast radius beyond the three edited files — single-surface deltas and root-doc restatements are known miss patterns (LEARNINGS `delta-derived-from-single-surface`, `directory-scoped-rename-sweep-misses-root-docs`); unnamed exclusions invite history rewrites on a later repo-wide re-run
     — **Done when:** the census output is captured and every hit is classified; zero unclassified hits; the three exclusions are named in the census record itself
     — **Consumers affected:** pr-workflow-subagent, pr-creation-workflow-skill, any doc that teaches the memo shape
-- [ ] **4.2** Update the classified consumers so none parse or echo the old memo shape only (e.g. pr-creation-workflow-skill PR Quality Checks slot, pr-workflow-subagent prompt, README pipeline docs if they restate the memo)
+    — **Done:** census run across the declared scope: 4 hit-groups, all classified (3 edited files tiered + own tests = no-change; pr-creation-workflow-skill:25 = update); exclusions named: PLANS/ (PLAN-448/453/476/482), LEARNINGS/anti-patterns/plan-fix-round-ac-only-sync.md — immutable run history; census record in WORK LOG
+- [x] **4.2** Update the classified consumers so none parse or echo the old memo shape only (e.g. pr-creation-workflow-skill PR Quality Checks slot, pr-workflow-subagent prompt, README pipeline docs if they restate the memo)
     — **Why:** a consumer expecting the tierless shape must not false-negative on `tier=full` lines or teach the stale format
     — **Done when:** re-running the census grep shows every remaining `lint=t` example carries a tier token or is explicitly format-agnostic; no consumer text contradicts tiered gating
     — **Consumers affected:** PR creation flow; documentation readers
-- [ ] **4.3** Run the full verification gate on the worktree (this is the ticket exit gate — tier=full) including the complete bats suite, and fix any fallout including tests pinning pre-tier wording (e.g. `tests/test_default_behavior.bats`)
+    — **Done:** pr-creation-workflow-skill step 3 memo check now requires `GATE <sha> tier=full`, states tier=light never satisfies it; census re-run shows every in-scope example tiered or format-agnostic (ALL_TIERED_OR_AGNOSTIC)
+- [x] **4.3** Run the full verification gate on the worktree (this is the ticket exit gate — tier=full) including the complete bats suite, and fix any fallout including tests pinning pre-tier wording (e.g. `tests/test_default_behavior.bats`)
     — **Why:** the change edits prompt-level contracts consumed across the estate; the exit gate is where the whole ticket state is verified once, fully
     — **Done when:** gate green end-to-end and the `GATE <short-sha> tier=full …` memo line is appended to this PLAN's trace block
     — **Consumers affected:** CI; downstream skill consumers
+    — **Done:** ticket exit gate run full: bats suite 452/452 green, registry regen idempotent (timestamp-only), tiered_gating 19/19; this memo line appended below
 
 ## Technical Notes
 

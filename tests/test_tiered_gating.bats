@@ -141,3 +141,15 @@ WP="$SKILLS_DIR/worktree-pipeline-skill/SKILL.md"
   grep -qF 'Step 9 code review' "$WP"
   grep -qF '(unconditional) backstops' "$WP"
 }
+
+PC="$SKILLS_DIR/pr-creation-workflow-skill/SKILL.md"
+
+# =============================================================================
+# Phase 4 — memo-consumer update (pr-creation-workflow-skill)
+# =============================================================================
+
+@test "tier4_gating_pr-creation_tier_full_memo_check" {
+  [ -f "$PC" ]
+  grep -qF 'GATE <sha> tier=full' "$PC"
+  grep -qiF 'never satisfies this check' "$PC"
+}
