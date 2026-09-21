@@ -94,7 +94,7 @@ Use when user explicitly requests:
 
 No vision MCP server is shipped — never assume vision MCP tools exist. Route screenshot input by availability, in order:
 
-1. **Primary — delegate to `error-resolver-subagent`** (Task tool): it runs on the `zai-coding-plan/glm-5.3-flash` vision tier (native multimodal) and sees screenshots directly. This covers both diagnosis and error-text/stack-trace extraction.
+1. **Primary — delegate to `error-resolver-subagent`** (Task tool): it runs on the `zai-coding-plan/glm-5.3-flash` vision tier (native multimodal) and sees screenshots directly. This covers both diagnosis and error-text/stack-trace extraction. Delegation binding (§Portability contract): OpenCode and Claude Code both spawn via the Task tool; Other/none (no subagent tool) — run the subagent's diagnosis checklist inline with the same steps and outputs.
 2. **Fallback — direct Z.AI vision API call via bash**: use the inline recipe embedded in `image-analyzer-subagent` (`glm-5.3-flash` — the same multimodal model the vision tier runs on, called directly over HTTP), for text-only sessions or when the vision provider is not connected.
 
 ## Error Categories

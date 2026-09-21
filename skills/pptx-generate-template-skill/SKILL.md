@@ -183,7 +183,7 @@ Then present it to the user with a single `question` call:
 
 **Default-font defect callout:** if any of `title`/`body`/`other` resolved to a font that differs from the per-slide fonts (e.g. master defaults to Calibri while the deck visibly uses Century Gothic), append a one-line note to the table body recommending the master text styles be fixed before the template is used — but do **not** block; embedding is the user's call.
 
-**Headless / subagent mode:** skip the `question` call; still print the table for the log, then proceed to Stage 3 (never hang).
+**Headless / subagent mode:** skip the `question` call; still print the table for the log, then proceed to Stage 3 (never hang). Interactive binding (§Portability contract): OpenCode — `question` tool · Claude Code — `AskUserQuestion` · other/none — headless mode above.
 
 ### Stage 3 — Embed → templated PPTX (US-3.3 AC1)
 
