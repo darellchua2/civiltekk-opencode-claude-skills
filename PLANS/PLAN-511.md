@@ -78,3 +78,15 @@ Note: lint axis = `.opencode/skills` literal sweep (0) + frontmatter validation 
 - *Agent copies snippets without setting `SKILL_DIR`* → the note names the loader-printed base dir explicitly; KeyError from `os.environ` fails loud, not silent.
 - *Slide skill not a sibling on some exotic layout* → `SLIDE_SKILL_DIR` env override documented inline.
 GATE 14225de tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+
+### Phase 4: Review fixes (post-Step-9)
+
+- [x] **4.1** Apply the same env-var rewrite to `agents/pptx-specialist-subagent.md` (11 literals across :109–:269; three-way vars `TEMPLATE_SKILL_DIR`/`SLIDE_SKILL_DIR`/`MODIFIER_SKILL_DIR` + a mandatory-export note), then census repo-wide: every remaining `.opencode/skills` hit classified as a real install-destination reference (installer/init.mjs, README, tests, opencode_app Docker, opencode-tooling docs), provenance (THIRD_PARTY_LICENSES), or historical PLAN — zero snippet-path bugs remain.
+    — **Why:** the review's mandatory Major — the agent file is the deployed orchestrator carrying the identical bug class; the Phase 3 gate's `skills/pptx-*/` scope structurally missed it.
+    — **Done when:** agent file has 0 literals; repo census classified; full suite green on the final tree.
+    — **Consumers affected:** pptx-specialist-subagent sessions (snippet execution now works on all install targets).
+    — **Done:** 11 lines rewritten (counted transformer) + export note added; census 15 files all classified legitimate; LEARNINGS captured (1 new pattern, 1 anti-pattern bump, index entries); files: agents/pptx-specialist-subagent.md, LEARNINGS/*; fixes: gate-scope miss corrected by repo-wide census
+
+## Gate Trace (review-fix)
+
+GATE 17fee22 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a

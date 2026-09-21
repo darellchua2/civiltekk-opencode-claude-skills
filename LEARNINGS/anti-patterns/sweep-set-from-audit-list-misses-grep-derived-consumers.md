@@ -17,3 +17,9 @@ When a path move (or rename) makes old strings dead, derive the repoint sweep fr
 **Evidence**: `grep -rn "deploy/build-registry" LEARNINGS/` post-fix returns only this file's own mention; tier-model-swap's two verification commands re-run verbatim green on feat/506.
 
 **Recurrence 2026-09-22 (#522 plan review):** the PLAN's consumer map was built from #520's audit list and missed 3 grep-derivable mechanical consumers of `installer/provider-models.json` (`installer/init.mjs:50` advisory note, `deploy/setup.sh:3229` check-catalog pass-through, `opencode_app/Dockerfile:96` flag pass-through) — all verified safe, map-completeness impact only. Same lesson, different artifact type: derive consumer maps by grep census of the changed file's name/path, not by inheriting the previous review's list. Confidence bumped to high.
+
+#511 instance: the PLAN's literal-ban gate was scoped `skills/pptx-*/` and
+passed 0 — while `agents/pptx-specialist-subagent.md` (the deployed orchestrator
+routing every pptx request to those skills) kept 11 copies of the same broken
+`.opencode/skills/` path (:109–:269). Every literal-ban gate must census
+repo-wide and classify each hit, not sweep only the files the diff touched.

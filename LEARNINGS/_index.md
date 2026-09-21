@@ -1185,3 +1185,12 @@
 - **Scope**: project
 - **Summary**: A purge AC's grep alternation gates a flagged extension id only by prefix luck — list every removed id explicitly in the pattern, flagged extensions included (#522)
 - **Date**: 2026-09-22
+
+### Skill snippet paths resolve via env vars, never cwd-relative paths
+
+- **Category**: pattern
+- **File**: `patterns/skill-snippet-paths-via-env-not-cwd.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: SKILL.md/agent-doc python snippets resolve engines via `os.environ['SKILL_DIR']` and prerequisite siblings via `get('DEP_SKILL_DIR', normpath(SKILL_DIR/../dep))` — never `.opencode/skills/…` literals, which break on every non-project install target; missing export fails loud by design (#511)
+- **Date**: 2026-09-22
