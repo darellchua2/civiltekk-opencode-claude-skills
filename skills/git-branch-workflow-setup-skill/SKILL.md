@@ -150,7 +150,7 @@ If `repo-ops-specialist-subagent` returns `Status: failed` or `Status: partial`:
 
 ## Compatibility
 
-This skill is invocable by any framework **setup agent** (an `.opencode/agents/*.md` file with tool/spawn capabilities). It is NOT invocable by skills (skills are knowledge documents loaded BY agents; they cannot use the `question` tool or spawn subagents).
+This skill is invocable by any framework **setup agent** (an agent file with tool/spawn capabilities — in OpenCode, an `.opencode/agents/*.md` file). It is NOT invocable by skills: in OpenCode, skills are knowledge documents loaded BY agents — the `question` tool and subagent spawning belong to the agent layer (other harnesses differ; when prompting is unavailable in any context, use the §Non-Interactive Fallback).
 
 ### Current Consumers
 

@@ -48,7 +48,7 @@ This is the codegraph-init analog — docling is **not installed by default** (~
 
 | Context | Behavior |
 |---------|----------|
-| **Primary session (interactive)** | Ask consent via `question` before installing (~3-4 GB + ~hundreds of MB models on first convert). Never auto-install. |
+| **Primary session (interactive)** | Ask consent via `question` before installing (~3-4 GB + ~hundreds of MB models on first convert). Never auto-install. Harness binding (§Portability contract): OpenCode `question` · Claude Code `AskUserQuestion` · other/none — ask in a plain reply; no answer → treat as declined and soft-fail per the Headless row. |
 | **Subagent** | Subagents cannot ask — return the consent request in the Return Contract as a `Questions for the user` field. The primary agent relays it. |
 | **Headless / CI** | Soft-fail to markitdown's best-effort output. Log that docling escalation was skipped (not installed, non-interactive). Never block the pipeline. |
 

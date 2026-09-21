@@ -47,6 +47,8 @@ Report findings in one table, then go to Step 2.
 
 ## Step 2 — Ask (question tool)
 
+> Harness binding (§Portability contract): OpenCode — `question` tool. Claude Code — `AskUserQuestion`. Other/none — print the menu in a plain reply and wait; non-interactive → skip extras, apply defaults.
+
 One multi-select question + one yes/no per extra. Options are built from the detection table — only show servers with a detected signal plus the general opt-in list:
 
 **MCP enables** (any of):

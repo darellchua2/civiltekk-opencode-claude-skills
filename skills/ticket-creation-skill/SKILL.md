@@ -123,6 +123,8 @@ The agent runs the same intake a human runs in the browser issue form. Never inv
 - **Headless/CI**: no asks — proceed only if every required field came in the original request; otherwise fail naming the missing fields.
 - **Sub-issues/subtasks**: each sub-item gets its own intake round; a sub-item without acceptance criteria fails validation.
 
+> **Harness binding — interactive prompts** (AGENTS.md §Portability contract): OpenCode — `question` tool. Claude Code — `AskUserQuestion`. Other/none — batch the same fields in a plain reply; proceed per the Headless/CI rule if no answer comes.
+
 **Ticket-vs-plan boundary** (this skill is upstream of `worktree-pipeline-skill`):
 
 1. A ticket must be executable by someone who never saw the discussion — anything less belongs in comments, anything more belongs in the PLAN.
