@@ -112,10 +112,11 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 4: Fix the writer ritual
 
-- [ ] **4.1** Edit `skills/continuous-learning-skill/SKILL.md` step 5 to say: append the new entry **below the single existing marker** (never re-add the marker) and add the entry in the same write as the learning file — body-only edit, frontmatter untouched
+- [x] **4.1** Edit `skills/continuous-learning-skill/SKILL.md` step 5 to say: append the new entry **below the single existing marker** (never re-add the marker) and add the entry in the same write as the learning file — body-only edit, frontmatter untouched
     — **Why:** the current "update with a one-line link" wording produced 26 unindexed files and 7 duplicated markers — the index drift is caused by the ritual, not a tool
     — **Done when:** step 5 states the single-marker + same-write rule; `node installer/build-registry.mjs --check` stays green (no frontmatter change → no rebuild)
     — **Consumers affected:** every future learning write; deployed copies pick the fix up on redeploy
+    — **Done:** Step 5 now mandates same-write index update, insertion below the single marker, never re-adding the marker, and the entry shape; frontmatter untouched (registry --check green proves body-only); files: skills/continuous-learning-skill/SKILL.md; fixes: none
 
 ### Phase 5: Repo hygiene
 
