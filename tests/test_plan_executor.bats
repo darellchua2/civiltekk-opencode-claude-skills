@@ -204,3 +204,81 @@ JSON
     [ "$config" -lt "$agents" ]
     [ "$agents" -lt "$plugins" ]
 }
+
+# =============================================================================
+# #491 — models-only/migrate presence gate (D2 alignment)
+# =============================================================================
+
+@test "models_only_existing_config_survives_in_place_patch" {
+    local d; d="$(mktemp -d)"
+    mkdir -p "$d/.config/opencode"
+    cat > "$d/.config/opencode/opencode.json" <<'JSON'
+{ "custom_user_key": "keep-me", "theme": "user-theme" }
+JSON
+    bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        DRY_RUN=false; MODELS_ONLY=true; RESOLVER_CONFIG_ONLY=true
+        run_resolver" >/dev/null 2>&1
+    # Presence gate (#491): no --config-src ⇒ dest-fallback patches in place.
+    grep -q 'keep-me' "$d/.config/opencode/opencode.json"
+    grep -q 'user-theme' "$d/.config/opencode/opencode.json"
+    rm -rf "$d"
+}
+
+@test "models_only_fresh_bootstrap_writes_stock" {
+    local d; d="$(mktemp -d)"
+    mkdir -p "$d/.config/opencode"
+    bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        DRY_RUN=false; MODELS_ONLY=true; RESOLVER_CONFIG_ONLY=true
+        run_resolver" >/dev/null 2>&1
+    # No existing config ⇒ stock base MUST still be written (bootstrap).
+    [ -f "$d/.config/opencode/opencode.json" ]
+    node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "$d/.config/opencode/opencode.json"
+    rm -rf "$d"
+}
+
+@test "migrate_existing_config_survives_in_place_patch" {
+    local d; d="$(mktemp -d)"
+    mkdir -p "$d/.config/opencode"
+    cat > "$d/.config/opencode/opencode.json" <<'JSON'
+{ "custom_user_key": "keep-me", "theme": "user-theme" }
+JSON
+    bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        DRY_RUN=false; MIGRATE_ONLY=true; RESOLVER_CONFIG_ONLY=true
+        run_resolver" >/dev/null 2>&1
+    grep -q 'keep-me' "$d/.config/opencode/opencode.json"
+    grep -q 'user-theme' "$d/.config/opencode/opencode.json"
+    rm -rf "$d"
+}
+
+@test "migrate_fresh_bootstrap_writes_stock" {
+    local d; d="$(mktemp -d)"
+    mkdir -p "$d/.config/opencode"
+    bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        DRY_RUN=false; MIGRATE_ONLY=true; RESOLVER_CONFIG_ONLY=true
+        run_resolver" >/dev/null 2>&1
+    [ -f "$d/.config/opencode/opencode.json" ]
+    node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "$d/.config/opencode/opencode.json"
+    rm -rf "$d"
+}
+
+@test "models_only_jsonc_sibling_parked_exactly_one_live_config" {
+    # #491 AC3 (the #432 interaction through the presence gate): a live
+    # opencode.jsonc means NO opencode.json ⇒ gate passes --config-src ⇒
+    # stock base written ⇒ park_jsonc_sibling collapses the sibling so the
+    # run ends with exactly one live config.
+    local d; d="$(mktemp -d)"
+    mkdir -p "$d/.config/opencode"
+    cat > "$d/.config/opencode/opencode.jsonc" <<'JSONC'
+{
+  // user's jsonc-flavored config
+  "theme": "user-jsonc-theme"
+}
+JSONC
+    bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1
+        DRY_RUN=false; MODELS_ONLY=true; RESOLVER_CONFIG_ONLY=true
+        run_resolver" >/dev/null 2>&1
+    [ -f "$d/.config/opencode/opencode.json" ]
+    [ ! -f "$d/.config/opencode/opencode.jsonc" ]
+    [ -f "$d/.config/opencode/opencode.jsonc.legacy-ignored" ]
+    rm -rf "$d"
+}

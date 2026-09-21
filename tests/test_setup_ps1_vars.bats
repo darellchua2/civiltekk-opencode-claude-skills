@@ -77,3 +77,12 @@ undefined = sorted(all_vars - assigned - param_vars - auto)
 assert not undefined, f"undefined variables in {sys.argv[1]}: {undefined}"
 PYEOF
 }
+
+@test "setup_ps1_keeps_no_config_src_logic" {
+  # #491 AC4: the presence gate lives in setup.sh (single implementation —
+  # the #474 launcher inherits it by delegation); no config logic may fork
+  # back into the ps1.
+  run grep -q 'config-src' "$SETUP_PS1"
+  [ "$status" -ne 0 ]
+  grep -q 'setup.sh' "$SETUP_PS1"
+}
