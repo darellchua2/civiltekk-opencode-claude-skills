@@ -12,14 +12,14 @@
 > `semantic-release-convention-skill`.
 
 ## Acceptance Criteria
-- [ ] Phase 1 branches on head-branch class: long-lived head ⇒ `--merge`; all other heads ⇒ `--squash`, regardless of base
-- [ ] Step 3b invokes the same head-class classifier (`fix/ci-*` head ⇒ squash) — the hardcoded `--squash` is removed
-- [ ] One-line rationale documented in SKILL.md
-- [ ] `semantic-release-convention-skill` squash-all mandates (:18, :126, :196-214, :388, :401) aligned to the two-tier doctrine; settings recommendation flipped to "Allow merge commits: Yes"
-- [ ] Explicit-user-instruction escape hatch documented: bidirectional, SHA-divergence warning required for forced squash on promotions, never applied autonomously
-- [ ] `node installer/build-registry.mjs --check` exits 0 (no drift); commit `installer/registry.json` only if drift is detected
-- [ ] Scoped bats green (`test_default_behavior`, `test_skill_isolation`, `test_autoresearch_protocol`); full `bats tests/` green at the exit gate
-- [ ] Redeployed via `./deploy/setup.sh`; deployed copies carry the head-class rule
+- [x] Phase 1 branches on head-branch class: long-lived head ⇒ `--merge`; all other heads ⇒ `--squash`, regardless of base
+- [x] Step 3b invokes the same head-class classifier (`fix/ci-*` head ⇒ squash) — the hardcoded `--squash` is removed
+- [x] One-line rationale documented in SKILL.md
+- [x] `semantic-release-convention-skill` squash-all mandates (:18, :126, :196-214, :388, :401) aligned to the two-tier doctrine; settings recommendation flipped to "Allow merge commits: Yes"
+- [x] Explicit-user-instruction escape hatch documented: bidirectional, SHA-divergence warning required for forced squash on promotions, never applied autonomously
+- [x] `node installer/build-registry.mjs --check` exits 0 (no drift); commit `installer/registry.json` only if drift is detected
+- [x] Scoped bats green (`test_default_behavior`, `test_skill_isolation`, `test_autoresearch_protocol`); full `bats tests/` green at the exit gate
+- [x] Redeployed via `./deploy/setup.sh`; deployed copies carry the head-class rule
 
 ## Dependency & Consumer Map
 
@@ -50,22 +50,25 @@
     — **Done:** all five squash-all locations aligned to two-tier doctrine + settings flipped to "Allow merge commits: Yes"; files: skills/semantic-release-convention-skill/SKILL.md; fixes: none
 
 ### Phase 2: Registry drift check + verification gates + redeploy
-- [ ] **2.1** Run `node installer/build-registry.mjs --check`; on non-zero exit, inspect the drift, fix the frontmatter regression, and commit `installer/registry.json`
+- [x] **2.1** Run `node installer/build-registry.mjs --check`; on non-zero exit, inspect the drift, fix the frontmatter regression, and commit `installer/registry.json`
     — **Why:** `--check` normalizes `generatedAt` while a plain run churns it (documented anti-pattern, recurrence #4); body-only edits must yield zero drift, which doubles as proof both frontmatters are untouched
     — **Done when:** `node installer/build-registry.mjs --check` exits 0 and `git status --porcelain installer/registry.json` is empty
     — **Consumers affected:** installer `init.mjs` / `npx … add` flow
-- [ ] **2.2** Run scoped gate: `bats tests/test_default_behavior.bats tests/test_skill_isolation.bats tests/test_autoresearch_protocol.bats`
+    — **Done:** `--check` exit 0 "registry OK (agents=34, skills=146, no drift)", porcelain clean; files: none changed; fixes: none
+- [x] **2.2** Run scoped gate: `bats tests/test_default_behavior.bats tests/test_skill_isolation.bats tests/test_autoresearch_protocol.bats`
     — **Why:** these three suites pin this skill's Iteration Protocol preamble, vendored-copy fidelity, and opt-in metadata — the guards closest to the edited files
     — **Done when:** exit 0
     — **Consumers affected:** CI
-- [ ] **2.3** Run full exit gate: `bats tests/`
+    — **Done:** scoped suites exit 0 (174 ok, re-run post-Phase-1); files: none; fixes: none
+- [x] **2.3** Run full exit gate: `bats tests/`
     — **Why:** the ticket exit gate must be tier=full per verification-loop-skill; the final pushed SHA must carry a green full-tier memo
     — **Done when:** exit 0 across all 39 suites
     — **Consumers affected:** CI; Step 9/10 citations
-- [ ] **2.4** Redeploy: `./deploy/setup.sh` and verify both deployed copies carry the new doctrine
+- [x] **2.4** Redeploy: `./deploy/setup.sh` and verify both deployed copies carry the new doctrine
     — **Why:** deployed `~/.config/opencode/` copies are what sessions actually load; AC is not met until they carry the fix
     — **Done when:** `grep -c 'long-lived' ~/.config/opencode/skills/pr-merge-workflow-skill/SKILL.md` ≥ 1 and `grep -c 'Allow merge commits' ~/.config/opencode/skills/semantic-release-convention-skill/SKILL.md` ≥ 1
     — **Consumers affected:** all future sessions using either skill
+    — **Done:** `./deploy/setup.sh -y` completed (backup ~/.opencode-backup-20260921_224126); deployed greps: pr-merge long-lived=3, semrel Allow merge commits=1; files: ~/.config/opencode/skills/{pr-merge-workflow,semantic-release-convention}-skill/SKILL.md; fixes: none
 
 ## Technical Notes
 - Incident evidence (verified 2026-09-21): betekk-keycloak dev→uat PRs #55 and #72 squash-merged (head=dev); `compare/dev...uat` shows uat 9 commits ahead, ~5 orphan artifacts; workarounds: surgical promotion (PLAN-DA-2457), reconciliation PR #69, promotion train (PR #72/#76).
@@ -77,6 +80,7 @@
 
 GATE 8ed004b tier=light lint=- typecheck=- build=- unit=t e2e=-
 <!-- scoped: test_default_behavior + test_skill_isolation + test_autoresearch_protocol = 174 ok, exit 0; lint/typecheck/build n.a. (markdown-only phase, none configured); done-when greps verified for 1.1/1.2/1.3 -->
+GATE EXIT-MEMO tier=full lint=- typecheck=- build=- unit=t e2e=- (code tree = 8ed004b; full bats tests/ = 529 ok exit 0; build-registry --check no drift; deployed-copy greps green)
 
 ## Dependencies
 None external. Companion DA-2830 runs in a separate repo and does not block this change.
