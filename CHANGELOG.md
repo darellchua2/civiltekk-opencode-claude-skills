@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.26.0](https://github.com/darellchua2/opencode-config-template/compare/v9.25.1...v9.26.0) (2026-09-21)
+
+### Features
+
+* **deploy:** subcommands, presets, --list-items, de-bloat, ps1 thin launcher ([#474](https://github.com/darellchua2/opencode-config-template/issues/474)) ([#496](https://github.com/darellchua2/opencode-config-template/issues/496)) ([7c34a35](https://github.com/darellchua2/opencode-config-template/commit/7c34a35fea5e3ae27ee35c5e01329d64c8d95706))
+
 ## [9.25.1](https://github.com/darellchua2/opencode-config-template/compare/v9.25.0...v9.25.1) (2026-09-20)
 
 ### Bug Fixes
