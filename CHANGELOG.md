@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.27.0](https://github.com/darellchua2/opencode-config-template/compare/v9.26.0...v9.27.0) (2026-09-21)
+
+### Features
+
+* **skills:** add tiered gating contract to verification-loop-skill ([3933316](https://github.com/darellchua2/opencode-config-template/commit/39333165181e2e5c9e17e209d6926d85f9809dc9))
+* **skills:** tier-aware memo check in pr-creation-workflow ([63d280b](https://github.com/darellchua2/opencode-config-template/commit/63d280b18ec7dec99dd309f50a47eec8676bc2e7))
+* **skills:** tiered gate selection in plan-execution 4c ([11bdcd5](https://github.com/darellchua2/opencode-config-template/commit/11bdcd540690430139f259296aacce4efb41c7a1))
+* **skills:** tiered gating wiring in worktree-pipeline Steps 8-10 ([5603d70](https://github.com/darellchua2/opencode-config-template/commit/5603d70d114f22188c579a50c9606ed89bfaa758))
+
+### Bug Fixes
+
+* **skills:** review fixes for tiered gating + LEARNINGS capture ([d143ec5](https://github.com/darellchua2/opencode-config-template/commit/d143ec54eca00c044b53420d1eb1a6e883244a4e))
+
+### Documentation
+
+* **plan:** add PLAN-488.md for [#488](https://github.com/darellchua2/opencode-config-template/issues/488) ([2e9956a](https://github.com/darellchua2/opencode-config-template/commit/2e9956a1a167a52627c97ff01f082b5014651c0a))
+* **plan:** apply plan-review + Mode R resolutions to PLAN-488 ([073104d](https://github.com/darellchua2/opencode-config-template/commit/073104d2c95c781dff8550c9332a4d8e6f371ad3))
+* **plan:** trace Phase 1 (3933316) ([56d3e36](https://github.com/darellchua2/opencode-config-template/commit/56d3e36b8fa0acd942caed95b5bc83572e944f64))
+* **plan:** trace Phase 2 (11bdcd5) ([739cf47](https://github.com/darellchua2/opencode-config-template/commit/739cf47e24b0b22e94b8dda173804026a688ae40))
+* **plan:** trace Phase 3 (5603d70) ([70db0f3](https://github.com/darellchua2/opencode-config-template/commit/70db0f3f5e29267ed09cfa62aedd80587ff61790))
+* **plan:** trace Phase 4 exit gate (63d280b) ([dc4fbd8](https://github.com/darellchua2/opencode-config-template/commit/dc4fbd83f77d98501c1444384434d9bb4d3f704d))
+* **plan:** trace Step 9 re-gate (d143ec5) ([4c1053c](https://github.com/darellchua2/opencode-config-template/commit/4c1053c066e5af8c52f6ff8711640dc3a323acc5))
+
 ## [9.26.0](https://github.com/darellchua2/opencode-config-template/compare/v9.25.1...v9.26.0) (2026-09-21)
 
 ### Features
