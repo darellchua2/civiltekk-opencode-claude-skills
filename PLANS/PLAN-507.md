@@ -102,3 +102,5 @@ Reviewer: code-review-subagent — 0 Critical / 2 Major / 3 Minor; Requirements 
 - [x] Minor — ticket-comment precision note posted ("only historical mentions" → one more prose mention in `plugins/opencode-auto-continue-v2.ts:8`, explanatory comment, no import).
 - [x] LEARNINGS: 3 candidate files written + indexed (token-enumeration greps; pty streaming semantics unportable; explicit-timeout doc convention).
 Re-gate (fix tree): tier=full — see memo below.
+
+GATE 2831552 tier=full lint=- typecheck=- build=- unit=t e2e=- (Review-fix re-gate: full suite 529/529; AC1 token grep zero; concept grep '\bpty\b' zero; Strategy A/B + sentinel residue zero; this commit's tree is the gated tree)
