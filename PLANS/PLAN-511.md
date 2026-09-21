@@ -35,14 +35,16 @@
 
 ### Phase 2: template-modifier SKILL.md — own dir + declared-prerequisite sibling
 
-- [ ] **2.1** Add the same `## Running the snippets` note, rewrite block :71–72 (`SKILL_DIR` for its own scripts; `SLIDE_SKILL_DIR` defaulting in-python to the sibling `../pptx-generate-slide-skill/scripts`, overridable via env) and block :138.
+- [x] **2.1** Add the same `## Running the snippets` note, rewrite block :71–72 (`SKILL_DIR` for its own scripts; `SLIDE_SKILL_DIR` defaulting in-python to the sibling `../pptx-generate-slide-skill/scripts`, overridable via env) and block :138.
     — **Why:** the modifier's cross-skill handoff is the declared prerequisite (isolation-contract exception); sibling resolution matches every install layout where `requiresSkills` co-installs side-by-side.
     — **Done when:** no `.opencode/skills` literal remains in this SKILL.md and the Capability B block imports both modules from a copied dir pair.
     — **Consumers affected:** `pptx-generate-slide-skill` (sibling-presence assumption, already contractual).
-- [ ] **2.2** Update the design-doc reference (line 188) to path-neutral wording.
+    — **Done:** note + both blocks rewritten (sibling default via `os.environ.get` + `normpath`); literals 0; behavioral probe deferred to 3.2 as planned; files: skills/pptx-template-modifier-skill/SKILL.md; fixes: none
+- [x] **2.2** Update the design-doc reference (line 188) to path-neutral wording.
     — **Why:** same literal, doc surface.
     — **Done when:** no `.opencode/skills` literal remains in this file.
     — **Consumers affected:** none.
+    — **Done:** design-doc reference path-neutral; isolation guard green; files: skills/pptx-template-modifier-skill/SKILL.md; fixes: none
 
 ### Phase 3: slide-skill design doc + verification
 

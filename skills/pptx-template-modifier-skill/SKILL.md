@@ -9,6 +9,17 @@ compatibility: opencode
 category: Presentation
 ---
 
+## Running the snippets
+
+Snippets read this skill's scripts via `os.environ['SKILL_DIR']` and the sibling slide-engine skill via `SLIDE_SKILL_DIR` (defaults to `../pptx-generate-slide-skill` next to `SKILL_DIR` — `requiresSkills` co-installs them side-by-side at every target). **Export once per session**, e.g.:
+
+```bash
+export SKILL_DIR=~/.config/opencode/skills/pptx-template-modifier-skill   # ← your install location
+# optional: export SLIDE_SKILL_DIR=... if the slide skill is not a sibling
+```
+
+A missing `SKILL_DIR` export fails loud (`KeyError`) by design.
+
 ## What I do
 
 > **Prerequisite skill:** `pptx-generate-slide-skill` — my output is rendered
@@ -67,9 +78,9 @@ On **every** generation request, the state machine runs:
 
 ```bash
 python -c "
-import sys
-sys.path.insert(0, '.opencode/skills/pptx-template-modifier-skill/scripts')
-sys.path.insert(0, '.opencode/skills/pptx-generate-slide-skill/scripts')
+import sys, os
+sys.path.insert(0, os.path.join(os.environ['SKILL_DIR'], 'scripts'))
+sys.path.insert(0, os.path.normpath(os.path.join(os.environ.get('SLIDE_SKILL_DIR', os.path.join(os.environ['SKILL_DIR'], os.pardir, 'pptx-generate-slide-skill')), 'scripts')))
 from state_machine import resolve_and_clone
 from ppt_builder import generate_ppt_from_data, DEFAULT_OUTPUT_DIR
 
@@ -134,8 +145,8 @@ Capability C reverse-engineers each slide's structure into a **named layout with
 
 ```bash
 python -c "
-import sys
-sys.path.insert(0, '.opencode/skills/pptx-template-modifier-skill/scripts')
+import sys, os
+sys.path.insert(0, os.path.join(os.environ['SKILL_DIR'], 'scripts'))
 from designer_promoter import promote_designer_slides
 report = promote_designer_slides(
     source_pptx='/path/to/designer_deck.pptx',
@@ -185,4 +196,4 @@ Three defect classes this gate exists to catch (all seen in the wild on designer
 
 ## Reference
 
-- Design: `.opencode/skills/pptx-generate-slide-skill/docs/DESIGN-template-agnostic.md` — §5 (state machine), §7 (Capability B pipeline + 7-step clone).
+- Design: `docs/DESIGN-template-agnostic.md` inside the sibling `pptx-generate-slide-skill` directory — §5 (state machine), §7 (Capability B pipeline + 7-step clone).
