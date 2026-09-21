@@ -4083,7 +4083,7 @@ apply_selected_packs_extras() {
             run_cmd cp -r "${REPO_DIR}/plugins/${pname}" "${CONFIG_DIR}/plugins/${pname}" || { failed=1; continue; }
             # Companion files the plugin fail-opens without (#473 review): the
             # vibeguard plugin is inert without its config (no masking).
-            if [ "$pname" = "opencode-vibeguard.ts" ] && [ -f "${REPO_DIR}/plugins/vibeguard.config.json" ]; then
+            if [ "$pname" = "opencode-vibeguard-v2.ts" ] && [ -f "${REPO_DIR}/plugins/vibeguard.config.json" ]; then
                 run_cmd cp "${REPO_DIR}/plugins/vibeguard.config.json" "${CONFIG_DIR}/plugins/vibeguard.config.json"
             fi
         done

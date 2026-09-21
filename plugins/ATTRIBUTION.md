@@ -2,7 +2,7 @@
 
 ## vibeguard (`opencode-vibeguard`)
 
-`plugins/opencode-vibeguard.ts` is a single-file OpenCode **v2** port of
+`plugins/opencode-vibeguard-v2.ts` is a single-file OpenCode **v2** port of
 [opencode-vibeguard](https://github.com/inkdust2021/opencode-vibeguard) v0.1.0 by inkdust2021.
 
 - **Upstream:** https://github.com/inkdust2021/opencode-vibeguard (npm: `opencode-vibeguard@0.1.0`)

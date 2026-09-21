@@ -533,7 +533,7 @@ Skills like `continuous-learning` persist knowledge across sessions using a dual
 
 ## Secret Masking (vibeguard)
 
-> **OpenCode v2 status:** shipped as a local V2 port (`plugins/opencode-vibeguard.ts` — engine ported from `opencode-vibeguard@0.1.0`, MIT; see `plugins/ATTRIBUTION.md`). Masking is **active** on v2; the npm pin was removed from the `plugins` array (double-registration guard). Verify with `OPENCODE_VIBEGUARD_DEBUG=1 opencode`. The `permissions` deny rules for `*.env` remain the second layer.
+> **OpenCode v2 status:** shipped as a local V2 port (`plugins/opencode-vibeguard-v2.ts` — engine ported from `opencode-vibeguard@0.1.0`, MIT; see `plugins/ATTRIBUTION.md`). Masking is **active** on v2; the npm pin was removed from the `plugins` array (double-registration guard). Verify with `OPENCODE_VIBEGUARD_DEBUG=1 opencode`. The `permissions` deny rules for `*.env` remain the second layer.
 
 Vibeguard (`opencode-vibeguard@0.1.0`) masks `.env` secrets in provider-bound traffic — the LLM provider never sees plaintext secret values, but tools (bash, write, etc.) receive real values at execution time. It is the **universal masking layer** covering all agents (primary + subagents), regardless of individual `read` deny rules in their `permissions` arrays.
 

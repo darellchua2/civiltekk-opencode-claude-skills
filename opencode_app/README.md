@@ -106,7 +106,7 @@ User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README
 
 ### Secret Masking (vibeguard)
 
-> **OpenCode v2 status:** the image ships the local v2 port (`plugins/opencode-vibeguard.ts`) — secret masking is **active** in v2 containers. The `permissions` `read` deny rules remain the second layer.
+> **OpenCode v2 status:** the image ships the local v2 port (`plugins/opencode-vibeguard-v2.ts`) — secret masking is **active** in v2 containers. The `permissions` `read` deny rules remain the second layer.
 
 The image ships with `vibeguard.config.json` baked into `.opencode/` — secret masking is **active by default**. Vibeguard masks secrets in provider-bound traffic (LLM requests) using regex patterns and restores real values at tool-execution time.
 
