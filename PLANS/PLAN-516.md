@@ -1,0 +1,95 @@
+# PLAN: Purge glm-5v-turbo, standardize vision on glm-5.3-flash
+
+**Branch**: feat/516
+**Issue**: https://github.com/darellchua2/opencode-config-template/issues/516
+**Base**: main
+
+## Acceptance Criteria
+- [ ] `agents/image-analyzer-subagent.md` fallback recipe sends `"model": "glm-5.3-flash"`
+- [ ] `grep -r glm-5v-turbo` returns zero hits outside `CHANGELOG.md` (historical release record, left untouched)
+- [ ] `glm-5v-turbo` removed from `installer/provider-models.json` (array entry + `$comment`)
+- [ ] `bats tests/test_provider_pins.bats` and `tests/test_skill_isolation.bats` pass
+- [ ] `node installer/build-registry.mjs` run; `registry.json` committed if it diffs
+
+## Dependency & Consumer Map
+
+| Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
+|---------------------|---------------------------|---------------------------------|-------------|
+| `agents/image-analyzer-subagent.md` | — | `agents/error-resolver-subagent.md` + `skills/error-resolver-workflow-skill/SKILL.md` (prose references to the recipe) | low |
+| `agents/error-resolver-subagent.md` | image-analyzer recipe wording (prose ref) | — | low |
+| `skills/error-resolver-workflow-skill/SKILL.md` | image-analyzer recipe wording (prose ref) | `error-resolver-subagent` (orchestrates this skill) | low |
+| `skills/opencode-agent-creation-skill/SKILL.md` | `installer/agent-tiers.json` (prose ref) | users authoring agents | low |
+| `AGENTS.md`, `README.md` | tier registry (prose description) | humans/agents reading docs | low |
+| `installer/agent-tiers.json` | — | `installer/resolve-models.mjs` (deploy-time model injection), `deploy/setup.sh` | med — `$comment` only, no tier values change |
+| `installer/provider-models.json` | — | `installer/resolve-models.mjs` (`--provider-models` fail-fast guard), `deploy/regen-provider-models.mjs`, `tests/test_provider_pins.bats` | med — `zai` array entry removal + `$comment` |
+
+Cross-module consumers exist (`resolve-models.mjs`, regen script, tests) → architecture review selected at Step 7.
+
+## Implementation Phases
+
+### Phase 1: Agent files — functional recipe + prose
+- [ ] **1.1** Update `agents/image-analyzer-subagent.md`: change the fallback recipe payload from `"model": "glm-5v-turbo"` to `"model": "glm-5.3-flash"`, and reword the L68 prose from "using `glm-5v-turbo` on the pay-as-you-go endpoint — a different model from the native one" to describe calling the same multimodal model (`glm-5.3-flash`) directly via API.
+    — **Why:** the recipe payload is the only functional use of the dead model; prose must match it or the file self-contradicts.
+    — **Done when:** `grep -c "glm-5v-turbo" agents/image-analyzer-subagent.md` returns 0 and the payload line reads `"model": "glm-5.3-flash"`.
+    — **Consumers affected:** error-resolver-subagent + error-resolver-workflow-skill reference the recipe by name (prose only; updated in 1.2/2.1).
+- [ ] **1.2** Update `agents/error-resolver-subagent.md` screenshot-analysis prose: replace "the inline direct-API fallback recipe in `image-analyzer-subagent` (`glm-5v-turbo`, a different model)" with wording naming `glm-5.3-flash` (no "different model" caveat — it no longer is one). Keep the `glm-4.6v-flash` "do NOT invoke" warning (still valid: that free endpoint was retired).
+    — **Why:** stale prose would direct readers to a purged model.
+    — **Done when:** `grep -c "glm-5v-turbo" agents/error-resolver-subagent.md` returns 0.
+    — **Consumers affected:** none (self-contained prose).
+
+### Phase 2: Skill prose
+- [ ] **2.1** Update `skills/error-resolver-workflow-skill/SKILL.md` §Image Input Routing step 2: replace "(`glm-5v-turbo` — a different model from the native one)" with `glm-5.3-flash` wording.
+    — **Why:** routing doc must name the model the recipe actually calls after 1.1.
+    — **Done when:** `grep -c "glm-5v-turbo" skills/error-resolver-workflow-skill/SKILL.md` returns 0.
+    — **Consumers affected:** error-resolver-subagent (orchestrates this skill; prose consistency only).
+- [ ] **2.2** Update `skills/opencode-agent-creation-skill/SKILL.md` Model-field guidance: replace "inline direct-API fallback recipe calling `glm-5v-turbo` — a different model" with `glm-5.3-flash` wording.
+    — **Why:** this skill teaches agent authoring; it must not propagate the purged name.
+    — **Done when:** `grep -c "glm-5v-turbo" skills/opencode-agent-creation-skill/SKILL.md` returns 0.
+    — **Consumers affected:** users authoring agents (docs accuracy).
+
+### Phase 3: Repo docs
+- [ ] **3.1** Rewrite `AGENTS.md` §Subagent Model Tiering vision-fallback paragraph: fallback calls `glm-5.3-flash` (same multimodal model, direct API transport; coding-plan endpoint preferred, PAAS fallback, `ZAI_API_KEY`). Drop the "different model" and the stale "Free `glm-4.6v-flash` is a cost-constrained option" sentence (endpoint retired — see error-resolver-subagent warning).
+    — **Why:** AGENTS.md is the injected behavioral doc; stale model names misroute future sessions.
+    — **Done when:** `grep -cE "glm-5v-turbo|glm-4\.6v-flash" AGENTS.md` returns 0.
+    — **Consumers affected:** all sessions injecting this file.
+- [ ] **3.2** Rewrite `README.md` vision-tier note (the blockquote at ~L134-142) to match 3.1: fallback calls `glm-5.3-flash` via direct API.
+    — **Why:** README is the public install doc; must not advertise the purged model.
+    — **Done when:** `grep -c "glm-5v-turbo" README.md` returns 0.
+    — **Consumers affected:** repo readers; none functional.
+
+### Phase 4: Installer registry
+- [ ] **4.1** Update `installer/agent-tiers.json` `$comment`: replace the sentence "text-only sessions fall back to the inline direct-API recipe embedded in image-analyzer-subagent (glm-5v-turbo via the pay-as-you-go `zai` path)" with glm-5.3-flash wording. No tier values change.
+    — **Why:** the registry comment documents fallback design; it must not name the purged model.
+    — **Done when:** `grep -c "glm-5v-turbo" installer/agent-tiers.json` returns 0 and `python3 -c "import json; json.load(open('installer/agent-tiers.json'))"` exits 0.
+    — **Consumers affected:** `resolve-models.mjs` (reads tiers, not comments — zero behavior change).
+- [ ] **4.2** Update `installer/provider-models.json`: remove the `"glm-5v-turbo"` string from the `zai` array entirely, and rewrite the `$comment` to drop the glm-5v-turbo PAYG-escape-hatch documentation (keep the glm-4.6v-flash deliberate-absence note accurate if it references the fallback — reword to name glm-5.3-flash).
+    — **Why:** user mandate — no shipped config or registry may carry the entry; the comment must not document a model the file no longer lists.
+    — **Done when:** `grep -c "glm-5v-turbo" installer/provider-models.json` returns 0 and `python3 -c "import json; json.load(open('installer/provider-models.json'))"` exits 0.
+    — **Consumers affected:** `resolve-models.mjs` guard (nothing references the removed id anymore, so no new warnings); `deploy/regen-provider-models.mjs` (see Risks).
+
+### Phase 5: Verification + registry sync
+- [ ] **5.1** Repo-wide purge proof: `grep -rn "glm-5v-turbo" . --include="*" -l` outside `.git/` — expect only `CHANGELOG.md`.
+    — **Why:** ticket AC — purge must be total outside immutable release history.
+    — **Done when:** the only match path is `CHANGELOG.md`.
+    — **Consumers affected:** none.
+- [ ] **5.2** Run gates: `bats tests/test_provider_pins.bats tests/test_provider_regen.bats tests/test_skill_isolation.bats` (plus `tests/test_mcp_count_consistency.bats` for belt).
+    — **Why:** provider-models.json is consumed by the deploy-time guard and regen script; skill-isolation guards the two touched skills.
+    — **Done when:** all bats runs exit 0.
+    — **Consumers affected:** deploy guard users (confidence).
+- [ ] **5.3** Run `node installer/build-registry.mjs`; commit `registry.json` if it diffs.
+    — **Why:** house sync rule after registry-adjacent file changes.
+    — **Done when:** command exits 0; `git status` clean after commit.
+    — **Consumers affected:** installer registry consumers.
+
+## Technical Notes
+- `glm-5.3-flash` is natively multimodal (image_url content blocks, URL or base64) and served on both `https://api.z.ai/api/coding/paas/v4` and `https://api.z.ai/api/paas/v4` — verified against Z.AI docs (guides/vlm/glm-5.3-flash), so the recipe's dual-endpoint key resolution needs no change.
+- Agent `.md` frontmatter is untouched (model comes from tier injection at deploy time) — only bodies change.
+- `CHANGELOG.md` is the release record; its historical `glm-5v-turbo` entry (#326) stays by design.
+
+## Dependencies
+None — single ticket, no `blocked-by`.
+
+## Risks & Mitigation
+- **Regen may re-add the model id**: `deploy/regen-provider-models.mjs` regenerates catalog-derived keys from models.dev, which may still list `glm-5v-turbo` under `zai`. Mitigation: shipped file is purged per ticket mandate; test_provider_regen runs in 5.2 to prove current pipeline green. If regen re-adds, that is a deliberate future action, not drift introduced here.
+- **Guard warning churn**: removing the `zai` entry while some preset still referenced `zai/glm-5v-turbo` would warn at deploy. Mitigation: grep in 5.1 proves nothing references it.
+- **Doc drift between AGENTS.md and user-level deployed copy**: deployed `~/.config/opencode/AGENTS.md` refreshes on next `deploy/setup.sh` run — out of scope for this PR (source-of-truth rule: never edit deployed copies).
