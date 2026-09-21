@@ -40,14 +40,16 @@ Cross-module consumers exist (`resolve-models.mjs`, regen script, tests) → arc
     — **Done:** fallback reference now reads "(`glm-5.3-flash`, the same model called directly over HTTP)"; glm-4.6v warning kept; files: agents/error-resolver-subagent.md; fixes: none
 
 ### Phase 2: Skill prose
-- [ ] **2.1** Update `skills/error-resolver-workflow-skill/SKILL.md` §Image Input Routing step 2: replace "(`glm-5v-turbo` — a different model from the native one)" with `glm-5.3-flash` wording.
+- [x] **2.1** Update `skills/error-resolver-workflow-skill/SKILL.md` §Image Input Routing step 2: replace "(`glm-5v-turbo` — a different model from the native one)" with `glm-5.3-flash` wording.
     — **Why:** routing doc must name the model the recipe actually calls after 1.1.
     — **Done when:** `grep -c "glm-5v-turbo" skills/error-resolver-workflow-skill/SKILL.md` returns 0.
     — **Consumers affected:** error-resolver-subagent (orchestrates this skill; prose consistency only).
-- [ ] **2.2** Update `skills/opencode-agent-creation-skill/SKILL.md` Model-field guidance: replace "inline direct-API fallback recipe calling `glm-5v-turbo` — a different model" with `glm-5.3-flash` wording.
+    — **Done:** step 2 now names glm-5.3-flash "the same multimodal model the vision tier runs on, called directly over HTTP"; files: skills/error-resolver-workflow-skill/SKILL.md; fixes: none
+- [x] **2.2** Update `skills/opencode-agent-creation-skill/SKILL.md` Model-field guidance: replace "inline direct-API fallback recipe calling `glm-5v-turbo` — a different model" with `glm-5.3-flash` wording.
     — **Why:** this skill teaches agent authoring; it must not propagate the purged name.
     — **Done when:** `grep -c "glm-5v-turbo" skills/opencode-agent-creation-skill/SKILL.md` returns 0.
     — **Consumers affected:** users authoring agents (docs accuracy).
+    — **Done:** Model-field guidance now reads "calling `glm-5.3-flash` directly over HTTP"; files: skills/opencode-agent-creation-skill/SKILL.md; fixes: none
 
 ### Phase 3: Repo docs
 - [ ] **3.1** Rewrite `AGENTS.md` §Subagent Model Tiering vision-fallback paragraph: fallback calls `glm-5.3-flash` (same multimodal model, direct API transport; coding-plan endpoint preferred, PAAS fallback, `ZAI_API_KEY`). Drop the "different model" and the stale "Free `glm-4.6v-flash` is a cost-constrained option" sentence (endpoint retired — see error-resolver-subagent warning).
@@ -93,6 +95,7 @@ None — single ticket, no `blocked-by`.
 
 ## Gate Trace
 GATE 54cb78a tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
+GATE a83a00b tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 
 ## Plan-Review Adjudications (architecture review, 2026-09-21)
 - **Purge gate vs the plan file itself (MAJOR, fixed):** `PLANS/PLAN-516.md` is git-tracked and persists post-merge (precedent: `PLANS/PLAN-507.md`), yet must name the token to describe the purge. AC#2 / step 5.1 therefore exclude `--exclude-dir=PLANS` and harden to `grep -rniE "5v[-_]?turbo"`.
