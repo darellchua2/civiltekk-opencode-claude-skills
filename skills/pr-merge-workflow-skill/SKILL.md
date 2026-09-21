@@ -29,10 +29,14 @@ Before executing, confirm:
 3. Classify by the PR's **head** branch before merging (the harm exists when the
    head branch survives the merge — squash duplicates content under new SHAs and
    long-lived branches stop converging; verified in betekk-keycloak PRs #55/#72):
-   - Long-lived head (`main`, `master`, `dev`, `develop`, `production`, `prod`,
-     `uat`, `staging`, `stage`, `preprod`, `pre-dev`, `qa`, `test`,
-     `integration`, `release/*`) → merge commits only:
+   - Long-lived head (`main`, `master`, `dev`, `develop`, `development`,
+     `production`, `prod`, `uat`, `staging`, `stage`, `preprod`, `pre-dev`,
+     `qa`, `test`, `integration`, `release`, `release/*`) → merge commits only:
      `gh pr merge <number> --merge --delete-branch=false`
+     Matching is exact and case-sensitive (`Main`/`DEV` do NOT match). A
+     branch name that looks like an environment or release lane but is not
+     listed → treat as long-lived (the harm asymmetry favors `--merge`) or
+     ask the user.
    - Any other head (feature/*, fix/*, hotfix/*, chore/*) → squash default,
      regardless of base: `gh pr merge <number> --squash --delete-branch=false`
    - Escape hatch: an explicit user instruction for THIS PR overrides the
@@ -75,9 +79,10 @@ For auto-fixable failures:
 4. Commit with message: `fix(ci): resolve <error-type> from run <run-id>`
 5. Push and create PR: `gh pr create --base <target-branch> --title "fix(ci): ..." --body "..."`
 6. Merge immediately if trivial, applying the same head-class classifier from
-   Phase 1 step 3 (a `fix/ci-*` head resolves to squash; a long-lived head
-   requires `--merge`). The escape hatch never applies inside this autonomous
-   loop.
+   Phase 1 step 3 (a `fix/ci-*` head resolves to
+   `gh pr merge <number> --squash --delete-branch`; a long-lived head requires
+   `gh pr merge <number> --merge --delete-branch`). The escape hatch never
+   applies inside this autonomous loop.
 
 ### Step 3c: Re-Monitor
 

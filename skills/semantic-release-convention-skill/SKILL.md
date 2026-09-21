@@ -201,11 +201,14 @@ exists when the head branch survives the merge):
 - **Feature/fix heads** (`feature/*`, `fix/*`, `hotfix/*`, `chore/*`, and any
   other short-lived head) → **squash merge** — one conventional commit per PR
   keeps the target branch clean and changelog generation reliable.
-- **Long-lived heads** (`main`, `master`, `dev`, `develop`, `production`,
-  `prod`, `uat`, `staging`, `stage`, `preprod`, `pre-dev`, `qa`, `test`,
-  `integration`, `release/*`) → **merge commit** (`gh pr merge --merge`) —
-  squash duplicates content under new SHAs and promotion branches (dev→uat,
-  uat→main) stop converging. Same rule as `pr-merge-workflow-skill`.
+- **Long-lived heads** (`main`, `master`, `dev`, `develop`, `development`,
+  `production`, `prod`, `uat`, `staging`, `stage`, `preprod`, `pre-dev`, `qa`,
+  `test`, `integration`, `release`, `release/*`) → **merge commit**
+  (`gh pr merge --merge`) — squash duplicates content under new SHAs and
+  promotion branches (dev→uat, uat→main) stop converging. Matching is exact
+  and case-sensitive; an environment-shaped name not listed → treat as
+  long-lived or ask. Same rule (and user override) as
+  `pr-merge-workflow-skill`.
 
 ### Merge Commit Format (squash-merged PRs)
 
@@ -214,13 +217,24 @@ exists when the head branch survives the merge):
 
 This produces one conventional commit per PR in the target branch, making the git history clean and changelog generation reliable.
 
+### Promotion Merge Commits (long-lived-head PRs)
+
+- The default GitHub merge message (`Merge pull request #N from …`) is
+  acceptable: the promoted commits are already conventional (they landed via
+  squash on the lower branch), so release tooling reads the branch history,
+  not the merge commit itself.
+- Optional: `gh pr merge --merge --subject "chore(promote): <from> → <to>
+  (#N)"` for a scannable promotion trail.
+
 ### GitHub Settings
 
 Configure in repository settings:
 - **Allow squash merging**: Yes
 - **Squash merge commit title**: PR title
 - **Squash merge commit message**: PR body
-- **Allow merge commits**: Yes (required for promotions — long-lived-head PRs)
+- **Allow merge commits**: Yes (required for promotions — long-lived-head PRs).
+  Note: GitHub settings cannot restrict merge method per branch class, so
+  squash-only-for-features is now enforced by review discipline, not settings.
 - **Allow rebase merging**: Optional
 
 ---
