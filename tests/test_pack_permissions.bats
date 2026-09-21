@@ -138,12 +138,12 @@ EOF
   [[ "$hook" == *'DRY_RUN'* ]]
 }
 
-@test "setup_ps1_mirrors_rc_gated_install_hook" {
-  grep -q 'mergeRc = \$LASTEXITCODE' "$SETUP_PS1"
-  # EnablePack regex gate: '(^|,)markitdown(,|$)'
-  grep -qF ',)markitdown(,' "$SETUP_PS1"
-  grep -q 'Install-MarkitdownMcp' "$SETUP_PS1"
-  grep -q 'pip show markitdown-mcp' "$SETUP_PS1"
+@test "setup_ps1_is_thin_launcher_hook_inherited_from_bash" {
+  # #474: the markitdown rc-gated install hook lives in setup.sh
+  # (pinned above); the ps1 forwards to it and keeps no copy.
+  grep -q 'setup.sh' "$SETUP_PS1"
+  run grep -q 'mergeRc' "$SETUP_PS1"
+  [ "$status" -ne 0 ]
 }
 
 @test "installer_has_pep668_break_system_packages_fallback" {
@@ -151,24 +151,16 @@ EOF
   # the installer must detect and retry with --break-system-packages.
   grep -q 'externally-managed-environment' "$SETUP"
   grep -q -- '--break-system-packages' "$SETUP"
-  grep -q 'externally-managed-environment' "$SETUP_PS1"
-  grep -q -- '--break-system-packages' "$SETUP_PS1"
-  # docling-mcp installs from PyPI too — its installer needs the same retry
-  sed -n '/^install_docling()/,/^}/p' "$SETUP" | grep -q -- '--break-system-packages'
-  sed -n '/^function Install-Docling/,/^}/p' "$SETUP_PS1" | grep -q -- '--break-system-packages'
+  # #474: the ps1 thin launcher keeps no pip logic of its own — PEP 668
+  # handling is inherited by delegation to setup.sh.
+  run grep -q 'externally-managed-environment' "$SETUP_PS1"
+  [ "$status" -ne 0 ]
 }
 
-@test "setup_ps1_hook_resets_lastexitcode_for_caller" {
-  # Invoke-PackMerger's install hook + Install-MarkitdownMcp early returns
-  # must reset $global:LASTEXITCODE = 0 (best-effort) — the caller checks it
-  # right after (Invoke-DeployAgents 'Provider-pack application failed').
-  local fn
-  fn="$(sed -n '/function Invoke-PackMerger/,/^}/p' "$SETUP_PS1")"
-  [[ "$fn" == *'Install-MarkitdownMcp'* ]]
-  [[ "$fn" == *'$global:LASTEXITCODE = 0'* ]]
-  local inst
-  inst="$(sed -n '/function Install-MarkitdownMcp/,/^}/p' "$SETUP_PS1")"
-  [ "$(grep -c 'global:LASTEXITCODE = 0' <<<"$inst")" -ge 3 ]
+@test "setup_ps1_launcher_propagates_exit_code" {
+  # #474: the old ps1 reset $global:LASTEXITCODE inside Invoke-PackMerger;
+  # the thin launcher instead propagates bash's exit code to the caller.
+  grep -q 'exit \$LASTEXITCODE' "$SETUP_PS1"
 }
 
 @test "no_doc_teaches_dead_permission_keys" {

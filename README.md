@@ -51,7 +51,7 @@ Two setup scripts are provided for different platforms:
 | Script | Platform | Features |
 |--------|----------|----------|
 | `setup.sh` | macOS, Linux, WSL, Git Bash | Full feature set including nvm, PeonPing |
-| `setup.ps1` | Windows (PowerShell) | Full feature set, env vars persist to `$PROFILE` |
+| `setup.ps1` | Windows (PowerShell) | Thin launcher — forwards to `setup.sh` via Git-Bash/WSL (requires a bash host + Node.js 26+) |
 
 ### macOS / Linux / WSL / Git Bash
 

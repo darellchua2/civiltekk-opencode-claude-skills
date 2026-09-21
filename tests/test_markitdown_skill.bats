@@ -87,9 +87,11 @@ assert any(r['action']=='skill' and r['resource']=='markitdown-mcp-skill' and r[
   [ "$setup_count" = "$actual" ]
   ! grep -qE 'SKILLS \([0-9]+\)' deploy/setup.sh
 
-  # setup.ps1: dynamic via Get-SkillCount — verify helper present + no stale literal.
-  grep -q 'function Get-SkillCount' deploy/setup.ps1
-  ! grep -qE 'SKILLS \([0-9]+\)' deploy/setup.ps1
+  # setup.ps1 (#474): thin launcher — skill counting lives bash-side
+  # (count_skills, verified above); the ps1 performs no selection logic.
+  grep -q 'setup.sh' deploy/setup.ps1
+  run grep -q 'function Get-SkillCount' deploy/setup.ps1
+  [ "$status" -ne 0 ]
 
   # opencode_app/README.md skill directory count
   docker_count=$(grep -oE '[0-9]+ skill director(y|ies)' opencode_app/README.md | grep -oE '[0-9]+' | head -1)

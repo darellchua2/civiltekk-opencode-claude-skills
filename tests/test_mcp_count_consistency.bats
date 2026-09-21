@@ -40,10 +40,11 @@ actual_mcp_count() {
   echo "README.md count: ${readme_count}" >&3
   [ "$readme_count" = "$actual" ]
 
-  # setup.sh help text must match
-  setup_count=$(grep -oE 'MCP SERVERS \([0-9]+\)' deploy/setup.sh | grep -oE '[0-9]+' | head -1)
-  echo "setup.sh count: ${setup_count}" >&3
-  [ "$setup_count" = "$actual" ]
+  # setup.sh help text (#474 de-bloat): carries NO hand-maintained count at
+  # all — the exact drift class this ticket removed cannot recur in help.
+  run grep -qE 'MCP SERVERS \([0-9]+\)' deploy/setup.sh
+  [ "$status" -ne 0 ]
+  grep -q 'MCP SERVERS:' deploy/setup.sh
 }
 
 @test "mcp_count_markitdown_present" {

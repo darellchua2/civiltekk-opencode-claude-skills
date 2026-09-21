@@ -18,6 +18,53 @@
 <!-- Entries are appended here automatically when new learnings are saved -->
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### A launcher that hands Windows users into bash needs .gitattributes EOL pins
+
+- **Category**: convention
+- **File**: `conventions/delegation-launcher-needs-eol-attributes.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: default autocrlf clones CRLF-ify setup.sh and bash dies on \r — ship `*.sh text eol=lf` whenever a Windows entrypoint delegates into bash (#474 review)
+- **Date**: 2026-09-21
+
+### Dead functions kept alive by their own tests
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/dead-function-kept-alive-by-its-tests.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: deploy_skills_only had zero production callers post-#470 but green wrapper-pinning tests — re-point function-level pins at the live step list in the same change (#474 review)
+- **Date**: 2026-09-21
+
+### Tests that execute setup.sh end-to-end need a mktemp HOME, not just source-pins
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/unsandboxed-bats-run-deploys-into-real-home.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: even a no-op flag falls through to the headless deploy and prunes real backups — execution tests export a mktemp HOME (#474 review)
+- **Date**: 2026-09-21
+
+### Steps appended to one build_plan branch vanish when main rebuilds the plan
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-rebuild-drops-non-mode-side-steps.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: the headless/menu rebuild re-derives steps from flags — conditional side-steps must exist in every branch or the drop must warn loudly (#474 review)
+- **Date**: 2026-09-21
+
+### A thin launcher with a syntax error passes every textual delegation pin
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/thin-launcher-syntax-error-passes-text-pins.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: a stray brace made setup.ps1 unparseable while all ps1 pins (pure text greps) stayed green — when the runtime is absent from CI, add a structural parse proxy (#474 review BLOCK)
+- **Date**: 2026-09-21
+
+<!-- Entries are appended here automatically when new learnings are saved -->
+
 ### Plugin pickers filtering by filename prefix drop companion files the plugin needs
 
 - **Category**: anti-pattern

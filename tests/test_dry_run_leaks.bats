@@ -71,6 +71,11 @@ SETUP_PS1="deploy/setup.ps1"
   [ "$output" = "expanded" ]
 }
 
-@test "setup_ps1_models_only_passes_dry_run_to_manifest_update" {
-  grep -F 'if ($DryRun) { $updateArgs += "--dry-run" }' "$SETUP_PS1"
+@test "setup_ps1_is_thin_launcher_d2_inherited_by_delegation" {
+  # #474: the ps1 no longer runs its own resolver — it forwards everything to
+  # setup.sh, whose models-only block carries the #467 dry-run gate. The ps1
+  # pin flips to asserting the delegation contract.
+  grep -q 'setup.sh' "$SETUP_PS1"
+  run grep -qF 'Invoke-Resolver' "$SETUP_PS1"
+  [ "$status" -ne 0 ]
 }
