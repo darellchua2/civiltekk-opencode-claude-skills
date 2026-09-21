@@ -28,8 +28,10 @@ otherwise                                                 → pass --config-src
 
 - resolve-models.mjs needs NO change: omitting `--config-src` with an existing
   `--config-dest` already hits its dest-fallback (in-place patch; custom keys
-  survive; `readJsonMaybe` strips JSONC comments, so jsonc-flavored configs
-  patch cleanly).
+  survive). dest must be STRICT JSON — `stripJsonComments`
+  (resolve-models.mjs:80-83) tolerates only `"$comment":` lines, so a
+  `//`-commented opencode.json throws loud at readJsonMaybe (:75) BEFORE any
+  write (fail-safe: no partial state).
 - jsonc-sibling interaction (#432) is preserved end-to-end: presence is
   checked on `opencode.json` specifically. A user whose live config is
   `opencode.jsonc` (no `.json`) is "fresh" to the gate ⇒ stock base is written

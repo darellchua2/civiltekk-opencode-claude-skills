@@ -16,6 +16,16 @@
 ## Entries
 
 <!-- Entries are appended here automatically when new learnings are saved -->
+
+### readJsonMaybe tolerates only "$comment" lines — doc claims of JSONC stripping are false
+
+- **Category**: solution
+- **File**: `solutions/readjsonmaybe-strict-json-jsonc-claims.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: resolver dest must be strict JSON (only "$comment": lines stripped, resolve-models.mjs:80-83); "//"-commented configs throw loud before any write (#491 review)
+- **Date**: 2026-09-21
+
 <!-- Entries are appended here automatically when new learnings are saved -->
 
 ### A launcher that hands Windows users into bash needs .gitattributes EOL pins

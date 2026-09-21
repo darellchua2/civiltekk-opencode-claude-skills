@@ -144,8 +144,10 @@ JSON
         DRY_RUN=false; SKIP_CONFIG_COPY=false; RESOLVER_CONFIG_ONLY=true
         run_resolver" >/dev/null 2>&1
     # Stock base (config-src) overwrites — pre-existing behavior, pinned so
-    # the D2 gate's absence is what this test failing means.
-    ! grep -q 'keep-me' "$d/.config/opencode/opencode.json"
+    # the D2 gate's absence is what this test failing means. run+status form:
+    # bare `! grep` is errexit-exempt and would not fail the test.
+    run grep -q 'keep-me' "$d/.config/opencode/opencode.json"
+    [ "$status" -ne 0 ]
     rm -rf "$d"
 }
 
