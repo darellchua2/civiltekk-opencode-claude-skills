@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.30.0](https://github.com/darellchua2/opencode-config-template/compare/v9.29.0...v9.30.0) (2026-09-21)
+
+### Features
+
+* **installer:** collapse flash-class models onto glm-5.3-flash ([#522](https://github.com/darellchua2/opencode-config-template/issues/522)) — Phase 1 ([ceafa45](https://github.com/darellchua2/opencode-config-template/commit/ceafa45cc291d6604c77e2fd48f4aca43c266730))
+
+### Bug Fixes
+
+* **learnings:** review fixes — confidence field sync, index separator, partial-refresh recurrence ([#522](https://github.com/darellchua2/opencode-config-template/issues/522)) ([dd693bf](https://github.com/darellchua2/opencode-config-template/commit/dd693bf0bde4972230333e264592c5a20566f57c))
+
+### Documentation
+
+* **plan:** add PLAN-522.md for [#522](https://github.com/darellchua2/opencode-config-template/issues/522) ([0d122bd](https://github.com/darellchua2/opencode-config-template/commit/0d122bd51875b3f1eb6df7d992e5534f258c2dc8))
+* **plan:** append post-review-fix tier=full gate memo ([#522](https://github.com/darellchua2/opencode-config-template/issues/522)) ([a444228](https://github.com/darellchua2/opencode-config-template/commit/a444228b24c585b071994e33940312e74e527937))
+* **plan:** apply plan-review findings to PLAN-522 (map census, scope wording, LEARNINGS) ([c0e1e62](https://github.com/darellchua2/opencode-config-template/commit/c0e1e624180c06136392c70603ce9786ac64a391))
+* **plan:** trace PLAN-522 complete — exit gate tier=full ([d645e8d](https://github.com/darellchua2/opencode-config-template/commit/d645e8de9ab2f69a12e8c8dc531855f43dfe0519))
+* **skills:** head-class merge policy — merge commits for long-lived-head PRs ([#521](https://github.com/darellchua2/opencode-config-template/issues/521)) ([d8e8d1f](https://github.com/darellchua2/opencode-config-template/commit/d8e8d1feddbfccddf289c3401b1d7ac2d08b9463)), closes [#519](https://github.com/darellchua2/opencode-config-template/issues/519) [55/#72](https://github.com/55/opencode-config-template/issues/72) [#519](https://github.com/darellchua2/opencode-config-template/issues/519) [#520](https://github.com/darellchua2/opencode-config-template/issues/520)
+
 ## [9.29.0](https://github.com/darellchua2/opencode-config-template/compare/v9.28.2...v9.29.0) (2026-09-21)
 
 ### Features
