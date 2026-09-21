@@ -500,7 +500,7 @@ cleanup_on_error() {
 
 # Trap errors — capture the actual failing line via BASH_LINENO, not the trap
 # definition site. Without this, every error reports the trap's own line number.
-trap 'error_handler "${BASH_LINENO[0]}" "$?"' ERR
+trap 'error_handler "${BASH_LINENO[0]:-0}" "$?"' ERR
 
 # Trap interruption
 trap 'echo ""; log_warn "Setup interrupted by user"; exit 130' INT
