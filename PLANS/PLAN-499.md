@@ -11,7 +11,7 @@
 - [ ] `validate_opencode_install()` hint, `--help` text, and `print_summary()` labels reference `@opencode/cli`
 - [x] `setup.ps1` header documents the v2 install command
 - [x] `README.md` flag descriptions no longer say "requires opencode-ai installed"
-- [ ] `bash -n deploy/setup.sh` passes; deploy-related bats suite stays green
+- [x] `bash -n deploy/setup.sh` passes; deploy-related bats suite stays green
 
 ## Dependency & Consumer Map
 
@@ -66,10 +66,11 @@ Out of scope (must NOT change): `@opencode-ai/plugin` references (plugin SDK pac
     — **Done:** both flag rows updated; repo-wide README grep for opencode-ai = 0; files: README.md; fixes: none
 
 ### Phase 4: Verification gate
-- [ ] **4.1** Run `bash -n deploy/setup.sh`, then the repo's deploy-relevant test suite (`bats tests/` — at minimum `tests/test_skills_only_parity.bats`, the only suite referencing a touched function) and a dry-run smoke (`./deploy/setup.sh --dry-run -y --skills-only` is out of scope — use a non-mutating flag path such as `--help` plus `bash -n`) to confirm no syntax or stub breakage.
+- [x] **4.1** Run `bash -n deploy/setup.sh`, then the repo's deploy-relevant test suite (`bats tests/` — at minimum `tests/test_skills_only_parity.bats`, the only suite referencing a touched function) and a dry-run smoke (`./deploy/setup.sh --dry-run -y --skills-only` is out of scope — use a non-mutating flag path such as `--help` plus `bash -n`) to confirm no syntax or stub breakage.
     — **Why:** AC-7 — the gate contract requires lint (bash -n) + tests on touched logic paths.
     — **Done when:** `bash -n` exits 0 and the parity bats suite passes.
     — **Consumers affected:** CI (the PR gate runs the same suite).
+    — **Done:** bash -n ok; full vendored suite 521 ok / 0 fail (517 prior + 4 new tests/test_v2_cli_package.bats pins, replacing the /tmp sanity harness); new logic is test-covered per 4b; files: tests/test_v2_cli_package.bats; fixes: grep re-anchoring + fresh-install stub INSTALLED flip (2 test-defect fixes, both attempt 1)
 
 ## Technical Notes
 - npm ground truth (verified 2026-09-21): `opencode-ai` latest = 1.18.31 (v1-only, frozen); `@opencode/cli` latest = 2.0.11 (v2 line). Confirmed against `LEARNINGS/solutions/docker-v1-binary-ignores-v2-plugins-key.md` and the v2 migrate-v1 docs ("Remove a package-managed V1 installation before installing V2").
@@ -100,4 +101,10 @@ Full tier on every phase — deploy files are a critical-area anchor (§Tiered g
 
 ### Phase 3
 - WORK LOG: full-tier escalation reason — deploy/config file anchor (deploy/setup.ps1), though the change is comment-only.
-- GATE (pending-commit sha) tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 517 ok / 0 fail; README opencode-ai matches = 0.
+- GATE 816316b tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 517 ok / 0 fail; README opencode-ai matches = 0.
+
+### Phase 4 (ticket exit gate — full, unconditional)
+- WORK LOG: 4b test debt closed — new tests/test_v2_cli_package.bats (4 tests, house bash-c stub idiom) pins the v1-migration flow, semver-normalization equality, fresh-install package, and a no-v1-install/probe grep guard.
+- WORK LOG: fix-on-fail attempt 1 — test 4's grep pattern `install -g opencode-ai` substring-matched the required migration line `npm uninstall -g opencode-ai` (unanchored-grep false-positive class, cf. LEARNINGS anti-patterns); re-anchored to `npm install -g opencode-ai|npm view opencode-ai`.
+- WORK LOG: fix-on-fail attempt 1 (test 3) — stub left `opencode` missing post-"install", exercising the failure branch + sourced ERR trap (`BASH_LINENO[0]` unbound under nounset → rc 127); stub now flips INSTALLED so the success branch runs.
+- GATE (push head) tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 521 ok / 0 fail (517 prior + 4 new #499 pins).
