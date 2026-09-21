@@ -920,3 +920,27 @@
 - **Summary**: v2 foreground shell defaults to 120000 ms; doc'd commands whose own bound exceeds it (zai-video §3 `curl --max-time 600`) get harness-killed before their internal limit unless the doc names an explicit `timeout` ≥ the bound or runs the command as a background command (#507)
 - **Date**: 2026-09-21
 
+---
+- **File**: `anti-patterns/plan-file-self-hit-breaks-purge-gate.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: A tracked PLANS/PLAN-*.md whose AC gates grep repo-wide for a token the plan itself contains makes the gate unpassable — purge-style gates decide the exclusion set up front (own surfaces: PLANS/, LEARNINGS/) or keep records token-free, not discovered at verification time
+- **Date**: 2026-09-21
+---
+- **File**: `patterns/dual-provider-catalog-entry-proves-endpoint-swap.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: A model-id swap in a dual-endpoint API recipe is provable without a live call when provider-models.json (models.dev-pinned) lists the replacement under both provider prefixes the recipe's key resolution can select
+- **Date**: 2026-09-21
+---
+- **File**: `solutions/deliberate-catalog-divergence-needs-regen-exclusion.md`
+- **Confidence**: medium
+- **Scope**: project
+- **Summary**: A deliberate divergence from a generated catalog (models.dev-pinned file vs purge mandate) is unenforced — regen re-adds and --check is warn-only; fix with a regen exclusion list, interim ceiling is a reconciling $comment sentence naming the re-add behavior
+- **Date**: 2026-09-21
+---
+- **File**: `patterns/transport-only-fallback-kills-disclaimer-drift.md`
+- **Confidence**: medium
+- **Scope**: project
+- **Summary**: A fallback that reuses the native model id (different transport, same model) deletes the cross-doc "different model" disclaimer class instead of maintaining it — prefer transport-only divergence when picking fallback models
+- **Date**: 2026-09-21

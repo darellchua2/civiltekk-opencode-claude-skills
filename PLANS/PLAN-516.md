@@ -10,7 +10,7 @@
 - [x] `glm-5v-turbo` removed from `installer/provider-models.json` (array entry + `$comment`)
 - [x] `bats tests/test_provider_pins.bats` and `tests/test_skill_isolation.bats` pass
 - [x] `node installer/build-registry.mjs` run; `registry.json` committed if it diffs
-- [x] Zero references to pre-5.3 vision models (`glm-5v-turbo`, `glm-4.5v`, `glm-4.6v` incl. `-flash`) outside `CHANGELOG.md` (PLANS excluded) — vision = `glm-5.3-flash` only
+- [x] Zero references to pre-5.3 vision models (`glm-5v-turbo`, `glm-4.5v`, `glm-4.6v` incl. `-flash`) outside `CHANGELOG.md` (PLANS/LEARNINGS excluded — historical records) — vision = `glm-5.3-flash` only
 - [x] `installer/provider-models.json` arrays carry no vision model older than `glm-5.3-flash`; frontier `glm-5.3` and non-vision models untouched
 
 ## Dependency & Consumer Map
@@ -100,7 +100,7 @@ Cross-module consumers exist (`resolve-models.mjs`, regen script, tests) → arc
     — **Done:** model name dropped from the count narrative, counts intact; files: README.md; fixes: none
 
 ### Phase 6: Verification + registry sync
-- [x] **6.1** Repo-wide purge proof: `grep -rniE "5v[-_]?turbo|glm-4\.5v|glm-4\.6v" . --exclude-dir=.git --exclude-dir=PLANS` — case-insensitive, variant-tolerant, excluding `.git/` and the tracked plan file itself (historical record; it must name the tokens to specify the purge).
+- [x] **6.1** Repo-wide purge proof: `grep -rniE "5v[-_]?turbo|glm-4\.5v|glm-4\.6v" . --exclude-dir=.git --exclude-dir=PLANS --exclude-dir=LEARNINGS` — case-insensitive, variant-tolerant, excluding `.git/` and the two historical-record dirs (PLANS must name the tokens to specify the purge; LEARNINGS entries describing the purge lesson are historical records — review adjudication 2026-09-21, and candidates are written token-free regardless).
     — **Why:** ticket AC — purge must be total outside immutable release history; the hardened pattern closes the case-sensitive-grep false-green class flagged in plan review.
     — **Done when:** the only match path is `CHANGELOG.md`.
     — **Consumers affected:** none.
