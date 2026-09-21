@@ -9,6 +9,8 @@
 # #469, and the #490 disclosure items).
 #
 # Requires: Git-Bash (Git for Windows) or WSL, plus node >= 26.4.
+#           OpenCode CLI v2 — install with: npm install -g @opencode/cli
+#           (the legacy opencode-ai npm package is the frozen v1 line; #499).
 # Previous native-PowerShell behavior is preserved through the flag mapping
 # below; old flags keep working as aliases.
 
