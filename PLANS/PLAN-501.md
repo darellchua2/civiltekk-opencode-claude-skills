@@ -9,7 +9,7 @@
 - [x] The repro command exits 1 with no `unbound variable` on stderr
 - [x] `bats tests/` runs with zero BW01 warnings from `test_subcommands.bats`
 - [x] Regression pin: new bats test asserting the sourced-context failing call yields rc 1 (not 127) and no `unbound variable` output
-- [ ] `bash -n deploy/setup.sh` passes; full vendored bats suite stays green
+- [x] `bash -n deploy/setup.sh` passes; full vendored bats suite stays green
 
 ## Dependency & Consumer Map
 
@@ -25,7 +25,7 @@ Out of scope: setup.ps1 (PowerShell has no ERR-trap semantics), any redesign of 
 ## Implementation Phases
 
 ### Phase 1: Nounset-safe trap + regression pin
-- [ ] **1.1** In `deploy/setup.sh` line 492, change the trap invocation argument `"${BASH_LINENO[0]}"` to `"${BASH_LINENO[0]:-0}"` so the handler survives fire contexts where the array element is unset (diagnostics then report line 0 instead of crashing with 127).
+- [x] **1.1** In `deploy/setup.sh` line 492, change the trap invocation argument `"${BASH_LINENO[0]}"` to `"${BASH_LINENO[0]:-0}"` so the handler survives fire contexts where the array element is unset (diagnostics then report line 0 instead of crashing with 127).
     — **Why:** AC-1 — this is the root cause: the only unguarded array ref in the handler chain crashes under nounset, converting expected return-1 paths into rc 127.
     — **Done when:** the repro (`HOME=$(mktemp -d) bash -c "source deploy/setup.sh >/dev/null 2>&1; DRY_RUN=false; LOAD_PRESET_NAME=nope; load_user_preset"`) exits 1 with no `unbound variable` on stderr.
     — **Consumers affected:** all error paths — guarded (`if !`/`run_plan`) contexts never hit the trap, so their behavior is unchanged; unguarded bare failures now get the intended diagnostic + exit 1.
