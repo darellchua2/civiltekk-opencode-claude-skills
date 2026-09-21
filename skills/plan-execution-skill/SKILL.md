@@ -80,7 +80,7 @@ All modes parse the same structure:
 
 ### E2E rule
 
-Run e2e ONLY IF both: Playwright configured (`playwright.config.*` + `@playwright/test`) AND the phase touched frontend code (`components/**/*.{tsx,jsx,vue,svelte}`, `app|pages|routes|src/ui`, route handlers affecting rendered pages). Backend-only phase → skip e2e and say so. Frontend but no Playwright → note + skip (never install unprompted). **Visual/responsive scope → spawn `responsive-audit-subagent`** (loads the subagent-only `playwright-responsive-audit-skill`, PTY loop) instead of inline `npx playwright test`.
+Run e2e ONLY IF both: Playwright configured (`playwright.config.*` + `@playwright/test`) AND the phase touched frontend code (`components/**/*.{tsx,jsx,vue,svelte}`, `app|pages|routes|src/ui`, route handlers affecting rendered pages). Backend-only phase → skip e2e and say so. Frontend but no Playwright → note + skip (never install unprompted). **Visual/responsive scope → spawn `responsive-audit-subagent`** (loads the subagent-only `playwright-responsive-audit-skill`, background/timeout execution model) instead of inline `npx playwright test`.
 
 ### Traceability
 

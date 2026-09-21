@@ -29,7 +29,7 @@ Desktop 1280×720 (Chrome) · Mobile 375×667 (Pixel 5, touch) · Tablet 768×10
 
 ## Background execution (display-branched)
 
-The loop iterates detect→fix→re-verify many times — avoid paying a 5–15s Playwright cold start per batch bash call by keeping ONE long-running runner: when a watch mode is useful (`--ui` with `$DISPLAY` or `xvfb-run` available), run it as a background shell command (`background: true`) and let the completion notification deliver each re-verify; otherwise run per-iteration foreground `npx playwright test` calls with an explicit `timeout` (ms). Early-abort by touching a sentinel file the watch runner checks (or killing the process) once the first defect is confirmed — don't wait for the full suite. Display: use `$DISPLAY` when set, else `xvfb-run` if available; headless fallback when neither.
+The loop iterates detect→fix→re-verify many times — run each DETECT/RE-VERIFY pass as its own background shell command (`background: true`): it returns immediately, the exit notification carries the results, and every pass is independently stoppable (foreground `pkill -f` on the runner pattern) for early abort. Always set an explicit `timeout` (ms) sized for the suite. Keep ONE long-running background server for cross-iteration queries — `npx playwright show-report` (headless), read over HTTP, stopped via `pkill -f` when done. Display: use `$DISPLAY` when set, else `xvfb-run` if available; headless fallback when neither.
 
 > Removed 2026-09: the six assertion implementations line-by-line (locator + expect recipes per defect), fixtures/helpers listings, full config dumps, tier-by-tier worked examples — kept the tier classification tables (the decision content), viewport matrix, and the execution strategy.
 

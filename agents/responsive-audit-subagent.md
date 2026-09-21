@@ -75,15 +75,14 @@ Loaded skill: `playwright-responsive-audit-skill` — this defines the 6 detecti
 
 ## Background Execution Model
 
-This subagent keeps Playwright warm across iterations instead of paying a cold start per batch `bash` call. The methodology (6 assertions, 3 tiers, closed loop) is unchanged — only the *execution* of DETECT and RE-VERIFY changes: v2's built-in background shell (`background: true`) returns immediately and notifies the session when the command exits.
+Every DETECT/RE-VERIFY pass runs as its own background shell command: `background: true` returns immediately, the session is notified when the command exits, and that notification carries the pass results. Always pass an explicit `timeout` (ms) sized for the suite. The methodology (6 assertions, 3 tiers, closed loop) is unchanged.
 
-1. **Strategy A (watch runner):** when `$DISPLAY` or `xvfb-run` is available, start the runner **once** as a background command (`background: true`) with `--ui` watch. It re-runs affected tests on file save; each completion notification delivers the results.
-2. **Strategy B (per-iteration foreground):** otherwise, run `npx playwright test` per iteration as a foreground command with an explicit `timeout` (ms) — a persistent warm shell that accepts interactive writes has no v2 equivalent.
-3. Early-abort once the first defect is confirmed: touch a sentinel file the watch runner checks (Strategy A) or kill the foreground process — don't wait for the full suite.
-4. Keep a `npx playwright show-report` background command alive for cross-iteration HTML queries (headless).
-5. Before returning, stop every background command you started (sentinel-stop the watch runner; terminate the show-report process).
+1. Start ONE long-running background server for cross-iteration queries: `npx playwright show-report` (headless). Read its HTML over HTTP — it never delivers test results.
+2. Per pass: run `npx playwright test` as a background command with an explicit `timeout` (ms). Wait for the exit notification before classifying — do not poll.
+3. Early-abort a running pass by killing its process (foreground `pkill -f` on the runner pattern) once the first defect is confirmed — don't wait for the full suite.
+4. Before returning, stop what you started: `pkill -f` the show-report server; every test pass has already exited.
 
-**Fallback:** background shells are a v2 built-in, so no permission change is needed. On non-OpenCode runtimes without them, degrade to batch `bash` (`npx playwright test`) per iteration — correct but slower. Warmth is an optimization, not a dependency.
+**Fallback:** background shells are a v2 built-in, so no permission change is needed. On non-OpenCode runtimes without them, run the same passes as batch `bash` (`npx playwright test`) per iteration — correct but slower. Background execution is an optimization, not a dependency.
 
 ## Audit Workflow
 
@@ -97,7 +96,7 @@ Accept from the primary session:
 
 ### Step 2: Run Detection Assertions
 
-Run against the warm Playwright setup (see Background Execution Model) — not a fresh cold start per assertion batch. Strategy A: start the watch runner once and read results from its completion notifications; Strategy B: one foreground `npx playwright test` per iteration with an explicit `timeout`.
+Run each assertion pass as its own background command (see Background Execution Model): `npx playwright test` with an explicit `timeout` (ms); read results from the exit notification. The `show-report` background server stays up for cross-iteration HTML queries.
 
 For each target page, at each breakpoint, run the 6 detection assertions defined in
 `playwright-responsive-audit-skill` (the skill is the source of truth for assertion definitions
@@ -117,7 +116,7 @@ Categorize each defect by the 3 fix-confidence tiers defined in `playwright-resp
 
 ### Step 5: Re-Verify
 
-After applying fixes, re-run detection (Strategy A: the watch runner re-runs assertions on file save — read the completion notification; Strategy B: a fresh foreground run with an explicit `timeout`). Re-run ALL 6 assertions at ALL breakpoints. Compare defect count to previous iteration. Report the delta. Stop all background commands before returning.
+After applying fixes, re-run the full detection pass as a fresh background command with an explicit `timeout` (ms) and read results from the exit notification. Re-run ALL 6 assertions at ALL breakpoints. Compare defect count to previous iteration. Report the delta. Stop remaining background commands (`pkill -f` the show-report server) before returning.
 
 ### Step 6: Report
 
@@ -125,7 +124,7 @@ Return the complete defect inventory, fixes applied, remaining issues, and itera
 
 ## Screenshot Delegation
 
-When a Tier 2 fix needs visual verification (one-shot captures use `bash` intentionally — only the DETECT/RE-VERIFY loop runs warm):
+When a Tier 2 fix needs visual verification (one-shot captures use `bash` intentionally — only the DETECT/RE-VERIFY passes run as background commands):
 
 1. Use `bash` to run a Playwright screenshot capture script at the target breakpoint
 2. Delegate the screenshot to `image-analyzer-subagent` via the Task tool:

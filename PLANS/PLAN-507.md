@@ -92,3 +92,13 @@ None — single ticket, no `blocked-by:` refs.
 GATE 0ca94d6 tier=light lint=- typecheck=- build=- unit=t e2e=- (Phase 1: scoped greps on the two owned files clean; `bats tests/test_skill_isolation.bats` 5/5; 1 gate fix)
 GATE df095c1 tier=light lint=- typecheck=- build=- unit=t e2e=- (Phase 2: AC1 grep zero across skills/ + agents/; README PTY zero; methodology anchors intact; `bats tests/test_skill_isolation.bats` 5/5)
 GATE 557183d tier=full lint=- typecheck=- build=- unit=t e2e=- (Ticket exit gate: full suite 529/529 green; AC1+AC4 greps zero; tree clean, no registry/frontmatter changes; tier=full chosen — ticket exit gate per pipeline Step 8)
+
+## Review Fix Round 1 (Step 9)
+
+Reviewer: code-review-subagent — 0 Critical / 2 Major / 3 Minor; Requirements Gaps: [].
+- [x] Major 1 — `skills/plan-execution-skill/SKILL.md:83` "PTY loop" residue → "background/timeout execution model". Why: concept-level residue invisible to the AC token grep; re-propagates stale doctrine every plan run.
+- [x] Major 2 — Strategy A promised per-iteration notifications + sentinel-stop from a never-exiting `--ui` watcher; v2 background commands notify once at exit, no stream-read, no kill API. Fix: watcher dropped — per-run exiting background commands with explicit `timeout` (notification carries results), `show-report` as the only long-runner (HTTP queries), early-abort via foreground `pkill -f`; skill + agent sections and Steps 2/5 updated. Why: instructions must be executable on stock v2.
+- [x] Minor — "warm" overclaim removed with the Strategy A/B rework; zai-video §3 teaches explicit `timeout` ≥ 600000 ms for the 600 s `--max-time` download.
+- [x] Minor — ticket-comment precision note posted ("only historical mentions" → one more prose mention in `plugins/opencode-auto-continue-v2.ts:8`, explanatory comment, no import).
+- [x] LEARNINGS: 3 candidate files written + indexed (token-enumeration greps; pty streaming semantics unportable; explicit-timeout doc convention).
+Re-gate (fix tree): tier=full — see memo below.

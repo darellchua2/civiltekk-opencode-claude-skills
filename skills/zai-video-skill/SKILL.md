@@ -92,6 +92,8 @@ foreground — just tell the caller it blocks the session.
 
 ### 3. Download and verify
 
+Run the download with an explicit `timeout` ≥ 600000 ms (or as a background command) — the 2-minute foreground shell default kills slow or 4K downloads long before the 600 s `--max-time`.
+
 ```bash
 OUT="${OUT:-./cogvideox-$TASK_ID.mp4}"
 URL=$(curl -sS --max-time 30 "$BASE/async-result/$TASK_ID" -H "Authorization: Bearer $KEY" | python3 -c '
