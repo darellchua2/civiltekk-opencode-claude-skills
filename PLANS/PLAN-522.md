@@ -14,7 +14,7 @@
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `installer/provider-models.json` | — | `installer/resolve-models.mjs` (`--provider-models` fail-fast guard), `deploy/regen-provider-models.mjs`, `tests/test_provider_pins.bats`, `tests/test_provider_regen.bats` | med — array removals only |
+| `installer/provider-models.json` | — | `installer/resolve-models.mjs` (`--provider-models` fail-fast guard), `deploy/regen-provider-models.mjs`, `deploy/setup.sh` (`--check-catalog` pass-through, warn-only), `opencode_app/Dockerfile` (flag pass-through), `installer/init.mjs` (advisory `modelAvailabilityNote` only), `tests/test_provider_pins.bats`, `tests/test_provider_regen.bats` | med — array removals only |
 
 Cross-module consumers exist → architecture review selected, scoped to re-verifying #520's proven consumer facts against the new id set (guard validates resolved pins only — nothing pins these ids per #520 review; arrays must stay non-empty — 10 entries remain; regen is fixture-driven and does not run in CI).
 
@@ -22,7 +22,7 @@ Cross-module consumers exist → architecture review selected, scoped to re-veri
 
 ### Phase 1: Catalog purge
 - [ ] **1.1** Remove `glm-4.5-flash`, `glm-4.7-flash`, `glm-4.7-flashx`, and `glm-5.3-flashx` from the `zai` array in `installer/provider-models.json` (10 entries remain, incl. `glm-5.3` + `glm-5.3-flash`). `glm-4.7-flashx` included by class extension of the maintainer directive (same flash class as the three named) — flagged for review confirmation.
-    — **Why:** maintainer directive — any non-vision model below the strongest reasoning tier is `glm-5.3-flash`; listing legacy flash ids as selectable implies maintained options.
+    — **Why:** maintainer directive (#522) — the flash class collapses onto `glm-5.3-flash`; listing legacy flash ids as selectable implies maintained options. (`glm-5.3` alone remains the reasoning/frontier pin; non-flash sub-frontier ids are this ticket's out of scope.)
     — **Done when:** `python3 -c` array check shows none of the 4 ids present, `glm-5.3` + `glm-5.3-flash` retained, `zai-coding-plan`/`zai-custom` untouched, and JSON parses.
     — **Consumers affected:** `resolve-models.mjs` guard (no tier/preset pins these ids — proven in #520 review, re-verified in Step 7); `deploy/regen-provider-models.mjs` (see Risks).
 - [ ] **1.2** Extend the `$comment` standardization sentence: after the #516 vision sentence, add that sub-frontier non-vision flash-class models are likewise standardized onto `glm-5.3-flash` (#522) and `glm-5.3` stays the sole reasoning/frontier pin — token-free, regen re-add caveat shared.
