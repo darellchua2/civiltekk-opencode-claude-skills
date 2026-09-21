@@ -58,16 +58,18 @@ All nodes are documentation leaves; no cross-module code consumers → architect
     — **Done:** both rows reworded (background watch runner / background poll); counts and rows identical; files: README.md; fixes: none
 
 ### Phase 3: Local v1 SDK hygiene (no repo diff)
-- [ ] **3.1** In the MAIN checkout (`/home/silentx/VSCODE/opencode-config-template`, not the worktree — the files are untracked and absent from fresh checkouts): confirm `grep -rn '@opencode-ai/plugin' scripts/ tests/` returns zero hits, delete `.opencode/package.json`, `.opencode/package-lock.json`, `.opencode/node_modules/`, re-run `bats tests/` and confirm green, then post the evidence (grep result + suite tail + deletion listing) as a comment on issue #507.
+- [x] **3.1** In the MAIN checkout (`/home/silentx/VSCODE/opencode-config-template`, not the worktree — the files are untracked and absent from fresh checkouts): confirm `grep -rn '@opencode-ai/plugin' scripts/ tests/` returns zero hits, delete `.opencode/package.json`, `.opencode/package-lock.json`, `.opencode/node_modules/`, re-run `bats tests/` and confirm green, then post the evidence (grep result + suite tail + deletion listing) as a comment on issue #507.
     — **Why:** Closes AC item 5; the v1 pin is machine-local state, so verification must run where the files live and the evidence must be durable in the ticket.
     — **Done when:** Files gone (`ls .opencode/package.json` errors), grep clean, suite green, evidence comment visible on #507.
     — **Consumers affected:** None — zero imports anywhere in tracked code (historical v1 mentions in `research/ponytail-load-fix.md` are protected records, never rewritten).
+    — **Done:** 58 MB v1 SDK tree deleted at 9bd649b; grep clean (`scripts/` absent, `tests/` clean); suite 529/529 before and after; evidence comment posted on #507; files: local `.opencode/` only (no repo diff); fixes: none
 
 ### Phase 4: Verification gate
-- [ ] **4.1** Run the full verification gate in the worktree: `bats tests/` (tier=full, ticket exit gate) plus every AC grep check from this PLAN's Acceptance Criteria section, recording the gate memo.
+- [x] **4.1** Run the full verification gate in the worktree: `bats tests/` (tier=full, ticket exit gate) plus every AC grep check from this PLAN's Acceptance Criteria section, recording the gate memo.
     — **Why:** Pipeline ticket-exit gate is full tier; the memo line is the citation Step 10's PR must carry.
     — **Done when:** `GATE <short-sha> tier=full` memo line exists for the final tree, all AC greps pass, and `git status --porcelain` shows no `registry.json` or frontmatter changes.
     — **Consumers affected:** Step 9 code review (diff scope) and Step 10 pr-workflow citation.
+    — **Done:** full suite 529/529 green; AC1/AC4 greps zero; working tree clean, no registry/frontmatter changes (6 files in branch diff, all docs); files: PLANS/PLAN-507.md; fixes: none
 
 ## Technical Notes
 - v2 mapping used everywhere: `pty_spawn` + `notifyOnExit: true` → `shell` with `background: true` (returns immediately, notifies the session when the command exits); bounded runs → explicit `timeout` (ms); early-abort → sentinel file the background loop checks, or killing the process (no `\x03` write path).
@@ -89,3 +91,4 @@ None — single ticket, no `blocked-by:` refs.
 
 GATE 0ca94d6 tier=light lint=- typecheck=- build=- unit=t e2e=- (Phase 1: scoped greps on the two owned files clean; `bats tests/test_skill_isolation.bats` 5/5; 1 gate fix)
 GATE df095c1 tier=light lint=- typecheck=- build=- unit=t e2e=- (Phase 2: AC1 grep zero across skills/ + agents/; README PTY zero; methodology anchors intact; `bats tests/test_skill_isolation.bats` 5/5)
+GATE 557183d tier=full lint=- typecheck=- build=- unit=t e2e=- (Ticket exit gate: full suite 529/529 green; AC1+AC4 greps zero; tree clean, no registry/frontmatter changes; tier=full chosen — ticket exit gate per pipeline Step 8)
