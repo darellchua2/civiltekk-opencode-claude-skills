@@ -5,13 +5,13 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] `grep -rE 'pty_spawn|pty_read|pty_write|pty_kill|notifyOnExit' skills/ agents/` returns zero hits (the prose-only doctrine line in `agents/opencode-v2-migration-subagent.md:193` names no `pty_*` tool and is unaffected)
-- [ ] zai-video-skill §2 uses `background: true` + completion notification; foreground noted as blocking fallback
-- [ ] responsive-audit skill/subagent use the background runner or explicit-`timeout` foreground; 6-assertion methodology unchanged
-- [ ] `README.md` no longer says "PTY watch loop" / "PTY poll"
-- [ ] `.opencode` v1 SDK files/dirs deleted locally (untracked); no `@opencode-ai/plugin` imports in `scripts/`/`tests/`; evidence in ticket comments
-- [ ] Test suite green before and after (baseline: 529/529 ok at origin/main 9bd649b5)
-- [ ] No frontmatter changes → `registry.json` untouched (no `build-registry.mjs` run)
+- [x] `grep -rE 'pty_spawn|pty_read|pty_write|pty_kill|notifyOnExit' skills/ agents/` returns zero hits (the prose-only doctrine line in `agents/opencode-v2-migration-subagent.md:193` names no `pty_*` tool and is unaffected)
+- [x] zai-video-skill §2 uses `background: true` + completion notification; foreground noted as blocking fallback
+- [x] responsive-audit skill/subagent use the background runner or explicit-`timeout` foreground; 6-assertion methodology unchanged
+- [x] `README.md` no longer says "PTY watch loop" / "PTY poll"
+- [x] `.opencode` v1 SDK files/dirs deleted locally (untracked); no `@opencode-ai/plugin` imports in `scripts/`/`tests/`; evidence in ticket comments
+- [x] Test suite green before and after (baseline: 529/529 ok at origin/main 9bd649b5)
+- [x] No frontmatter changes → `registry.json` untouched (no `build-registry.mjs` run)
 
 ## Dependency & Consumer Map
 
