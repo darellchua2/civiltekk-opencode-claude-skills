@@ -29,14 +29,16 @@ All nodes are documentation leaves; no cross-module code consumers → architect
 ## Implementation Phases
 
 ### Phase 1: Video/media docs → background shell
-- [ ] **1.1** Rewrite `skills/zai-video-skill/SKILL.md` PTY references (intro line ~L25, §2 heading + body ~L70-89) to the v2 background-shell pattern: same poll-loop script run with `background: true`; the automatic completion notification replaces `notifyOnExit: true`; the foreground loop becomes the non-OpenCode fallback, noted as blocking the session.
+- [x] **1.1** Rewrite `skills/zai-video-skill/SKILL.md` PTY references (intro line ~L25, §2 heading + body ~L70-89) to the v2 background-shell pattern: same poll-loop script run with `background: true`; the automatic completion notification replaces `notifyOnExit: true`; the foreground loop becomes the non-OpenCode fallback, noted as blocking the session.
     — **Why:** This skill is the canonical async pattern the media subagent's routing and rules reference; every other doc change aligns to it.
     — **Done when:** `grep -nE 'pty_spawn|pty_read|pty_write|pty_kill|notifyOnExit|PTY' skills/zai-video-skill/SKILL.md` returns zero hits and the §2 body instructs `background: true` + completion notification.
     — **Consumers affected:** `agents/zai-media-subagent.md` (updated in 1.2), README Media Generation row (updated in 2.3).
-- [ ] **1.2** Rewrite `agents/zai-media-subagent.md` lines 75 and 87: routing table cell "submit → PTY poll" → "submit → background-shell poll"; rule 3 references the skill's background-shell pattern (`shell` `background: true`, completion notification) while keeping the never-poll-synchronously discipline.
+    — **Done:** §2 heading + intro + loop comment rewritten to `background: true` with exit notification; foreground demoted to non-OpenCode blocking fallback; intro bullet (L25) now says background-shell pattern; files: skills/zai-video-skill/SKILL.md; fixes: none
+- [x] **1.2** Rewrite `agents/zai-media-subagent.md` lines 75 and 87: routing table cell "submit → PTY poll" → "submit → background-shell poll"; rule 3 references the skill's background-shell pattern (`shell` `background: true`, completion notification) while keeping the never-poll-synchronously discipline.
     — **Why:** The executable prompt must not name tools absent from v2; it must match the pattern its delegated skill now teaches (1.1).
     — **Done when:** `grep -nE 'pty_|PTY' agents/zai-media-subagent.md` returns zero hits; rule 3 still forbids synchronous polling.
     — **Consumers affected:** Primary sessions delegating video generation.
+    — **Done:** routing cell + rule 3 → background-shell poll with exit notification; files: agents/zai-media-subagent.md; fixes: rule-3 wording no longer names the replaced v1 flag (AC1 grep hit; fix attempt 1)
 
 ### Phase 2: Responsive-audit docs + README
 - [ ] **2.1** Rewrite `skills/playwright-responsive-audit-skill/SKILL.md` "PTY execution" section (~L30-34): one long-running runner via `background: true` when a watch mode is used (`--ui` if `$DISPLAY`/`xvfb-run` available), else per-iteration foreground `npx playwright test` with an explicit `timeout`; early-abort via sentinel file or process kill instead of `pty_write "\x03"`.
@@ -79,3 +81,7 @@ None — single ticket, no `blocked-by:` refs.
 - **`tests/test_skill_isolation.bats` guards** (isolation, vendored-copy byte-identity) → only SKILL.md prose and agents/*.md bodies change; no scripts, no vendored trees, no new dirs.
 - **README count drift** → wording-only edits inside existing table cells; counts re-checked against pre-edit values.
 - **Suite flakiness masking a regression** → baseline (529/529 at 9bd649b5) recorded before any edit; after each phase the same suite re-run must match.
+
+## Gate Trace
+
+GATE 0ca94d6 tier=light lint=- typecheck=- build=- unit=t e2e=- (Phase 1: scoped greps on the two owned files clean; `bats tests/test_skill_isolation.bats` 5/5; 1 gate fix)
