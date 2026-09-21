@@ -5,10 +5,10 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] `grep -rniE "glm-4\.5-flash|glm-4\.7-flash|glm-5\.3-flashx" . --exclude-dir=.git --exclude-dir=PLANS --exclude-dir=LEARNINGS --exclude=CHANGELOG.md` returns zero hits
-- [ ] `zai` array retains `glm-5.3` and `glm-5.3-flash`; `zai-coding-plan` and `zai-custom` byte-identical
-- [ ] `$comment` documents the flash-class standardization + regen re-add caveat without naming purged ids
-- [ ] Full bats suite green; build-registry run, `registry.json` committed if content-differs
+- [x] `grep -rniE "glm-4\.5-flash|glm-4\.7-flash|glm-5\.3-flashx" . --exclude-dir=.git --exclude-dir=PLANS --exclude-dir=LEARNINGS --exclude=CHANGELOG.md` returns zero hits
+- [x] `zai` array retains `glm-5.3` and `glm-5.3-flash`; `zai-coding-plan` and `zai-custom` byte-identical
+- [x] `$comment` documents the flash-class standardization + regen re-add caveat without naming purged ids
+- [x] Full bats suite green; build-registry run, `registry.json` committed if content-differs
 
 ## Dependency & Consumer Map
 
@@ -33,18 +33,20 @@ Cross-module consumers exist → architecture review selected, scoped to re-veri
     — **Done:** #522 flash-class sentence appended token-free with shared regen caveat; files: installer/provider-models.json; fixes: none
 
 ### Phase 2: Verification + registry sync
-- [ ] **2.1** Repo-wide purge proof: `grep -rniE "glm-4\.5-flash|glm-4\.7-flash|glm-5\.3-flashx" . --exclude-dir=.git --exclude-dir=PLANS --exclude-dir=LEARNINGS --exclude=CHANGELOG.md`.
+- [x] **2.1** Repo-wide purge proof: `grep -rniE "glm-4\.5-flash|glm-4\.7-flash|glm-5\.3-flashx" . --exclude-dir=.git --exclude-dir=PLANS --exclude-dir=LEARNINGS --exclude=CHANGELOG.md`.
     — **Why:** ticket AC — total purge outside historical records (inventory already showed catalog-only presence).
     — **Done when:** zero matches.
     — **Consumers affected:** none.
-- [ ] **2.2** Run gates: full bats suite `bats tests/` (ticket exit gate — provider_pins + provider_regen cover the catalog consumers).
+- [x] **2.2** Run gates: full bats suite `bats tests/` (ticket exit gate — provider_pins + provider_regen cover the catalog consumers).
     — **Why:** provider-models.json is guard- and regen-consumed.
     — **Done when:** `bats tests/` exits 0.
     — **Consumers affected:** deploy guard users (confidence).
-- [ ] **2.3** Run `node installer/build-registry.mjs`; commit `registry.json` if content-differs (timestamp-only churn is still committed per house rule).
+    — **Done:** 529/529 ok, exit 0; files: none (verification); fixes: none
+- [x] **2.3** Run `node installer/build-registry.mjs`; commit `registry.json` if content-differs (timestamp-only churn is still committed per house rule).
     — **Why:** house sync rule after registry-adjacent changes.
     — **Done when:** command exits 0; `git status` clean after commit.
     — **Consumers affected:** installer registry consumers.
+    — **Done:** regenerated, timestamp-only diff committed; files: installer/registry.json; fixes: none
 
 ## Technical Notes
 - Inventory (post-#520, repo grep excluding .git/PLANS/LEARNINGS/CHANGELOG): the 4 ids appear ONLY in `installer/provider-models.json` — no docs, presets, tier maps, agent/skill files, or `opencode_app` config reference them, so removal needs no remapping.
@@ -59,3 +61,4 @@ None — single ticket, no `blocked-by`.
 
 ## Gate Trace
 GATE c0e1e62 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: provider_pins+provider_regen) e2e=n.a
+GATE 1808bcf tier=full lint=n.a typecheck=n.a build=n.a unit=t(bats tests/ 529/529) e2e=n.a
