@@ -10,9 +10,12 @@
 
 After `run_cmd ln -sf …`, an unconditional `log_success "opencode-init
 installed"` prints SUCCESS even in dry-run where nothing executed. The same
-trait exists in deploy_plugins. The truthful in-tree shape is
-register_zai_auth's early-return: gate the whole write+log block on DRY_RUN
-and log a "[DRY-RUN] Would …" line instead.
+trait exists in deploy_plugins. The truthful in-tree shape is the early-return
+gate: `run_cmd` itself (`deploy/setup.sh:1117`) plus live exemplars
+`cleanup_old_backups` (`:1236`) and the env-key writer inside
+`setup_local_llm_env` (`:3099`) —
+gate the whole write+log block on DRY_RUN and log a "[DRY-RUN] Would …" line
+instead.
 
 ## Rule
 

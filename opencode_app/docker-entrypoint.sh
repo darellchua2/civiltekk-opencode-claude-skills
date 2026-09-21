@@ -129,8 +129,8 @@ mkdir -p /workspace-extra 2>/dev/null || true
 
 # ── Goal plugin presence assertion (#387) ────────────────────────────────────
 # The v2 `plugins` key being silently ignored was the exact failure mode that
-# kept /goal out of this endpoint (LEARNINGS: docker-v1-binary-ignores-v2-
-# plugins-key). Poll /api/command until the goal commands appear — NOT merely
+# kept /goal out of this endpoint (LEARNINGS: decisions/goal-plugin-v2-
+# readoption, Docker note). Poll /api/command until the goal commands appear — NOT merely
 # until the server answers: /api/command serves 200 before the plugin's async
 # npm fetch+register completes, so a first-success poll races and false-alarms.
 # Greppable verdict keeps inertness loud; non-fatal so a deliberate plugin

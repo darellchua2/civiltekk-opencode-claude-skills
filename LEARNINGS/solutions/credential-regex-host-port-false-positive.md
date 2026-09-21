@@ -46,3 +46,8 @@ URL. Common in dev (localhost dev servers, routes with `@`).
 
 `opencode_app/.opencode/vibeguard.config.json` pattern `DB_CONNECTION_STRING` (line 13 of
 the 9-pattern `regex` array). Surfaced in PLAN-GIT-315 review.
+
+> **Update 2026-09-21 (#506):** the config moved to `plugins/vibeguard.config.json` (v2 port;
+> pattern now at :16) and the fix SHIPPED — the current pattern `://[^:\s]+:[^@\s/]+@` rejects a
+> `/`-containing segment between `:` and `@`, so `localhost:3000/@user` and `example.com:8080/@team`
+> no longer match. Original evidence path kept above as historical record.
