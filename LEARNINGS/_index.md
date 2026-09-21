@@ -17,6 +17,33 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### A zero-reference gate must census where the string lives and exclude itself
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/zero-reference-gate-must-census-and-self-exclude.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-21
+- **Summary**: derive the include set from a census of where the string actually appears (all file types incl. extensionless Dockerfile and *.sh), never from expected doc types — and exclude the plan document itself, which quotes the slugs it bans (#506 arch review BLOCK-1)
+
+### A derived summary tuple must be self-consistent — arithmetic and derivation semantics
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/derived-summary-tuple-must-be-self-consistent.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Date**: 2026-09-21
+- **Summary**: the derivation command must match the claim's semantics (count "effect": "allow" within skill rules, not the rule key — the deny-all inflates by one) and the tuple must pass its own arithmetic (107−70=37 exposed 107 as the raw count; 106−70=36 is the truth); annotate cross-surface members (#506 BLOCK-2)
+
+### A repoint sweep derived from an audited-file list misses grep-derived sibling consumers
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/sweep-set-from-audit-list-misses-grep-derived-consumers.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Date**: 2026-09-21
+- **Summary**: derive the sweep from grep of the old path strings across all file types — an audit list is a lower bound; sibling consumers citing the same dead paths (tier-model-swap's ENOENT verification commands post-#378) are found only by the string (#506 code review WARN-3)
+
 ### A bare mv beside run_cmd breaks the --dry-run contract
 
 - **Category**: anti-pattern
@@ -328,7 +355,7 @@
 - **Confidence**: 0.95
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: upstream publishes only alphas (latest 0.0.1a7) — exact pin installs without --pre; requires markitdown[all] + mcp>=2.1.1,<3; coexists with docling-mcp 3.x on mcp 2.x; stdio default; bump ritual spans 3 files
+- **Summary**: upstream publishes only alphas (latest 0.0.1a7) — exact pin installs without --pre; requires markitdown[all] + mcp>=2.1.1,<3; coexists with docling-mcp 3.x on mcp 2.x; stdio default; bump ritual spans 2 files (deploy/setup.sh + opencode_app/Dockerfile; ps1 thin since #474)
 
 ### Merge writers must back up unparseable user JSON, never reset to {}
 
@@ -625,7 +652,7 @@
 - **Confidence**: 0.8
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: unconditional log_success after run_cmd claims completion in dry-run — new gates use the register_zai_auth early-return shape; legacy sites sweep into #470 (#469 review)
+- **Summary**: unconditional log_success after run_cmd claims completion in dry-run — new gates use the run_cmd early-return shape (deploy/setup.sh:1117); legacy sites sweep into #470 (#469 review)
 
 ### jq @tsv needs sentinels for nullable columns
 
@@ -1003,7 +1030,7 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-14
-- **Summary**: plugins: ["@prevalentware/opencode-goal-plugin@^0.1.48"] — caret pin (v1 breakage was v1-only versions under v2 runtime, not pinning), no options (secure defaults), no commands.goal block; wejick/opencode-goal rejected; Docker inert until #387
+- **Summary**: plugins: ["@prevalentware/opencode-goal-plugin@^0.1.48"] — caret pin (v1 breakage was v1-only versions under v2 runtime, not pinning), no options (secure defaults), no commands.goal block; wejick/opencode-goal rejected; #387 resolved — v2 binary + authenticated goal-presence healthcheck (see the file's Docker note)
 
 ### path-move restructure: anchor CI tarball gates, verify search-path consumers
 
@@ -1012,7 +1039,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-14
-- **Summary**: Path moves (#381): anchor CI `npm pack` grep gates to package-root paths (substring matches false-green); config files consumed via search-path chains (vibeguard.ts) need bridge symlink / explicit COPY per runtime
+- **Summary**: Path moves (#381): anchor CI `npm pack` grep gates to package-root paths (substring matches false-green); config files consumed via search-path chains (plugins/opencode-vibeguard-v2.ts + vibeguard.config.json) need bridge symlink / explicit COPY per runtime
 
 ### permission.task delegate changes — 4 sync surfaces + delegate ceiling check
 
@@ -1059,7 +1086,7 @@
 - **Date**: 2026-07-26
 - **Summary**: Never add // comments to opencode_app/opencode.json — CI bats tests use Python json.load() which can't parse JSONC
 
-### Skill permission allowlist — shipped 148, lean profile 46, deploy default lean
+### Skill permission allowlist — shipped 146, lean profile 70 (post-#481), deploy default lean
 
 - **Category**: decision
 - **File**: `LEARNINGS/decisions/skill-permission-allowlist.md`

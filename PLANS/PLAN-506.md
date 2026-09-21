@@ -100,6 +100,11 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done when:** the file contains no `Install-MarkitdownMcp` / `setup.ps1` reference
     — **Consumers affected:** pin-bump authors writing idempotency probes
     — **Done:** ps1 mirror dropped from probe rule; provenance rides commit msg; files: LEARNINGS/anti-patterns/idempotency-probe-version-blind.md; fixes: 1 (removed historical parenthetical violating done-when)
+- [x] **2.10** `LEARNINGS/patterns/tier-model-swap-blast-radius.md`: repoint all seven dead `deploy/` paths to `installer/` (#378 move), fix the resolver command's `--agents-src` to the root `agents/` tree, and add dated notes for the resolved surfaces (zai-vision-analysis removed GIT-364; the `--status` glm-4.7 echo now dynamic)
+    — **Why:** code review WARN-3 + Mode R round 2 — both of the file's verification commands failed ENOENT as written; a blast-radius checklist that dies at step one is the exact defect genus this ticket kills (harm-based 10th file; AC3's numeral stays 9, recorded per the round-1 precedent)
+    — **Done when:** both verification commands run verbatim green on this branch
+    — **Consumers affected:** tier-swap auditors
+    — **Done:** all deploy/ paths → installer/; cmd1 registry --check green; cmd2 resolve-models dry-run exit 0 (--agents-src agents); dated note covers zai-vision-analysis + dynamic model echo; files: LEARNINGS/patterns/tier-model-swap-blast-radius.md; fixes: 1 (cmd2 agents-src path discovered by running it)
 
 ### Phase 3: Rebuild `LEARNINGS/_index.md`
 
@@ -175,6 +180,7 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 - Registry entries are frontmatter-derived (build-registry.mjs:27-31) — the SKILL.md edit is body-only; `--check` at 6.4 proves no accidental frontmatter touch.
 - `package.json` scripts is `{}` — gates are named explicitly above (PLAN-381 precedent).
 
+- Mode R round 2 (2026-09-21): AC5/3.1 read to cover the entry HEADING (the 148/46 heading was the lie AC5 exists to kill; headings are the grep surface), and the 3 stale preserved summaries ruled AC3-covered (the index is a citing surface; Phase 3 authored those lines). Step 2.10 added — tier-model-swap folded in-PR (commands fail outright), 4 residual pointers + NOTEs tracked in the follow-up ticket. No AC numerals changed.
 ## Dependencies
 
 None external. Ticket #506 is standalone (no `blocked-by:`).

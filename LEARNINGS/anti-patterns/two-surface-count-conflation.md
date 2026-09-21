@@ -50,3 +50,5 @@ Related: `anti-patterns/delta-derived-from-single-surface.md` (the family
 parent), `patterns/count-sweeps-include-docs-of-record.md`,
 `anti-patterns/partial-record-refresh-contradicts-itself.md`,
 `decisions/app-scoped-skill-surface.md`.
+
+**Evidence (2026-09-21, #506):** a single regenerated index entry carried heading "shipped 148, lean profile 46" above a Summary stating 146/106/70/36 — same entry, two count surfaces, caught at code review; headings are the grep surface and must derive from the same disk pass as the body.

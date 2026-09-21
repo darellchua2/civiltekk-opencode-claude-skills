@@ -16,8 +16,7 @@ suite stayed green.
 
 ## Root cause
 
-Same genus as a multi-clause fix whose committed pins cover the old behavior
-set: the fix changed
+The fix changed
 the guard's behavior set, but the committed pins covered the old behavior
 set. Manual verification doesn't survive the next refactor.
 
