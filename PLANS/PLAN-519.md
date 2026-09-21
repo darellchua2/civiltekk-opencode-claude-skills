@@ -80,7 +80,7 @@
 
 GATE 8ed004b tier=light lint=- typecheck=- build=- unit=t e2e=-
 <!-- scoped: test_default_behavior + test_skill_isolation + test_autoresearch_protocol = 174 ok, exit 0; lint/typecheck/build n.a. (markdown-only phase, none configured); done-when greps verified for 1.1/1.2/1.3 -->
-GATE EXIT-MEMO tier=full lint=- typecheck=- build=- unit=t e2e=- (code tree = 8ed004b; full bats tests/ = 529 ok exit 0; build-registry --check no drift; deployed-copy greps green)
+GATE bb3e7c1 tier=full lint=- typecheck=- build=- unit=t e2e=- (code tree = 8ed004b; full bats tests/ = 529 ok exit 0; build-registry --check no drift; deployed-copy greps green)
 
 ## Dependencies
 None external. Companion DA-2830 runs in a separate repo and does not block this change.
