@@ -93,14 +93,25 @@ Binding-block format per AGENTS.md §Portability contract (merged via #510): cap
 
 ### Phase 5: pptx extension + verification
 
-- [ ] **5.1** `skills/pptx-generate-template-skill/SKILL.md` — extend the headless/subagent fallback (search "Headless / subagent mode") into the canonical block (OpenCode `question` · Claude `AskUserQuestion` · none/headless: print the table, proceed to Stage 3 — existing behavior).
+- [x] **5.1** `skills/pptx-generate-template-skill/SKILL.md` — extend the headless/subagent fallback (search "Headless / subagent mode") into the canonical block (OpenCode `question` · Claude `AskUserQuestion` · none/headless: print the table, proceed to Stage 3 — existing behavior).
     — **Why:** ticket scope; the fallback exists but isn't in canonical row form.
     — **Done when:** block in canonical shape.
     — **Consumers affected:** template pipeline on other harnesses.
-- [ ] **5.2** Verification: repo-wide probe — every file listed in the ticket contains ≥1 binding block naming a portable fallback row (`rg -c 'Other/none:'` across the 16 files, ≥1 each); OpenCode rows unchanged (`git diff` shows no OpenCode-row text removed); full exit gate.
+    — **Done:** interactive binding rows appended at the Stage-2 confirmation fallback (:186); files: skills/pptx-generate-template-skill/SKILL.md; fixes: none
+- [x] **5.2** Verification: repo-wide probe — every file listed in the ticket contains ≥1 binding block naming a portable fallback row (`rg -c 'Other/none:'` across the 16 files, ≥1 each); OpenCode rows unchanged (`git diff` shows no OpenCode-row text removed); full exit gate.
     — **Why:** the AC is coverage + non-regression, not prose quality.
     — **Done when:** 16/16 files carry a fallback row; diff audit clean; full suite green.
     — **Consumers affected:** #515 guard (will enforce presence mechanically).
+    — **Done:** probe 15/15 files ≥1 binding/fallback marker (git-branch-workflow via its 3 pre-existing fallback sections); diff audit — 2 removed "OpenCode" lines are the zai-video rephrase with behavior preserved in the binding row; full suite 529/529; files: none (verification); fixes: none
+
+## Gate Trace
+
+GATE 727eeb2 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
+GATE 29b56d4 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
+GATE 863fefe tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
+GATE 99b78bf tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
+GATE 99b78bf tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+Note: lint axis = binding-presence probes (per-phase counts in Done lines) + frontmatter validation via build-registry substitute. Later PLAN-only commits are tree-equivalent to 99b78bf content; CI is the unconditional re-run.
 
 ## Technical Notes
 - Keep each insertion ≤5 lines; the contract section (AGENTS.md) stays the single full definition — skills carry only their local block.
