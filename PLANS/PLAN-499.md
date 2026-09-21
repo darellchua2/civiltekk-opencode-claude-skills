@@ -6,7 +6,7 @@
 
 ## Acceptance Criteria
 - [x] Fresh-install path in `setup_opencode()` runs `npm install -g @opencode/cli`
-- [ ] `update_opencode_cli()` and `check_for_updates_only()` compare against `@opencode/cli`
+- [x] `update_opencode_cli()` and `check_for_updates_only()` compare against `@opencode/cli`
 - [x] A detected v1 (`1.x`) install is offered the uninstall-then-install migration instead of a silent in-place "update"
 - [ ] `validate_opencode_install()` hint, `--help` text, and `print_summary()` labels reference `@opencode/cli`
 - [ ] `setup.ps1` header documents the v2 install command
@@ -47,10 +47,11 @@ Out of scope (must NOT change): `@opencode-ai/plugin` references (plugin SDK pac
     — **Done:** rename + normalization + v1 branch applied (incl. both new_version probes); stub sim: v1.18.31 → prompt → uninstall + @opencode/cli@latest; files: deploy/setup.sh; fixes: none
 
 ### Phase 2: Message surface (`deploy/setup.sh`)
-- [ ] **2.1** Rename remaining `opencode-ai` mentions in `check_for_updates_only()` (npm probe + log strings), `validate_opencode_install()` (install hint), the `--help`/header comment blocks (lines ~30, 38, 51, 522, 533–537, 666, 761), and `print_summary()` status labels (lines ~4507–4512) to `@opencode/cli` (prose labels may read "OpenCode CLI (@opencode/cli)").
+- [x] **2.1** Rename remaining `opencode-ai` mentions in `check_for_updates_only()` (npm probe + log strings), `validate_opencode_install()` (install hint), the `--help`/header comment blocks (lines ~30, 38, 51, 522, 533–537, 666, 761), and `print_summary()` status labels (lines ~4507–4512) to `@opencode/cli` (prose labels may read "OpenCode CLI (@opencode/cli)").
     — **Why:** AC-4 — help and summary text that says `opencode-ai` sends users to the frozen v1 package even after the logic is fixed.
     — **Done when:** `grep -n "opencode-ai" deploy/setup.sh` returns only v1-detection/migration strings (uninstall target + explanatory "v1-only" prose), zero install/probe/hint references.
     — **Consumers affected:** humans reading `--help`, the setup summary, and `--skills-only` validation failures.
+    — **Done:** all listed sites renamed (verified: 8 remaining matches are exactly the v1-migration strings + explanatory comments); check_for_updates_only probe normalized to bare semver; files: deploy/setup.sh; fixes: none
 
 ### Phase 3: Windows launcher + README parity
 - [ ] **3.1** In `deploy/setup.ps1`, extend the `# Requires:` header comment to state the CLI install command: `npm install -g @opencode/cli` (v2 scoped package).
@@ -89,4 +90,8 @@ Full tier on every phase — deploy files are a critical-area anchor (§Tiered g
 ### Phase 1
 - WORK LOG: full-tier escalation reason — deploy/config file anchor (deploy/setup.sh).
 - WORK LOG: verification also included a 15-assertion stub harness (/tmp/opencode/plan499-phase1-sanity.sh) covering v1 migration, normalization equality, outdated-update, fresh-install, and update-path v1 detection — all green.
+- GATE ae5ba79 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 517 ok / 0 fail.
+
+### Phase 2
+- WORK LOG: deliberate deviation — while renaming check_for_updates_only's update hint, the stale text pointing at the removed `-A -S` auto-update flags (#474) was replaced with `-C` / `--update` guidance; same line, already being rewritten.
 - GATE (pending-commit sha) tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 517 ok / 0 fail.
