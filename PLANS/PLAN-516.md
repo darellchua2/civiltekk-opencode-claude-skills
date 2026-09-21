@@ -5,13 +5,13 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] `agents/image-analyzer-subagent.md` fallback recipe sends `"model": "glm-5.3-flash"`
-- [ ] `grep -rniE "5v[-_]?turbo" . --exclude-dir=.git --exclude-dir=PLANS` returns hits only in `CHANGELOG.md` (historical release record, untouched; committed `PLANS/PLAN-516.md` is likewise a historical record describing this purge — excluded per PLAN-507 precedent)
-- [ ] `glm-5v-turbo` removed from `installer/provider-models.json` (array entry + `$comment`)
-- [ ] `bats tests/test_provider_pins.bats` and `tests/test_skill_isolation.bats` pass
-- [ ] `node installer/build-registry.mjs` run; `registry.json` committed if it diffs
-- [ ] Zero references to pre-5.3 vision models (`glm-5v-turbo`, `glm-4.5v`, `glm-4.6v` incl. `-flash`) outside `CHANGELOG.md` (PLANS excluded) — vision = `glm-5.3-flash` only
-- [ ] `installer/provider-models.json` arrays carry no vision model older than `glm-5.3-flash`; frontier `glm-5.3` and non-vision models untouched
+- [x] `agents/image-analyzer-subagent.md` fallback recipe sends `"model": "glm-5.3-flash"`
+- [x] `grep -rniE "5v[-_]?turbo" . --exclude-dir=.git --exclude-dir=PLANS` returns hits only in `CHANGELOG.md` (historical release record, untouched; committed `PLANS/PLAN-516.md` is likewise a historical record describing this purge — excluded per PLAN-507 precedent)
+- [x] `glm-5v-turbo` removed from `installer/provider-models.json` (array entry + `$comment`)
+- [x] `bats tests/test_provider_pins.bats` and `tests/test_skill_isolation.bats` pass
+- [x] `node installer/build-registry.mjs` run; `registry.json` committed if it diffs
+- [x] Zero references to pre-5.3 vision models (`glm-5v-turbo`, `glm-4.5v`, `glm-4.6v` incl. `-flash`) outside `CHANGELOG.md` (PLANS excluded) — vision = `glm-5.3-flash` only
+- [x] `installer/provider-models.json` arrays carry no vision model older than `glm-5.3-flash`; frontier `glm-5.3` and non-vision models untouched
 
 ## Dependency & Consumer Map
 
@@ -100,18 +100,21 @@ Cross-module consumers exist (`resolve-models.mjs`, regen script, tests) → arc
     — **Done:** model name dropped from the count narrative, counts intact; files: README.md; fixes: none
 
 ### Phase 6: Verification + registry sync
-- [ ] **6.1** Repo-wide purge proof: `grep -rniE "5v[-_]?turbo|glm-4\.5v|glm-4\.6v" . --exclude-dir=.git --exclude-dir=PLANS` — case-insensitive, variant-tolerant, excluding `.git/` and the tracked plan file itself (historical record; it must name the tokens to specify the purge).
+- [x] **6.1** Repo-wide purge proof: `grep -rniE "5v[-_]?turbo|glm-4\.5v|glm-4\.6v" . --exclude-dir=.git --exclude-dir=PLANS` — case-insensitive, variant-tolerant, excluding `.git/` and the tracked plan file itself (historical record; it must name the tokens to specify the purge).
     — **Why:** ticket AC — purge must be total outside immutable release history; the hardened pattern closes the case-sensitive-grep false-green class flagged in plan review.
     — **Done when:** the only match path is `CHANGELOG.md`.
     — **Consumers affected:** none.
-- [ ] **6.2** Run gates: full bats suite `bats tests/` (ticket exit gate — includes `test_provider_pins`, `test_provider_regen`, `test_skill_isolation`, `test_mcp_count_consistency`).
+    — **Done:** sole match = CHANGELOG.md (historical); files: none (verification); fixes: none
+- [x] **6.2** Run gates: full bats suite `bats tests/` (ticket exit gate — includes `test_provider_pins`, `test_provider_regen`, `test_skill_isolation`, `test_mcp_count_consistency`).
     — **Why:** provider-models.json is consumed by the deploy-time guard and regen script; skill-isolation guards the two touched skills.
     — **Done when:** `bats tests/` exits 0.
     — **Consumers affected:** deploy guard users (confidence).
-- [ ] **6.3** Run `node installer/build-registry.mjs`; commit `registry.json` if it diffs.
+    — **Done:** 529/529 ok, exit 0; files: none (verification); fixes: none
+- [x] **6.3** Run `node installer/build-registry.mjs`; commit `registry.json` if it diffs.
     — **Why:** house sync rule after registry-adjacent file changes.
     — **Done when:** command exits 0; `git status` clean after commit.
     — **Consumers affected:** installer registry consumers.
+    — **Done:** regenerated; timestamp-only diff (agents=34, skills=146 unchanged) committed as 5139d03; files: installer/registry.json; fixes: none
 
 ## Technical Notes
 - `glm-5.3-flash` is natively multimodal (image_url content blocks, URL or base64) and served on both `https://api.z.ai/api/coding/paas/v4` and `https://api.z.ai/api/paas/v4` — verified against Z.AI docs (guides/vlm/glm-5.3-flash), so the recipe's dual-endpoint key resolution needs no change.
@@ -128,6 +131,8 @@ GATE a83a00b tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 GATE a58c09f tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 GATE 4afd089 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: provider_pins+provider_regen, 14 ok) e2e=n.a
 GATE 7c0b49b tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
+GATE d87303b tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
+GATE 5139d03 tier=full lint=n.a typecheck=n.a build=n.a unit=t(bats tests/ 529/529) e2e=n.a
 
 ## Plan-Review Adjudications (architecture review, 2026-09-21)
 - **Purge gate vs the plan file itself (MAJOR, fixed):** `PLANS/PLAN-516.md` is git-tracked and persists post-merge (precedent: `PLANS/PLAN-507.md`), yet must name the token to describe the purge. AC#2 / step 5.1 therefore exclude `--exclude-dir=PLANS` and harden to `grep -rniE "5v[-_]?turbo"`.
