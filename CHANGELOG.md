@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.28.2](https://github.com/darellchua2/opencode-config-template/compare/v9.28.1...v9.28.2) (2026-09-21)
+
+### Bug Fixes
+
+* **plugins:** guard walkDeep against frozen tool input on 2.0.11 ([f68b410](https://github.com/darellchua2/opencode-config-template/commit/f68b410814b8648ffd9bd3497ee1f850ae91bc43))
+
+### Code Refactoring
+
+* **plugins:** rename opencode-vibeguard to -v2 (v2 marker) ([9cceb45](https://github.com/darellchua2/opencode-config-template/commit/9cceb45dbce0dd88809742a6ac511137c7f2135b))
+
+### Documentation
+
+* **skill:** add question payload specs to worktree-pipeline-skill ([#504](https://github.com/darellchua2/opencode-config-template/issues/504)) ([#505](https://github.com/darellchua2/opencode-config-template/issues/505)) ([713d445](https://github.com/darellchua2/opencode-config-template/commit/713d445eb46ecb36f87dd18c564399e3cffd9157))
+
 ## [9.28.1](https://github.com/darellchua2/opencode-config-template/compare/v9.28.0...v9.28.1) (2026-09-21)
 
 ### Bug Fixes
