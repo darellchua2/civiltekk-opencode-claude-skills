@@ -113,3 +113,31 @@ PE="$SKILLS_DIR/plan-execution-skill/SKILL.md"
 @test "tier2_gating_plan-execution_never_push_red_unchanged" {
   grep -qF 'Never push red code' "$PE"
 }
+
+WP="$SKILLS_DIR/worktree-pipeline-skill/SKILL.md"
+
+# =============================================================================
+# Phase 3 — orchestrator integration (worktree-pipeline-skill)
+# =============================================================================
+
+@test "tier3_gating_worktree-pipeline_step8_exit_gate_full" {
+  [ -f "$WP" ]
+  # Newline+indent normalized: the phrase wraps across lines in the markdown
+  tr '\n' ' ' < "$WP" | tr -s ' ' | grep -qiF 'ticket exit gate'
+  tr '\n' ' ' < "$WP" | tr -s ' ' | grep -qiE 'exit +gate.*is full'
+}
+
+@test "tier3_gating_worktree-pipeline_step9_re_gate_rule" {
+  grep -qiF 'Re-gate after review fixes' "$WP"
+  grep -qiF 'gate once on the fixed tree' "$WP"
+}
+
+@test "tier3_gating_worktree-pipeline_step10_tier_full_citation" {
+  grep -qF 'GATE <short-sha> tier=full' "$WP"
+  grep -qiF 'never satisfies this citation' "$WP"
+}
+
+@test "tier3_gating_worktree-pipeline_step9_unconditional_review_unchanged" {
+  grep -qF 'Step 9 code review' "$WP"
+  grep -qF '(unconditional) backstops' "$WP"
+}

@@ -132,14 +132,21 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    (`plan-execution-skill` --gate) **inside the worktree** — always pass the
    explicit PLAN path, never rely on branch-name auto-detect. Plan review
    happened upstream in Step 7 — the executor must not re-review. Gate
-   sequence, pass semantics, and memo format come from
-   `verification-loop-skill` §The gate contract (this skill defines none of
-   them); the executor commits + pushes per phase and writes the gate memo.
+   sequence, tier selection (light default per phase; full per
+   `verification-loop-skill` §Tiered gating), pass semantics, and memo
+   format come from `verification-loop-skill` §The gate contract (this
+   skill defines none of them); the executor commits + pushes per phase and
+   writes the gate memo, and the run's last gate — the **ticket exit
+   gate** — is full.
 9. **Code review**: `code-review-subagent` has `bash: deny` — **you compute
    the diff** (`git diff origin/<base>...feat/<KEY>` and `--stat`) and embed
    it (file list + hunks) in the Task prompt. Fix findings: severity ≥
-   Major mandatory; Minor by judgment. Relay any non-empty
-   `Requirements Gaps` array per Step 7's relay rule before fixing.
+   Major mandatory; Minor by judgment. **Re-gate after review fixes**: fix
+   commits land after the exit gate, so before pushing a fix commit re-run
+   the **full** gate once on the fixed tree and append its `tier=full` memo
+   line — the final pushed SHA must carry a green `tier=full` memo (a
+   review-fix push without one breaks Step 10's citation). Relay any
+   non-empty `Requirements Gaps` array per Step 7's relay rule before fixing.
    **LEARNINGS capture is yours, not the reviewer's**: reviewers have no
    write access — they return LEARNINGS candidates as report content (a
    `LEARNINGS candidates:` block). For each candidate, write
@@ -152,9 +159,10 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    fix-and-re-review iterations** — exhaustion → halt per §Failure Policy.
 10. **PR + cleanup**: `pr-workflow-subagent` creates the PR **target
     `<base>`** — the Task prompt MUST state gates are green by citing the
-    final `GATE <short-sha> …` memo line for the pushed SHA from the PLAN
+    final `GATE <short-sha> tier=full` memo line for the pushed SHA from the PLAN
     trace block (that citation IS the pipeline-mode gate memo per
-    `verification-loop-skill` §Gate memo) and instruct it to skip its
+    `verification-loop-skill` §Gate memo); a `tier=light` line is phase
+     evidence and never satisfies this citation) and instruct it to skip its
     steps 2 / 2.5 / 3 / 4: run-plan verified the gate per phase, docstrings
     were filled before the gate, coverage badges
     stay out (README must not change after Step 9 review — CI carries the

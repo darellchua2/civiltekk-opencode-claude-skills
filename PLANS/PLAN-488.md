@@ -10,7 +10,7 @@ _Inherited verbatim from #488 — the PLAN never rewrites ticket AC._
 
 - [x] `verification-loop-skill` §The gate contract defines the two tiers, escalation anchors, the unsure→full rule, and the tier memo marker (canonical — other surfaces defer, no restating)
 - [x] `plan-execution-skill` 4c: light gate is the per-phase default; full gate on anchor hit / judgment / ticket exit gate; escalation reasons go to the WORK LOG; no logging for the light default
-- [ ] `worktree-pipeline-skill`: Step 8 references tiered gating; Step 9 review-fix commits trigger one full re-gate; Step 10's green citation requires the `tier=full` GATE line
+- [x] `worktree-pipeline-skill`: Step 8 references tiered gating; Step 9 review-fix commits trigger one full re-gate; Step 10's green citation requires the `tier=full` GATE line
 - [ ] Memo-format consumers (`pr-workflow-subagent`, `pr-creation-workflow-skill`) grepped and updated or verified compatible with the tier marker
 - [ ] Full gate runs the full unit suite; light gate runs affected tests only
 - [ ] Unchanged: never-push-red, CI as only unconditional re-run, unconditional Step 9 code review
@@ -73,22 +73,26 @@ _Every step is atomic and carries rationale. Any step missing a field is malform
 
 ### Phase 3: Orchestrator integration (worktree-pipeline-skill)
 
-- [ ] **3.1** Step 8: state that the executor runs tiered gates per the verification-loop contract and that the ticket exit gate is full
+- [x] **3.1** Step 8: state that the executor runs tiered gates per the verification-loop contract and that the ticket exit gate is full
     — **Why:** the orchestrator owns sequencing semantics; its wording currently describes the executor gate without tiers
     — **Done when:** Step 8 defers to the contract and names the exit gate, without restating anchor lists
     — **Consumers affected:** pipeline runs; Step 10 citation chain
-- [ ] **3.2** Step 9: review-fix commits trigger exactly one full re-gate (memo line recorded for the final pushed SHA) before the fix commit is pushed
+    — **Done:** Step 8 now defers tier selection to verification-loop §Tiered gating and names the ticket exit gate as full; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **3.2** Step 9: review-fix commits trigger exactly one full re-gate (memo line recorded for the final pushed SHA) before the fix commit is pushed
     — **Why:** closes the latent hole where review fixes land on a SHA that was never gated, weakening the Step 10 citation
     — **Done when:** Step 9 text contains the re-gate rule and ties the memo line to the pushed SHA
     — **Consumers affected:** Step 10 green assertion; PR merge decision
-- [ ] **3.3** Step 10: the PR Task prompt's gate citation must reference the `tier=full` GATE line for the pushed SHA
+    — **Done:** re-gate rule added: fix commits re-run the full gate once on the fixed tree and append a tier=full memo line before push; fixes: none
+- [x] **3.3** Step 10: the PR Task prompt's gate citation must reference the `tier=full` GATE line for the pushed SHA
     — **Why:** PR-time assertion strength — a tier=light line must not satisfy the pipeline's green claim
     — **Done when:** Step 10 wording requires the tier=full line
     — **Consumers affected:** pr-workflow-subagent Task prompt; PR creation flow
-- [ ] **3.4** Extend `tests/test_tiered_gating.bats` with worktree-pipeline assertions: exit-gate reference in Step 8, re-gate rule in Step 9, tier=full citation in Step 10, and Step 9's unconditional code-review backstop reference (Phase 3 edits Step 9 itself)
+    — **Done:** Step 10 citation now requires the `GATE <short-sha> tier=full` line; tier=light explicitly never satisfies it; fixes: none
+- [x] **3.4** Extend `tests/test_tiered_gating.bats` with worktree-pipeline assertions: exit-gate reference in Step 8, re-gate rule in Step 9, tier=full citation in Step 10, and Step 9's unconditional code-review backstop reference (Phase 3 edits Step 9 itself)
     — **Why:** pin orchestrator behavior symmetrically with the other two surfaces, including the invariant its own edits could break
     — **Done when:** assertions pass standalone; mutation checks (deleting the Step 9 re-gate sentence, deleting the unconditional-review backstop clause) each fail at least one
     — **Consumers affected:** CI bats suite
+    — **Done:** 4 new assertions (18 total green); mutation checks: re-gate-sentence deletion and backstop-clause deletion each fail tests, restore green; fixes: exit-gate assertion made wrap-tolerant after the phrase wrapped across markdown lines (caught by its own failing assertion)
 
 ### Phase 4: Memo-consumer sweep + suite green
 
