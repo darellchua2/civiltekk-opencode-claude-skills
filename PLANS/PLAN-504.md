@@ -27,7 +27,7 @@ Single-node map: docs-only edit to one skill body; no code, no cross-module cons
     — **Consumers affected:** model runtime at 6a step 4
 
 ### Phase 2: 6b payload spec (BRD/SRS link prompt) + exit gate
-- [ ] **2.1** In §6b, replace the prose-only "ask the user (via `question`) whether to link one" bullet with the same-shape fenced json payload including an explicit decline option ("Skip — no link"), mirroring `skills/git-branch-workflow-setup-skill/SKILL.md` §Question Tool Spec field-for-field
+- [x] **2.1** In §6b, replace the prose-only "ask the user (via `question`) whether to link one" bullet with the same-shape fenced json payload including an explicit decline option ("Skip — no link"), mirroring `skills/git-branch-workflow-setup-skill/SKILL.md` §Question Tool Spec field-for-field
     — **Why:** same freehand risk; the decline option encodes the existing "Declined/absent → empty path" behavior so the payload alone carries the full decision tree
     — **Done when:** §6b contains a json block with `question`, `header`, `multiple`, and a decline option whose label matches the skip semantics; shape matches the git-branch-workflow spec (same keys, same nesting)
     — **Consumers affected:** model runtime at 6b

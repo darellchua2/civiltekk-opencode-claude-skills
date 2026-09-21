@@ -246,7 +246,32 @@ Document-ladder order: **BRD first, then SRS**. For each:
 ls docs/brd/BRD-draft-*.md 2>/dev/null   # then docs/srs/SRS-draft-*.md
 ```
 
-If drafts found, ask the user (via `question`) whether to link one:
+If drafts found, ask the user (via `question`) whether to link one, using this
+payload shape (instantiate `<BRD|SRS>` and the draft name per ladder order):
+
+```json
+{
+  "questions": [
+    {
+      "question": "Found <BRD|SRS> draft(s). Link one to this ticket's PLAN?",
+      "header": "Draft linking",
+      "multiple": false,
+      "options": [
+        {
+          "label": "Link <draft-name>",
+          "description": "Rename the draft to the <BRD|SRS>-<key> form, repoint its **PLAN**: header, and record the path for 6c header injection."
+        },
+        {
+          "label": "Skip — no link",
+          "description": "Leave drafts in place; continue with an empty doc path (backward-compatible)."
+        }
+      ]
+    }
+  ]
+}
+```
+
+On link:
 - Rename: `git mv docs/brd/BRD-draft-{slug}.md docs/brd/BRD-{key}.md`
   (plain `mv` + `git add` if untracked); same for SRS.
 - Update the doc header `**PLAN**:` placeholder to `PLANS/PLAN-{key}.md`.
