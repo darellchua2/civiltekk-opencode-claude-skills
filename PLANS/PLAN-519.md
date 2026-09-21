@@ -4,59 +4,77 @@
 **Issue**: https://github.com/darellchua2/opencode-config-template/issues/519
 **Base**: main
 
+> Rev 2 — amended after architecture review (BLOCK 1: governance skill
+> contradiction; WARN 1: head-class detection; WARN 2: `--check` registry gate;
+> WARN 3: positive pins) and requirements relay (4/4 confirmed, 2 amended).
+> Deviations from the ticket's original wording are recorded in the ticket body
+> and mirrored here: head-class detection; scope expansion to
+> `semantic-release-convention-skill`.
+
 ## Acceptance Criteria
-- [ ] Phase 1 merge step branches on base-branch class; promotion bases use `--merge`, never `--squash`
-- [ ] CI-fix path (Step 3b) follows the same base-branch rule
+- [ ] Phase 1 branches on head-branch class: long-lived head ⇒ `--merge`; all other heads ⇒ `--squash`, regardless of base
+- [ ] Step 3b invokes the same head-class classifier (`fix/ci-*` head ⇒ squash) — the hardcoded `--squash` is removed
 - [ ] One-line rationale documented in SKILL.md
-- [ ] `node installer/build-registry.mjs` run and `registry.json` committed with the change
-- [ ] Redeployed via `./deploy/setup.sh` so `~/.config/opencode/` receives the fix
+- [ ] `semantic-release-convention-skill` squash-all mandates (:18, :126, :196-214, :388, :401) aligned to the two-tier doctrine; settings recommendation flipped to "Allow merge commits: Yes"
+- [ ] Explicit-user-instruction escape hatch documented: bidirectional, SHA-divergence warning required for forced squash on promotions, never applied autonomously
+- [ ] `node installer/build-registry.mjs --check` exits 0 (no drift); commit `installer/registry.json` only if drift is detected
+- [ ] Scoped bats green (`test_default_behavior`, `test_skill_isolation`, `test_autoresearch_protocol`); full `bats tests/` green at the exit gate
+- [ ] Redeployed via `./deploy/setup.sh`; deployed copies carry the head-class rule
 
 ## Dependency & Consumer Map
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `skills/pr-merge-workflow-skill/SKILL.md` (body) | — | primary sessions ("merge the PR" / "pr merge to [branch]"), `pr-workflow-subagent` (merge phase), `worktree-pipeline-skill` Step 10 (merge decision routed through pr-workflow-subagent) | med — behavioral prose; wrong merge method on promotion branches recreates the betekk-keycloak incident |
-| `registry.json` (generated) | SKILL.md frontmatter must be final | installer (`init.mjs` / `npx … add`) reads it | low — body-only edits should produce no diff; a diff means accidental frontmatter damage |
+| `skills/pr-merge-workflow-skill/SKILL.md` (body) | — | primary sessions ("merge the PR"), `pr-workflow-subagent` (merge phase), `worktree-pipeline-skill` Step 10 (merge decision routed through pr-workflow-subagent) | med — behavioral prose; wrong merge method on promotion merges recreates the betekk-keycloak incident |
+| `skills/semantic-release-convention-skill/SKILL.md` (body) | 1.1's head-class definition + long-lived list (copied verbatim — single source, then copied) | repos following its governance doctrine; semantic-release changelog flow (feature/fix squash preserved, so conventional-commit-per-PR guarantee holds) | med — five squash-all locations must move together or the file self-contradicts |
+| `tests/test_default_behavior.bats`, `tests/test_autoresearch_protocol.bats` | pin `pr-merge-workflow-skill` structure (Iteration Protocol preamble only — grep-verified, no merge-command assertions) | CI | low — body edits away from the preamble cannot break them |
+| `installer/registry.json` (generated) | both SKILL.md frontmatters final | installer (`init.mjs` / `npx … add`) | low — body-only edits ⇒ zero drift expected; `--check` proves it |
 
 ## Implementation Phases
 
-### Phase 1: Base-branch merge-method policy in SKILL.md
-- [ ] **1.1** Rewrite Phase 1 step 3 of `skills/pr-merge-workflow-skill/SKILL.md`: classify the PR base before merging — promotion/long-lived bases (`uat`, `main`/`master`, `prod`, `staging`, `release/*`) merge with `gh pr merge <number> --merge --delete-branch=false` only and squash is forbidden; feature/dev bases keep `--squash` as default; include the one-line rationale (squash duplicates content under new SHAs so promotion branches never converge — betekk-keycloak PRs #55/#72)
-    — **Why:** root cause of the verified incident: the unconditional squash default flattened dev→uat promotions, leaving uat 9 commits ahead with orphan artifacts
-    — **Done when:** `grep -n 'merge using squash (default)' skills/pr-merge-workflow-skill/SKILL.md` finds nothing and `grep -n 'release/\*' skills/pr-merge-workflow-skill/SKILL.md` finds the base-class rule
+### Phase 1: Head-class merge-method policy
+- [ ] **1.1** Rewrite Phase 1 step 3 of `skills/pr-merge-workflow-skill/SKILL.md`: classify by HEAD branch before merging — long-lived heads (`main`, `master`, `dev`, `develop`, `production`, `prod`, `uat`, `staging`, `stage`, `preprod`, `pre-dev`, `qa`, `test`, `integration`, `release/*`) merge with `gh pr merge <number> --merge --delete-branch=false` only; all other heads (feature/*, fix/*, hotfix/*, chore/*) keep `gh pr merge <number> --squash --delete-branch=false` regardless of base; add the one-line rationale (squash duplicates content under new SHAs when the head branch survives the merge, so promotion branches never converge — betekk-keycloak PRs #55/#72) and the escape hatch (explicit user instruction for that specific PR overrides in either direction; forced squash on a promotion requires a prior SHA-divergence warning; the autonomous loop in Step 3b never uses it)
+    — **Why:** root cause of the verified incident: the unconditional squash default flattened dev→uat promotions (head=dev), leaving uat 9 commits ahead with orphan artifacts; head-class is the true discriminator because the harm requires the head branch to survive the merge
+    — **Done when:** `grep -c 'long-lived' skills/pr-merge-workflow-skill/SKILL.md` ≥ 2 (classifier + rationale), `grep -c 'merge using squash (default)'` = 0, and `grep -c 'SHA diverg'` ≥ 1 (hatch warning present — positive pin, deletion test fails)
     — **Consumers affected:** pr-workflow-subagent merge phase; primary sessions running PR merges; worktree-pipeline Step 10
-- [ ] **1.2** Rewrite the Step 3b CI-fix merge command (currently unconditional `--squash --delete-branch`) to apply the same base-branch rule (promotion base → `--merge`; feature/dev base → `--squash`)
-    — **Why:** the auto-fix path would otherwise reintroduce the squash default through the back door on promotion branches
-    — **Done when:** `grep -n 'squash --delete-branch$' skills/pr-merge-workflow-skill/SKILL.md` returns no unconditional match outside the feature/dev branch of the rule
+- [ ] **1.2** Replace the Step 3b hardcoded merge command (`gh pr merge <number> --squash --delete-branch`) with the same head-class classifier — `fix/ci-*` heads resolve to squash, so autonomous CI-fix behavior is unchanged; add a line that the escape hatch never applies inside this autonomous loop
+    — **Why:** the auto-fix path would otherwise reintroduce the squash default through the back door on promotion merges, and the classifier must be single-sourced
+    — **Done when:** the Step 3b block contains a `--merge` reference via the classifier (positive pin: `grep -c 'head-class\|head branch' ` over the Step 3b section ≥ 1) and no bare unconditional `--squash --delete-branch` remains outside the feature-head branch of the rule
     — **Consumers affected:** same as 1.1
+- [ ] **1.3** Align `skills/semantic-release-convention-skill/SKILL.md` to the same two-tier doctrine at all five squash-all locations (:18 merge-strategy line, :126, :196-214 §4 including flipping the repo-settings recommendation to "Allow merge commits: **Yes** (required for promotions)", :388, :401), reusing 1.1's head-class definition and long-lived list verbatim; feature/fix squash-merge stays the doctrine for conventional-commit-per-PR changelog integrity
+    — **Why:** BLOCK 1 — it is a self-declared governance skill ("other skills and agents MUST follow"); left as-is it contradicts the new rule and its "Allow merge commits: No" recommendation would defeat the fix at the GitHub-settings level
+    — **Done when:** `grep -n 'All PRs are merged using' skills/semantic-release-convention-skill/SKILL.md` returns 0 matches and `grep -c 'long-lived' skills/semantic-release-convention-skill/SKILL.md` ≥ 1 and `grep -c 'Allow merge commits' skills/semantic-release-convention-skill/SKILL.md` ≥ 1
+    — **Consumers affected:** repos applying the governance skill's settings checklist; semantic-release changelog flow (unchanged for feature/fix heads)
 
-### Phase 2: Registry sync + verification gates
-- [ ] **2.1** Run `node installer/build-registry.mjs`; commit `registry.json` only if it changed
-    — **Why:** frontmatter contract requires registry sync; body-only edits should yield zero diff, which doubles as proof the frontmatter was not touched
-    — **Done when:** command exits 0 and `git status --porcelain registry.json` is empty after (committed or unchanged)
+### Phase 2: Registry drift check + verification gates + redeploy
+- [ ] **2.1** Run `node installer/build-registry.mjs --check`; on non-zero exit, inspect the drift, fix the frontmatter regression, and commit `installer/registry.json`
+    — **Why:** `--check` normalizes `generatedAt` while a plain run churns it (documented anti-pattern, recurrence #4); body-only edits must yield zero drift, which doubles as proof both frontmatters are untouched
+    — **Done when:** `node installer/build-registry.mjs --check` exits 0 and `git status --porcelain installer/registry.json` is empty
     — **Consumers affected:** installer `init.mjs` / `npx … add` flow
-- [ ] **2.2** Run scoped gate: `bats tests/test_default_behavior.bats tests/test_skill_isolation.bats`
-    — **Why:** these suites assert this skill's Iteration Protocol preamble and copy fidelity — the two guards closest to the edited file
+- [ ] **2.2** Run scoped gate: `bats tests/test_default_behavior.bats tests/test_skill_isolation.bats tests/test_autoresearch_protocol.bats`
+    — **Why:** these three suites pin this skill's Iteration Protocol preamble, vendored-copy fidelity, and opt-in metadata — the guards closest to the edited files
     — **Done when:** exit 0
     — **Consumers affected:** CI
 - [ ] **2.3** Run full exit gate: `bats tests/`
-    — **Why:** ticket exit gate must be tier=full per verification-loop-skill; the final pushed SHA must carry a green full-tier memo
+    — **Why:** the ticket exit gate must be tier=full per verification-loop-skill; the final pushed SHA must carry a green full-tier memo
     — **Done when:** exit 0 across all 39 suites
     — **Consumers affected:** CI; Step 9/10 citations
-- [ ] **2.4** Redeploy: `./deploy/setup.sh` and verify the new rule landed in the deployed copy
+- [ ] **2.4** Redeploy: `./deploy/setup.sh` and verify both deployed copies carry the new doctrine
     — **Why:** deployed `~/.config/opencode/` copies are what sessions actually load; AC is not met until they carry the fix
-    — **Done when:** `grep -c 'release/\*' ~/.config/opencode/skills/pr-merge-workflow-skill/SKILL.md` ≥ 1
-    — **Consumers affected:** all future sessions using the merge skill
+    — **Done when:** `grep -c 'long-lived' ~/.config/opencode/skills/pr-merge-workflow-skill/SKILL.md` ≥ 1 and `grep -c 'Allow merge commits' ~/.config/opencode/skills/semantic-release-convention-skill/SKILL.md` ≥ 1
+    — **Consumers affected:** all future sessions using either skill
 
 ## Technical Notes
-- Incident evidence (verified 2026-09-21): betekk-keycloak dev→uat PRs #55 and #72 squash-merged; `compare/dev...uat` shows uat 9 commits ahead, ~5 orphan artifacts; workarounds: surgical promotion (PLAN-DA-2457), reconciliation PR #69, promotion train (PR #72/#76).
-- Companion ticket: JIRA DA-2830 (repo-side policy + uat→dev backflow in betekk-keycloak, separate repo/pipeline run).
-- `worktree-pipeline-skill` and `agents/pr-workflow-subagent.md` contain no merge-method defaults of their own (grep-verified) — no edits there.
+- Incident evidence (verified 2026-09-21): betekk-keycloak dev→uat PRs #55 and #72 squash-merged (head=dev); `compare/dev...uat` shows uat 9 commits ahead, ~5 orphan artifacts; workarounds: surgical promotion (PLAN-DA-2457), reconciliation PR #69, promotion train (PR #72/#76).
+- Head-class rationale (requirements relay GAP 1, confirmed): SHA divergence requires the head branch to survive the merge; a feature head dies post-merge, so squash is safe even into main.
+- Companion ticket: JIRA DA-2830 (betekk-keycloak repo-side AGENTS.md policy + uat→dev backflow; separate repo/pipeline run).
+- `worktree-pipeline-skill` and `agents/pr-workflow-subagent.md` own no merge-method default (verified); `repo-ops-specialist-subagent` merges generically — no edit.
 
 ## Dependencies
 None external. Companion DA-2830 runs in a separate repo and does not block this change.
 
 ## Risks & Mitigation
-- Skill prose drift breaking bats guards → scoped gate 2.2 catches immediately; guards assert only the Iteration Protocol preamble, not merge commands (grep-verified before authoring).
-- Redeploy overwrites unrelated user-space state → `./deploy/setup.sh` is the sanctioned idempotent path (house rule: never edit deployed copies).
-- Registry accidentally embedding body text → 2.1's zero-diff expectation surfaces it at once.
+- Two skills drifting apart again → 1.3 copies 1.1's definition verbatim; both done-whens grep the same `long-lived` marker.
+- Governance rewrite breaking semantic-release changelog expectations → 1.3 preserves feature/fix squash-merge explicitly; scoped gate 2.2 + full gate 2.3 confirm no pinned structure breaks.
+- Redeploy overwriting unrelated user-space state → `./deploy/setup.sh` is the sanctioned idempotent path (house rule: never edit deployed copies).
+- Escape hatch re-opening the incident if loosely worded → explicit per-PR instruction only, mandatory SHA-divergence warning, never autonomous (1.1/1.2 wording).
