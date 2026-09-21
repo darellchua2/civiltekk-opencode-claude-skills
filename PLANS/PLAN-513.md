@@ -98,3 +98,4 @@
 GATE f501f70 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
 GATE f501f70 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 Note: lint axis = /tmp-literal + declaration probes (zeroed/4-of-4) + frontmatter validation via build-registry substitute. Later PLAN-only commits are tree-equivalent to f501f70 content; CI is the unconditional re-run.
+GATE 0f0e352 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (post-content-commit re-gate — supersedes the f501f70 equivalence note above)
