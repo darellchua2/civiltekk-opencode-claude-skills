@@ -62,3 +62,4 @@ None — single ticket, no `blocked-by`.
 ## Gate Trace
 GATE c0e1e62 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: provider_pins+provider_regen) e2e=n.a
 GATE 1808bcf tier=full lint=n.a typecheck=n.a build=n.a unit=t(bats tests/ 529/529) e2e=n.a
+GATE dd693bf tier=full lint=n.a typecheck=n.a build=n.a unit=t(bats tests/ 529/529) e2e=n.a — post-review-fix re-gate (confidence-field sync, index separator, partial-refresh recurrence evidence)
