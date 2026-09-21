@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.27.2](https://github.com/darellchua2/opencode-config-template/compare/v9.27.1...v9.27.2) (2026-09-21)
+
+### Bug Fixes
+
+* **deploy:** install OpenCode v2 via @opencode/cli instead of frozen v1 opencode-ai ([#499](https://github.com/darellchua2/opencode-config-template/issues/499)) ([#500](https://github.com/darellchua2/opencode-config-template/issues/500)) ([17e53ca](https://github.com/darellchua2/opencode-config-template/commit/17e53ca78957148147a27d572edc1f27b66504e2))
+
 ## [9.27.1](https://github.com/darellchua2/opencode-config-template/compare/v9.27.0...v9.27.1) (2026-09-21)
 
 ### Bug Fixes
