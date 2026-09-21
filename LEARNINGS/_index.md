@@ -1146,3 +1146,24 @@
 - Searchable memory: `memory` tool (primary for quick retrieval)
 
 **Naming convention:** Use descriptive slugs (e.g., `event-driven-modules.md`), not dated or numbered prefixes. The category is determined by the subfolder.
+
+- **Category**: convention
+- **File**: `conventions/merge-method-by-head-branch-class.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: PR merge method is classified by head-branch class — long-lived heads (main/dev/uat/staging/release/*, …) merge with `--merge`, short-lived heads squash regardless of base; squash on a surviving head duplicates content under new SHAs so promotion branches never converge (betekk-keycloak #55/#72: uat 9 ahead of dev); per-PR user override with SHA-divergence warning only, never autonomous (#519)
+- **Date**: 2026-09-21
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/exact-match-branch-taxonomy-fallthrough.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: exact-match branch enumerations in agent-facing classifiers fall through on plausible variants (bare `release`, `development`, case diffs) into the unsafe default arm — pair every list with missing siblings, an explicit "exact + case-sensitive" statement, and a fall-through heuristic favoring the safe arm (#519)
+- **Date**: 2026-09-21
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/orchestrator-embedded-facts-are-claims.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: "pre-verified repo facts" in review briefs are claims — #519's brief asserted no merge-method defaults elsewhere while semantic-release-convention-skill carried 9 squash directives incl. a governance MUST; reviewers re-run the one grep before relying on embedded negatives, and briefs state claims with the producing command (#519)
+- **Date**: 2026-09-21
