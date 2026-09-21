@@ -83,18 +83,21 @@ Cross-module consumers exist (`resolve-models.mjs`, regen script, tests) → arc
     — **Done:** glm-4.5v + glm-4.6v removed from `zai`; `$comment` NOTE replaced by one no-roster standardization sentence ("pre-5.3 vision models deliberately absent"); glm-5.3/glm-4.7-flash/glm-5.3-flashx verified present; files: installer/provider-models.json; fixes: comment reworded once to drop model-name roster (first draft self-hit the 6.1 gate)
 
 ### Phase 5: Older-vision-model purge in prose (scope expansion)
-- [ ] **5.1** Update `agents/error-resolver-subagent.md`: drop the "Do NOT invoke `glm-4.6v-flash` (that free endpoint was retired due to rate-limiting);" clause — with the model class purged everywhere, the warning has no referent and the surrounding "no external vision API" statement already governs.
+- [x] **5.1** Update `agents/error-resolver-subagent.md`: drop the "Do NOT invoke `glm-4.6v-flash` (that free endpoint was retired due to rate-limiting);" clause — with the model class purged everywhere, the warning has no referent and the surrounding "no external vision API" statement already governs.
     — **Why:** last prose mention of a pre-5.3 vision model in agents/.
     — **Done when:** `grep -cE "glm-4\.5v|glm-4\.6v" agents/error-resolver-subagent.md` returns 0 and the glm-5.3-flash fallback reference from 1.2 is intact.
     — **Consumers affected:** none (self-contained prose).
-- [ ] **5.2** Rewrite `MIGRATION.md` "Default tier models" blockquote to current reality: vision tier = `zai-coding-plan/glm-5.3-flash` native multimodal (image-analyzer/error-resolver/uiux-reviewer/zai-media), `zai-vision-analysis-skill` removed (GIT-364), exposed-model guard sentence preserved.
+    — **Done:** 4.6v clause dropped, fallback reference intact; files: agents/error-resolver-subagent.md; fixes: none
+- [x] **5.2** Rewrite `MIGRATION.md` "Default tier models" blockquote to current reality: vision tier = `zai-coding-plan/glm-5.3-flash` native multimodal (image-analyzer/error-resolver/uiux-reviewer/zai-media), `zai-vision-analysis-skill` removed (GIT-364), exposed-model guard sentence preserved.
     — **Why:** the block still claims vision runs on `docs` (`glm-4.7`) + the removed skill + opt-in `zai/glm-4.6v` — three generations stale; upgraders following it misconfigure.
     — **Done when:** `grep -cE "glm-4\.5v|glm-4\.6v|glm-5v" MIGRATION.md` returns 0 and the block names `glm-5.3-flash` as the vision tier.
     — **Consumers affected:** users migrating older installs.
-- [ ] **5.3** Update `README.md` historical skills-count narrative (~L611): drop "free `glm-4.6v-flash`" from the `zai-vision-analysis-skill` mention (keep the narrative and counts).
+    — **Done:** block rewritten to vision-tier reality (#349/#372, GIT-364 note, guard sentence kept); files: MIGRATION.md; fixes: none
+- [x] **5.3** Update `README.md` historical skills-count narrative (~L611): drop "free `glm-4.6v-flash`" from the `zai-vision-analysis-skill` mention (keep the narrative and counts).
     — **Why:** live README prose must not advertise the retired model.
     — **Done when:** `grep -cE "glm-4\.6v" README.md` returns 0.
     — **Consumers affected:** repo readers; none functional.
+    — **Done:** model name dropped from the count narrative, counts intact; files: README.md; fixes: none
 
 ### Phase 6: Verification + registry sync
 - [ ] **6.1** Repo-wide purge proof: `grep -rniE "5v[-_]?turbo|glm-4\.5v|glm-4\.6v" . --exclude-dir=.git --exclude-dir=PLANS` — case-insensitive, variant-tolerant, excluding `.git/` and the tracked plan file itself (historical record; it must name the tokens to specify the purge).
@@ -124,6 +127,7 @@ GATE 54cb78a tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 GATE a83a00b tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 GATE a58c09f tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 GATE 4afd089 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: provider_pins+provider_regen, 14 ok) e2e=n.a
+GATE 7c0b49b tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 
 ## Plan-Review Adjudications (architecture review, 2026-09-21)
 - **Purge gate vs the plan file itself (MAJOR, fixed):** `PLANS/PLAN-516.md` is git-tracked and persists post-merge (precedent: `PLANS/PLAN-507.md`), yet must name the token to describe the purge. AC#2 / step 5.1 therefore exclude `--exclude-dir=PLANS` and harden to `grep -rniE "5v[-_]?turbo"`.
