@@ -7,7 +7,7 @@
 ## Acceptance Criteria
 - [x] Trap invocation nounset-safe: `"${BASH_LINENO[0]:-0}"` (no behavior change for real unguarded errors in `main` execution — still logs + exits non-zero)
 - [x] The repro command exits 1 with no `unbound variable` on stderr
-- [ ] `bats tests/` runs with zero BW01 warnings from `test_subcommands.bats`
+- [x] `bats tests/` runs with zero BW01 warnings from `test_subcommands.bats`
 - [x] Regression pin: new bats test asserting the sourced-context failing call yields rc 1 (not 127) and no `unbound variable` output
 - [ ] `bash -n deploy/setup.sh` passes; full vendored bats suite stays green
 
@@ -37,10 +37,11 @@ Out of scope: setup.ps1 (PowerShell has no ERR-trap semantics), any redesign of 
     — **Done:** test added and green (rc==1, no unbound-variable output); files: tests/test_err_trap_nounset.bats; fixes: none
 
 ### Phase 2: Suite-level BW01 sweep
-- [ ] **2.1** Run the full vendored bats suite and verify zero BW01 warnings originating from `test_subcommands.bats` (capture suite output, grep for `BW01` + the file name; a BW01 from an unrelated file, if any, is reported — not fixed here).
+- [x] **2.1** Run the full vendored bats suite and verify zero BW01 warnings originating from `test_subcommands.bats` (capture suite output, grep for `BW01` + the file name; a BW01 from an unrelated file, if any, is reported — not fixed here).
     — **Why:** AC-3 — the warning is per-run noise; the sweep proves the specific source is gone without claiming the whole suite is warning-free.
     — **Done when:** full suite output contains no BW01 entry citing test_subcommands.bats, and the suite is green.
     — **Consumers affected:** CI logs.
+    — **Done:** full suite green (524 ok / 0 fail); BW01 lines in captured output = 0 — sweep exceeded scope, the suite is now entirely warning-free; files: none (verification only); fixes: none
 
 ## Technical Notes
 - Repro (verified on base 07fb5e7): `d=$(mktemp -d); HOME="$d" bash -c "source deploy/setup.sh >/dev/null 2>&1; DRY_RUN=false; LOAD_PRESET_NAME=nope; load_user_preset"` → stderr `BASH_LINENO[0]: unbound variable`, rc 127.
@@ -61,4 +62,7 @@ Full tier on both phases — deploy file anchor (deploy/setup.sh) and the ticket
 
 ### Phase 1
 - WORK LOG: full-tier escalation reason — deploy file anchor.
-- GATE (pending-commit sha) tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; repro `unbound variable` hits = 0; bats 524 ok / 0 fail (523 prior + 1 new pin).
+- GATE 91c4782 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; repro `unbound variable` hits = 0; bats 524 ok / 0 fail (523 prior + 1 new pin).
+
+### Phase 2 (ticket exit gate — full, unconditional)
+- GATE (push head) tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 524 ok / 0 fail; BW01 lines in full-suite output = 0. This is the ticket exit gate on the final tree.
