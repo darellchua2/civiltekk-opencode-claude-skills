@@ -89,6 +89,18 @@ This subagent runs headlessly — the `question` tool is `deny`'d in the frontma
 **ERROR message when no template supplied:**
 > "No template supplied. Provide a .pptx path to use as the Slide Master template. The engine does not ship a bundled default — every deck is generated against a user-supplied template so the output inherits that template's branding, layouts, and theme."
 
+## Skill Environment (mandatory before any pipeline python)
+
+Snippets resolve the three pptx skills via env vars — **export once per session** (loader/base-dir values from your install):
+
+```bash
+export TEMPLATE_SKILL_DIR=~/.config/opencode/skills/pptx-generate-template-skill
+export SLIDE_SKILL_DIR=~/.config/opencode/skills/pptx-generate-slide-skill
+export MODIFIER_SKILL_DIR=~/.config/opencode/skills/pptx-template-modifier-skill
+```
+
+Missing exports fail loud (`KeyError`) by design.
+
 ## Generation Pipeline
 
 ```
@@ -106,7 +118,7 @@ Stage 6  Return result + (interactive only) post-generation refinement question
 
 ```bash
 python -c "
-import sys; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
+import sys, os; sys.path.insert(0, os.path.join(os.environ['TEMPLATE_SKILL_DIR'], 'scripts', '_common'))
 from schema_extractor import read_embedded_schema, TemplateExtractionError
 tpl = '<USER_TEMPLATE_PATH>'
 try:
@@ -124,8 +136,8 @@ If `NOT_TEMPLATED`, tell the user: *"No template JSON found — extracting first
 
 ```bash
 python -c "
-import sys
-sys.path.insert(0, '.opencode/skills/pptx-generate-slide-skill/scripts')
+import sys, os
+sys.path.insert(0, os.path.join(os.environ['SLIDE_SKILL_DIR'], 'scripts'))
 from pptx import Presentation
 prs = Presentation('<USER_TEMPLATE_PATH>')
 layouts = list(prs.slide_layouts)
@@ -159,8 +171,8 @@ The orchestrator's responsibility ends with rendering + dispatching + aggregatin
 
 ```bash
 python -c "
-import sys, json
-sys.path.insert(0, '.opencode/skills/pptx-template-modifier-skill/scripts')
+import sys, json, os
+sys.path.insert(0, os.path.join(os.environ['MODIFIER_SKILL_DIR'], 'scripts'))
 from vision_extractor import render_slides_to_pngs, build_image_analyzer_prompt
 pngs = render_slides_to_pngs('<SOURCE_PPTX>')
 for i, p in enumerate(pngs):
@@ -198,7 +210,7 @@ Convert outline to full `slide_data_list` JSON. Body text format: `**Bold Title*
 **Validation (MANDATORY):**
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-slide-skill/scripts')
+import sys, json, os; sys.path.insert(0, os.path.join(os.environ['SLIDE_SKILL_DIR'], 'scripts'))
 from schema_validator import validate_slide_data_list
 data = <JSON_ARRAY>
 res = validate_slide_data_list(data, strict=True, density_mode='<EFFECTIVE_DENSITY>')
@@ -214,8 +226,8 @@ If `INVALID`, fix and re-validate. Do not proceed until `VALID`.
 **Pre-check overflow** before rendering:
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-slide-skill/scripts')
-sys.path.insert(0,'.opencode/skills/pptx-generate-slide-skill/scripts/_common')
+import sys, json, os; sys.path.insert(0, os.path.join(os.environ['SLIDE_SKILL_DIR'], 'scripts'))
+sys.path.insert(0, os.path.join(os.environ['SLIDE_SKILL_DIR'], 'scripts', '_common'))
 from overflow_check import overflow_check, slides_to_question_payload
 from layout_contract import get_render_contract
 contract = get_render_contract('<TEMPLATE_PATH>')
@@ -239,10 +251,10 @@ Then render (the only allowed way to produce the file):
 **Default path** (≤8 distinct target layouts, single-image single-body slides):
 ```bash
 python -c "
-import sys, json
-sys.path.insert(0, '.opencode/skills/pptx-template-modifier-skill/scripts')
-sys.path.insert(0, '.opencode/skills/pptx-generate-slide-skill/scripts')
-sys.path.insert(0, '.opencode/skills/pptx-template-modifier-skill/scripts/_common')
+import sys, json, os
+sys.path.insert(0, os.path.join(os.environ['MODIFIER_SKILL_DIR'], 'scripts'))
+sys.path.insert(0, os.path.join(os.environ['SLIDE_SKILL_DIR'], 'scripts'))
+sys.path.insert(0, os.path.join(os.environ['MODIFIER_SKILL_DIR'], 'scripts', '_common'))
 from state_machine import resolve_and_clone
 from ppt_builder import generate_ppt_from_data, DEFAULT_OUTPUT_DIR
 slide_data = <RESOLVED_JSON_ARRAY>
@@ -264,9 +276,9 @@ if note: print('NOTICE:', note)
 
 ```bash
 python -c "
-import sys, json
-sys.path.insert(0, '.opencode/skills/pptx-generate-slide-skill/scripts')
-sys.path.insert(0, '.opencode/skills/pptx-generate-slide-skill/scripts/_common')
+import sys, json, os
+sys.path.insert(0, os.path.join(os.environ['SLIDE_SKILL_DIR'], 'scripts'))
+sys.path.insert(0, os.path.join(os.environ['SLIDE_SKILL_DIR'], 'scripts', '_common'))
 from multipass_render import multipass_render
 from placeholder_backfill import backfill_deck
 from notes_repair import ensure_notes_placeholder

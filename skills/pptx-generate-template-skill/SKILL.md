@@ -9,6 +9,16 @@ compatibility: opencode
 category: Presentation
 ---
 
+## Running the snippets
+
+Every snippet below reads the skill's scripts via `os.environ['SKILL_DIR']`. **Export it once per session** to the directory containing this SKILL.md (the loader prints it), e.g.:
+
+```bash
+export SKILL_DIR=~/.config/opencode/skills/pptx-generate-template-skill   # ← your install location
+```
+
+A missing export fails loud (`KeyError: 'SKILL_DIR'`) by design.
+
 ## What I do
 
 I am the **pptx-generate-template-skill** (US-3.1). I take any `.pptx`, run the full extraction pipeline, and return a **templated PPTX** — the original file plus an embedded `ppt/template_schema.json` that describes every layout, component, font, and theme color. The embedded JSON "travels with the file" so it can be queried or reused later.
@@ -71,7 +81,7 @@ Confirm the input `.pptx` exists and is readable. If not, report the problem cle
 
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
+import sys, json, os; sys.path.insert(0, os.path.join(os.environ['SKILL_DIR'], 'scripts', '_common'))
 from schema_extractor import extract_schema, validate_template_schema, TemplateExtractionError
 try:
     schema = extract_schema('<INPUT.pptx>')
@@ -113,7 +123,7 @@ The schema carries `template_metadata.title`, `title_source` (`core_xml` | `slid
 
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
+import sys, json, os; sys.path.insert(0, os.path.join(os.environ['SKILL_DIR'], 'scripts', '_common'))
 from schema_extractor import inject_default_header_zone
 schema = json.load(open('<SCHEMA_TMP>',encoding='utf-8'))
 inject_default_header_zone(schema)
@@ -136,7 +146,7 @@ Render the table with this helper (reads the stashed schema):
 
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
+import sys, json, os; sys.path.insert(0, os.path.join(os.environ['SKILL_DIR'], 'scripts', '_common'))
 schema = json.load(open('<SCHEMA_TMP>',encoding='utf-8'))
 meta = schema.get('template_metadata', {}); dims = meta.get('slide_dimensions', {})
 hf = meta.get('header_footer', {}); td = schema.get('slide_master', {}).get('text_defaults', {})
@@ -179,7 +189,7 @@ Then present it to the user with a single `question` call:
 
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
+import sys, json, os; sys.path.insert(0, os.path.join(os.environ['SKILL_DIR'], 'scripts', '_common'))
 from schema_extractor import embed_schema, TemplateExtractionError
 schema = json.load(open('<SCHEMA_TMP>',encoding='utf-8'))
 try:
@@ -196,7 +206,7 @@ Output goes to `output/<input_stem>.templated.pptx` (matches the project's `outp
 
 ```bash
 python -c "
-import sys, json; sys.path.insert(0,'.opencode/skills/pptx-generate-template-skill/scripts/_common')
+import sys, json, os; sys.path.insert(0, os.path.join(os.environ['SKILL_DIR'], 'scripts', '_common'))
 from schema_extractor import build_extraction_summary
 schema = json.load(open('<SCHEMA_TMP>',encoding='utf-8'))
 print(build_extraction_summary(schema))
@@ -230,6 +240,6 @@ I produce the embedded `ppt/template_schema.json`. Since US-4.1 the renderer **p
 ## Reference
 
 - Plan: `PLANS/PLAN-GIT-56.md`.
-- Engine: `.opencode/skills/pptx-generate-template-skill/scripts/_common/schema_extractor.py` (`extract_schema`, `validate_template_schema`, `embed_schema`, `build_extraction_summary`, `_extract_master_text_styles`, `TITLE_SOURCES`, `TitleInference`).
+- Engine: `scripts/_common/schema_extractor.py` inside the skill directory (`extract_schema`, `validate_template_schema`, `embed_schema`, `build_extraction_summary`, `_extract_master_text_styles`, `TITLE_SOURCES`, `TitleInference`).
 - Peer skills: `pptx-generate-slide-skill` (fill), `pptx-template-modifier-skill` (extend).
 - Requirements: `docs/user-stories/chenyu-user-stories.md` — Epic 3 (US-3.1–3.6).
