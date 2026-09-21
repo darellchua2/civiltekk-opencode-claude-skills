@@ -899,3 +899,24 @@
 - **Scope**: project
 - **Summary**: embed verbatim `question`-tool payload JSON (all four levels: `questions[]` wrapper, `question`+`header`+`multiple:false`, `options[]` with `label` AND `description`) at every prose-only prompt site — #448's audit found 7/1158 schema failures, all missing-required-field from freehand construction; enumerate every placeholder the model must instantiate and cap option lists so instantiation + decline stays within the 2-4 option hygiene bound; duplication across skills is intentional per #437, never extract it (#504)
 - **Date**: 2026-09-21
+- **Category**: anti-pattern
+- **File**: `anti-patterns/token-enumeration-ac-greps-miss-concept-mentions.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: vocabulary-migration AC greps that enumerate retired API token names go green while concept-level prose mentions of the removed thing survive — #507's five-token grep passed while plan-execution-skill:83 still said "PTY loop"; grep the concept word case-insensitively with word boundaries both sides (`\bpty\b`; bare `pty_` false-positives on `empty_*`) (#507)
+- **Date**: 2026-09-21
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/pty-streaming-semantics-unportable-to-background-exit.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: rewording PTY-era prompts onto v2 `background: true` without redesigning the event model yields unexecutable instructions — a never-exiting watcher produces exactly one notification (at exit), with no stream-read or kill API; correct mapping is per-run exiting background commands, long-runners only as out-of-band servers (show-report HTTP), stop via foreground `pkill -f` (#507)
+- **Date**: 2026-09-21
+
+- **Category**: convention
+- **File**: `conventions/doc-commands-teach-explicit-timeout-when-bound-exceeds-default.md`
+- **Confidence**: medium
+- **Scope**: project
+- **Summary**: v2 foreground shell defaults to 120000 ms; doc'd commands whose own bound exceeds it (zai-video §3 `curl --max-time 600`) get harness-killed before their internal limit unless the doc names an explicit `timeout` ≥ the bound or runs the command as a background command (#507)
+- **Date**: 2026-09-21
+

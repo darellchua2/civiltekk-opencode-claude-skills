@@ -73,17 +73,16 @@ You are a responsive UI audit specialist. You detect, diagnose, and fix responsi
 
 Loaded skill: `playwright-responsive-audit-skill` — this defines the 6 detection assertions, 3 fix-confidence tiers, and closed-loop iteration pattern. Follow it precisely.
 
-## PTY Execution Model
+## Background Execution Model
 
-This subagent runs a **persistent PTY session** for Playwright instead of batch `bash` per iteration. The methodology (6 assertions, 3 tiers, closed loop) is unchanged — only the *execution* of DETECT and RE-VERIFY moves to PTY. PTY tools are ungated in opencode (not a permission key), so no permission change is required to use them.
+Every DETECT/RE-VERIFY pass runs as its own background shell command: `background: true` returns immediately, the session is notified when the command exits, and that notification carries the pass results. Always pass an explicit `timeout` (ms) sized for the suite. The methodology (6 assertions, 3 tiers, closed loop) is unchanged.
 
-1. On the first detection run, `pty_spawn` the runner **once**, display-branched per the skill's PTY Execution Strategy: `--ui` watch if `$DISPLAY` or `xvfb-run` is available (Strategy A), else a persistent warm shell (Strategy B).
-2. After each fix, the watch session auto-re-runs affected tests (Strategy A), or you re-invoke `npx playwright test` via `pty_write` in the warm shell (Strategy B). `pty_read` the streamed result.
-3. Early-abort with `pty_write "\x03"` once the first defect is confirmed — don't wait for the full suite.
-4. Keep a `npx playwright show-report` PTY alive for cross-iteration HTML queries (headless).
-5. `pty_kill` (cleanup: true) every session before returning.
+1. Start ONE long-running background server for cross-iteration queries: `npx playwright show-report` (headless). Read its HTML over HTTP — it never delivers test results.
+2. Per pass: run `npx playwright test` as a background command with an explicit `timeout` (ms). Wait for the exit notification before classifying — do not poll.
+3. Early-abort a running pass by killing its process (foreground `pkill -f` on the runner pattern) once the first defect is confirmed — don't wait for the full suite.
+4. Before returning, stop what you started: `pkill -f` the show-report server; every test pass has already exited.
 
-**Fallback:** if `pty_*` tools are unavailable in a deployment, degrade to batch `bash` (`npx playwright test`) per iteration — correct but slower. PTY is an optimization, not a dependency.
+**Fallback:** background shells are a v2 built-in, so no permission change is needed. On non-OpenCode runtimes without them, run the same passes as batch `bash` (`npx playwright test`) per iteration — correct but slower. Background execution is an optimization, not a dependency.
 
 ## Audit Workflow
 
@@ -97,7 +96,7 @@ Accept from the primary session:
 
 ### Step 2: Run Detection Assertions
 
-Run against the persistent PTY session (see PTY Execution Model) — not fresh `bash`. `pty_spawn` the runner once; `pty_read` the streamed results.
+Run each assertion pass as its own background command (see Background Execution Model): `npx playwright test` with an explicit `timeout` (ms); read results from the exit notification. The `show-report` background server stays up for cross-iteration HTML queries.
 
 For each target page, at each breakpoint, run the 6 detection assertions defined in
 `playwright-responsive-audit-skill` (the skill is the source of truth for assertion definitions
@@ -117,7 +116,7 @@ Categorize each defect by the 3 fix-confidence tiers defined in `playwright-resp
 
 ### Step 5: Re-Verify
 
-After applying fixes, re-read the PTY watch session (Strategy A re-runs assertions on file save) or re-trigger via `pty_write` in the warm shell (Strategy B). Re-run ALL 6 assertions at ALL breakpoints. Compare defect count to previous iteration. Report the delta. `pty_kill` all sessions before returning.
+After applying fixes, re-run the full detection pass as a fresh background command with an explicit `timeout` (ms) and read results from the exit notification. Re-run ALL 6 assertions at ALL breakpoints. Compare defect count to previous iteration. Report the delta. Stop remaining background commands (`pkill -f` the show-report server) before returning.
 
 ### Step 6: Report
 
@@ -125,7 +124,7 @@ Return the complete defect inventory, fixes applied, remaining issues, and itera
 
 ## Screenshot Delegation
 
-When a Tier 2 fix needs visual verification (one-shot captures use `bash` intentionally — only the DETECT/RE-VERIFY loop runs over PTY):
+When a Tier 2 fix needs visual verification (one-shot captures use `bash` intentionally — only the DETECT/RE-VERIFY passes run as background commands):
 
 1. Use `bash` to run a Playwright screenshot capture script at the target breakpoint
 2. Delegate the screenshot to `image-analyzer-subagent` via the Task tool:

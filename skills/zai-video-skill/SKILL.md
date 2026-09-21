@@ -22,7 +22,7 @@ endpoint is reachable only through direct HTTP calls.
 - OpenCode providers speak **chat completions** — they cannot hit `/videos/generations`
   or return binary files.
 - Video tasks take minutes; the agent must **submit, then poll in the background**
-  (PTY pattern below) instead of blocking the session in a synchronous loop.
+  (background-shell pattern below) instead of blocking the session in a synchronous loop.
 - The result is a URL — a file must be downloaded and its path returned.
 
 ## Prerequisite — API key resolution
@@ -67,14 +67,15 @@ print(d.get("id",""))') || { echo "Submit failed. Response: $RESP"; exit 1; }
 echo "SUBMITTED: $TASK_ID (billable ~\$0.20/video once it runs)"
 ```
 
-### 2. Poll in the background (PTY pattern — do not block the session)
+### 2. Poll in the background (background shell — do not block the session)
 
-Video generation takes **minutes**. From the agent, spawn a PTY session
-(`pty_spawn`, `notifyOnExit: true`) that polls and exits when done, then continue
-other work and read the result when the exit notification arrives:
+Video generation takes **minutes**. From the agent, run the poll loop as a
+background shell command (`background: true`): the call returns immediately, and
+OpenCode notifies the session when the command exits — continue other work and
+read the result then:
 
 ```bash
-# runs inside the PTY; exits 0 only on SUCCESS
+# runs as a background command; exits 0 only on SUCCESS
 for i in $(seq 1 60); do                       # 60 x 15s = 15 min ceiling
   S=$(curl -sS --max-time 30 "$BASE/async-result/$TASK_ID" -H "Authorization: Bearer $KEY" \
       | python3 -c 'import sys,json; print(json.load(sys.stdin).get("task_status",""))')
@@ -86,10 +87,12 @@ done
 echo "timeout"; exit 1
 ```
 
-No PTY plugin (plain bash)? Fall back to a foreground loop with the same body —
-just tell the caller it blocks.
+Non-OpenCode tooling without background shells? Run the same loop in the
+foreground — just tell the caller it blocks the session.
 
 ### 3. Download and verify
+
+Run the download with an explicit `timeout` ≥ 600000 ms (or as a background command) — the 2-minute foreground shell default kills slow or 4K downloads long before the 600 s `--max-time`.
 
 ```bash
 OUT="${OUT:-./cogvideox-$TASK_ID.mp4}"
