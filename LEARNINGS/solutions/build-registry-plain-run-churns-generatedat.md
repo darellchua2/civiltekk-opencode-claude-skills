@@ -48,5 +48,12 @@ installer/build-registry.mjs:45), so the porcelain check matched nothing and
 exited 0 — a false-green on top of the phantom-failure mode. Caught by
 architecture review; rewritten to `--check` exits 0.
 
+Recurrence 5 (#524, 2026-09-22): PLAN-524 step 3.2 drafted plain-run +
+"registry.json diff reflects both agent edits" — a second unsatisfiable
+variant: scoped shell rules and body prose feed no registry edges
+(build-registry.mjs:180-182, :236-242), so even a content-diff expectation
+can never pass. Caught by architecture review; rewritten to the `--check`
+form with a `generatedAt`-only expectation.
+
 Related: `solutions/docs-registry-is-build-site-artifact.md`,
 `patterns/skill-add-count-sync-blast-radius.md`.
