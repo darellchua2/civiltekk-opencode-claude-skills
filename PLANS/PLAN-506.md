@@ -55,42 +55,51 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 2: Repoint stale evidence in 9 learnings
 
-- [ ] **2.1** `LEARNINGS/solutions/path-move-ci-gate-anchoring.md`: append a dated update note covering ALL dead/stale anchors — `plugins/vibeguard.ts` gone (replaced by `plugins/opencode-vibeguard-v2.ts` + `plugins/vibeguard.config.json`); the `setup.ps1:133` must-stay list reference (no such line — 109-line thin launcher); the "setup.sh/ps1 deploy it to `~/.config/opencode/`" phrasing (only `deploy/setup.sh:2710-2713,4086-4087` deploys; ps1 forwards to bash); `Dockerfile:56` → `:82` for the vibeguard COPY
+- [x] **2.1** `LEARNINGS/solutions/path-move-ci-gate-anchoring.md`: append a dated update note covering ALL dead/stale anchors — `plugins/vibeguard.ts` gone (replaced by `plugins/opencode-vibeguard-v2.ts` + `plugins/vibeguard.config.json`); the `setup.ps1:133` must-stay list reference (no such line — 109-line thin launcher); the "setup.sh/ps1 deploy it to `~/.config/opencode/`" phrasing (only `deploy/setup.sh:2710-2713,4086-4087` deploys; ps1 forwards to bash); `Dockerfile:56` → `:82` for the vibeguard COPY
     — **Why:** the cited evidence file and three sibling anchors no longer exist as cited; the search-path-consumer rule remains load-bearing
     — **Done when:** the file's evidence section names only paths that exist on this branch at the cited lines, or carries the dated historical note
     — **Consumers affected:** readers applying the path-move checklist
-- [ ] **2.2** `LEARNINGS/solutions/credential-regex-host-port-false-positive.md`: repoint evidence from `opencode_app/.opencode/vibeguard.config.json` to `plugins/vibeguard.config.json:16` and record that the `[^@\s/]+` fix shipped (current pattern no longer matches `host:port/@path`)
+    — **Done:** Dated update note appended covering all four dead/stale anchors (vibeguard.ts→v2 files, setup.ps1:133 gone, deploy leg setup.sh-only 2710-2713/4086-4087, Dockerfile:56→:82); files: LEARNINGS/solutions/path-move-ci-gate-anchoring.md; fixes: none
+- [x] **2.2** `LEARNINGS/solutions/credential-regex-host-port-false-positive.md`: repoint evidence from `opencode_app/.opencode/vibeguard.config.json` to `plugins/vibeguard.config.json:16` and record that the `[^@\s/]+` fix shipped (current pattern no longer matches `host:port/@path`)
     — **Why:** the cited config path moved with the v2 port; the shipped fix is the pattern's justification
     — **Done when:** the evidence section cites the live path and notes the shipped fix
     — **Consumers affected:** vibeguard config maintainers
-- [ ] **2.3** `LEARNINGS/patterns/gate-success-log-with-the-dry-branch.md`: repoint the canonical shape from the removed `register_zai_auth` to `run_cmd`'s own gate (`deploy/setup.sh:1117`) with `cleanup_old_backups` (`:1236`) and the credential writer (`:3099`) as live exemplars
+    — **Done:** Evidence repointed to plugins/vibeguard.config.json:16 + shipped-fix note ([^@\s/]+ pattern live); files: LEARNINGS/solutions/credential-regex-host-port-false-positive.md; fixes: none
+- [x] **2.3** `LEARNINGS/patterns/gate-success-log-with-the-dry-branch.md`: repoint the canonical shape from the removed `register_zai_auth` to `run_cmd`'s own gate (`deploy/setup.sh:1117`) with `cleanup_old_backups` (`:1236`) and the credential writer (`:3099`) as live exemplars
     — **Why:** the named exemplar function no longer exists; the early-return shape is alive in run_cmd and its callers
     — **Done when:** the file names only functions that exist in `deploy/setup.sh` on this branch
     — **Consumers affected:** new run_cmd-style gate authors
-- [ ] **2.4** `LEARNINGS/solutions/markitdown-mcp-alpha-pin-upstream-facts.md`: change the bump-ritual surface count from three files to two (`deploy/setup.sh` + `opencode_app/Dockerfile`; setup.ps1 is a thin launcher with no pins)
+    — **Done:** Canonical shape repointed to run_cmd gate :1117 + cleanup_old_backups :1236 + setup_local_llm_env env writer :3099 (label corrected after 6.3-style check); files: LEARNINGS/patterns/gate-success-log-with-the-dry-branch.md; fixes: 1 (fn label truthfulness)
+- [x] **2.4** `LEARNINGS/solutions/markitdown-mcp-alpha-pin-upstream-facts.md`: change the bump-ritual surface count from three files to two (`deploy/setup.sh` + `opencode_app/Dockerfile`; setup.ps1 is a thin launcher with no pins)
     — **Why:** #474 replaced the native ps1; the third ritual surface no longer exists and would send a bumper editing a file with no pin
     — **Done when:** the ritual sentence lists exactly the two live files
     — **Consumers affected:** future markitdown pin bumps
-- [ ] **2.5** `LEARNINGS/anti-patterns/bare-mv-beside-run-cmd-breaks-dry-run.md`: append a dated resolution note — the bash migrate block is now `run_cmd`-wrapped (`deploy/setup.sh:2605-2653`) and the ps1 `Move-Item` sites are gone with the thin launcher
+    — **Done:** Bump ritual 3→2 files (setup.sh + Dockerfile); files: LEARNINGS/solutions/markitdown-mcp-alpha-pin-upstream-facts.md; fixes: none
+- [x] **2.5** `LEARNINGS/anti-patterns/bare-mv-beside-run-cmd-breaks-dry-run.md`: append a dated resolution note — the bash migrate block is now `run_cmd`-wrapped (`deploy/setup.sh:2605-2653`) and the ps1 `Move-Item` sites are gone with the thin launcher
     — **Why:** the named defect no longer exists anywhere; the forward-looking rule (route mutations through run_cmd) stays
     — **Done when:** the file carries the dated note and its rule section is unchanged
     — **Consumers affected:** dry-run contract auditors
-- [ ] **2.6** `LEARNINGS/conventions/doc-claims-match-plugin-defaults.md`: update the evidence reference from `plan-automation-loop-skill` to `plan-execution-skill` (#408 merged the two skills; `worktree-pipeline-skill` already names the new one)
+    — **Done:** Dated resolution note — bash migrate block run_cmd-wrapped :2605-2653, ps1 sites gone (#474); files: LEARNINGS/anti-patterns/bare-mv-beside-run-cmd-breaks-dry-run.md; fixes: none
+- [x] **2.6** `LEARNINGS/conventions/doc-claims-match-plugin-defaults.md`: update the evidence reference from `plan-automation-loop-skill` to `plan-execution-skill` (#408 merged the two skills; `worktree-pipeline-skill` already names the new one)
     — **Why:** the cited SKILL.md path is dead; a reader following the pointer would 404
     — **Done when:** the evidence cites `plan-execution-skill` with the #408 merge note
     — **Consumers affected:** doc authors citing plugin-default claims
-- [ ] **2.7** `LEARNINGS/conventions/task-delegate-permission-sync.md`: update pre-#378 paths — `deploy/build-registry.mjs` → `installer/build-registry.mjs`, `deploy/registry.json` → `installer/registry.json` (keep the `--check` drift-gate guidance)
+    — **Done:** Evidence cites plan-execution-skill with #408 merge note; historical Context kept (dated by Evidence line); files: LEARNINGS/conventions/doc-claims-match-plugin-defaults.md; fixes: none
+- [x] **2.7** `LEARNINGS/conventions/task-delegate-permission-sync.md`: update pre-#378 paths — `deploy/build-registry.mjs` → `installer/build-registry.mjs`, `deploy/registry.json` → `installer/registry.json` (keep the `--check` drift-gate guidance)
     — **Why:** build-registry moved to `installer/` in #378; the cited paths are dead
     — **Done when:** no `deploy/build-registry` or `deploy/registry.json` strings remain in the file
     — **Consumers affected:** permission.task editors running the sync checklist
-- [ ] **2.8** `LEARNINGS/patterns/new-skill-count-literal-gates.md`: line 10 — drop the ps1 half of consumer class 6 (`deploy/setup.ps1` search-anchor `Invoke-SkillProfile`; function gone since #474), keep the bash anchor (`run_skill_profile` header comments in `deploy/setup.sh`, function at :3536); line 12 — drop `deploy/setup.ps1` from the verification grep target so the sweep names only the live surface
+    — **Done:** deploy/build-registry.mjs + deploy/registry.json → installer/ (both occurrences); files: LEARNINGS/conventions/task-delegate-permission-sync.md; fixes: none
+- [x] **2.8** `LEARNINGS/patterns/new-skill-count-literal-gates.md`: line 10 — drop the ps1 half of consumer class 6 (`deploy/setup.ps1` search-anchor `Invoke-SkillProfile`; function gone since #474), keep the bash anchor (`run_skill_profile` header comments in `deploy/setup.sh`, function at :3536); line 12 — drop `deploy/setup.ps1` from the verification grep target so the sweep names only the live surface
     — **Why:** the dead ps1 citation lives in this file; skill-add-count-sync-blast-radius.md carries no deploy-script citation on this branch (audit 2026-09-21, Mode R round 1)
     — **Done when:** the file contains no `Invoke-SkillProfile`/`setup.ps1` reference; `run_skill_profile` is the sole search-anchor
     — **Consumers affected:** skill add/remove authors sweeping count literals
-- [ ] **2.9** `LEARNINGS/anti-patterns/idempotency-probe-version-blind.md`: drop the ps1-mirror sentence (`Install-MarkitdownMcp`); keep the bash probe rule (`pip show` + version grep)
+    — **Done:** ps1 half of consumer class 6 + verification grep dropped; run_skill_profile (:3536) sole anchor; provenance rides commit msg per done-when no-reference rule; files: LEARNINGS/patterns/new-skill-count-literal-gates.md; fixes: 1 (removed historical parenthetical violating done-when)
+- [x] **2.9** `LEARNINGS/anti-patterns/idempotency-probe-version-blind.md`: drop the ps1-mirror sentence (`Install-MarkitdownMcp`); keep the bash probe rule (`pip show` + version grep)
     — **Why:** the ps1 mirror function no longer exists
     — **Done when:** the file contains no `Install-MarkitdownMcp` / `setup.ps1` reference
     — **Consumers affected:** pin-bump authors writing idempotency probes
+    — **Done:** ps1 mirror dropped from probe rule; provenance rides commit msg; files: LEARNINGS/anti-patterns/idempotency-probe-version-blind.md; fixes: 1 (removed historical parenthetical violating done-when)
 
 ### Phase 3: Rebuild `LEARNINGS/_index.md`
 

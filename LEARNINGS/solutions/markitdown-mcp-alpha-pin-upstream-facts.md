@@ -17,8 +17,7 @@ Upstream `markitdown-mcp` (PyPI, microsoft/markitdown), verified 2026-09-20:
 - Coexists with `docling-mcp 3.x` on one shared `mcp` 2.x
   (`mcp[cli]>=2.0,<3.0` ∩ `>=2.1.1,<3.0` non-empty) — the retired vendored
   pin `mcp<2.0` was the sole conflict cause.
-- Bump ritual: the pin appears in `deploy/setup.sh`, `deploy/setup.ps1`,
-  `opencode_app/Dockerfile` — bump all three together.
+- Bump ritual: the pin appears in `deploy/setup.sh` and `opencode_app/Dockerfile` — bump both together. (Formerly three files including `deploy/setup.ps1`; #474 turned the ps1 into a thin launcher with no pins — updated 2026-09-21, #506.)
 
 - **Confidence**: 0.95
 - **Scope**: project
