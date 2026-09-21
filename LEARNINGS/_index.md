@@ -881,3 +881,12 @@
 - **Scope**: project
 - **Summary**: normalizing a version banner only at compare sites leaves display/summary interpolation printing raw banners and can mislabel the installed package across a format-crossing upgrade — one shared normalizer for every consumer, compare AND display (#499 review)
 - **Date**: 2026-09-21
+
+### ERR-trap interpolations need nounset defaults — a crashing handler masks the real rc
+
+- **Category**: solution
+- **File**: `solutions/err-trap-interpolations-need-nounset-defaults.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: variables interpolated inside a trap action string get `:-` nounset defaults — `error_handler "${BASH_LINENO[0]}"` crashed under nounset in sourced contexts, converting expected return-1 into exit 127 (BW01 every suite run); fix `:-0` + regression pin (#501)
+- **Date**: 2026-09-21
