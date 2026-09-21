@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.28.1](https://github.com/darellchua2/opencode-config-template/compare/v9.28.0...v9.28.1) (2026-09-21)
+
+### Bug Fixes
+
+* **deploy:** nounset-safe ERR trap — stop 127-masking expected failures, kill BW01 ([#501](https://github.com/darellchua2/opencode-config-template/issues/501)) ([#503](https://github.com/darellchua2/opencode-config-template/issues/503)) ([b237b46](https://github.com/darellchua2/opencode-config-template/commit/b237b466d09e9d45518895d875440ae9cfac4d52))
+
 ## [9.28.0](https://github.com/darellchua2/opencode-config-template/compare/v9.27.2...v9.28.0) (2026-09-21)
 
 ### Features
