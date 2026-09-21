@@ -9,8 +9,8 @@
 - [x] `update_opencode_cli()` and `check_for_updates_only()` compare against `@opencode/cli`
 - [x] A detected v1 (`1.x`) install is offered the uninstall-then-install migration instead of a silent in-place "update"
 - [ ] `validate_opencode_install()` hint, `--help` text, and `print_summary()` labels reference `@opencode/cli`
-- [ ] `setup.ps1` header documents the v2 install command
-- [ ] `README.md` flag descriptions no longer say "requires opencode-ai installed"
+- [x] `setup.ps1` header documents the v2 install command
+- [x] `README.md` flag descriptions no longer say "requires opencode-ai installed"
 - [ ] `bash -n deploy/setup.sh` passes; deploy-related bats suite stays green
 
 ## Dependency & Consumer Map
@@ -54,14 +54,16 @@ Out of scope (must NOT change): `@opencode-ai/plugin` references (plugin SDK pac
     — **Done:** all listed sites renamed (verified: 8 remaining matches are exactly the v1-migration strings + explanatory comments); check_for_updates_only probe normalized to bare semver; files: deploy/setup.sh; fixes: none
 
 ### Phase 3: Windows launcher + README parity
-- [ ] **3.1** In `deploy/setup.ps1`, extend the `# Requires:` header comment to state the CLI install command: `npm install -g @opencode/cli` (v2 scoped package).
+- [x] **3.1** In `deploy/setup.ps1`, extend the `# Requires:` header comment to state the CLI install command: `npm install -g @opencode/cli` (v2 scoped package).
     — **Why:** AC-5 — the launcher has no install logic of its own, so its header is the only place a ps1-only reader learns how to install the CLI.
     — **Done when:** the header names `@opencode/cli` and the file still parses as a PowerShell param block (no logic touched).
     — **Consumers affected:** Windows users.
-- [ ] **3.2** In `README.md` lines 65 and 147, change "requires opencode-ai installed" to "requires @opencode/cli installed".
+    — **Done:** Requires block extended with the @opencode/cli install command + v1-package note; no logic lines touched; files: deploy/setup.ps1; fixes: none
+- [x] **3.2** In `README.md` lines 65 and 147, change "requires opencode-ai installed" to "requires @opencode/cli installed".
     — **Why:** AC-6 — docs must match the renamed flag prerequisites or contradict the scripts.
     — **Done when:** `grep -n "opencode-ai" README.md` returns nothing.
     — **Consumers affected:** README readers.
+    — **Done:** both flag rows updated; repo-wide README grep for opencode-ai = 0; files: README.md; fixes: none
 
 ### Phase 4: Verification gate
 - [ ] **4.1** Run `bash -n deploy/setup.sh`, then the repo's deploy-relevant test suite (`bats tests/` — at minimum `tests/test_skills_only_parity.bats`, the only suite referencing a touched function) and a dry-run smoke (`./deploy/setup.sh --dry-run -y --skills-only` is out of scope — use a non-mutating flag path such as `--help` plus `bash -n`) to confirm no syntax or stub breakage.
@@ -94,4 +96,8 @@ Full tier on every phase — deploy files are a critical-area anchor (§Tiered g
 
 ### Phase 2
 - WORK LOG: deliberate deviation — while renaming check_for_updates_only's update hint, the stale text pointing at the removed `-A -S` auto-update flags (#474) was replaced with `-C` / `--update` guidance; same line, already being rewritten.
-- GATE (pending-commit sha) tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 517 ok / 0 fail.
+- GATE 7363d1e tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 517 ok / 0 fail.
+
+### Phase 3
+- WORK LOG: full-tier escalation reason — deploy/config file anchor (deploy/setup.ps1), though the change is comment-only.
+- GATE (pending-commit sha) tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 517 ok / 0 fail; README opencode-ai matches = 0.

@@ -62,7 +62,7 @@ Two setup scripts are provided for different platforms:
 # Quick setup - config + skills only (skip dependency checks)
 ./deploy/setup.sh --quick
 
-# Skills-only deployment (requires opencode-ai installed)
+# Skills-only deployment (requires @opencode/cli installed)
 ./deploy/setup.sh --skills-only
 
 # Check provider model pins against the live models.dev catalog (warnings only)
@@ -144,7 +144,7 @@ powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Help
 | Option (bash) | Option (PowerShell) | Description |
 |----------------|----------------------|-------------|
 | `--quick` | `-Quick` | Copy config + skills only (skip dependency checks) |
-| `--skills-only` | `-SkillsOnly` | Deploy skills only (requires opencode-ai installed) |
+| `--skills-only` | `-SkillsOnly` | Deploy skills only (requires @opencode/cli installed) |
 | `--update` | `-Update` | Update OpenCode CLI to latest version |
 | `--check-catalog` | — (bash only) | Warn if `installer/provider-models.json` drifted from the live models.dev catalog; regenerate with `node deploy/regen-provider-models.mjs` |
 | `--dry-run` | `-DryRun` | Preview all actions without making changes |
