@@ -26,37 +26,44 @@ Binding-block format per AGENTS.md §Portability contract (merged via #510): cap
 
 ### Phase 1: question-tool bindings
 
-- [ ] **1.1** `skills/ticket-creation-skill/SKILL.md` — extend the Agent behavior rules (:120 area) with the question-tool binding block (OpenCode `question` · Claude `AskUserQuestion` · other/none: ask the same fields in a plain reply, proceed on defaults per the headless rule).
+- [x] **1.1** `skills/ticket-creation-skill/SKILL.md` — extend the Agent behavior rules (:120 area) with the question-tool binding block (OpenCode `question` · Claude `AskUserQuestion` · other/none: ask the same fields in a plain reply, proceed on defaults per the headless rule).
     — **Why:** :86/:120 instruct "batch a `question` call" as if universal; the tool name is OpenCode-specific.
     — **Done when:** the block exists in the file and mentions all three rows.
     — **Consumers affected:** ticket-flow agents on non-opencode harnesses.
-- [ ] **1.2** `skills/docling-mcp-skill/SKILL.md` — extend the :51 consent row with the same binding block (consent question).
+    — **Done:** binding block appended after the behavior-rules list; files: skills/ticket-creation-skill/SKILL.md; fixes: none
+- [x] **1.2** `skills/docling-mcp-skill/SKILL.md` — extend the :51 consent row with the same binding block (consent question).
     — **Why:** install-consent must be askable on any harness.
     — **Done when:** block present at the consent row.
     — **Consumers affected:** docling installers.
-- [ ] **1.3** `skills/worktree-pipeline-skill/SKILL.md` — extend the :250 draft-linking ask with the binding block.
+    — **Done:** binding inlined in the consent table row (no-answer = declined → headless soft-fail); files: skills/docling-mcp-skill/SKILL.md; fixes: none
+- [x] **1.3** `skills/worktree-pipeline-skill/SKILL.md` — extend the :250 draft-linking ask with the binding block.
     — **Why:** PLAN-adoption prompting is a runtime `question` call.
     — **Done when:** block present near :250.
     — **Consumers affected:** pipeline runs on other harnesses.
-- [ ] **1.4** `skills/opencode-repo-setup-skill/SKILL.md` — add a minimal binding note at :48 (Step 2 — Ask): OpenCode `question` · Claude `AskUserQuestion` · none: print the numbered menu in a plain reply and wait for a reply.
+    — **Done:** binding inlined at the draft-linking ask (unanswered = skip linking); files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **1.4** `skills/opencode-repo-setup-skill/SKILL.md` — add a minimal binding note at :48 (Step 2 — Ask): OpenCode `question` · Claude `AskUserQuestion` · none: print the numbered menu in a plain reply and wait for a reply.
     — **Why:** ticket scope; the skill is otherwise opencode-bound (harness metadata lands in #514) so the block stays minimal.
     — **Done when:** note present at Step 2.
     — **Consumers affected:** repo-setup agents.
-- [ ] **1.5** `skills/git-branch-workflow-setup-skill/SKILL.md` — soften :153: replace "they cannot use the `question` tool or spawn subagents" with "in OpenCode, skills are knowledge documents loaded BY agents — the `question` tool and subagent spawning belong to the agent layer (other harnesses differ; use the §Non-Interactive Fallback when prompting is unavailable)".
+    — **Done:** minimal binding note added under Step 2 heading; files: skills/opencode-repo-setup-skill/SKILL.md; fixes: none
+- [x] **1.5** `skills/git-branch-workflow-setup-skill/SKILL.md` — soften :153: replace "they cannot use the `question` tool or spawn subagents" with "in OpenCode, skills are knowledge documents loaded BY agents — the `question` tool and subagent spawning belong to the agent layer (other harnesses differ; use the §Non-Interactive Fallback when prompting is unavailable)".
     — **Why:** the assertion is OpenCode-specific stated as universal.
     — **Done when:** the universal phrasing is gone; fallback reference retained.
     — **Consumers affected:** skill authors reading the assertion.
+    — **Done:** universal phrasing replaced with opencode-scoped statement + fallback pointer; files: skills/git-branch-workflow-setup-skill/SKILL.md; fixes: none
 
 ### Phase 2: background-execution bindings
 
-- [ ] **2.1** `skills/playwright-responsive-audit-skill/SKILL.md` — insert the background-exec binding block at :32 (OpenCode `background: true` · Claude `run_in_background: true` · none: `nohup <cmd> > /tmp/opencode/audit-pass.log 2>&1 &` + re-check per step, stop via `kill`/`taskkill`).
+- [x] **2.1** `skills/playwright-responsive-audit-skill/SKILL.md` — insert the background-exec binding block at :32 (OpenCode `background: true` · Claude `run_in_background: true` · none: `nohup <cmd> > /tmp/opencode/audit-pass.log 2>&1 &` + re-check per step, stop via `kill`/`taskkill`).
     — **Why:** the loop's stoppable-pass model depends on background shells named opencode-style.
     — **Done when:** block present at :32 and names all three rows.
     — **Consumers affected:** audit runners on other harnesses.
-- [ ] **2.2** `skills/zai-video-skill/SKILL.md` — formalize the :90 fallback into the canonical block shape (same three rows; keep the existing nohup/log-poll wording as the fallback row).
+    — **Done:** binding rows inlined in the loop paragraph; OpenCode row behavior preserved verbatim; files: skills/playwright-responsive-audit-skill/SKILL.md; fixes: none
+- [x] **2.2** `skills/zai-video-skill/SKILL.md` — formalize the :90 fallback into the canonical block shape (same three rows; keep the existing nohup/log-poll wording as the fallback row).
     — **Why:** this file is the contract's cited prior art; aligning it makes the format self-demonstrating.
     — **Done when:** the block matches the canonical row structure.
     — **Consumers affected:** video-poll agents.
+    — **Done:** canonical rows at the poll step; legacy fallback line repointed to the row; files: skills/zai-video-skill/SKILL.md; fixes: none
 
 ### Phase 3: zai credential + recipe-execution bindings
 
