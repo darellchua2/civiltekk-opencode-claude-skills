@@ -310,6 +310,8 @@ This skill ships reusable assets in `templates/` and `scripts/` directories:
 
 ### Helper Scripts (`scripts/`)
 
+> OS note: all scripts are bash + `gh` — Windows: run under git-bash/WSL.
+
 | Script | Purpose |
 |--------|---------|
 | `scripts/onboard-repo.sh` | Onboarding runner — sets up branches, labels, and branch protection for a new repo |

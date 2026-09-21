@@ -76,7 +76,7 @@ Failures are expected and classified. A syntax error is fixed immediately and do
 ## Scripts
 
 - `autoresearch-core-skill/scripts/init_research.py` — scaffolds `research.md`, `research_log.md`, `*-results.tsv`, `final_report.md` from `--goal` / `--metric` / `--direction` / `--target` / `--evaluator` / `--output`.
-- `autoresearch-core-skill/scripts/autoresearch-loop.sh` — cross-platform overnight loop; auto-detects the CLI tool (claude / codex / opencode / gemini); respects `max_iterations` and time budgets.
+- `autoresearch-core-skill/scripts/autoresearch-loop.sh` — cross-platform overnight loop; auto-detects the CLI tool (claude / codex / opencode / gemini); respects `max_iterations` and time budgets. Requires bash (git-bash/WSL on Windows).
 - `autoresearch-core-skill/scripts/check_progress.sh` — prints the last 10 TSV rows, current iteration, and best-so-far.
 
 ## Attribution

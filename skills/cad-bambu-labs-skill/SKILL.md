@@ -100,7 +100,7 @@ the plate MD5, uploads the project to the FTPS root, and publishes
 ```bash
 python scripts/bambu_lan_print.py send \
   --printer a1-mini \
-  --gcode /tmp/job.gcode \
+  --gcode <slicer-export.gcode> \
   --handoff template-project \
   --template-project /path/to/same-printer-template.gcode.3mf \
   --action upload-start
@@ -112,7 +112,7 @@ physical confirmation when intent is unclear:
 ```bash
 python scripts/bambu_lan_print.py send \
   --printer a1-mini \
-  --gcode /tmp/job.gcode \
+  --gcode <slicer-export.gcode> \
   --handoff template-project \
   --template-project /path/to/same-printer-template.gcode.3mf \
   --action upload-start \
