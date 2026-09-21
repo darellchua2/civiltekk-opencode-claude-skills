@@ -3174,9 +3174,16 @@ run_resolver() {
     # opencode.json wins — omit --config-src so the resolver bases its
     # in-place model patch on the existing file (resolve-models.mjs :283-284
     # fallback). No existing file ⇒ the resolver writes no config at all.
+    # #491: models-only/migrate have no decline prompt — presence decides.
+    # An existing config wins (dest-fallback); a fresh machine keeps the
+    # stock base so bootstrap still writes. jsonc siblings are unaffected:
+    # presence is checked on opencode.json only, and park_jsonc_sibling (the
+    # #432 interaction) still collapses a live .jsonc after a stock write.
     local config_src_arg=""
     if [ "$SKIP_CONFIG_COPY" = true ]; then
         log_info "Config copy declined - resolver patches the existing config in place (or writes none)"
+    elif { [ "$MODELS_ONLY" = true ] || [ "$MIGRATE_ONLY" = true ]; } && [ -f "$CONFIG_FILE" ]; then
+        log_info "Existing config found - resolver patches it in place (models-only/migrate presence gate)"
     else
         config_src_arg="--config-src ${SOURCE_CONFIG}"
     fi
