@@ -21,14 +21,16 @@ Cross-module consumers exist → architecture review selected, scoped to re-veri
 ## Implementation Phases
 
 ### Phase 1: Catalog purge
-- [ ] **1.1** Remove `glm-4.5-flash`, `glm-4.7-flash`, `glm-4.7-flashx`, and `glm-5.3-flashx` from the `zai` array in `installer/provider-models.json` (10 entries remain, incl. `glm-5.3` + `glm-5.3-flash`). `glm-4.7-flashx` included by class extension of the maintainer directive (same flash class as the three named) — flagged for review confirmation.
+- [x] **1.1** Remove `glm-4.5-flash`, `glm-4.7-flash`, `glm-4.7-flashx`, and `glm-5.3-flashx` from the `zai` array in `installer/provider-models.json` (10 entries remain, incl. `glm-5.3` + `glm-5.3-flash`). `glm-4.7-flashx` included by class extension of the maintainer directive (same flash class as the three named) — flagged for review confirmation.
     — **Why:** maintainer directive (#522) — the flash class collapses onto `glm-5.3-flash`; listing legacy flash ids as selectable implies maintained options. (`glm-5.3` alone remains the reasoning/frontier pin; non-flash sub-frontier ids are this ticket's out of scope.)
     — **Done when:** `python3 -c` array check shows none of the 4 ids present, `glm-5.3` + `glm-5.3-flash` retained, `zai-coding-plan`/`zai-custom` untouched, and JSON parses.
     — **Consumers affected:** `resolve-models.mjs` guard (no tier/preset pins these ids — proven in #520 review, re-verified in Step 7); `deploy/regen-provider-models.mjs` (see Risks).
-- [ ] **1.2** Extend the `$comment` standardization sentence: after the #516 vision sentence, add that sub-frontier non-vision flash-class models are likewise standardized onto `glm-5.3-flash` (#522) and `glm-5.3` stays the sole reasoning/frontier pin — token-free, regen re-add caveat shared.
+    — **Done:** 4 ids removed, 10 remain, glm-5.3/glm-5.3-flash retained, zai-coding-plan/zai-custom untouched; files: installer/provider-models.json; fixes: none
+- [x] **1.2** Extend the `$comment` standardization sentence: after the #516 vision sentence, add that sub-frontier non-vision flash-class models are likewise standardized onto `glm-5.3-flash` (#522) and `glm-5.3` stays the sole reasoning/frontier pin — token-free, regen re-add caveat shared.
     — **Why:** the comment is the maintainer contract; without the extension it under-describes the deliberate divergence and the next regen partially reverts it.
     — **Done when:** comment contains "flash-class" + "#522" + the regen caveat, and names none of the 4 purged ids.
     — **Consumers affected:** maintainers; none mechanical.
+    — **Done:** #522 flash-class sentence appended token-free with shared regen caveat; files: installer/provider-models.json; fixes: none
 
 ### Phase 2: Verification + registry sync
 - [ ] **2.1** Repo-wide purge proof: `grep -rniE "glm-4\.5-flash|glm-4\.7-flash|glm-5\.3-flashx" . --exclude-dir=.git --exclude-dir=PLANS --exclude-dir=LEARNINGS --exclude=CHANGELOG.md`.
@@ -56,3 +58,4 @@ None — single ticket, no `blocked-by`.
 - **Guard warning churn**: only if something pins the removed ids — nothing does (proven #520, re-verified Step 7).
 
 ## Gate Trace
+GATE c0e1e62 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: provider_pins+provider_regen) e2e=n.a
