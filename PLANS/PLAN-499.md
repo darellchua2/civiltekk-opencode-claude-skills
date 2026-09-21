@@ -8,7 +8,7 @@
 - [x] Fresh-install path in `setup_opencode()` runs `npm install -g @opencode/cli`
 - [x] `update_opencode_cli()` and `check_for_updates_only()` compare against `@opencode/cli`
 - [x] A detected v1 (`1.x`) install is offered the uninstall-then-install migration instead of a silent in-place "update"
-- [ ] `validate_opencode_install()` hint, `--help` text, and `print_summary()` labels reference `@opencode/cli`
+- [x] `validate_opencode_install()` hint, `--help` text, and `print_summary()` labels reference `@opencode/cli`
 - [x] `setup.ps1` header documents the v2 install command
 - [x] `README.md` flag descriptions no longer say "requires opencode-ai installed"
 - [x] `bash -n deploy/setup.sh` passes; deploy-related bats suite stays green
