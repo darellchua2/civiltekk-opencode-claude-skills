@@ -51,3 +51,4 @@ None (`blocked-by:` absent). Complements #448 (question-repair plugin) — sourc
 
 ## Gate Trace
 GATE 95b283c→worktree tier=full lint=n.a. typecheck=n.a. build=n.a. unit=bats 529/529 + node --test 12/12 e2e=n.a. — docs-only change; scoped-lint satisfied by JSON-parse + field greps in 1.1/2.1 done-when
+GATE review-fix tier=full lint=n.a. typecheck=n.a. build=n.a. unit=bats 529/529 + node --test 12/12 e2e=n.a. — post-review re-gate on fixed tree (two NOTE wording fixes: 6a option cap clause, 6b `<key>` enumeration)

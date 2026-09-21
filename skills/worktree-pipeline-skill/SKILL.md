@@ -207,8 +207,9 @@ canonical form on adoption.
    Before auto-adopting a generic `PLANS/PLAN.md`, verify its `**Issue:**`
    header matches this ticket; mismatch → non-candidate + warn.
 4. **Multiple candidates → prompt the user** which to adopt, via the `question`
-   tool with this payload shape (instantiate options from the actual drafts;
-   keep payloads small per deployed `AGENTS.md` §Question Tool Payloads):
+   tool with this payload shape (instantiate options from the actual drafts —
+   best three matches plus the decline option, keeping within the 2-4 option
+   cap; keep payloads small per deployed `AGENTS.md` §Question Tool Payloads):
 
    ```json
    {
@@ -247,7 +248,8 @@ ls docs/brd/BRD-draft-*.md 2>/dev/null   # then docs/srs/SRS-draft-*.md
 ```
 
 If drafts found, ask the user (via `question`) whether to link one, using this
-payload shape (instantiate `<BRD|SRS>` and the draft name per ladder order):
+payload shape (instantiate `<BRD|SRS>`, `<key>`, and the draft name per ladder
+order):
 
 ```json
 {
