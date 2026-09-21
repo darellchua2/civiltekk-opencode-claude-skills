@@ -45,7 +45,7 @@ _Before writing steps, list each touched file/module and who consumes it._
 ## Gate Trace
 
 GATE 7787015 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
-GATE 7787015 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+GATE b69a349 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 
 ## Technical Notes
 - Binding-block canonical shape (from zai-video-skill:90 prior art):
