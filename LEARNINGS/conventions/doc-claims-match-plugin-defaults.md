@@ -8,4 +8,4 @@
 **Scope**: project
 **Date**: 2026-09-15
 
-**Evidence**: #382 review (WARN, plan-automation-loop-skill/SKILL.md guardrails note); plugin README Options section (defaults: `default_token_budget` unset, `max_goal_duration_seconds` unset).
+**Evidence**: #382 review (WARN, plan-execution-skill guardrails note — the finding predates #408, which merged `plan-automation-loop-skill` into `plan-execution-skill`; path updated 2026-09-21, #506); plugin README Options section (defaults: `default_token_budget` unset, `max_goal_duration_seconds` unset).
