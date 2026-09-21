@@ -158,10 +158,11 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done when:** all bats suites exit 0
     — **Consumers affected:** CI
     — **Done:** 39/39 bats suites pass, 0 failures; files: none (gate only); fixes: 0
-- [ ] **6.6** Append the `GATE <short-sha> tier=full` memo line — scoped to the SHA of the commit that ran this gate — to this PLAN's trace block; the worktree-pipeline's Step 10 (PR creation) cites this memo line as its gate evidence
+- [x] **6.6** Append the `GATE <short-sha> tier=full` memo line — scoped to the SHA of the commit that ran this gate — to this PLAN's trace block; the worktree-pipeline's Step 10 (PR creation) cites this memo line as its gate evidence
     — **Why:** the pipeline's PR step requires a green tier=full memo for the final pushed tree
     — **Done when:** memo line present, naming the SHA of the gate-run commit
     — **Consumers affected:** pr-workflow-subagent
+    — **Done:** memo appended to the trace block below; files: PLANS/PLAN-506.md; fixes: 0
 
 ## Technical Notes
 
@@ -184,3 +185,7 @@ None external. Ticket #506 is standalone (no `blocked-by:`).
 - **Deleting learnings loses recoverable knowledge** — user-approved (Build-mode decisions 2026-09-21); git history preserves the files; residuals folded verbatim into the decision record first.
 - **Count drift between index write and gate** — 6.2 derives counts from disk at gate time, same tree, so drift is impossible within a phase commit.
 - **bats suite has pre-existing failures** — none known at PLAN time (main green at 9bd649b5); any red gate is investigated, not waived.
+
+## Gate Trace
+
+GATE 79c6fb6 tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a — tree = 79c6fb6 (39/39 bats, registry --check, zero-ref, index-integrity, existence gates); this commit adds only the memo/trace lines.
