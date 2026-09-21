@@ -95,6 +95,18 @@ Merge procedure (MANDATORY when `<repo>/opencode.json` already exists — never 
    jq -s '.[0] * .[1]' opencode.json delta.json > opencode.json.new && mv opencode.json.new opencode.json
    ```
 
+   No `jq`? Same deep-merge (existing base, delta wins) with Node:
+
+   ```bash
+   node -e "
+   const fs = require('fs');
+   const base = JSON.parse(fs.readFileSync('opencode.json', 'utf8'));
+   const delta = JSON.parse(fs.readFileSync('delta.json', 'utf8'));
+   const merge = (b, d) => { for (const k of Object.keys(d)) b[k] = (b[k] && d[k] && typeof b[k] === 'object' && !Array.isArray(b[k])) ? merge(b[k], d[k]) : d[k]; return b; };
+   fs.writeFileSync('opencode.json.new', JSON.stringify(merge(base, delta), null, 2) + '\n');
+   " && mv opencode.json.new opencode.json
+   ```
+
    (`delta.json` = the chosen `{"mcp":{...}}` blob; `*` merges recursively, existing non-conflicting keys survive, delta wins on conflicts — which is exactly the chosen-enable set)
 3. Diff-check: `git diff opencode.json` (or plain diff vs a pre-made backup) must show ONLY the added `mcp.*` keys
 4. No jq available? Read the file, hand-merge the `mcp` key into the parsed object, and Write the full merged result — never emit a file missing previously-present keys
