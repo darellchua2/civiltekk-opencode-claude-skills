@@ -33,18 +33,21 @@
 ## Implementation Phases
 
 ### Phase 1: Head-class merge-method policy
-- [ ] **1.1** Rewrite Phase 1 step 3 of `skills/pr-merge-workflow-skill/SKILL.md`: classify by HEAD branch before merging — long-lived heads (`main`, `master`, `dev`, `develop`, `production`, `prod`, `uat`, `staging`, `stage`, `preprod`, `pre-dev`, `qa`, `test`, `integration`, `release/*`) merge with `gh pr merge <number> --merge --delete-branch=false` only; all other heads (feature/*, fix/*, hotfix/*, chore/*) keep `gh pr merge <number> --squash --delete-branch=false` regardless of base; add the one-line rationale (squash duplicates content under new SHAs when the head branch survives the merge, so promotion branches never converge — betekk-keycloak PRs #55/#72) and the escape hatch (explicit user instruction for that specific PR overrides in either direction; forced squash on a promotion requires a prior SHA-divergence warning; the autonomous loop in Step 3b never uses it)
+- [x] **1.1** Rewrite Phase 1 step 3 of `skills/pr-merge-workflow-skill/SKILL.md`: classify by HEAD branch before merging — long-lived heads (`main`, `master`, `dev`, `develop`, `production`, `prod`, `uat`, `staging`, `stage`, `preprod`, `pre-dev`, `qa`, `test`, `integration`, `release/*`) merge with `gh pr merge <number> --merge --delete-branch=false` only; all other heads (feature/*, fix/*, hotfix/*, chore/*) keep `gh pr merge <number> --squash --delete-branch=false` regardless of base; add the one-line rationale (squash duplicates content under new SHAs when the head branch survives the merge, so promotion branches never converge — betekk-keycloak PRs #55/#72) and the escape hatch (explicit user instruction for that specific PR overrides in either direction; forced squash on a promotion requires a prior SHA-divergence warning; the autonomous loop in Step 3b never uses it)
     — **Why:** root cause of the verified incident: the unconditional squash default flattened dev→uat promotions (head=dev), leaving uat 9 commits ahead with orphan artifacts; head-class is the true discriminator because the harm requires the head branch to survive the merge
     — **Done when:** `grep -c 'long-lived' skills/pr-merge-workflow-skill/SKILL.md` ≥ 2 (classifier + rationale), `grep -c 'merge using squash (default)'` = 0, and `grep -c 'SHA diverg'` ≥ 1 (hatch warning present — positive pin, deletion test fails)
     — **Consumers affected:** pr-workflow-subagent merge phase; primary sessions running PR merges; worktree-pipeline Step 10
-- [ ] **1.2** Replace the Step 3b hardcoded merge command (`gh pr merge <number> --squash --delete-branch`) with the same head-class classifier — `fix/ci-*` heads resolve to squash, so autonomous CI-fix behavior is unchanged; add a line that the escape hatch never applies inside this autonomous loop
+    — **Done:** Phase 1 step 3 rewritten to head-class classifier + rationale + escape hatch; files: skills/pr-merge-workflow-skill/SKILL.md; fixes: none
+- [x] **1.2** Replace the Step 3b hardcoded merge command (`gh pr merge <number> --squash --delete-branch`) with the same head-class classifier — `fix/ci-*` heads resolve to squash, so autonomous CI-fix behavior is unchanged; add a line that the escape hatch never applies inside this autonomous loop
     — **Why:** the auto-fix path would otherwise reintroduce the squash default through the back door on promotion merges, and the classifier must be single-sourced
     — **Done when:** the Step 3b block contains a `--merge` reference via the classifier (positive pin: `grep -c 'head-class\|head branch' ` over the Step 3b section ≥ 1) and no bare unconditional `--squash --delete-branch` remains outside the feature-head branch of the rule
     — **Consumers affected:** same as 1.1
-- [ ] **1.3** Align `skills/semantic-release-convention-skill/SKILL.md` to the same two-tier doctrine at all five squash-all locations (:18 merge-strategy line, :126, :196-214 §4 including flipping the repo-settings recommendation to "Allow merge commits: **Yes** (required for promotions)", :388, :401), reusing 1.1's head-class definition and long-lived list verbatim; feature/fix squash-merge stays the doctrine for conventional-commit-per-PR changelog integrity
+    — **Done:** Step 3b merge command replaced with head-class classifier reference + no-autonomous-hatch line; files: skills/pr-merge-workflow-skill/SKILL.md; fixes: none
+- [x] **1.3** Align `skills/semantic-release-convention-skill/SKILL.md` to the same two-tier doctrine at all five squash-all locations (:18 merge-strategy line, :126, :196-214 §4 including flipping the repo-settings recommendation to "Allow merge commits: **Yes** (required for promotions)", :388, :401), reusing 1.1's head-class definition and long-lived list verbatim; feature/fix squash-merge stays the doctrine for conventional-commit-per-PR changelog integrity
     — **Why:** BLOCK 1 — it is a self-declared governance skill ("other skills and agents MUST follow"); left as-is it contradicts the new rule and its "Allow merge commits: No" recommendation would defeat the fix at the GitHub-settings level
     — **Done when:** `grep -n 'All PRs are merged using' skills/semantic-release-convention-skill/SKILL.md` returns 0 matches and `grep -c 'long-lived' skills/semantic-release-convention-skill/SKILL.md` ≥ 1 and `grep -c 'Allow merge commits' skills/semantic-release-convention-skill/SKILL.md` ≥ 1
     — **Consumers affected:** repos applying the governance skill's settings checklist; semantic-release changelog flow (unchanged for feature/fix heads)
+    — **Done:** all five squash-all locations aligned to two-tier doctrine + settings flipped to "Allow merge commits: Yes"; files: skills/semantic-release-convention-skill/SKILL.md; fixes: none
 
 ### Phase 2: Registry drift check + verification gates + redeploy
 - [ ] **2.1** Run `node installer/build-registry.mjs --check`; on non-zero exit, inspect the drift, fix the frontmatter regression, and commit `installer/registry.json`
@@ -69,6 +72,11 @@
 - Head-class rationale (requirements relay GAP 1, confirmed): SHA divergence requires the head branch to survive the merge; a feature head dies post-merge, so squash is safe even into main.
 - Companion ticket: JIRA DA-2830 (betekk-keycloak repo-side AGENTS.md policy + uat→dev backflow; separate repo/pipeline run).
 - `worktree-pipeline-skill` and `agents/pr-workflow-subagent.md` own no merge-method default (verified); `repo-ops-specialist-subagent` merges generically — no edit.
+
+## Gate Trace
+
+GATE 8ed004b tier=light lint=- typecheck=- build=- unit=t e2e=-
+<!-- scoped: test_default_behavior + test_skill_isolation + test_autoresearch_protocol = 174 ok, exit 0; lint/typecheck/build n.a. (markdown-only phase, none configured); done-when greps verified for 1.1/1.2/1.3 -->
 
 ## Dependencies
 None external. Companion DA-2830 runs in a separate repo and does not block this change.
