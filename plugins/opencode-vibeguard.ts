@@ -382,14 +382,25 @@ function isPlainObject(value: any): boolean {
   return proto === Object.prototype || proto === null;
 }
 
-function walkDeep(node: any, seen: WeakSet<object>, leaf: (s: string) => string) {
+// Write-back contract: assign ONLY when the leaf actually changed, and never
+// into a frozen node. opencode 2.0.11 passes the question tool's input (and
+// possibly other UI-interactive tools') as a frozen object to execute.before —
+// an unconditional no-op write ("node[key] = leaf(v)" with leaf identity)
+// throws Bun's "Attempted to assign to readonly property" and hard-fails the
+// tool call. Degradation when a frozen payload DOES contain a placeholder: the
+// value stays masked in the UI instead of crashing the call.
+export function walkDeep(node: any, seen: WeakSet<object>, leaf: (s: string) => string) {
   if (!node || typeof node !== 'object') return;
   if (seen.has(node)) return;
   seen.add(node);
+  const frozen = Object.isFrozen(node);
   if (Array.isArray(node)) {
     for (let i = 0; i < node.length; i++) {
       const v = node[i];
-      if (typeof v === 'string') node[i] = leaf(v);
+      if (typeof v === 'string') {
+        const next = leaf(v);
+        if (next !== v && !frozen) node[i] = next;
+      }
       if (v && typeof v === 'object') walkDeep(v, seen, leaf);
     }
     return;
@@ -397,7 +408,10 @@ function walkDeep(node: any, seen: WeakSet<object>, leaf: (s: string) => string)
   if (!isPlainObject(node)) return;
   for (const key of Object.keys(node)) {
     const v = node[key];
-    if (typeof v === 'string') node[key] = leaf(v);
+    if (typeof v === 'string') {
+      const next = leaf(v);
+      if (next !== v && !frozen) node[key] = next;
+    }
     if (v && typeof v === 'object') walkDeep(v, seen, leaf);
   }
 }
