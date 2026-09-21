@@ -65,8 +65,8 @@ image path/URL is supplied (text, image, video, and pdf input). This native path
 If the runtime reports it **cannot** perceive the image (e.g. *"model does not support image
 input"* or the provider mis-routed the call to a text-only session), do **not** give up or
 fabricate a description. Instead, call the Z.AI vision
-API directly via `bash` (using `glm-5v-turbo` on the pay-as-you-go endpoint — a different model
-from the native one). Use this self-contained command:
+API directly via `bash` (using `glm-5.3-flash` — the same multimodal model this agent runs on
+natively, invoked over raw HTTP instead of the provider binding). Use this self-contained command:
 
 ```bash
 IMG="/path/to/image.png"; PROMPT="Describe this image in detail — text, UI, errors, layout, colors."
@@ -91,7 +91,7 @@ def url(s):
     except ImportError:
         m = subprocess.check_output(["file","-b","--mime-type",s]).decode().strip() or "image/png"
         return "data:%s;base64,%s" % (m, base64.b64encode(open(s,"rb").read()).decode())
-pl = json.dumps({"model": "glm-5v-turbo", "messages": [{"role":"user","content":[
+pl = json.dumps({"model": "glm-5.3-flash", "messages": [{"role":"user","content":[
     {"type":"text","text":prompt}, {"type":"image_url","image_url":{"url": url(src)}}]}]}).encode()
 req = urllib.request.Request(EP, data=pl, headers={"Authorization":"Bearer "+K, "Content-Type":"application/json"})
 try:
