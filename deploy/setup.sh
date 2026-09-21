@@ -2350,75 +2350,101 @@ setup_nodejs() {
     return 0
 }
 
-# Setup OpenCode
+# Setup OpenCode — installs the v2 CLI from the scoped npm package @opencode/cli
+# (the legacy opencode-ai package is the frozen v1 line; #499).
 setup_opencode() {
     echo ""
     echo "=== Installing/Updating OpenCode ==="
 
     # Ensure npm/node is available
     if ! command_exists npm; then
-        log_error "npm is not available. Cannot install opencode-ai."
+        log_error "npm is not available. Cannot install @opencode/cli."
         return 1
     fi
 
     # Check if already installed
     if command_exists opencode; then
         local current_version
-        current_version=$(opencode --version 2>/dev/null || echo "unknown")
+        # Normalize to a bare semver — `opencode --version` prints "opencode v2.0.11".
+        current_version=$(opencode --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
         local latest_version
-        latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
+        latest_version=$(npm view @opencode/cli version 2>/dev/null || echo "unknown")
 
-        log_info "opencode-ai is already installed (v${current_version})"
+        # v1 detection (#499): the v1 npm package opencode-ai is frozen at 1.x; v2
+        # ships as @opencode/cli. Per the v2 migrate-v1 docs, remove the
+        # package-managed v1 install BEFORE installing v2 — the two packages
+        # fight over the same `opencode` bin link.
+        case "$current_version" in
+            1.*)
+                log_warn "OpenCode v1 detected (v${current_version}) — the v1 package opencode-ai is frozen; v2 ships as @opencode/cli"
+                if prompt_yes_no "Migrate v1 to v2 now? (npm uninstall -g opencode-ai, then npm install -g @opencode/cli@latest)" "y"; then
+                    run_cmd npm uninstall -g opencode-ai
+                    run_cmd npm install -g @opencode/cli@latest
+
+                    if command_exists opencode; then
+                        log_success "OpenCode v2 installed ($(opencode --version 2>/dev/null))"
+                    else
+                        log_error "v1 to v2 migration failed"
+                        return 1
+                    fi
+                else
+                    log_info "Skipping v1 to v2 migration"
+                fi
+                return 0
+                ;;
+        esac
+
+        log_info "@opencode/cli is already installed (v${current_version})"
         log_info "Latest version: v${latest_version}"
 
         if [ "$current_version" != "$latest_version" ]; then
             echo ""
-            log_warn "An update is available for opencode-ai!"
+            log_warn "An update is available for @opencode/cli!"
 
             if prompt_yes_no "Would you like to update to the latest version?" "y"; then
-                log_info "Updating opencode-ai..."
-                run_cmd "npm install -g opencode-ai@latest"
+                log_info "Updating @opencode/cli..."
+                run_cmd "npm install -g @opencode/cli@latest"
 
                 if command_exists opencode; then
-                    log_success "opencode-ai updated successfully to $(opencode --version)"
+                    log_success "@opencode/cli updated successfully to $(opencode --version)"
                 else
-                    log_error "opencode-ai update failed"
+                    log_error "@opencode/cli update failed"
                     return 1
                 fi
             else
-                log_info "Skipping opencode-ai update"
+                log_info "Skipping @opencode/cli update"
             fi
         else
-            log_success "opencode-ai is already up to date"
+            log_success "@opencode/cli is already up to date"
 
-            if prompt_yes_no "Reinstall opencode-ai anyway?" "n"; then
-                log_info "Reinstalling opencode-ai..."
-                run_cmd "npm install -g opencode-ai"
-                log_success "opencode-ai reinstalled successfully"
+            if prompt_yes_no "Reinstall @opencode/cli anyway?" "n"; then
+                log_info "Reinstalling @opencode/cli..."
+                run_cmd "npm install -g @opencode/cli"
+                log_success "@opencode/cli reinstalled successfully"
             fi
         fi
     else
-        log_info "opencode-ai is not installed"
+        log_info "@opencode/cli is not installed"
 
-        if prompt_yes_no "Install opencode-ai now?" "y"; then
-            log_info "Installing opencode-ai..."
-            run_cmd "npm install -g opencode-ai"
+        if prompt_yes_no "Install OpenCode v2 now? (npm install -g @opencode/cli)" "y"; then
+            log_info "Installing @opencode/cli..."
+            run_cmd "npm install -g @opencode/cli"
 
             if command_exists opencode; then
-                log_success "opencode-ai installed successfully"
+                log_success "@opencode/cli installed successfully"
             else
-                log_error "opencode-ai installation failed"
+                log_error "@opencode/cli installation failed"
                 return 1
             fi
         else
-            log_warn "Skipping opencode-ai installation"
+            log_warn "Skipping @opencode/cli installation"
         fi
     fi
 
     return 0
 }
 
-# Update OpenCode CLI only
+# Update OpenCode CLI only — targets the v2 package @opencode/cli (#499)
 update_opencode_cli() {
     echo ""
     echo "=== Updating OpenCode CLI ==="
@@ -2426,40 +2452,63 @@ update_opencode_cli() {
 
     # Ensure npm/node is available
     if ! command_exists npm; then
-        log_error "npm is not available. Cannot update opencode-ai."
+        log_error "npm is not available. Cannot update @opencode/cli."
         log_info "Please install Node.js first: https://nodejs.org/"
         return 1
     fi
 
     # Check if opencode is installed
     if ! command_exists opencode; then
-        log_warn "opencode-ai is not installed."
-        if prompt_yes_no "Would you like to install opencode-ai now?" "y"; then
-            log_info "Installing opencode-ai..."
-            run_cmd "npm install -g opencode-ai"
+        log_warn "@opencode/cli is not installed."
+        if prompt_yes_no "Would you like to install OpenCode v2 now? (npm install -g @opencode/cli)" "y"; then
+            log_info "Installing @opencode/cli..."
+            run_cmd "npm install -g @opencode/cli"
             
             if command_exists opencode; then
-                log_success "opencode-ai installed successfully (v$(opencode --version 2>/dev/null))"
+                log_success "@opencode/cli installed successfully (v$(opencode --version 2>/dev/null))"
                 return 0
             else
-                log_error "opencode-ai installation failed"
+                log_error "@opencode/cli installation failed"
                 return 1
             fi
         else
-            log_info "Skipping opencode-ai installation"
+            log_info "Skipping @opencode/cli installation"
             return 0
         fi
     fi
 
-    # Get current version
+    # Get current version (normalized to a bare semver — the binary prints
+    # "opencode v2.0.11")
     local current_version
-    current_version=$(opencode --version 2>/dev/null || echo "unknown")
+    current_version=$(opencode --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
     log_info "Current version: v${current_version}"
+
+    # v1 detection (#499): migrate to @opencode/cli per the v2 migrate-v1 docs —
+    # remove the package-managed v1 install BEFORE installing v2 (bin-link fight).
+    case "$current_version" in
+        1.*)
+            log_warn "OpenCode v1 detected (v${current_version}) — the v1 package opencode-ai is frozen; v2 ships as @opencode/cli"
+            if prompt_yes_no "Migrate v1 to v2 now? (npm uninstall -g opencode-ai, then npm install -g @opencode/cli@latest)" "y"; then
+                run_cmd npm uninstall -g opencode-ai
+                run_cmd npm install -g @opencode/cli@latest
+
+                if command_exists opencode; then
+                    log_success "OpenCode v2 installed ($(opencode --version 2>/dev/null))"
+                else
+                    log_error "v1 to v2 migration failed"
+                    return 1
+                fi
+            else
+                log_info "Skipping v1 to v2 migration"
+            fi
+            return 0
+            ;;
+    esac
 
     # Get latest version
     local latest_version
     log_info "Checking for updates..."
-    latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
+    latest_version=$(npm view @opencode/cli version 2>/dev/null || echo "unknown")
     
     if [ "$latest_version" = "unknown" ]; then
         log_error "Could not fetch latest version from npm registry"
@@ -2471,13 +2520,13 @@ update_opencode_cli() {
 
     # Compare versions
     if [ "$current_version" = "$latest_version" ]; then
-        log_success "opencode-ai is already up to date!"
+        log_success "@opencode/cli is already up to date!"
         echo ""
         
         if prompt_yes_no "Force reinstall anyway?" "n"; then
-            log_info "Reinstalling opencode-ai..."
-            run_cmd "npm install -g opencode-ai@${latest_version}"
-            log_success "opencode-ai reinstalled successfully"
+            log_info "Reinstalling @opencode/cli..."
+            run_cmd "npm install -g @opencode/cli@${latest_version}"
+            log_success "@opencode/cli reinstalled successfully"
         fi
         
         return 0
@@ -2489,27 +2538,27 @@ update_opencode_cli() {
     # Check if auto-update is enabled
     if [ "$AUTO_ACCEPT" = true ]; then
         log_info "Auto-updating to latest version..."
-        run_cmd "npm install -g opencode-ai@latest"
+        run_cmd "npm install -g @opencode/cli@latest"
         
         local new_version
-        new_version=$(opencode --version 2>/dev/null || echo "unknown")
+        new_version=$(opencode --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
         
         if [ "$new_version" = "$latest_version" ]; then
-            log_success "opencode-ai updated successfully to v${new_version}"
+            log_success "@opencode/cli updated successfully to v${new_version}"
         else
             log_error "Update failed. Current version: v${new_version}"
             return 1
         fi
     else
-        if prompt_yes_no "Update opencode-ai to v${latest_version}?" "y"; then
-            log_info "Updating opencode-ai..."
-            run_cmd "npm install -g opencode-ai@latest"
+        if prompt_yes_no "Update @opencode/cli to v${latest_version}?" "y"; then
+            log_info "Updating @opencode/cli..."
+            run_cmd "npm install -g @opencode/cli@latest"
             
             local new_version
-            new_version=$(opencode --version 2>/dev/null || echo "unknown")
+            new_version=$(opencode --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
             
             if [ "$new_version" = "$latest_version" ]; then
-                log_success "opencode-ai updated successfully to v${new_version}"
+                log_success "@opencode/cli updated successfully to v${new_version}"
             else
                 log_error "Update failed. Current version: v${new_version}"
                 return 1

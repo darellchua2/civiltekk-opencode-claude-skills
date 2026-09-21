@@ -5,9 +5,9 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] Fresh-install path in `setup_opencode()` runs `npm install -g @opencode/cli`
+- [x] Fresh-install path in `setup_opencode()` runs `npm install -g @opencode/cli`
 - [ ] `update_opencode_cli()` and `check_for_updates_only()` compare against `@opencode/cli`
-- [ ] A detected v1 (`1.x`) install is offered the uninstall-then-install migration instead of a silent in-place "update"
+- [x] A detected v1 (`1.x`) install is offered the uninstall-then-install migration instead of a silent in-place "update"
 - [ ] `validate_opencode_install()` hint, `--help` text, and `print_summary()` labels reference `@opencode/cli`
 - [ ] `setup.ps1` header documents the v2 install command
 - [ ] `README.md` flag descriptions no longer say "requires opencode-ai installed"
@@ -30,18 +30,21 @@ Out of scope (must NOT change): `@opencode-ai/plugin` references (plugin SDK pac
 ## Implementation Phases
 
 ### Phase 1: Install + update paths target the v2 package (`deploy/setup.sh`)
-- [ ] **1.1** In `setup_opencode()`, rename every npm reference from `opencode-ai` to `@opencode/cli` (fresh install, reinstall, update, `npm view` probe) and normalize the current-version probe to extract a bare semver (`grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1`) so the equality check against `npm view @opencode/cli version` can actually match (today `opencode --version` prints `opencode v2.0.11`, which never equals `2.0.11`).
+- [x] **1.1** In `setup_opencode()`, rename every npm reference from `opencode-ai` to `@opencode/cli` (fresh install, reinstall, update, `npm view` probe) and normalize the current-version probe to extract a bare semver (`grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1`) so the equality check against `npm view @opencode/cli version` can actually match (today `opencode --version` prints `opencode v2.0.11`, which never equals `2.0.11`).
     — **Why:** These are the AC-1/AC-2 sites; the version normalization is what makes the AC-2 comparison meaningful rather than perpetually "update available".
     — **Done when:** `grep -n "opencode-ai" deploy/setup.sh` shows no remaining hits inside `setup_opencode()`; the version probe yields a bare `x.y.z`.
     — **Consumers affected:** full-setup users; `--update` users.
-- [ ] **1.2** In `setup_opencode()`, add a v1-detection branch before the update prompt: if the normalized current version starts with `1.`, warn that v1 is frozen and the official migration is `npm uninstall -g opencode-ai` **then** `npm install -g @opencode/cli@latest`, and offer it via `prompt_yes_no` (default y; run through `run_cmd` so `--dry-run` previews it).
+    — **Done:** all npm refs in setup_opencode renamed to @opencode/cli (install/reinstall/update/probe); probe normalized to bare semver; stub sim: v2.0.11 vs latest 2.0.11 reports "already up to date" (equality now matches); files: deploy/setup.sh; fixes: none
+- [x] **1.2** In `setup_opencode()`, add a v1-detection branch before the update prompt: if the normalized current version starts with `1.`, warn that v1 is frozen and the official migration is `npm uninstall -g opencode-ai` **then** `npm install -g @opencode/cli@latest`, and offer it via `prompt_yes_no` (default y; run through `run_cmd` so `--dry-run` previews it).
     — **Why:** AC-3 — the v2 docs (migrate-v1) require removing the package-managed v1 install before v2; the two packages fight over the same `opencode` bin link.
     — **Done when:** simulating a `1.x` version reaches the migration prompt; declining leaves the system untouched; `--dry-run` prints `[DRY-RUN] Would execute:` lines only.
     — **Consumers affected:** machines provisioned by earlier runs of this script (the v1 population this bug created).
-- [ ] **1.3** In `update_opencode_cli()`, apply the same package rename, the same semver normalization, and the same v1-detection migration branch (shared idiom with 1.1/1.2, per this file's existing convention of one body per entry point).
+    — **Done:** `case "$current_version" in 1.*)` branch added before the update logic; stub sim (opencode v1.18.31): reaches migration prompt, runs uninstall-then-install, reports success, never falls through to update logic; files: deploy/setup.sh; fixes: none
+- [x] **1.3** In `update_opencode_cli()`, apply the same package rename, the same semver normalization, and the same v1-detection migration branch (shared idiom with 1.1/1.2, per this file's existing convention of one body per entry point).
     — **Why:** AC-2/AC-3 — `--update` must not "update" a v2 install down to v1, and must offer v1 machines the migration.
     — **Done when:** `update_opencode_cli()` contains no `opencode-ai` install/view references; a `1.x` detection reaches the migration prompt.
     — **Consumers affected:** `./setup.sh --update` / `update` subcommand users.
+    — **Done:** rename + normalization + v1 branch applied (incl. both new_version probes); stub sim: v1.18.31 → prompt → uninstall + @opencode/cli@latest; files: deploy/setup.sh; fixes: none
 
 ### Phase 2: Message surface (`deploy/setup.sh`)
 - [ ] **2.1** Rename remaining `opencode-ai` mentions in `check_for_updates_only()` (npm probe + log strings), `validate_opencode_install()` (install hint), the `--help`/header comment blocks (lines ~30, 38, 51, 522, 533–537, 666, 761), and `print_summary()` status labels (lines ~4507–4512) to `@opencode/cli` (prose labels may read "OpenCode CLI (@opencode/cli)").
@@ -78,3 +81,12 @@ None — single contained ticket, no `blocked-by:` refs.
 - **Bin-link fight if v1 is not uninstalled first** — mitigated by the explicit uninstall-then-install order in the migration branch (1.2/1.3).
 - **Version-probe format drift** (`opencode v2.0.11` today, other formats historically) — mitigated by extracting the semver with a regex instead of trusting the full string.
 - **Bats stubs** — `validate_opencode_install` is stubbed by `tests/test_skills_only_parity.bats`; message-body changes cannot break a stub override (name-level contract only).
+
+## Gate Trace
+
+Full tier on every phase — deploy files are a critical-area anchor (§Tiered gating #1) and the ticket exit gate is full unconditionally. Lint = `bash -n deploy/setup.sh` (shellcheck not installed — closest executable substitute). Typecheck/build: no manifest targets exist in this repo (package.json has no scripts) — n.a, nothing invented. Unit = full vendored bats suite (`tests/lib/bats-core/bin/bats tests/`). E2E = n.a per the E2E rule (no Playwright; scripts/docs only). Pre-existing (identical on base, verified): BW01 warning in test_subcommands.bats (`load_user_preset` 127 via `bash -c` source — function-visibility quirk unrelated to this change).
+
+### Phase 1
+- WORK LOG: full-tier escalation reason — deploy/config file anchor (deploy/setup.sh).
+- WORK LOG: verification also included a 15-assertion stub harness (/tmp/opencode/plan499-phase1-sanity.sh) covering v1 migration, normalization equality, outdated-update, fresh-install, and update-path v1 detection — all green.
+- GATE (pending-commit sha) tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 517 ok / 0 fail.
