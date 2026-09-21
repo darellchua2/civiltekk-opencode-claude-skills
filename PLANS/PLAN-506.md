@@ -196,3 +196,4 @@ None external. Ticket #506 is standalone (no `blocked-by:`).
 
 GATE 79c6fb6 tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a — tree = 79c6fb6 (39/39 bats, registry --check, zero-ref, index-integrity, existence gates); this commit adds only the memo/trace lines.
 GATE 1ba03c9 tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a — review-fix tree (39/39 bats, registry --check, zero-ref, index-integrity 121/121); index summary/heading sync + tier-model-swap step 2.10 + 3 learning candidates + 2 bumps; PLAN-only lines after this sha.
+GATE 8bfebcd tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a — post-merge tree (origin/main #507 merged; index regenerated to 124/124, 3 merged summaries upgraded; 39/39 bats, registry --check, zero-ref clean).
