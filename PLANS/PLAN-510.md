@@ -18,6 +18,7 @@ _Before writing steps, list each touched file/module and who consumes it._
 | `AGENTS.md` §Skill / Agent Frontmatter Contract | — | skill authors; `opencode-skill-creation-skill` (mirrors it); tickets #512–#515 consume the vocabulary | low |
 | `skills/opencode-skill-creation-skill/SKILL.md` | AGENTS.md contract (must mirror, same vocabulary) | skill authors; `opencode-skills-maintainer-skill` audits against it | low |
 | `registry.json` (untouched, verified) | no frontmatter value changes in this ticket | installer, setup.sh counts | none |
+| `installer/build-registry.mjs` (not edited here) | parses SKILL.md frontmatter | sole extraction point for `os`/`harness` into `registry.json`; #514 extends it — init.mjs consumes registry.json only | info |
 
 ## Implementation Phases
 
@@ -30,9 +31,9 @@ _Before writing steps, list each touched file/module and who consumes it._
     — **Done:** metadata row extended to four sub-keys; `### Portability contract` appended with binding-block format + os/harness vocabulary + bash rule; files: AGENTS.md; fixes: none
 - [x] **1.2** Mirror the vocabulary in `skills/opencode-skill-creation-skill/SKILL.md`: update the `metadata:` frontmatter-template comment (line ~36) to the same four sub-keys and add a `## Portability` section with the condensed binding-block skeleton + bash rule.
     — **Why:** this skill is the author-facing checklist; a single-surface delta is exactly the drift the vocabulary exists to prevent.
-    — **Done when:** `rg -l 'protocol, pattern, os, harness' AGENTS.md skills/opencode-skill-creation-skill/SKILL.md` returns both files and the SKILL.md contains the binding-block skeleton.
+    — **Done when:** `rg -l 'protocol.*pattern.*os.*harness' AGENTS.md skills/opencode-skill-creation-skill/SKILL.md` returns both files (shape-insensitive — the AGENTS.md row backticks each token) and the SKILL.md contains the binding-block skeleton.
     — **Consumers affected:** skill authors; `opencode-skills-maintainer-skill` audits.
-    — **Done:** frontmatter comment + new `## Portability` section mirror the contract; files: skills/opencode-skill-creation-skill/SKILL.md; fixes: none
+    — **Done:** frontmatter comment + new `## Portability` section mirror the contract; verified with the shape-insensitive grep — both files match; files: skills/opencode-skill-creation-skill/SKILL.md; fixes: none
 
 ### Phase 2: Verify no runtime/registry drift
 
@@ -57,6 +58,7 @@ Note: final commit aeb80c6 (and any later PLAN-trace-only commits) differ from b
   - Other/none: <portable fallback>
   ```
 - `metadata` remains an opaque string map — `os`/`harness` are list-shaped strings (`[linux, macos]`), read only by installer/init.mjs warnings (#514).
+  > Correction (2026-09-21, Mode R relay): values are **double-quoted comma-separated strings** — `os: "linux, macos"`, `harness: "opencode"`, never brackets (runtime schema is a string-to-string map; the registry parser yields literal bracket text for flow sequences). AGENTS.md §Portability contract is the source of truth; #514 extracts via build-registry.mjs.
 - Keep the AGENTS.md subsection ≤ ~30 lines; the skill version is the condensed author checklist, not a duplicate of the contract prose.
 
 ## Dependencies
@@ -65,3 +67,5 @@ Note: final commit aeb80c6 (and any later PLAN-trace-only commits) differ from b
 ## Risks & Mitigation
 - *Vocabulary drift between the two files* → 1.2 immediately after 1.1, verified by a two-file grep in the same gate.
 - *Registry accidentally regenerated* → 2.1 asserts `registry.json` is byte-identical.
+GATE 2410722 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+Note: review-fix re-gate (contract Step 9) — post-review fixes (vocabulary spelling pin, done-when grep shape, consumer-map producer row, fallback wording, overclaim soften) + LEARNINGS capture; tree-equivalent PLAN-only commits may follow.

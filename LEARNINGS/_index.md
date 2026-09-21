@@ -920,3 +920,21 @@
 - **Summary**: v2 foreground shell defaults to 120000 ms; doc'd commands whose own bound exceeds it (zai-video §3 `curl --max-time 600`) get harness-killed before their internal limit unless the doc names an explicit `timeout` ≥ the bound or runs the command as a background command (#507)
 - **Date**: 2026-09-21
 
+
+### Pin vocabulary value shape at introduction
+
+- **Category**: convention
+- **File**: `conventions/pin-vocabulary-value-shape-at-introduction.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: pin the exact YAML value spelling (quoting included) in the change that introduces new frontmatter vocabulary — `[a, b]` flow sequences, quoted strings, and block sequences all parse differently under the zero-dep registry parser; canonical here is `os: "linux, macos"` (#510 review + Mode R)
+- **Date**: 2026-09-21
+
+### Consumer map missing producer node
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/consumer-map-missing-producer-node.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: a consumer map listing only direct edit targets misses the producer that carries data to downstream consumers — walk producer → carrier → consumer, not just the diff's files; build-registry.mjs was omitted and #514's warning was unimplementable without it (#510 review)
+- **Date**: 2026-09-21

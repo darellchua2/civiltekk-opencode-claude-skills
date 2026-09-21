@@ -91,7 +91,7 @@ After ANY frontmatter change: run `node installer/build-registry.mjs` and commit
 
 ### Portability contract
 
-Skills deploy to multiple harness targets (`--target claude|agents|kimi|kilo`) and OSes. Three rules, enforced by the portability guard test (#515):
+Skills deploy to multiple harness targets (`--target claude|agents|kimi|kilo`) and OSes. Three rules; the portability guard test (#515) enforces rules 1–2, review enforces rule 3:
 
 1. **Capability-binding block** — a skill body that invokes a harness-specific runtime mechanism presents it as a capability with per-harness bindings plus a portable fallback (the agent self-selects its row; unknown harnesses fall through to the fallback):
 
@@ -102,9 +102,9 @@ Skills deploy to multiple harness targets (`--target claude|agents|kimi|kilo`) a
    - Other/none: <portable fallback — nohup+log-poll / plain-reply question / inline>
    ```
 
-2. **Metadata vocabulary** — `metadata` gains two house sub-keys (still opaque, zero runtime effect, installer-read only):
-   - `os: [linux, macos, windows]` — declare when the skill does NOT run everywhere (e.g. xvfb/pkill → `[linux]`).
-   - `harness: opencode` — declare on skills about OpenCode itself (creation/migration/config-audit); #514 adds the `installer/init.mjs` warning for cross-target installs.
+2. **Metadata vocabulary** — `metadata` gains two house sub-keys (still opaque, zero runtime effect). Values are **double-quoted, comma-separated lowercase strings** — the runtime schema is a string-to-string map and the registry parser has no flow-sequence support, so never brackets or block sequences:
+   - `os: "linux, macos"` — declare when the skill does NOT run everywhere (e.g. xvfb/pkill → `os: "linux"`); omit when unrestricted.
+   - `harness: "opencode"` — declare on skills about OpenCode itself (creation/migration/config-audit). `installer/build-registry.mjs` extracts both into `registry.json`; #514 adds the `installer/init.mjs` warning for cross-target/platform installs (init.mjs reads `registry.json` only).
 3. **Bash rule** — every bash snippet states `Requires bash (git-bash/WSL on Windows)` or is written as a `node -e` one-liner (Node is guaranteed wherever the installer ran; jq/xvfb/pkill are not).
 
 ## Return Contract

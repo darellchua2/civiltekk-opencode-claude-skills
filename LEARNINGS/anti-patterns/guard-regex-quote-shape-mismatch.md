@@ -30,3 +30,9 @@ fences can mispair; (2) a canary pass that doesn't reproduce byte-exactly is
 itself a finding — one round-1 "✓" came from grepping `^not ok 3` on a test
 that was failing with an AttributeError, so every plant looked caught. Verify
 canaries by running the target test alone and reading its failure output.
+
+#510 instance: PLAN-510.md step 1.2's done-when used the literal
+`rg 'protocol, pattern, os, harness'` while AGENTS.md:83 backticks each token —
+the recorded verification could not have matched as written. Same failure mode
+as #437: grep the historical/canonical spellings, or use a shape-insensitive
+pattern (`'protocol.*pattern.*os.*harness'`).

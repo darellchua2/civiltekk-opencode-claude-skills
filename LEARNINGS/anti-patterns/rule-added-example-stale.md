@@ -6,3 +6,10 @@
 - **Added**: 2026-09-19 (#417 re-review)
 
 Adding a normative rule to a skill (e.g. title-prefix parity at `ticket-creation-skill/SKILL.md:148`) without updating the same file's Example Usage that illustrates the flow leaves the example teaching the deprecated behavior — examples are the strongest prompt signal agents copy. Genus of `heading-rename-syncs-quoted-pointers`: when a commit adds or changes a rule, sweep the file's own examples of that flow in the same commit.
+
+#510 instance: skills/agent-introspection-debugging-skill/SKILL.md:98 still
+asserts "the v2 frontmatter contract reserves metadata sub-keys
+`protocol`/`pattern` only" in present tense after #510 extended the contract to
+four sub-keys — the strongest remaining teacher of the superseded rule. Scope
+historical claims ("at the time, pre-#510") when a rule change lands; fold the
+fix into #515 docs-sync.

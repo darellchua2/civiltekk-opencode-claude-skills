@@ -68,10 +68,10 @@ Skills ship to other harnesses (`--target claude|agents|kimi|kilo`) and OSes. Th
    <capability sentence>.
    - OpenCode: <mechanism>
    - Claude Code: <mechanism>
-   - Other/none: <portable fallback — nohup+log-poll / ask in plain reply / inline>
+   - Other/none: <portable fallback — nohup+log-poll / plain-reply question / inline>
    ```
 
-2. **Metadata vocabulary** (installer-only, zero runtime effect): `metadata.os: [linux, macos, windows]` when the skill does not run everywhere; `metadata.harness: opencode` when the skill is about OpenCode itself.
+2. **Metadata vocabulary** (installer-only, zero runtime effect): double-quoted comma-separated strings, never brackets — `metadata.os: "linux, macos"` when the skill does not run everywhere; `metadata.harness: "opencode"` when the skill is about OpenCode itself.
 3. **Bash rule** — every bash snippet carries `Requires bash (git-bash/WSL on Windows)` or becomes a `node -e` one-liner (Node is guaranteed: the installer is npx-based).
 
 ## File safety
