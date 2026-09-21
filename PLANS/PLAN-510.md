@@ -46,6 +46,7 @@ _Before writing steps, list each touched file/module and who consumes it._
 
 GATE 7787015 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
 GATE b69a349 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+Note: final commit aeb80c6 (and any later PLAN-trace-only commits) differ from b69a349 by the PLAN file alone; the full gate ran on the b69a349 tree content. CI is the unconditional re-run.
 
 ## Technical Notes
 - Binding-block canonical shape (from zai-video-skill:90 prior art):
