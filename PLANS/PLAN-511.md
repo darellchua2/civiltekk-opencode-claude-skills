@@ -22,14 +22,16 @@
 
 ### Phase 1: generate-template SKILL.md — env-var path resolution
 
-- [ ] **1.1** Add a `## Running the snippets` note defining `SKILL_DIR` = the directory containing that SKILL.md (the skill loader prints it; e.g. `~/.config/opencode/skills/pptx-generate-template-skill`), then rewrite the five `python -c` snippet path lines (74, 116, 139, 182, 199) from `sys.path.insert(0,'.opencode/skills/...')` to `sys.path.insert(0, os.path.join(os.environ['SKILL_DIR'], 'scripts', '_common'))` with `import os` added and the invocation prefixed `SKILL_DIR=<skill-dir> `.
+- [x] **1.1** Add a `## Running the snippets` note defining `SKILL_DIR` = the directory containing that SKILL.md (the skill loader prints it; e.g. `~/.config/opencode/skills/pptx-generate-template-skill`), then rewrite the five `python -c` snippet path lines (74, 116, 139, 182, 199) from `sys.path.insert(0,'.opencode/skills/...')` to `sys.path.insert(0, os.path.join(os.environ['SKILL_DIR'], 'scripts', '_common'))` with `import os` added and the invocation prefixed `SKILL_DIR=<skill-dir> `.
     — **Why:** env-var resolution survives every bash invocation shape (double-quoted `-c`, heredocs) and every install target; the loader-stated base dir is the one path the agent always knows.
     — **Done when:** `rg -c "\.opencode/skills" skills/pptx-generate-template-skill/SKILL.md` returns 0 (after 1.2) and a snippet runs from a copied skill dir.
     — **Consumers affected:** agents executing the pipeline; none downstream in-repo.
-- [ ] **1.2** Update the doc-only engine reference (line 233) to path-neutral wording ("`scripts/_common/schema_extractor.py` inside the skill directory").
+    — **Done:** note added; 5 snippet lines rewritten (replaceAll); deviation — `export SKILL_DIR=…` once per session instead of per-invocation prefix (same env mechanism, lighter); files: skills/pptx-generate-template-skill/SKILL.md; fixes: none
+- [x] **1.2** Update the doc-only engine reference (line 233) to path-neutral wording ("`scripts/_common/schema_extractor.py` inside the skill directory").
     — **Why:** same literal, same bug class, doc surface.
     — **Done when:** no `.opencode/skills` literal remains anywhere in this SKILL.md.
     — **Consumers affected:** none.
+    — **Done:** engine reference path-neutral; literals 0; isolation guard green; files: skills/pptx-generate-template-skill/SKILL.md; fixes: none
 
 ### Phase 2: template-modifier SKILL.md — own dir + declared-prerequisite sibling
 
