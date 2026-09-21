@@ -590,3 +590,18 @@
 - **Scope**: project
 - **Summary**: count-drift sweeps must include LEARNINGS/ (docs-of-record), and docs-of-record should cite search anchors not file:line — line refs rot within weeks (#481 review)
 - **Date**: 2026-09-20
+
+### Invariant scope: quantifier must match the loop it lives in
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/invariant-scope-quantifier-vs-per-phase-loop.md`
+
+### Format-token census classifies deferral-by-name as verified-compatible
+
+- **Category**: pattern
+- **File**: `patterns/format-token-census-deferral-classification.md`
+
+### Transient cross-file contract drift between per-phase commits is safe iff pinned
+
+- **Category**: pattern
+- **File**: `patterns/phased-canonical-contract-drift-window.md`

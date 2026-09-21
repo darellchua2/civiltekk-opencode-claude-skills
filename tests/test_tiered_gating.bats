@@ -71,6 +71,15 @@ VL="$SKILLS_DIR/verification-loop-skill/SKILL.md"
   grep -qF 'unit=t|-|n.a' "$VL"
 }
 
+@test "tier1_gating_verification-loop_full_gate_cross_reference" {
+  grep -qiF 'This sequence is the **full gate**' "$VL"
+}
+
+@test "tier1_gating_verification-loop_dash_token_gloss" {
+  grep -qiF 'An axis skipped **by tier**' "$VL"
+  grep -qiF 'build has no `n.a` form' "$VL"
+}
+
 @test "tier1_gating_verification-loop_na_gloss_light_only" {
   grep -qF 'unit=n.a' "$VL"
   grep -qiF 'never INCONCLUSIVE' "$VL"
@@ -80,6 +89,7 @@ VL="$SKILLS_DIR/verification-loop-skill/SKILL.md"
 @test "tier1_gating_verification-loop_push_invariant" {
   grep -qi 'push invariant' "$VL"
   grep -qiF 'tier=full` memo' "$VL"
+  grep -qiF '**final** pushed SHA' "$VL"
 }
 
 @test "tier1_gating_verification-loop_ci_only_unconditional_rerun_unchanged" {
@@ -102,8 +112,20 @@ PE="$SKILLS_DIR/plan-execution-skill/SKILL.md"
   grep -qiF 'runs full unconditionally' "$PE"
 }
 
-@test "tier2_gating_plan-execution_memo_tier_token" {
-  grep -qF 'tier=light|full' "$PE"
+@test "tier2_gating_plan-execution_memo_tier_token_derived_from_contract" {
+  # Derived pin (derived-consistency-pins): PE's memo line must equal VL's
+  vl_format=$(grep -oE 'GATE <short-sha> [^`]*' "$VL" | head -1)
+  [ -n "$vl_format" ]
+  grep -qF "$vl_format" "$PE"
+}
+
+@test "tier2_gating_plan-execution_phase_advance_tier_invariant" {
+  grep -qF 'applicable gate tier is green' "$PE"
+}
+
+@test "tier2_gating_plan-execution_final_push_invariant" {
+  grep -qF '**final** pushed SHA of the run' "$PE"
+  grep -qiF 'phase evidence' "$PE"
 }
 
 @test "tier2_gating_plan-execution_escalation_logging" {

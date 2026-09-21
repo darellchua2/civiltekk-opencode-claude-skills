@@ -51,8 +51,8 @@ GATE <short-sha> tier=light|full lint=t typecheck=t build=t|- unit=t|-|n.a e2e=t
 ```
 
 - `tier` records which tier ran (§Tiered gating).
-- An axis with no applicable check records `n.a` — e.g. `unit=n.a` on a light gate whose phase had zero affected tests. `n.a` means non-applicable, never INCONCLUSIVE. `unit=n.a` is valid only on `tier=light` memos: the full gate always runs the full unit suite, so a push-authorizing `tier=full` memo can never carry it.
-- **Push invariant**: the pushed SHA must carry a green `tier=full` memo — the ticket exit gate plus any post-gate fix re-gate provide it. A `tier=light` line is phase evidence, never a push authorization.
+- An axis with no applicable check records `n.a` — e.g. `unit=n.a` on a light gate whose phase had zero affected tests. `n.a` means non-applicable, never INCONCLUSIVE. `unit=n.a` is valid only on `tier=light` memos: the full gate always runs the full unit suite, so a push-authorizing `tier=full` memo can never carry it. An axis skipped **by tier** (build/e2e on a light gate) records `-`; `n.a` is reserved for an axis with no applicable **target** (E2E-rule skip, zero affected tests) — build has no `n.a` form.
+- **Push invariant**: the **final** pushed SHA must carry a green `tier=full` memo — the ticket exit gate plus any post-gate fix re-gate provide it; intermediate phase pushes carry their tier memo as phase evidence. A `tier=light` line is never a push authorization.
 - Same tree SHA already green since the last gate → later pipeline stages skip the re-run and state it.
 - No memo for the current SHA → run the gates. Skipping on absent evidence is forbidden.
 - CI (`gh pr checks`) remains the only unconditional re-run (post-push).
