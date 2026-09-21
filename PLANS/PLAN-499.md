@@ -108,3 +108,9 @@ Full tier on every phase — deploy files are a critical-area anchor (§Tiered g
 - WORK LOG: fix-on-fail attempt 1 — test 4's grep pattern `install -g opencode-ai` substring-matched the required migration line `npm uninstall -g opencode-ai` (unanchored-grep false-positive class, cf. LEARNINGS anti-patterns); re-anchored to `npm install -g opencode-ai|npm view opencode-ai`.
 - WORK LOG: fix-on-fail attempt 1 (test 3) — stub left `opencode` missing post-"install", exercising the failure branch + sourced ERR trap (`BASH_LINENO[0]` unbound under nounset → rc 127); stub now flips INSTALLED so the success branch runs.
 - GATE (push head) tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 521 ok / 0 fail (517 prior + 4 new #499 pins).
+
+### Post-review fixes (Step 9, iteration 1 of 2)
+- WORK LOG: code-review-subagent — 0 Critical / 1 mandatory (WARN) / 4 Minor; Requirements Gaps: []. Applied: (1) decline-migration branches now log_warn the silent plugins-key consequence (setup_opencode + update_opencode_cli); (2) print_summary labels 1.x installs `opencode-ai (v1)` with a migrate hint instead of certifying them as @opencode/cli; (3) shared `normalize_version()` helper replaces all 5 compare probes and normalizes both raw display interpolations (reviewer NOTE adopted; the 2-site migration-block duplication and run_cmd-style notes explicitly deferred per reviewer scope).
+- WORK LOG: LEARNINGS captured — decisions/v1-to-v2-migrate-uninstall-before-install.md, anti-patterns/partial-version-normalization-sweep.md (+ _index entries).
+- WORK LOG: 4b for fix code — 2 new tests (decline warn, summary v1 honesty) in tests/test_v2_cli_package.bats.
+- GATE (push head) tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a — bash -n ok; bats 523 ok / 0 fail (521 prior + 2 review-fix pins). This is the ticket exit gate on the final tree.

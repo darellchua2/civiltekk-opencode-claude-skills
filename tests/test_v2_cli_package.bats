@@ -65,6 +65,32 @@ STUB
   [[ "$output" == *"RUN-CMD: npm install -g @opencode/cli"* ]]
 }
 
+@test "setup_opencode_declined_migration_warns_about_plugins_key" {
+  local d; d="$(mktemp -d)"
+  # v1 stubs with the migration prompt declined — the decline branch must warn
+  # about the silent plugins-key failure instead of a quiet log_info.
+  run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1; $(v1_env)
+    prompt_yes_no(){ return 1; }
+    setup_opencode"
+  rm -rf "$d"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Skipping v1 to v2 migration"* ]]
+  [[ "$output" == *"silently ignores"* ]]
+}
+
+@test "print_summary_labels_v1_install_honestly" {
+  local d; d="$(mktemp -d)"
+  # A 1.x install must NOT be certified under the @opencode/cli label in the
+  # setup summary — it gets an explicit opencode-ai (v1) warning instead.
+  run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1; SKILL_PROFILE=lean
+    command_exists(){ case \"\$1\" in opencode|npm) return 0;; *) return 1;; esac; }
+    opencode(){ echo 'opencode v1.18.31'; }
+    print_summary"
+  rm -rf "$d"
+  [[ "$output" == *"opencode-ai (v1): Installed v1.18.31"* ]]
+  [[ "$output" != *"✓ @opencode/cli: Installed"* ]]
+}
+
 @test "setup_sh_has_no_v1_package_install_or_probe_references" {
   # The ONLY permitted opencode-ai references are the v1-detection/migration
   # strings (uninstall target + explanatory prose). Install/update/probe must

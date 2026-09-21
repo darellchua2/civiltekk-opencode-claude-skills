@@ -1117,6 +1117,17 @@ run_cmd() {
     fi
 }
 
+# Extract a bare x.y.z semver from a version banner ("opencode v2.0.11" ->
+# "2.0.11"). Empty or unparseable banners normalize to "unknown". Every
+# version compare AND display site goes through this so equality checks and
+# summaries agree on the format (#499).
+normalize_version() {
+    local v
+    v=$(printf '%s' "${1:-}" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || v="unknown"
+    [ -n "$v" ] || v="unknown"
+    echo "$v"
+}
+
 # Prompt user with default
 prompt_user() {
     local prompt_message="$1"
@@ -2366,7 +2377,7 @@ setup_opencode() {
     if command_exists opencode; then
         local current_version
         # Normalize to a bare semver — `opencode --version` prints "opencode v2.0.11".
-        current_version=$(opencode --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+        current_version=$(normalize_version "$(opencode --version 2>/dev/null)")
         local latest_version
         latest_version=$(npm view @opencode/cli version 2>/dev/null || echo "unknown")
 
@@ -2388,7 +2399,7 @@ setup_opencode() {
                         return 1
                     fi
                 else
-                    log_info "Skipping v1 to v2 migration"
+                    log_warn "Skipping v1 to v2 migration — the v1 binary silently ignores the deployed config's v2 plugins key; re-run ./deploy/setup.sh to migrate"
                 fi
                 return 0
                 ;;
@@ -2465,7 +2476,7 @@ update_opencode_cli() {
             run_cmd "npm install -g @opencode/cli"
             
             if command_exists opencode; then
-                log_success "@opencode/cli installed successfully (v$(opencode --version 2>/dev/null))"
+                log_success "@opencode/cli installed successfully (v$(normalize_version "$(opencode --version 2>/dev/null)"))"
                 return 0
             else
                 log_error "@opencode/cli installation failed"
@@ -2480,7 +2491,7 @@ update_opencode_cli() {
     # Get current version (normalized to a bare semver — the binary prints
     # "opencode v2.0.11")
     local current_version
-    current_version=$(opencode --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+    current_version=$(normalize_version "$(opencode --version 2>/dev/null)")
     log_info "Current version: v${current_version}"
 
     # v1 detection (#499): migrate to @opencode/cli per the v2 migrate-v1 docs —
@@ -2499,7 +2510,7 @@ update_opencode_cli() {
                     return 1
                 fi
             else
-                log_info "Skipping v1 to v2 migration"
+                log_warn "Skipping v1 to v2 migration — the v1 binary silently ignores the deployed config's v2 plugins key; re-run ./deploy/setup.sh to migrate"
             fi
             return 0
             ;;
@@ -2541,7 +2552,7 @@ update_opencode_cli() {
         run_cmd "npm install -g @opencode/cli@latest"
         
         local new_version
-        new_version=$(opencode --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+        new_version=$(normalize_version "$(opencode --version 2>/dev/null)")
         
         if [ "$new_version" = "$latest_version" ]; then
             log_success "@opencode/cli updated successfully to v${new_version}"
@@ -2555,7 +2566,7 @@ update_opencode_cli() {
             run_cmd "npm install -g @opencode/cli@latest"
             
             local new_version
-            new_version=$(opencode --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+            new_version=$(normalize_version "$(opencode --version 2>/dev/null)")
             
             if [ "$new_version" = "$latest_version" ]; then
                 log_success "@opencode/cli updated successfully to v${new_version}"
@@ -4459,7 +4470,7 @@ check_for_updates_only() {
         log_warn "@opencode/cli is not installed"
         return 1
     fi
-    current_version=$(opencode --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+    current_version=$(normalize_version "$(opencode --version 2>/dev/null)")
 
     # Get latest version
     local latest_version
@@ -4561,10 +4572,18 @@ print_summary() {
         echo "✗ Node.js: Not installed"
     fi
 
-    # @opencode/cli status
+    # @opencode/cli status — v1 installs are labeled honestly: a v1 binary
+    # silently ignores the deployed config's v2 plugins key (#499)
     if command_exists opencode; then
-        opencode_version=$(opencode --version 2>/dev/null || echo "unknown")
-        echo "✓ @opencode/cli: Installed v${opencode_version}"
+        opencode_version=$(normalize_version "$(opencode --version 2>/dev/null || echo "unknown")")
+        case "$opencode_version" in
+            1.*)
+                echo "⚠ opencode-ai (v1): Installed v${opencode_version} — v1 ignores the v2 plugins config; run ./deploy/setup.sh to migrate to @opencode/cli"
+                ;;
+            *)
+                echo "✓ @opencode/cli: Installed v${opencode_version}"
+                ;;
+        esac
     else
         echo "✗ @opencode/cli: Not installed"
     fi

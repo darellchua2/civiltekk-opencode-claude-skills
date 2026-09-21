@@ -863,3 +863,21 @@
 - **Scope**: project
 - **Summary**: editing a canonical contract and its deferring consumers in separate per-phase commits restates a stale format mid-window — safe iff the surface defers by name AND no test pins the stale example; verify both, don't reorder phases (#488)
 - **Date**: 2026-09-21
+
+### v1-to-v2 CLI migration must uninstall before install
+
+- **Category**: decision
+- **File**: `decisions/v1-to-v2-migrate-uninstall-before-install.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: `opencode-ai` (frozen v1) and `@opencode/cli` (v2) share the `opencode` bin link — migration must run uninstall-then-install (official migrate-v1 order); declines warn (v1 silently ignores the v2 plugins key) and print_summary labels 1.x installs honestly (#499)
+- **Date**: 2026-09-21
+
+### Partial version-normalization sweep leaves display sites lying
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/partial-version-normalization-sweep.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: normalizing a version banner only at compare sites leaves display/summary interpolation printing raw banners and can mislabel the installed package across a format-crossing upgrade — one shared normalizer for every consumer, compare AND display (#499 review)
+- **Date**: 2026-09-21
