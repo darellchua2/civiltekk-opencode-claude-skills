@@ -120,14 +120,16 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 5: Repo hygiene
 
-- [ ] **5.1** `git rm LEARNINGS-ASSESSMENT.html`
+- [x] **5.1** `git rm LEARNINGS-ASSESSMENT.html`
     — **Why:** 82KB tracked artifact from 2026-08-04, zero references repo-wide (audit-verified), superseded by the restructured `LEARNINGS/` tree it assessed
     — **Done when:** file absent from disk and index
     — **Consumers affected:** none
-- [ ] **5.2** Append `.pytest_cache/` to `.gitignore`
+    — **Done:** git rm LEARNINGS-ASSESSMENT.html (82KB, zero refs audit-verified); files: LEARNINGS-ASSESSMENT.html; fixes: none
+- [x] **5.2** Append `.pytest_cache/` to `.gitignore`
     — **Why:** the untracked local debris shows in `git status` noise on every pytest run
     — **Done when:** `git check-ignore .pytest_cache/` exits 0
     — **Consumers affected:** local developer workflows
+    — **Done:** .pytest_cache/ appended to .gitignore; git check-ignore exits 0; files: .gitignore; fixes: none
 
 ### Phase 6: Verification gates (ticket exit — tier=full)
 
