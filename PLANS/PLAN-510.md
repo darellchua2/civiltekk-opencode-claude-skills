@@ -23,14 +23,16 @@ _Before writing steps, list each touched file/module and who consumes it._
 
 ### Phase 1: Define the portability vocabulary (AGENTS.md, then mirror)
 
-- [ ] **1.1** In `AGENTS.md` §Skill / Agent Frontmatter Contract, extend the `metadata` row to `House sub-keys: protocol, pattern, os, harness` and append a `### Portability contract` subsection defining (a) the capability-binding block format — capability sentence, then per-harness rows (OpenCode, Claude Code), then a portable-fallback row; (b) `metadata.os: [linux, macos, windows]` and `metadata.harness: opencode` as installer-only, zero-runtime-effect vocabulary; (c) the bash rule — every bash snippet carries `Requires bash (git-bash/WSL on Windows)` or becomes a `node -e` one-liner.
+- [x] **1.1** In `AGENTS.md` §Skill / Agent Frontmatter Contract, extend the `metadata` row to `House sub-keys: protocol, pattern, os, harness` and append a `### Portability contract` subsection defining (a) the capability-binding block format — capability sentence, then per-harness rows (OpenCode, Claude Code), then a portable-fallback row; (b) `metadata.os: [linux, macos, windows]` and `metadata.harness: opencode` as installer-only, zero-runtime-effect vocabulary; (c) the bash rule — every bash snippet carries `Requires bash (git-bash/WSL on Windows)` or becomes a `node -e` one-liner.
     — **Why:** tickets #512–#515 apply this vocabulary mechanically; defining it first prevents format re-litigation mid-pipeline.
     — **Done when:** `rg -n '### Portability contract' AGENTS.md` matches and the `metadata` row lists all four sub-keys.
     — **Consumers affected:** `opencode-skill-creation-skill` (must mirror — 1.2), all future skill authors.
-- [ ] **1.2** Mirror the vocabulary in `skills/opencode-skill-creation-skill/SKILL.md`: update the `metadata:` frontmatter-template comment (line ~36) to the same four sub-keys and add a `## Portability` section with the condensed binding-block skeleton + bash rule.
+    — **Done:** metadata row extended to four sub-keys; `### Portability contract` appended with binding-block format + os/harness vocabulary + bash rule; files: AGENTS.md; fixes: none
+- [x] **1.2** Mirror the vocabulary in `skills/opencode-skill-creation-skill/SKILL.md`: update the `metadata:` frontmatter-template comment (line ~36) to the same four sub-keys and add a `## Portability` section with the condensed binding-block skeleton + bash rule.
     — **Why:** this skill is the author-facing checklist; a single-surface delta is exactly the drift the vocabulary exists to prevent.
     — **Done when:** `rg -l 'protocol, pattern, os, harness' AGENTS.md skills/opencode-skill-creation-skill/SKILL.md` returns both files and the SKILL.md contains the binding-block skeleton.
     — **Consumers affected:** skill authors; `opencode-skills-maintainer-skill` audits.
+    — **Done:** frontmatter comment + new `## Portability` section mirror the contract; files: skills/opencode-skill-creation-skill/SKILL.md; fixes: none
 
 ### Phase 2: Verify no runtime/registry drift
 

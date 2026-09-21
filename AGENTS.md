@@ -80,7 +80,7 @@ Verified against opencode.ai v2 docs 2026-09-14. All new/edited SKILL.md and age
 | `description` | Required, 1–1024 chars. House style: ≤50 words, preserve trigger phrases |
 | `license` | `Apache-2.0` (house default; existing MIT exceptions grandfathered) |
 | `compatibility` | `opencode` |
-| `metadata` | Opaque string map, zero runtime behavior. House sub-keys: `protocol`, `pattern` only |
+| `metadata` | Opaque string map, zero runtime behavior. House sub-keys: `protocol`, `pattern`, `os`, `harness` (portability — see §Portability contract) |
 | `category` | Installer-registry-only (build-registry.mjs, init.mjs, setup.sh counts) — invisible to OpenCode, never delete |
 
 Skill gating does NOT belong in SKILL.md — it lives in the `permissions` array (`action:"skill"` rules) of `opencode.json` or agent frontmatter only.
@@ -88,6 +88,24 @@ Skill gating does NOT belong in SKILL.md — it lives in the `permissions` array
 **Agents — runtime-read keys:** `description` (required), `steps`, `disabled`, `system` (JSON prompt key; legacy `prompt` auto-translated), `model` (string or `model#variant`), `permissions` (NOT deprecated `tools`; array of `{action,resource,effect}` rules), `mode`, `hidden`, `color`, `request.body.temperature`, `request.body.top_p`. Source files ship no `model:` — tiers inject it at deploy time. `category` is installer-registry-only. Source agent `.md` files ship native v2 frontmatter: `permissions:` rules arrays (order matters — last matching rule wins), no `model:` (tier-injected at deploy); the markdown body is the system prompt.
 
 After ANY frontmatter change: run `node installer/build-registry.mjs` and commit `registry.json`.
+
+### Portability contract
+
+Skills deploy to multiple harness targets (`--target claude|agents|kimi|kilo`) and OSes. Three rules, enforced by the portability guard test (#515):
+
+1. **Capability-binding block** — a skill body that invokes a harness-specific runtime mechanism presents it as a capability with per-harness bindings plus a portable fallback (the agent self-selects its row; unknown harnesses fall through to the fallback):
+
+   ```markdown
+   <capability sentence>.
+   - OpenCode: <mechanism>
+   - Claude Code: <mechanism>
+   - Other/none: <portable fallback — nohup+log-poll / plain-reply question / inline>
+   ```
+
+2. **Metadata vocabulary** — `metadata` gains two house sub-keys (still opaque, zero runtime effect, installer-read only):
+   - `os: [linux, macos, windows]` — declare when the skill does NOT run everywhere (e.g. xvfb/pkill → `[linux]`).
+   - `harness: opencode` — declare on skills about OpenCode itself (creation/migration/config-audit); #514 adds the `installer/init.mjs` warning for cross-target installs.
+3. **Bash rule** — every bash snippet states `Requires bash (git-bash/WSL on Windows)` or is written as a `node -e` one-liner (Node is guaranteed wherever the installer ran; jq/xvfb/pkill are not).
 
 ## Return Contract
 
