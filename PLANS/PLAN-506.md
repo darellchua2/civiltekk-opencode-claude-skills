@@ -8,9 +8,9 @@
 
 - [ ] The 4 listed learning files are removed; their live residuals survive verbatim in `decisions/goal-plugin-v2-readoption.md`
 - [ ] Zero references to the 4 removed slugs remain outside CHANGELOG/`installer/registry.json`
-- [ ] The 9 repointed learnings cite only paths/functions that exist on this branch
+- [ ] The 9 repointed learnings cite only paths/functions that exist on this branch (dated citations explicitly marked as historical evidence are exempt — see 2.5)
 - [ ] `LEARNINGS/_index.md` has exactly one auto-append marker, footer at file end, and one entry per learning file on disk (count == count)
-- [ ] The allowlist index summary matches disk-derived counts (146 shipped / 107 full allows / 70 lean / 36 hidden vs full)
+- [ ] The allowlist index summary matches disk-derived counts (146 shipped / 106 full allows / 70 lean / 36 hidden vs full; derivation in 3.1)
 - [ ] `LEARNINGS-ASSESSMENT.html` removed; `.gitignore` covers `.pytest_cache/`
 - [ ] Full `bats tests/` green; `node installer/build-registry.mjs --check` green
 
@@ -28,6 +28,8 @@
 | `skills/continuous-learning-skill/SKILL.md` (Phase 4) | final `_index.md` shape exists (4.1 wording must match it) | skill users (primary sessions); deployed copies pick up on redeploy; frontmatter untouched → no registry rebuild | med |
 | `.gitignore` (5.2) | — | git, CI | low |
 | `LEARNINGS-ASSESSMENT.html` (delete, 5.1) | zero-ref verification (audit: no references repo-wide) | none — that is why it is removed | low |
+| `opencode_app/Dockerfile:63` (repoint, 1.2) | deleted docker-v1 solution's residual home (1.1) | Docker image builders reading the goal-presence comment | low |
+| `opencode_app/docker-entrypoint.sh:132-133` (repoint, 1.2) | same as above | healthcheck maintainers | low |
 
 ## Implementation Phases
 
@@ -39,9 +41,9 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Why:** each deleted solution carries exactly one still-true fact; the decision file is their surviving home and already references them
     — **Done when:** both facts appear in the decision file body and its References list names neither doomed file
     — **Consumers affected:** future sessions recalling Docker healthcheck or goal-plugin config facts
-- [ ] **1.2** Sweep repo-wide for the 4 doomed slugs and repoint every surviving reference (known hit: `LEARNINGS/anti-patterns/guard-error-branches-need-negative-fixtures.md:19` cites `pin-every-clause-when-runtime-unexecutable` — replace with the same-genus phrasing without the pointer); CHANGELOG and `installer/registry.json` exempt
+- [ ] **1.2** Sweep repo-wide for the 4 doomed slugs and repoint every surviving reference. Known hits: `LEARNINGS/anti-patterns/guard-error-branches-need-negative-fixtures.md:19` (cites `pin-every-clause-when-runtime-unexecutable` — replace with same-genus phrasing without the pointer); `opencode_app/Dockerfile:63` ("see LEARNINGS/solutions/docker-v1-binary-ignores-v2-plugins-key.md" — repoint to `LEARNINGS/decisions/goal-plugin-v2-readoption.md`, the 1.1 residual home); `opencode_app/docker-entrypoint.sh:132-133` ("(LEARNINGS: docker-v1-binary-ignores-v2-plugins-key)" wrapped parenthetical — repoint to the same decision file). CHANGELOG and `installer/registry.json` exempt
     — **Why:** dangling pointers into deleted files contradict the repo's own `dangling-cross-reference-in-ac` learning
-    — **Done when:** `grep -rn "<slug>" --exclude-dir=node_modules` over `*.md`/`*.bats`/`*.mjs` returns zero hits outside CHANGELOG + registry
+    — **Done when:** the 6.1 command (all file types, same excludes) returns zero hits
     — **Consumers affected:** every document that cited a removed learning
 - [ ] **1.3** `git rm` the four files: `LEARNINGS/solutions/plugin-needs-command-block.md`, `LEARNINGS/solutions/docker-v1-binary-ignores-v2-plugins-key.md`, `LEARNINGS/anti-patterns/ps51-audit-whitelists-pscore-only-automatics.md`, `LEARNINGS/patterns/pin-every-clause-when-runtime-unexecutable.md`
     — **Why:** 1.1 and 1.2 complete means nothing references them; the files' rules are superseded or their enforcement target (native setup.ps1) no longer exists (#474 thin launcher)
@@ -50,9 +52,9 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 2: Repoint stale evidence in 9 learnings
 
-- [ ] **2.1** `LEARNINGS/solutions/path-move-ci-gate-anchoring.md`: append a dated update note — `plugins/vibeguard.ts` is gone, replaced by `plugins/opencode-vibeguard-v2.ts` + `plugins/vibeguard.config.json`; the search-path lesson now reads against those files
-    — **Why:** the cited evidence file no longer exists; the search-path-consumer rule remains load-bearing
-    — **Done when:** the file's evidence section names only paths that exist on this branch (spot `ls plugins/`)
+- [ ] **2.1** `LEARNINGS/solutions/path-move-ci-gate-anchoring.md`: append a dated update note covering ALL dead/stale anchors — `plugins/vibeguard.ts` gone (replaced by `plugins/opencode-vibeguard-v2.ts` + `plugins/vibeguard.config.json`); the `setup.ps1:133` must-stay list reference (no such line — 109-line thin launcher); the "setup.sh/ps1 deploy it to `~/.config/opencode/`" phrasing (only `deploy/setup.sh:2710-2713,4086-4087` deploys; ps1 forwards to bash); `Dockerfile:56` → `:82` for the vibeguard COPY
+    — **Why:** the cited evidence file and three sibling anchors no longer exist as cited; the search-path-consumer rule remains load-bearing
+    — **Done when:** the file's evidence section names only paths that exist on this branch at the cited lines, or carries the dated historical note
     — **Consumers affected:** readers applying the path-move checklist
 - [ ] **2.2** `LEARNINGS/solutions/credential-regex-host-port-false-positive.md`: repoint evidence from `opencode_app/.opencode/vibeguard.config.json` to `plugins/vibeguard.config.json:16` and record that the `[^@\s/]+` fix shipped (current pattern no longer matches `host:port/@path`)
     — **Why:** the cited config path moved with the v2 port; the shipped fix is the pattern's justification
@@ -78,9 +80,9 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Why:** build-registry moved to `installer/` in #378; the cited paths are dead
     — **Done when:** no `deploy/build-registry` or `deploy/registry.json` strings remain in the file
     — **Consumers affected:** permission.task editors running the sync checklist
-- [ ] **2.8** `LEARNINGS/patterns/skill-add-count-sync-blast-radius.md`: drop consumer-class 6's ps1 half (`Invoke-SkillProfile` comments in `deploy/setup.ps1`) with a #474 note; the bash search-anchor (`run_skill_profile` header comments in `deploy/setup.sh`) stays
-    — **Why:** the ps1 launcher carries no profile comments; the sweep surface is dead
-    — **Done when:** surface 6 names only `deploy/setup.sh`
+- [ ] **2.8** `LEARNINGS/patterns/new-skill-count-literal-gates.md`: line 10 — drop the ps1 half of consumer class 6 (`deploy/setup.ps1` search-anchor `Invoke-SkillProfile`; function gone since #474), keep the bash anchor (`run_skill_profile` header comments in `deploy/setup.sh`, function at :3536); line 12 — drop `deploy/setup.ps1` from the verification grep target so the sweep names only the live surface
+    — **Why:** the dead ps1 citation lives in this file; skill-add-count-sync-blast-radius.md carries no deploy-script citation on this branch (audit 2026-09-21, Mode R round 1)
+    — **Done when:** the file contains no `Invoke-SkillProfile`/`setup.ps1` reference; `run_skill_profile` is the sole search-anchor
     — **Consumers affected:** skill add/remove authors sweeping count literals
 - [ ] **2.9** `LEARNINGS/anti-patterns/idempotency-probe-version-blind.md`: drop the ps1-mirror sentence (`Install-MarkitdownMcp`); keep the bash probe rule (`pip show` + version grep)
     — **Why:** the ps1 mirror function no longer exists
@@ -89,10 +91,11 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 3: Rebuild `LEARNINGS/_index.md`
 
-- [ ] **3.1** Regenerate `_index.md` from the final corpus: one entry per learning file on disk (expect 118 after Phase 1), a single `<!-- Entries are appended here automatically -->` marker at the top of the Entries section, the storage-locations footer moved to file end, the allowlist entry summary re-derived from disk (`find LEARNINGS -name '*.md' ! -name '_index.md' | wc -l`; `grep -c '"action": "skill"' opencode_app/opencode.json`; `python3 -c` over `deploy/skill-profiles.json` lean keys)
+- [ ] **3.1** Regenerate `_index.md` from the final corpus: one entry per learning file on disk (expect 118 after Phase 1), a single `<!-- Entries are appended here automatically -->` marker at the top of the Entries section, the storage-locations footer moved to file end, the allowlist entry summary re-derived from disk (see the Derivation line below)
     — **Why:** the index is the fallback discovery surface; 26 orphaned files, 7 duplicated markers, a mid-file footer, and a stale summary (148/46 vs actual 146/70) make it lie in four ways
-    — **Done when:** entry count == file count == 118; exactly one marker; footer after the last entry; the allowlist summary states disk-derived numbers (146 shipped / 107 full allows / 70 lean / 36 hidden vs full)
+    — **Done when:** entry count == file count == 118; exactly one marker; footer after the last entry; the allowlist summary states disk-derived numbers (146 shipped / 106 full allows / 70 lean / 36 hidden vs full) and notes that one of the 106 allows (`github-runners-setup-skill`) is app-scoped — shipped under `opencode_app/.opencode/skills/`, outside root `skills/` (see `decisions/app-scoped-skill-surface.md`)
     — **Consumers affected:** continuous-learning-skill recall fallback, plan-execution skill, human search
+    — Derivation: `find LEARNINGS -name '*.md' ! -name '_index.md' | wc -l`; `grep -A3 '"action": "skill"' opencode_app/opencode.json | grep -c '"effect": "allow"'` (= 106 — a raw `"action": "skill"` count returns 107 because it includes the deny-all rule at opencode.json:29-31); `python3 -c` over `deploy/skill-profiles.json` lean keys (= 70)
 
 ### Phase 4: Fix the writer ritual
 
@@ -114,15 +117,15 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 6: Verification gates (ticket exit — tier=full)
 
-- [ ] **6.1** Zero-reference gate: `grep -rn "plugin-needs-command-block\|docker-v1-binary-ignores\|ps51-audit-whitelists\|pin-every-clause-when-runtime" --include="*.md" --include="*.bats" --include="*.mjs" . | grep -v CHANGELOG | grep -v node_modules` returns nothing
-    — **Why:** AC 2
+- [ ] **6.1** Zero-reference gate: `grep -rn "plugin-needs-command-block\|docker-v1-binary-ignores\|ps51-audit-whitelists\|pin-every-clause-when-runtime" . --exclude-dir=.git --exclude-dir=node_modules | grep -v "CHANGELOG" | grep -v "installer/registry.json" | grep -v "PLANS/"` returns nothing
+    — **Why:** AC 2 is unqualified ("zero references… outside CHANGELOG/installer/registry.json") — the drafted include-filter would have missed the Docker surface (Dockerfile is extensionless, entrypoint is *.sh) and self-hit on this PLAN's own slug mentions
     — **Done when:** command exits with no output
     — **Consumers affected:** none
 - [ ] **6.2** Index integrity gate: entry count == `find LEARNINGS -name '*.md' ! -name '_index.md' | wc -l`; exactly one occurrence of the auto-append marker; the storage footer appears after the last entry
     — **Why:** AC 4
     — **Done when:** all three assertions pass
     — **Consumers affected:** index consumers
-- [ ] **6.3** Repoint existence gate: for each path/function cited by the 9 Phase-2 files, assert existence (`test -e` for paths; `grep -E "^(function )?<fn>\(\)" deploy/setup.sh` for functions)
+- [ ] **6.3** Repoint existence gate: for each path/function cited by the 9 Phase-2 files, assert existence (`test -e` for paths; `grep -E "^(function )?<fn>\(\)" deploy/setup.sh` for functions); additionally assert `skill-add-count-sync-blast-radius.md`'s citations resolve (verify-only — no edit expected, Mode R round 1)
     — **Why:** AC 3
     — **Done when:** every cited target resolves
     — **Consumers affected:** none
@@ -134,12 +137,15 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Why:** AC 7; the LEARNINGS-citing tests carry comment-only references (verified in audit), so no assertion should move
     — **Done when:** all bats suites exit 0
     — **Consumers affected:** CI
-- [ ] **6.6** Append the `GATE <short-sha> tier=full` memo line for the final pushed SHA to this PLAN's trace block
-    — **Why:** Step 10's PR citation requires a green tier=full memo for the pushed SHA
-    — **Done when:** memo line present with the pushed SHA
+- [ ] **6.6** Append the `GATE <short-sha> tier=full` memo line — scoped to the SHA of the commit that ran this gate — to this PLAN's trace block; the worktree-pipeline's Step 10 (PR creation) cites this memo line as its gate evidence
+    — **Why:** the pipeline's PR step requires a green tier=full memo for the final pushed tree
+    — **Done when:** memo line present, naming the SHA of the gate-run commit
     — **Consumers affected:** pr-workflow-subagent
 
 ## Technical Notes
+
+- Mode R round 1 (2026-09-21), allowlist-count delta vs ticket AC: the ticket's AC said "107 full allows"; canonical derivation = allow-effect skill rules = **106** (106−70=36 restores the AC's own "36 hidden vs full"); 107 was the raw skill-rule count including the deny-all at `opencode_app/opencode.json:29-31`. Recorded as a #506 ticket comment, not an AC edit. The spawning audit recorded 106 in one place and 107 in another — the ticket's Problem-section intent ("matches disk-derived counts") governs.
+- Review fixes applied to this PLAN (arch review round 1, approved-with-changes): gate 6.1 widened to all file types + PLANS/ self-exclusion (BLOCK-1); AC5/3.1 tuple corrected to 106 (BLOCK-2); step 2.8 retargeted to `new-skill-count-literal-gates.md` (BLOCK-3); 2.1 anchor list completed (WARN-1); 6.6 dangling "Step 10" fixed + memo SHA-scoped (WARN-2); AC3 historical-evidence exemption added (WARN-3).
 
 - Audit evidence (2026-09-21 Plan-mode session): 26 unindexed files; 96 `- **File**:` entries vs 122 disk files; markers at 7 locations; footer at `_index.md:625-631`; allowlist index summary `_index.md:401-407` says 148/46 vs file-truth 146/70; doomed-slug cross-refs at `goal-plugin-v2-readoption.md:4,17,18` and `guard-error-branches-need-negative-fixtures.md:19`.
 - `setup_zai_api_key` does NOT carry the dry-branch shape (verified 2026-09-21) — 2.3 repoints to `run_cmd`'s own gate instead.
