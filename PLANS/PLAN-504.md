@@ -31,7 +31,7 @@ Single-node map: docs-only edit to one skill body; no code, no cross-module cons
     — **Why:** same freehand risk; the decline option encodes the existing "Declined/absent → empty path" behavior so the payload alone carries the full decision tree
     — **Done when:** §6b contains a json block with `question`, `header`, `multiple`, and a decline option whose label matches the skip semantics; shape matches the git-branch-workflow spec (same keys, same nesting)
     — **Consumers affected:** model runtime at 6b
-- [ ] **2.2** Exit gate (full): repo bats suite + node plugin tests in the worktree; GATE memo recorded in this PLAN's trace
+- [x] **2.2** Exit gate (full): repo bats suite + node plugin tests in the worktree; GATE memo recorded in this PLAN's trace
     — **Why:** pipeline ticket exit gate — the final pushed SHA must carry a green `tier=full` memo
     — **Done when:** `bats tests/` green and `node --test tests/test_question_repair_plugin.test.ts tests/test_vibeguard_walkdeep.test.ts` green on the worked tree; memo line appended under ## Gate Trace
     — **Consumers affected:** Step 9 review + Step 10 PR citation
@@ -50,3 +50,4 @@ None (`blocked-by:` absent). Complements #448 (question-repair plugin) — sourc
 - Over-specifying candidate options (dynamic draft names) → specs use template placeholders with a keep-in-place fallback option, matching 6a's variable candidate count.
 
 ## Gate Trace
+GATE 95b283c→worktree tier=full lint=n.a. typecheck=n.a. build=n.a. unit=bats 529/529 + node --test 12/12 e2e=n.a. — docs-only change; scoped-lint satisfied by JSON-parse + field greps in 1.1/2.1 done-when
