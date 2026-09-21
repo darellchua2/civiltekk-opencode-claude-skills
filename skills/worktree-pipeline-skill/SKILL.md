@@ -206,7 +206,31 @@ canonical form on adoption.
    `git mv "PLANS/PLAN-DRAFT-<slug>.md" "PLANS/PLAN-${KEY}.md"`.
    Before auto-adopting a generic `PLANS/PLAN.md`, verify its `**Issue:**`
    header matches this ticket; mismatch → non-candidate + warn.
-4. **Multiple candidates → prompt the user** which to adopt.
+4. **Multiple candidates → prompt the user** which to adopt, via the `question`
+   tool with this payload shape (instantiate options from the actual drafts;
+   keep payloads small per deployed `AGENTS.md` §Question Tool Payloads):
+
+   ```json
+   {
+     "questions": [
+       {
+         "question": "Multiple PLAN drafts match this ticket. Which should be adopted as PLANS/PLAN-<KEY>.md?",
+         "header": "PLAN draft adoption",
+         "multiple": false,
+         "options": [
+           {
+             "label": "Adopt <draft-name>",
+             "description": "git mv the draft to the canonical PLANS/PLAN-<KEY>.md form and continue with it."
+           },
+           {
+             "label": "Keep drafts in place",
+             "description": "Adopt nothing now; generate a fresh PLAN from the ticket and leave the drafts for manual cleanup."
+           }
+         ]
+       }
+     ]
+   }
+   ```
 5. **Non-adopted candidates → left in place with a warning** (user cleans up).
 6. **No candidate / no `PLANS/` dir** → `mkdir -p PLANS`, continue to 6b.
 

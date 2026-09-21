@@ -21,7 +21,7 @@ Single-node map: docs-only edit to one skill body; no code, no cross-module cons
 ## Implementation Phases
 
 ### Phase 1: 6a payload spec (multiple-candidate adoption prompt)
-- [ ] **1.1** In `skills/worktree-pipeline-skill/SKILL.md` §6a step 4, append a fenced json block with a complete `question` payload for "which draft to adopt" — `question` + `header` + `multiple:false` + options with `label` AND `description` (template options: adopt the listed draft / keep drafts in place; model instantiates per candidate), plus a one-line pointer to deployed `AGENTS.md` §Question Tool Payloads
+- [x] **1.1** In `skills/worktree-pipeline-skill/SKILL.md` §6a step 4, append a fenced json block with a complete `question` payload for "which draft to adopt" — `question` + `header` + `multiple:false` + options with `label` AND `description` (template options: adopt the listed draft / keep drafts in place; model instantiates per candidate), plus a one-line pointer to deployed `AGENTS.md` §Question Tool Payloads
     — **Why:** the site currently says "prompt the user which to adopt" with no payload — freehand construction is the dropped-field class (#448 audit: 7/1158 schema failures, all missing-required-field); a verbatim shape removes the improvisation
     — **Done when:** `rg -c '"header"' skills/worktree-pipeline-skill/SKILL.md` counts the 6a block and `rg '"multiple"'` + ≥2 `"label"` + `"description"` pairs all hit inside §6a
     — **Consumers affected:** model runtime at 6a step 4
