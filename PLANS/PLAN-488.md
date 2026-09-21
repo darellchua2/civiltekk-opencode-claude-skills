@@ -138,3 +138,4 @@ _Per-step Done lines live inline; gate memo lines below (axes with no applicable
 GATE 3933316 tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a
 GATE 11bdcd5 tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a
 GATE 5603d70 tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a
+GATE 63d280b tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a
