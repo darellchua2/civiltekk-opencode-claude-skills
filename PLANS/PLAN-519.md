@@ -91,3 +91,4 @@ None external. Companion DA-2830 runs in a separate repo and does not block this
 - Redeploy overwriting unrelated user-space state → `./deploy/setup.sh` is the sanctioned idempotent path (house rule: never edit deployed copies).
 - Escape hatch re-opening the incident if loosely worded → explicit per-PR instruction only, mandatory SHA-divergence warning, never autonomous (1.1/1.2 wording).
 GATE cbca081 tier=full lint=- typecheck=- build=- unit=t e2e=- (review-fix tree; full bats 529 ok exit 0; --check no drift)
+GATE ca743c2 tier=full lint=- typecheck=- build=- unit=t e2e=- (post-merge-resolution tree w/ origin/main; full bats 529 ok exit 0)
