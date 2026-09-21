@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.27.1](https://github.com/darellchua2/opencode-config-template/compare/v9.27.0...v9.27.1) (2026-09-21)
+
+### Bug Fixes
+
+* **deploy:** presence-gate --config-src in models-only/migrate ([#491](https://github.com/darellchua2/opencode-config-template/issues/491)) ([#498](https://github.com/darellchua2/opencode-config-template/issues/498)) ([ff95bea](https://github.com/darellchua2/opencode-config-template/commit/ff95beaa9b2f3bae8321c3703edb47bdf27a5c5f)), closes [#470](https://github.com/darellchua2/opencode-config-template/issues/470) [#432](https://github.com/darellchua2/opencode-config-template/issues/432)
+
 ## [9.27.0](https://github.com/darellchua2/opencode-config-template/compare/v9.26.0...v9.27.0) (2026-09-21)
 
 ### Features
