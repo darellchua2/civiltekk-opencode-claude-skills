@@ -6,7 +6,7 @@
 
 ## Acceptance Criteria
 - [ ] `agents/image-analyzer-subagent.md` fallback recipe sends `"model": "glm-5.3-flash"`
-- [ ] `grep -r glm-5v-turbo` returns zero hits outside `CHANGELOG.md` (historical release record, left untouched)
+- [ ] `grep -rniE "5v[-_]?turbo" . --exclude-dir=.git --exclude-dir=PLANS` returns hits only in `CHANGELOG.md` (historical release record, untouched; committed `PLANS/PLAN-516.md` is likewise a historical record describing this purge — excluded per PLAN-507 precedent)
 - [ ] `glm-5v-turbo` removed from `installer/provider-models.json` (array entry + `$comment`)
 - [ ] `bats tests/test_provider_pins.bats` and `tests/test_skill_isolation.bats` pass
 - [ ] `node installer/build-registry.mjs` run; `registry.json` committed if it diffs
@@ -68,8 +68,8 @@ Cross-module consumers exist (`resolve-models.mjs`, regen script, tests) → arc
     — **Consumers affected:** `resolve-models.mjs` guard (nothing references the removed id anymore, so no new warnings); `deploy/regen-provider-models.mjs` (see Risks).
 
 ### Phase 5: Verification + registry sync
-- [ ] **5.1** Repo-wide purge proof: `grep -rn "glm-5v-turbo" . --include="*" -l` outside `.git/` — expect only `CHANGELOG.md`.
-    — **Why:** ticket AC — purge must be total outside immutable release history.
+- [ ] **5.1** Repo-wide purge proof: `grep -rniE "5v[-_]?turbo" . --exclude-dir=.git --exclude-dir=PLANS` — case-insensitive with variant tolerance (`5v-turbo`/`5v_turbo`), excluding `.git/` and the tracked plan file itself (historical record; it must name the token to specify the purge).
+    — **Why:** ticket AC — purge must be total outside immutable release history; the hardened pattern closes the case-sensitive-grep false-green class flagged in plan review.
     — **Done when:** the only match path is `CHANGELOG.md`.
     — **Consumers affected:** none.
 - [ ] **5.2** Run gates: `bats tests/test_provider_pins.bats tests/test_provider_regen.bats tests/test_skill_isolation.bats` (plus `tests/test_mcp_count_consistency.bats` for belt).
@@ -88,6 +88,11 @@ Cross-module consumers exist (`resolve-models.mjs`, regen script, tests) → arc
 
 ## Dependencies
 None — single ticket, no `blocked-by`.
+
+## Plan-Review Adjudications (architecture review, 2026-09-21)
+- **Purge gate vs the plan file itself (MAJOR, fixed):** `PLANS/PLAN-516.md` is git-tracked and persists post-merge (precedent: `PLANS/PLAN-507.md`), yet must name the token to describe the purge. AC#2 / step 5.1 therefore exclude `--exclude-dir=PLANS` and harden to `grep -rniE "5v[-_]?turbo"`.
+- **`glm-4.6v-flash` sentence removal (in scope):** adjacent cleanup of the same stale-design paragraph; corroborated in-repo (`provider-models.json` `$comment` records the model as deliberately absent; error-resolver keeps the "do NOT invoke" warning). Scope addition to be noted in the PR body.
+- **No live API probe:** endpoint support for `glm-5.3-flash` accepted at catalog level — `provider-models.json` (pinned to models.dev) lists it under both `zai` (`:97`) and `zai-coding-plan` (`:9`), covering both endpoints the recipe's key resolution can select; a live probe would require reading `auth.json` (secret-hygiene cost).
 
 ## Risks & Mitigation
 - **Regen may re-add the model id**: `deploy/regen-provider-models.mjs` regenerates catalog-derived keys from models.dev, which may still list `glm-5v-turbo` under `zai`. Mitigation: shipped file is purged per ticket mandate; test_provider_regen runs in 5.2 to prove current pipeline green. If regen re-adds, that is a deliberate future action, not drift introduced here.
