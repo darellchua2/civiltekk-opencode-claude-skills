@@ -77,3 +77,4 @@ Note: lint axis = `.opencode/skills` literal sweep (0) + frontmatter validation 
 ## Risks & Mitigation
 - *Agent copies snippets without setting `SKILL_DIR`* → the note names the loader-printed base dir explicitly; KeyError from `os.environ` fails loud, not silent.
 - *Slide skill not a sibling on some exotic layout* → `SLIDE_SKILL_DIR` env override documented inline.
+GATE 14225de tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
