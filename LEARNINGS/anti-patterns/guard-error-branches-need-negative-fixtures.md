@@ -16,7 +16,8 @@ suite stayed green.
 
 ## Root cause
 
-Same genus as `pin-every-clause-when-runtime-unexecutable`: the fix changed
+Same genus as a multi-clause fix whose committed pins cover the old behavior
+set: the fix changed
 the guard's behavior set, but the committed pins covered the old behavior
 set. Manual verification doesn't survive the next refactor.
 

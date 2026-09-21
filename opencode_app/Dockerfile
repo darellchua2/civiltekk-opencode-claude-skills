@@ -60,7 +60,7 @@ ENV PATH="/opt/python-env/bin:${PATH}" \
 
 # OpenCode v2 ships on npm as the scoped package @opencode/cli (the legacy
 # opencode-ai package remains v1-only and silently ignores the v2 `plugins`
-# key — see LEARNINGS/solutions/docker-v1-binary-ignores-v2-plugins-key.md).
+# key — see LEARNINGS/decisions/goal-plugin-v2-readoption.md, Docker note).
 # The old global TS toolchain packages are deliberately absent: the v2 binary
 # runs TS plugins natively (Bun-embedded) — nothing in this image invokes them.
 RUN npm install -g "@opencode/cli@${OPENCODE_VERSION}"
