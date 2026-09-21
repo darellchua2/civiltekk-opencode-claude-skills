@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.28.0](https://github.com/darellchua2/opencode-config-template/compare/v9.27.2...v9.28.0) (2026-09-21)
+
+### Features
+
+* **deploy:** expose setup.sh as the opencode-setup command ([1f3746b](https://github.com/darellchua2/opencode-config-template/commit/1f3746bbfd58a9e91b24638e49532b3defe59e5f))
+
 ## [9.27.2](https://github.com/darellchua2/opencode-config-template/compare/v9.27.1...v9.27.2) (2026-09-21)
 
 ### Bug Fixes
