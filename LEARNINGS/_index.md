@@ -127,7 +127,7 @@
 - **File**: `LEARNINGS/anti-patterns/pty-streaming-semantics-unportable-to-background-exit.md`
 - **Confidence**: n.a.
 - **Scope**: project
-- **Summary**: **Context**: #507 review — the rewritten Strategy A promised per-iteration results from a persistent `--ui` watch runner started with `background: true`, plus sentinel-file early-stop. Verified against opencode.ai/v2/docs/tools: a background command notifies the session ONCE, when it finishes; a watcher that never exits never notifies; there is no stream-read of a running command and no kill API.
+- **Summary**: Rewriting PTY-era prompts onto v2 `background: true` without redesigning the event model yields unexecutable instructions — a never-exiting watcher produces exactly one notification (at exit) with no stream-read/kill API; map to per-run exiting background commands, long-runners only as out-of-band servers (#507) — original context:sistent `--ui` watch runner started with `background: true`, plus sentinel-file early-stop. Verified against opencode.ai/v2/docs/tools: a background command notifies the session ONCE, when it finishes; a watcher that never exits never notifies; there is no stream-read of a running command and no kill API.
 
 ### token enumeration ac greps miss concept mentions
 
@@ -135,7 +135,7 @@
 - **File**: `LEARNINGS/anti-patterns/token-enumeration-ac-greps-miss-concept-mentions.md`
 - **Confidence**: n.a.
 - **Scope**: project
-- **Summary**: **Context**: #507 — the acceptance grep enumerated the five removed v1 tool tokens (`pty_spawn|pty_read|pty_write|pty_kill|notifyOnExit`) and passed, while `skills/plan-execution-skill/SKILL.md:83` still taught the concept in prose ("PTY loop"); only the code review's concept-level sweep caught it.
+- **Summary**: Vocabulary-migration AC greps that enumerate retired API token names go green while concept-level prose mentions survive — grep the concept word case-insensitively with word boundaries (`\bpty\b`; bare `pty_` false-positives on `empty_*`) (#507) — original context:n|pty_read|pty_write|pty_kill|notifyOnExit`) and passed, while `skills/plan-execution-skill/SKILL.md:83` still taught the concept in prose ("PTY loop"); only the code review's concept-level sweep caught it.
 
 ### Anti-pattern: YAML guard via adjacency grep assumes key order and quoting
 
@@ -151,7 +151,7 @@
 - **File**: `LEARNINGS/conventions/doc-commands-teach-explicit-timeout-when-bound-exceeds-default.md`
 - **Confidence**: n.a.
 - **Scope**: project
-- **Summary**: **Context**: #507 review — `skills/zai-video-skill/SKILL.md` §3 teaches `curl --max-time 600` run verbatim in the foreground; the v2 shell's 2-minute foreground default harness-kills it long before its own bound on slow or 4K downloads.
+- **Summary**: v2 foreground shell defaults to 120000 ms; doc'd commands whose own bound exceeds it get harness-killed before their internal limit unless the doc names an explicit `timeout` ≥ the bound or runs the command as a background command (#507) — original context:` run verbatim in the foreground; the v2 shell's 2-minute foreground default harness-kills it long before its own bound on slow or 4K downloads.
 
 ### Decision: Adaptive review drops proactive requirements review; gaps flow via Mode R relay
 
