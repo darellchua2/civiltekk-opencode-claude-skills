@@ -27,3 +27,5 @@ the sweep rule below: count-literal sweeps include LEARNINGS/.
 Related: `anti-patterns/delta-derived-from-single-surface.md`,
 `patterns/new-skill-count-literal-gates.md` (its line refs now use search
 anchors for the same reason).
+
+**Recurrence 2026-09-22 (#522):** the pattern bit its own tail — a LEARNINGS recurrence bump (#506 sweep-set file) updated the body prose to say "confidence bumped to high" while the structured header field and its `_index.md` mirror still read the old numeric value; caught by code review before merge. Generalizes to any structured-header + prose-body record: bump the field, the index mirror, and the prose in the same commit, or the next dedup search mis-sorts bump-vs-duplicate.

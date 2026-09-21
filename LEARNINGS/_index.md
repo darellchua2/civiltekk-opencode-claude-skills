@@ -369,7 +369,7 @@
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/sweep-set-from-audit-list-misses-grep-derived-consumers.md`
-- **Confidence**: 0.85
+- **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
 - **Summary**: When a path move (or rename) makes old strings dead, derive the repoint sweep from `grep -rn "<old-path-string>"` across all file types — every hit is either repointed or explicitly exempted with a dated note. An audit list is a lower bound, not the universe: sibling consumers cite the same dead paths and are found only by the string, not by the list. Gate the sweep on the same grep returning zero
@@ -1167,3 +1167,21 @@
 - **Scope**: project
 - **Summary**: "pre-verified repo facts" in review briefs are claims — #519's brief asserted no merge-method defaults elsewhere while semantic-release-convention-skill carried 9 squash directives incl. a governance MUST; reviewers re-run the one grep before relying on embedded negatives, and briefs state claims with the producing command (#519)
 - **Date**: 2026-09-21
+
+### Tracker issue body is the tiebreaker for flagged scope
+
+- **Category**: solution
+- **File**: `LEARNINGS/solutions/tracker-issue-body-is-the-tiebreaker-for-flagged-scope.md`
+- **Confidence**: medium
+- **Scope**: project
+- **Summary**: When a review brief and a PLAN disagree on maintainer-directive scope for a flagged inclusion, fetch the tracker issue body before emitting a Requirements Gap — it is the authoritative tiebreaker (#522)
+- **Date**: 2026-09-22
+
+### Purge AC prefix coverage is accidental
+
+- **Category**: solution
+- **File**: `LEARNINGS/solutions/purge-ac-prefix-coverage-is-accidental.md`
+- **Confidence**: medium
+- **Scope**: project
+- **Summary**: A purge AC's grep alternation gates a flagged extension id only by prefix luck — list every removed id explicitly in the pattern, flagged extensions included (#522)
+- **Date**: 2026-09-22
