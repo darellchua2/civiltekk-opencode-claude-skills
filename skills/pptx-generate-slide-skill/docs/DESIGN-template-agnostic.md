@@ -206,7 +206,7 @@ engine follows the original name-based matching, so the existing 120 tests stay 
 ## 7. Capability B — `pptx-template-modifier-skill` (new)
 
 ```
-.opencode/skills/pptx-template-modifier-skill/
+pptx-template-modifier-skill/          # at its installed location (skills/ sibling layout)
 ├── SKILL.md
 └── scripts/
     ├── template_reader.py      # read Slide Master (reuses the introspector)
