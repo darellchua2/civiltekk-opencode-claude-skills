@@ -69,3 +69,5 @@ Note: final commit aeb80c6 (and any later PLAN-trace-only commits) differ from b
 - *Registry accidentally regenerated* → 2.1 asserts `registry.json` is byte-identical.
 GATE 2410722 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 Note: review-fix re-gate (contract Step 9) — post-review fixes (vocabulary spelling pin, done-when grep shape, consumer-map producer row, fallback wording, overclaim soften) + LEARNINGS capture; tree-equivalent PLAN-only commits may follow.
+GATE bced81f tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+Note: post-merge re-gate — resolved origin/main conflicts (registry.json regenerated; LEARNINGS union-merged); CI unconfigured, merge by orchestrator.
