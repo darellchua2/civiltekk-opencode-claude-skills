@@ -133,26 +133,31 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 6: Verification gates (ticket exit — tier=full)
 
-- [ ] **6.1** Zero-reference gate: `grep -rn "plugin-needs-command-block\|docker-v1-binary-ignores\|ps51-audit-whitelists\|pin-every-clause-when-runtime" . --exclude-dir=.git --exclude-dir=node_modules | grep -v "CHANGELOG" | grep -v "installer/registry.json" | grep -v "PLANS/"` returns nothing
+- [x] **6.1** Zero-reference gate: `grep -rn "plugin-needs-command-block\|docker-v1-binary-ignores\|ps51-audit-whitelists\|pin-every-clause-when-runtime" . --exclude-dir=.git --exclude-dir=node_modules | grep -v "CHANGELOG" | grep -v "installer/registry.json" | grep -v "PLANS/"` returns nothing
     — **Why:** AC 2 is unqualified ("zero references… outside CHANGELOG/installer/registry.json") — the drafted include-filter would have missed the Docker surface (Dockerfile is extensionless, entrypoint is *.sh) and self-hit on this PLAN's own slug mentions
     — **Done when:** command exits with no output
     — **Consumers affected:** none
-- [ ] **6.2** Index integrity gate: entry count == `find LEARNINGS -name '*.md' ! -name '_index.md' | wc -l`; exactly one occurrence of the auto-append marker; the storage footer appears after the last entry
+    — **Done:** All-file-types zero-ref sweep clean (excludes: CHANGELOG, installer/registry.json, PLANS/); files: none; fixes: 0 (first run green)
+- [x] **6.2** Index integrity gate: entry count == `find LEARNINGS -name '*.md' ! -name '_index.md' | wc -l`; exactly one occurrence of the auto-append marker; the storage footer appears after the last entry
     — **Why:** AC 4
     — **Done when:** all three assertions pass
     — **Consumers affected:** index consumers
-- [ ] **6.3** Repoint existence gate: for each path/function cited by the 9 Phase-2 files, assert existence (`test -e` for paths; `grep -E "^(function )?<fn>\(\)" deploy/setup.sh` for functions); additionally assert `skill-add-count-sync-blast-radius.md`'s citations resolve (verify-only — no edit expected, Mode R round 1)
+    — **Done:** 118 headings == 118 files == 118 File lines, 1 marker, footer at file end (1077 lines); files: LEARNINGS/_index.md; fixes: 0
+- [x] **6.3** Repoint existence gate: for each path/function cited by the 9 Phase-2 files, assert existence (`test -e` for paths; `grep -E "^(function )?<fn>\(\)" deploy/setup.sh` for functions); additionally assert `skill-add-count-sync-blast-radius.md`'s citations resolve (verify-only — no edit expected, Mode R round 1)
     — **Why:** AC 3
     — **Done when:** every cited target resolves
     — **Consumers affected:** none
-- [ ] **6.4** Registry drift gate: `node installer/build-registry.mjs --check` exits 0
+    — **Done:** All live citations resolve (functions run_cmd/cleanup_old_backups/install_markitdown_mcp/run_skill_profile/setup_local_llm_env verified in setup.sh; plugins/vibeguard-v2.ts, vibeguard.config.json:16, Dockerfile:82 on disk); 5 citations exempt per AC3 as dated historical evidence (pre-note text in path-move + credential-regex, each marked by its Update 2026-09-21 (#506) note); skill-add-count-sync verify-only pass; fixes: 0
+- [x] **6.4** Registry drift gate: `node installer/build-registry.mjs --check` exits 0
     — **Why:** SKILL.md edit must be body-only; proves it
     — **Done when:** exit 0
     — **Consumers affected:** CI
-- [ ] **6.5** Full unit gate: `bats tests/` — every suite green
+    — **Done:** registry OK (agents=34, skills=146, no drift); fixes: 0
+- [x] **6.5** Full unit gate: `bats tests/` — every suite green
     — **Why:** AC 7; the LEARNINGS-citing tests carry comment-only references (verified in audit), so no assertion should move
     — **Done when:** all bats suites exit 0
     — **Consumers affected:** CI
+    — **Done:** 39/39 bats suites pass, 0 failures; files: none (gate only); fixes: 0
 - [ ] **6.6** Append the `GATE <short-sha> tier=full` memo line — scoped to the SHA of the commit that ran this gate — to this PLAN's trace block; the worktree-pipeline's Step 10 (PR creation) cites this memo line as its gate evidence
     — **Why:** the pipeline's PR step requires a green tier=full memo for the final pushed tree
     — **Done when:** memo line present, naming the SHA of the gate-run commit
