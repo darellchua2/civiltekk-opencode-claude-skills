@@ -1194,3 +1194,21 @@
 - **Scope**: project
 - **Summary**: SKILL.md/agent-doc python snippets resolve engines via `os.environ['SKILL_DIR']` and prerequisite siblings via `get('DEP_SKILL_DIR', normpath(SKILL_DIR/../dep))` — never `.opencode/skills/…` literals, which break on every non-project install target; missing export fails loud by design (#511)
 - **Date**: 2026-09-22
+
+### Binding-row fallback token: one shape, every site
+
+- **Category**: convention
+- **File**: `conventions/binding-row-token-single-shape.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: normalize mechanically-greppable contract markers at every insertion site in the implementing commit; probes grep the delivered token case-insensitively; inline rows satisfy the canonical binding block (#512, Mode R ruling — codified by #515's guard)
+- **Date**: 2026-09-22
+
+### PLAN checkboxes lag delivered hunks in the same diff
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-checkbox-state-lags-delivered-hunks.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: tick + Done-line each PLAN step in the same commit as its hunks — "code pushed, plan unticked" is an unfinished phase that --gate/--update will re-execute and that AC-verified claims inherit (#512 review)
+- **Date**: 2026-09-22

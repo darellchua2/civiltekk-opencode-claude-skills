@@ -166,7 +166,7 @@ docs/vision/
 - **Interactive HTML** — *living*: regenerate after each discovery round (sidebar nav, dark-mode-aware, color-aware selection)
 - **Word .docx** — render once on wrap for client sign-off (auto-TOC, hyperlinked headers, section page-breaks)
 
-**Optional customer presentation deck:** after the Vision is approved, distill it into a slide deck via `pptx-specialist-subagent` (delegate via Task tool — it requires a user-supplied Slide Master template and routes to `pptx-generate-slide-skill`) for steering-committee or client meetings. This is a peer deliverable, linked from the Vision. Delegation binding (§Portability contract, applies here and to the :171 image-routing mention): OpenCode and Claude Code — Task tool; harnesses without subagents — run the referenced skill's steps inline.
+**Optional customer presentation deck:** after the Vision is approved, distill it into a slide deck via `pptx-specialist-subagent` (delegate via Task tool — it requires a user-supplied Slide Master template and routes to `pptx-generate-slide-skill`) for steering-committee or client meetings. This is a peer deliverable, linked from the Vision. Delegation binding (§Portability contract, applies here and to the Image-routing paragraph below): OpenCode and Claude Code — Task tool; Other/none (no subagent tool) — run the referenced skill's steps inline.
 
 **Image routing:** if client-shared screenshots/reference images must be described, delegate to `image-analyzer-subagent` (do not interpret inline).
 

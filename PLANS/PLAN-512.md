@@ -67,33 +67,34 @@ Binding-block format per AGENTS.md §Portability contract (merged via #510): cap
 
 ### Phase 3: zai credential + recipe-execution bindings
 
-- [ ] **3.1** `skills/zai-asr-skill/SKILL.md`, **3.2** `skills/zai-ocr-skill/SKILL.md`, **3.3** `skills/zai-image-generation-skill/SKILL.md` — add one binding note above each credential recipe: credential source — `ZAI_API_KEY` env var works everywhere (portable row); the `~/.local/share/opencode/auth.json` lookup is an OpenCode-only bonus (ignore on other harnesses; export the env var). Recipe execution — requires bash + curl + jq (any harness with a shell tool).
+- [x] **3.1** `skills/zai-asr-skill/SKILL.md`, **3.2** `skills/zai-ocr-skill/SKILL.md`, **3.3** `skills/zai-image-generation-skill/SKILL.md` — add one binding note above each credential recipe: credential source — `ZAI_API_KEY` env var works everywhere (portable row); the `~/.local/share/opencode/auth.json` lookup is an OpenCode-only bonus (ignore on other harnesses; export the env var). Recipe execution — requires bash + curl + jq (any harness with a shell tool).
     — **Why:** auth.json is opencode's credential store; env var is already the primary path in the recipes, the note makes the priority explicit per the contract.
     — **Done when:** note present in all three files; recipe logic untouched.
     — **Consumers affected:** zai-media recipe runners.
+    — **Done:** identical binding note above each recipe (triplication per isolation contract); token `Other/none` added in review-fix; files: skills/zai-{asr,ocr,image-generation}-skill/SKILL.md; fixes: none
 
 ### Phase 4: subagent-delegation bindings
 
-- [ ] **4.1** `skills/error-resolver-workflow-skill/SKILL.md` — extend :97 with the delegation binding (OpenCode/Claude: Task tool · other/none: run the subagent's diagnosis checklist inline; :98's direct-API fallback already covers the provider-level gap).
+- [x] **4.1** `skills/error-resolver-workflow-skill/SKILL.md` — extend :97 with the delegation binding (OpenCode/Claude: Task tool · other/none: run the subagent's diagnosis checklist inline; :98's direct-API fallback already covers the provider-level gap).
     — **Why:** "Task tool" phrasing reads universal; inline-run needs stating.
     — **Done when:** binding present at the primary path.
     — **Consumers affected:** error-resolution flows.
-- [ ] **4.2** `skills/vision-creation-skill/SKILL.md` — add the delegation binding at :169 (pptx deck distillation) covering also the :171 image-routing mention.
+    — **Done:** binding at the primary path; token `Other/none` added in review-fix; files: skills/error-resolver-workflow-skill/SKILL.md; fixes: none- [x] **4.2** `skills/vision-creation-skill/SKILL.md` — add the delegation binding at :169 (pptx deck distillation) covering also the :171 image-routing mention.
     — **Why:** two delegation sites, one binding note covers both.
     — **Done when:** binding present; no per-site duplication.
     — **Consumers affected:** vision-flow runners.
-- [ ] **4.3** `skills/technical-design-creation-skill/SKILL.md` — extend :355 (explore fallback) with the binding row (none: grep/glob/read inline — the sentence already lists them; make the row explicit).
+    — **Done:** binding at the deck paragraph covering the Image-routing paragraph (rot-proofed: ':171' line-ref replaced with named paragraph in review-fix); files: skills/vision-creation-skill/SKILL.md; fixes: line-ref rot- [x] **4.3** `skills/technical-design-creation-skill/SKILL.md` — extend :355 (explore fallback) with the binding row (none: grep/glob/read inline — the sentence already lists them; make the row explicit).
     — **Why:** Task-tool phrasing at the fallback site.
     — **Done when:** binding row explicit at :355.
     — **Consumers affected:** design-authoring flows.
-- [ ] **4.4** `skills/plan-execution-skill/SKILL.md` — extend :83 (responsive-audit spawn) with the delegation binding (none: run `npx playwright test` inline per the sentence's alternative).
+    — **Done:** binding row explicit; token added in review-fix; files: skills/technical-design-creation-skill/SKILL.md; fixes: none- [x] **4.4** `skills/plan-execution-skill/SKILL.md` — extend :83 (responsive-audit spawn) with the delegation binding (none: run `npx playwright test` inline per the sentence's alternative).
     — **Why:** spawn phrasing; the inline alternative exists but isn't bound to a harness row.
     — **Done when:** binding present at :83.
     — **Consumers affected:** plan executors.
 
 ### Phase 5: pptx extension + verification
 
-- [x] **5.1** `skills/pptx-generate-template-skill/SKILL.md` — extend the headless/subagent fallback (search "Headless / subagent mode") into the canonical block (OpenCode `question` · Claude `AskUserQuestion` · none/headless: print the table, proceed to Stage 3 — existing behavior).
+    — **Done:** binding present; fixes: review-fix Major-3 — fallback no longer suggests a bare `npx playwright test` (contradicted the paragraph's routing rule); Other/none runs the playwright-responsive-audit-skill loop inline with tiers, bare pass/skip-with-note as last resort; files: skills/plan-execution-skill/SKILL.md- [x] **5.1** `skills/pptx-generate-template-skill/SKILL.md` — extend the headless/subagent fallback (search "Headless / subagent mode") into the canonical block (OpenCode `question` · Claude `AskUserQuestion` · none/headless: print the table, proceed to Stage 3 — existing behavior).
     — **Why:** ticket scope; the fallback exists but isn't in canonical row form.
     — **Done when:** block in canonical shape.
     — **Consumers affected:** template pipeline on other harnesses.
@@ -126,3 +127,15 @@ Note: lint axis = binding-presence probes (per-phase counts in Done lines) + fro
 - *Binding-block sprawl* (16 files × prose) → ≤5-line insertions at the capability site only; #515's guard checks presence, not prose volume.
 - *Editing worktree-pipeline-skill while running it* → source edit affects future loads only; the running instructions live in session context.
 - *Drift between the 4 near-identical question-tool blocks* → identical wording for the shared rows; per-site rows only where the capability differs (consent vs intake vs menu).
+
+### Phase 6: Review fixes (post-Step-9)
+
+- [x] **6.1** Apply review fixes + Mode R ruling: normalize fallback token to `Other/none` at all 15 binding sites (was 4 spellings, 7 sites token-less); reword plan-execution fallback (Major-3) to run the audit-skill loop inline instead of a bare `npx playwright test`; rot-proof vision-creation's `:171` reference; drop zai-video dangling colon; add bash-requirement note to playwright nohup row; tick Phase 3/4 checkboxes (stale-state finding); LEARNINGS captured (2 new, 1 bump).
+    — **Why:** review Majors 1–3 mandatory; NOTEs swept in the same commit.
+    — **Done when:** probe `rg -ci 'other/none'` == ≥1 in all 15 binding files; checkboxes zero unchecked; full suite green on final tree.
+    — **Consumers affected:** #515 guard (authored against this token ruling).
+    — **Done:** probe 15/15 (zai-video 2); checkboxes clean; files: 15 skills + PLANS/PLAN-512.md + LEARNINGS/*; fixes: token drift, plan-execution contradiction, stale checkboxes, 4 NOTEs
+
+## Gate Trace (review-fix)
+
+GATE 7c68f91 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a

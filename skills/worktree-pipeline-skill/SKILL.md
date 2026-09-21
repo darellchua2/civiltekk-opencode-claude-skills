@@ -247,7 +247,7 @@ Document-ladder order: **BRD first, then SRS**. For each:
 ls docs/brd/BRD-draft-*.md 2>/dev/null   # then docs/srs/SRS-draft-*.md
 ```
 
-If drafts found, ask the user (via `question` — harness binding, §Portability contract: OpenCode `question` · Claude Code `AskUserQuestion` · other/none — plain-reply ask, skip linking if unanswered) whether to link one, using this
+If drafts found, ask the user (via `question` — harness binding, §Portability contract: OpenCode `question` · Claude Code `AskUserQuestion` · Other/none — plain-reply ask, skip linking if unanswered) whether to link one, using this
 payload shape (instantiate `<BRD|SRS>`, `<key>`, and the draft name per ladder
 order):
 

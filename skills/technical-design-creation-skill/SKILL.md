@@ -352,7 +352,7 @@ docs/technical-design/TDD-draft-{kebab-slug}.md
 | Verifying module boundaries | `codegraph_callers` / `codegraph_callees` | Confirm proposed dependencies respect actual graph |
 | Finding integration points | `codegraph_search` | Locate existing interfaces the design must connect to |
 
-If `.codegraph/` does not exist, fall back to `explore` (Task tool) + grep/glob/read — the design must still be grounded in the actual codebase. Delegation binding (§Portability contract): OpenCode and Claude Code — Task tool; harnesses without subagents — do the exploration inline with grep/glob/read.
+If `.codegraph/` does not exist, fall back to `explore` (Task tool) + grep/glob/read — the design must still be grounded in the actual codebase. Delegation binding (§Portability contract): OpenCode and Claude Code — Task tool; Other/none (no subagent tool) — explore inline with grep/glob/read.
 
 ---
 

@@ -24,7 +24,7 @@ so transcription happens as a file-based tool call: `POST /audio/transcriptions`
 
 ## Prerequisite — API key resolution
 
-> Harness binding (§Portability contract): the `ZAI_API_KEY` env var is the portable credential row — it alone works on every harness. The `~/.local/share/opencode/auth.json` fallback reads OpenCode's credential store (bonus row; ignore elsewhere — export the env var). Recipe execution needs bash + curl + jq (any harness with a shell tool).
+> Harness binding (§Portability contract): the `ZAI_API_KEY` env var is the portable credential row — it alone works on every harness. The `~/.local/share/opencode/auth.json` fallback reads OpenCode's credential store (bonus row; ignore elsewhere — export the env var). Other/none (no auth.json store): export `ZAI_API_KEY` — the env var alone is sufficient. Recipe execution needs bash + curl + jq (any harness with a shell tool).
 
 ```bash
 KEY="${ZAI_API_KEY:-$(jq -r '.["zai"].key // .["zai-coding-plan"].key // empty' \

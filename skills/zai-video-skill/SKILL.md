@@ -73,8 +73,8 @@ Video generation takes **minutes**. From the agent, run the poll loop as a
 background shell command: the call returns immediately, and you're notified when
 the command exits — continue other work and read the result then.
 Harness binding (§Portability contract): OpenCode — shell `background: true` ·
-Claude Code — Bash `run_in_background: true` · other/none — run the loop in the
-foreground and tell the caller it blocks the session (correct, just slower):
+Claude Code — Bash `run_in_background: true` · Other/none — run the loop in the
+foreground and tell the caller it blocks the session (correct, just slower)
 
 ```bash
 # runs as a background command; exits 0 only on SUCCESS
