@@ -54,7 +54,7 @@ Tiers live in `installer/agent-tiers.json`; models are resolved at deploy time f
 
 Pick by purpose: correctness-critical → `reasoning`; exploratory → `fast`; docs/lint → `docs`; research/code loops → `long-context`; image perception → `vision`.
 
-**Vision fallback:** when native perception is unavailable ("model does not support image input", text-only session), image-analyzer, error-resolver, and uiux-reviewer fall back to the inline bash recipe embedded in `image-analyzer-subagent`, calling the Z.AI vision API directly at `glm-5v-turbo` — a different model from the native `glm-5.3-flash` (coding-plan endpoint preferred, PAAS fallback; requires `ZAI_API_KEY`). Free `glm-4.6v-flash` is a cost-constrained option, not the default.
+**Vision fallback:** when native perception is unavailable ("model does not support image input", text-only session), image-analyzer, error-resolver, and uiux-reviewer fall back to the inline bash recipe embedded in `image-analyzer-subagent`, calling the Z.AI vision API directly at `glm-5.3-flash` — the same multimodal model, invoked over raw HTTP instead of the provider binding (coding-plan endpoint preferred, PAAS fallback; requires `ZAI_API_KEY`).
 
 **Resolution precedence (highest wins):** project `.opencode/agent-overrides.json` > global `~/.config/opencode/agent-overrides.json` > project `.opencode/models.json` > global `~/.config/opencode/models.json` > `installer/models.default.json`. Swap provider: `setup.sh --provider <p>`; mix per tier: `setup.sh --mix` (stored in `models.json`, re-resolve with `--models-only`); per-agent pin: global `agent-overrides.json`. Built-ins `explore`→`fast` and `general`→`reasoning` are patched in `opencode.json`, not the tier registry.
 

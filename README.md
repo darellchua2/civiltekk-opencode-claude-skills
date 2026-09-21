@@ -136,9 +136,8 @@ Override files (precedence highest-first; see `MIGRATION.md`):
 > `zai-coding-plan/glm-5.3-flash` (native multimodal — image/video/pdf input, 1M ctx), natively
 > mapped by models.dev under the `zai-coding-plan` subscription. They see images/screenshots
 > directly (no external vision API). When native perception is unavailable, they fall back to the
-> inline recipe embedded in `image-analyzer-subagent`, calling `glm-5v-turbo` (pay-as-you-go
-> `zai` provider — a
-> different model) via direct API. Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY`
+> inline recipe embedded in `image-analyzer-subagent`, calling the same `glm-5.3-flash` model
+> via direct API. Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY`
 > (auto-injected in Docker via `docker-entrypoint.sh`). See `AGENTS.md` § Subagent Model Tiering.
 
 ### Windows (PowerShell)

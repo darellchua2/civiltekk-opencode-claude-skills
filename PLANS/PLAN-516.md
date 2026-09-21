@@ -52,14 +52,16 @@ Cross-module consumers exist (`resolve-models.mjs`, regen script, tests) → arc
     — **Done:** Model-field guidance now reads "calling `glm-5.3-flash` directly over HTTP"; files: skills/opencode-agent-creation-skill/SKILL.md; fixes: none
 
 ### Phase 3: Repo docs
-- [ ] **3.1** Rewrite `AGENTS.md` §Subagent Model Tiering vision-fallback paragraph: fallback calls `glm-5.3-flash` (same multimodal model, direct API transport; coding-plan endpoint preferred, PAAS fallback, `ZAI_API_KEY`). Drop the "different model" and the stale "Free `glm-4.6v-flash` is a cost-constrained option" sentence (endpoint retired — see error-resolver-subagent warning).
+- [x] **3.1** Rewrite `AGENTS.md` §Subagent Model Tiering vision-fallback paragraph: fallback calls `glm-5.3-flash` (same multimodal model, direct API transport; coding-plan endpoint preferred, PAAS fallback, `ZAI_API_KEY`). Drop the "different model" and the stale "Free `glm-4.6v-flash` is a cost-constrained option" sentence (endpoint retired — see error-resolver-subagent warning).
     — **Why:** AGENTS.md is the injected behavioral doc; stale model names misroute future sessions.
     — **Done when:** `grep -cE "glm-5v-turbo|glm-4\.6v-flash" AGENTS.md` returns 0.
     — **Consumers affected:** all sessions injecting this file.
-- [ ] **3.2** Rewrite `README.md` vision-tier note (the blockquote at ~L134-142) to match 3.1: fallback calls `glm-5.3-flash` via direct API.
+    — **Done:** fallback paragraph rewritten (same model, raw-HTTP transport); retired-4.6v sentence dropped; files: AGENTS.md; fixes: none
+- [x] **3.2** Rewrite `README.md` vision-tier note (the blockquote at ~L134-142) to match 3.1: fallback calls `glm-5.3-flash` via direct API.
     — **Why:** README is the public install doc; must not advertise the purged model.
     — **Done when:** `grep -c "glm-5v-turbo" README.md` returns 0.
     — **Consumers affected:** repo readers; none functional.
+    — **Done:** blockquote now reads "calling the same `glm-5.3-flash` model via direct API"; files: README.md; fixes: none
 
 ### Phase 4: Installer registry
 - [ ] **4.1** Update `installer/agent-tiers.json` `$comment`: replace the sentence "text-only sessions fall back to the inline direct-API recipe embedded in image-analyzer-subagent (glm-5v-turbo via the pay-as-you-go `zai` path)" with glm-5.3-flash wording. No tier values change.
@@ -96,6 +98,7 @@ None — single ticket, no `blocked-by`.
 ## Gate Trace
 GATE 54cb78a tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 GATE a83a00b tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
+GATE a58c09f tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 
 ## Plan-Review Adjudications (architecture review, 2026-09-21)
 - **Purge gate vs the plan file itself (MAJOR, fixed):** `PLANS/PLAN-516.md` is git-tracked and persists post-merge (precedent: `PLANS/PLAN-507.md`), yet must name the token to describe the purge. AC#2 / step 5.1 therefore exclude `--exclude-dir=PLANS` and harden to `grep -rniE "5v[-_]?turbo"`.
