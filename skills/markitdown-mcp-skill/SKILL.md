@@ -17,20 +17,20 @@ category: Configuration
 - Documents privacy guarantees for company-internal document handling
 - Provides fallback strategies when the MCP is unavailable
 
-**Reference:** [markitdown-local-mcp launcher README](../../opencode_app/mcp-servers/markitdown-local-mcp/README.md) · [Upstream microsoft/markitdown](https://github.com/microsoft/markitdown)
+**Reference:** [Upstream microsoft/markitdown](https://github.com/microsoft/markitdown) · [markitdown-mcp on PyPI](https://pypi.org/project/markitdown-mcp/)
 
 ## Requirements & Honesty Note
 
 | Requirement                                                          | Status                                                  |
 | -------------------------------------------------------------------- | ------------------------------------------------------- |
 | `markitdown` MCP server in `opencode.json` `mcp.servers` block        | Required for MCP tool access                            |
-| `markitdown-local-mcp` binary on PATH                                | Installed via `./deploy/setup.sh` (pip) or baked into Docker |
+| `markitdown-mcp` binary on PATH                                       | Installed via `./deploy/setup.sh` (PyPI, pinned) or baked into Docker |
 | `mcp.servers.markitdown.disabled: false` in `opencode.json`          | **Ships `disabled: true`** — user must opt in (#262)     |
 | `permissions` rule `{ "action": "markitdown*", "resource": "*", "effect": "allow" }` | **No rule by default** — user must opt in (#262) |
 
 If any requirement is unmet, MCP tool calls return connection errors. Fall back to `pdftotext`, `image-analyzer-subagent`, or built-in `Read` (see **Fallback Strategy** below).
 
-**Privacy note:** markitdown is privacy-safe for local files — the `markitdown-local-mcp` fork's `pyproject.toml` trust boundary installs only `markitdown[pdf,docx,pptx,xlsx,xls,outlook]` (no azure/speech/youtube extras), so conversion is fully local with zero phone-home network calls. Opt-in (`disabled: true` by default per #262) is a choice of minimal default footprint, not a privacy concern.
+**Privacy note (#487):** markitdown is now the official `markitdown-mcp` from PyPI (stdio, `MARKITDOWN_ENABLE_PLUGINS=false`). Local document conversions (PDF/DOCX/PPTX/XLSX/MSG/...) make zero network calls, and Azure converters never activate. Residual: `markitdown[all]` ships audio/YouTube converters — an **audio file** input uploads to Google Speech and a **YouTube URL** contacts YouTube, so keep those input types away from this tool when zero egress is required. Opt-in (`disabled: true` by default per #262) remains a minimal-footprint choice.
 
 ## opencode.json Configuration
 
@@ -43,7 +43,7 @@ The markitdown MCP server ships as opt-in (`disabled: true`) per [#262](https://
     "servers": {
       "markitdown": {
         "type": "local",
-        "command": ["markitdown-local-mcp"],
+        "command": ["markitdown-mcp"],
         "environment": {
           "MARKITDOWN_ENABLE_PLUGINS": "false"
         },
@@ -185,7 +185,7 @@ After markitdown conversion, if the document contains charts/diagrams referenced
 ### MCP not connected / tool returns "server not found"
 
 Three gates, all required:
-- `markitdown-local-mcp` binary on PATH (`--enable-pack markitdown` installs it)
+- `markitdown-mcp` binary on PATH (`--enable-pack markitdown` installs it)
 - `mcp.servers.markitdown.disabled: false` in the deployed config
 - `permissions` rule `{ "action": "markitdown*", "resource": "*", "effect": "allow" }` (last matching rule wins)
 
@@ -195,16 +195,16 @@ Missing any one leaves the MCP unreachable or its tools denied. Verify with `ope
 
 Earlier releases carried the opt-in denies under a nested `permission.tool` key, which opencode's permission engine never read — so hand-enabled servers worked despite the "deny". Under v2 the denies are `permissions`-array rules and **enforce**. If you enable markitdown/docling/next-devtools by hand, make sure no later deny rule shadows your allow (last matching rule wins) — or re-run `--enable-pack <name>`.
 
-### `markitdown-local-mcp: command not found`
+### `markitdown-mcp: command not found`
 
-The launcher binary isn't on PATH. Fix:
-- Linux/macOS: run `./deploy/setup.sh` (installs via `pip install --user`); ensure `~/.local/bin` is on PATH
+The server binary isn't on PATH. Fix:
+- Linux/macOS: run `./deploy/setup.sh` (installs via `pip install --user` from PyPI); ensure `~/.local/bin` is on PATH
 - Windows: run `.\deploy\setup.ps1`; ensure `%APPDATA%\Python\Scripts` is on PATH
-- Docker: launcher is baked into the image at `/opt/python-env/bin/markitdown-local-mcp` (already on PATH)
+- Docker: the server is baked into the image at `/opt/python-env/bin/markitdown-mcp` (already on PATH)
 
-### `ImportError: No module named 'youtube_transcript_api'` / `'azure'` / `'speech_recognition'`
+### Audio file / YouTube URL conversion silently contacts Google/YouTube
 
-**This is expected, not a bug.** It means a cloud-only converter was invoked on a YouTube URL, audio file, or with explicit Azure kwargs — paths this privacy-hardened launcher structurally excludes. If you need those capabilities, install upstream `markitdown[all]` (NOT recommended for company-internal docs).
+**This is expected, not a bug** — it is the documented residual of running upstream `markitdown[all]` (#487): an audio file input uploads to Google Speech and a YouTube URL contacts YouTube. Keep those input types away from this tool when zero egress is required; born-digital office documents remain fully local.
 
 ### Conversion times out for very large file
 
@@ -232,12 +232,14 @@ For company-internal docs, option 5 is preferred over option 4 (cheaper, preserv
 
 ## Privacy Guarantees
 
-This MCP is the **privacy-hardened** fork of upstream `markitdown-mcp`, vendored at `opencode_app/mcp-servers/markitdown-local-mcp/`. See [launcher README](../../opencode_app/mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis.
+This MCP is the official `markitdown-mcp` from PyPI (#487) — stdio-only in our config, plugins off via `MARKITDOWN_ENABLE_PLUGINS=false`. See the upstream repo for the full trust-boundary picture.
 
 | Guarantee                                                | Mechanism                                                              |
 | -------------------------------------------------------- | ---------------------------------------------------------------------- |
-| No Azure SDK on disk                                     | `pyproject.toml` excludes `markitdown[all]` — installs only `[pdf,docx,pptx,xlsx,xls,outlook]` extras |
-| No Google Speech / YouTube API                           | Same — `SpeechRecognition`, `youtube-transcript-api` not installed      |
+| Azure converters never register                          | They require constructor kwargs (`docintelligence_endpoint` etc.) — never passed by the MCP server |
+| Document conversions are fully local                     | PDF/DOCX/PPTX/XLSX/XLS/MSG/HTML/CSV/EPUB/IPYNB converters make zero network calls |
+| Plugins off                                              | `MARKITDOWN_ENABLE_PLUGINS=false` in the server env (also upstream's default) |
+| **Residual — audio/YouTube**                             | `markitdown[all]` ships an audio converter (uploads to Google Speech on audio input) and a YouTube converter (contacts YouTube on YouTube URLs) — feed only document formats when zero egress is required |
 | No LLM image description (cloud)                         | Launcher never passes `llm_client`; image converter runs EXIF-only      |
 | No plugin converters (3rd-party)                         | `enable_plugins=False` hard-coded in constructor (env var belt-and-suspenders) |
 | No telemetry / Application Insights                       | Confirmed absent in markitdown source; defense-in-depth via dep exclusion |

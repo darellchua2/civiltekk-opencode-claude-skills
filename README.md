@@ -51,7 +51,7 @@ Two setup scripts are provided for different platforms:
 | Script | Platform | Features |
 |--------|----------|----------|
 | `setup.sh` | macOS, Linux, WSL, Git Bash | Full feature set including nvm, PeonPing |
-| `setup.ps1` | Windows (PowerShell) | Full feature set, env vars persist to `$PROFILE` |
+| `setup.ps1` | Windows (PowerShell) | Thin launcher — forwards to `setup.sh` via Git-Bash/WSL (requires a bash host + Node.js 26+) |
 
 ### macOS / Linux / WSL / Git Bash
 
@@ -64,6 +64,11 @@ Two setup scripts are provided for different platforms:
 
 # Skills-only deployment (requires opencode-ai installed)
 ./deploy/setup.sh --skills-only
+
+# Check provider model pins against the live models.dev catalog (warnings only)
+./deploy/setup.sh --check-catalog
+# Regenerate installer/provider-models.json from models.dev (maintainer action)
+node deploy/regen-provider-models.mjs
 
 # Non-interactive mode
 ./deploy/setup.sh --yes
@@ -141,6 +146,7 @@ powershell -ExecutionPolicy Bypass -File .\deploy\setup.ps1 -Help
 | `--quick` | `-Quick` | Copy config + skills only (skip dependency checks) |
 | `--skills-only` | `-SkillsOnly` | Deploy skills only (requires opencode-ai installed) |
 | `--update` | `-Update` | Update OpenCode CLI to latest version |
+| `--check-catalog` | — (bash only) | Warn if `installer/provider-models.json` drifted from the live models.dev catalog; regenerate with `node deploy/regen-provider-models.mjs` |
 | `--dry-run` | `-DryRun` | Preview all actions without making changes |
 | `--yes` | `-Yes` | Auto-accept all prompts (non-interactive) |
 | `--rollback [TARGET]` | `-Rollback [-RollbackTarget\|-RollbackArg <T>]` | Restore `~/.config/opencode/` from a previous backup. `TARGET`: `list`, `latest`, `TIMESTAMP` (e.g. `20260719_070926`), or `VERSION` (e.g. `1.76.0`). Always creates a pre-rollback safety backup first. |
@@ -359,7 +365,7 @@ The remaining 5 ship `disabled: true` and are opt-in:
 |--------|------|---------|
 | `atlassian` | local (npx mcp-remote) | JIRA and Confluence (first use opens browser OAuth) |
 | `next-devtools` | local (npx) | Next.js DevTools integration |
-| `markitdown` | local | Document-to-Markdown (local-only) |
+| `markitdown` | local | Document-to-Markdown (upstream markitdown-mcp, stdio) |
 | `docling` | local | Layout-aware document extraction (~3-4 GB) |
 | `chrome-devtools` | local | Live Chrome automation |
 
@@ -380,7 +386,7 @@ Instead of editing 4–9 JSON entries to enable a logical group of MCP servers, 
 | Pack | Servers enabled | Requires |
 |------|----------------|----------|
 | `autodesk` | **adds** autodesk-revit, autodesk-model-data, autodesk-fusion, autodesk-help (not in base config) | `AUTODESK_API_KEY` |
-| `markitdown` | markitdown | Python launcher (auto-installed by `setup.sh`; baked into Docker image) |
+| `markitdown` | markitdown | Python server (upstream `markitdown-mcp` from PyPI, pinned; auto-installed by `setup.sh`; baked into Docker image) |
 | `docling` | docling | Python + `docling-mcp[local]` (~3-4 GB; first convert downloads models from huggingface.co) |
 | `nextjs` | next-devtools | A running Next.js dev server |
 | `chrome-devtools` | chrome-devtools | Chrome stable installed locally (privacy-hardened: telemetry + CrUX OFF by default) |
@@ -405,7 +411,7 @@ Default state of every pack is **OFF** — existing deployments are unaffected u
 
 #### Skill Profiles — deploy-time primary visibility (#333)
 
-Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (106 allows) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 70 primary-visible skills + `"*": "deny"` (~3.2k tokens saved per session — 36 hidden descriptions × ~90 tokens/description; re-derive as full allows − lean count, never hand-copy).
+Every allowed skill's `description` is injected into the primary session's context at startup (~90 tokens each). The shipped `opencode_app/opencode.json` allowlist (106 rules: 105 deployable from root `skills/` + 1 app-scoped — `github-runners-setup-skill`, live only in the Docker app's `.opencode/skills/`) is the **full** profile. For a context-lean primary, deploy with a **lean** profile: only 70 primary-visible skills + `"*": "deny"` (~3.2k tokens saved per session — 36 hidden descriptions × ~90 tokens/description, 1 of which is app-scoped and never loads in user deploys; re-derive as full allows − lean count, never hand-copy).
 
 > **Interim workaround (#481):** the 4 reviewer agents' 26-skill union is temporarily primary-visible in lean because opencode v2.0.11 ignores agent-frontmatter `skill` allows in child sessions ([upstream anomalyco/opencode#50149](https://github.com/anomalyco/opencode/issues/50149)) — config-layer allows are the only working path. The 28 non-reviewer agents' frontmatter skill allows remain non-functional under lean until the upstream fix (this note is the deferral record). Revert: remove the 26 entries from `deploy/skill-profiles.json` `lean` **and** the 3 added allows (`reviewer-baseline-skill`, `language-review-checklists-skill`, `uiux-review-skill`) from `opencode_app/opencode.json`, then redeploy.
 
@@ -424,7 +430,7 @@ Key properties:
 - Typo-guarded: a lean key that doesn't match a real skill directory or the shipped allowlist fails the deploy closed.
 
 
-> **Note — `markitdown` MCP server (PLAN-GIT-262).** Privacy-hardened document-to-Markdown converter (PDF/DOCX/PPTX/XLSX/XLS/Outlook MSG + image EXIF). Vendored launcher at `opencode_app/mcp-servers/markitdown-local-mcp/` depends **only** on local converter extras — no `markitdown[all]`, no Azure SDKs, no Google Speech, no YouTube API. `enable_plugins=False` is hard-coded. User-supplied `http:`/`https:` URIs are fetched via a single `requests.get()` (no telemetry headers, no Microsoft endpoints — equivalent to built-in `webfetch`). See [`opencode_app/mcp-servers/markitdown-local-mcp/README.md`](opencode_app/mcp-servers/markitdown-local-mcp/README.md) for the full trust-boundary analysis.
+> **Note — `markitdown` MCP server (#487).** Official [`markitdown-mcp`](https://pypi.org/project/markitdown-mcp/) from PyPI (pinned `==0.0.1a7` — upstream publishes only alphas). Document-to-Markdown (PDF/DOCX/PPTX/XLSX/XLS/Outlook MSG + image EXIF) over stdio (the default transport; `--http` is never passed). `MARKITDOWN_ENABLE_PLUGINS=false` is set in the server env (also upstream's own default). The package installs `markitdown[all]`, so cloud-capable extras are present on disk but **dormant by configuration**: Azure converters never register (their constructor kwargs are never passed). Accepted residual: an **audio file** input uploads to Google Speech and a **YouTube URL** input contacts YouTube — stick to document formats when you need zero egress. Local file conversions make no network calls; user-supplied `http:`/`https:` URIs are fetched via a single `requests.get()` (equivalent to built-in `webfetch` — user-initiated, not telemetry).
 
 > **Note — `filesystem` MCP server has been permanently removed.** OpenCode's built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` tools already provide full file I/O, so `@modelcontextprotocol/server-filesystem` was redundant and caused tool-selection ambiguity (the model would call `read_mcp_resource` instead of the built-in `Read` tool). Do not re-add it to project `opencode.json` files.
 
@@ -433,7 +439,7 @@ Key properties:
 > - **`chrome-devtools`** — Google's `chrome-devtools-mcp` sends usage statistics and Chrome UX Report (CrUX) trace URLs to Google **by default**, plus polls the npm registry for updates. Hardened with `--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers` (strips sensitive request headers before they reach the LLM), and `CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS=1` (kills the update poll).
 > - **`next-devtools`** — Vercel's `next-devtools-mcp` collects anonymous telemetry (tool names, error events, session metadata) by default, storing a local client ID in `~/.next-devtools-mcp/`. Hardened with `NEXT_TELEMETRY_DISABLED=1`.
 >
-> The enabled remote/`zai-*` servers send data **by design** (that is their function, not telemetry); `codegraph` is purely local with no telemetry layer. Mermaid diagrams ship as inline fenced code blocks (rendered client-side by GitHub/VS Code — no MCP server); `markitdown` and `docling` are already pinned to local-only conversion (`MARKITDOWN_ENABLE_PLUGINS=false`, `DOCLING_CONVERSION_MODE=local`). One unavoidable residual: every `npx -y <pkg>` first run hits the npm registry to download — not telemetry, but it is a phone-home; pre-install packages globally (`npm i -g`) and drop `npx` to avoid it.
+> The enabled remote/`zai-*` servers send data **by design** (that is their function, not telemetry); `codegraph` is purely local with no telemetry layer. Mermaid diagrams ship as inline fenced code blocks (rendered client-side by GitHub/VS Code — no MCP server); `docling` is pinned to local conversion (`DOCLING_CONVERSION_MODE=local`) and `markitdown` runs the official PyPI server with plugins off (`MARKITDOWN_ENABLE_PLUGINS=false`) — its cloud extras are present-but-dormant, with the audio/YouTube input residual documented in the markitdown note above. One unavoidable residual: every `npx -y <pkg>` first run hits the npm registry to download — not telemetry, but it is a phone-home; pre-install packages globally (`npm i -g`) and drop `npx` to avoid it.
 
 ## Language Server Protocol (LSP)
 

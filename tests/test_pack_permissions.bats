@@ -71,7 +71,7 @@ PACK_SERVERS="markitdown:markitdown docling:docling chrome-devtools:chrome-devto
   dir="$(mktemp -d)"
   cat > "$dir/opencode.json" <<'EOF'
 {
-  "mcp": { "servers": { "markitdown": { "type": "local", "command": ["markitdown-local-mcp"], "disabled": true } } },
+  "mcp": { "servers": { "markitdown": { "type": "local", "command": ["markitdown-mcp"], "disabled": true } } },
   "permissions": [
     { "action": "codegraph*", "resource": "*", "effect": "deny" },
     { "action": "markitdown*", "resource": "*", "effect": "deny" }
@@ -122,24 +122,28 @@ EOF
 # =============================================================================
 
 @test "setup_sh_installer_has_installed_check" {
-  grep -q 'pip show markitdown-local-mcp' "$SETUP"
+  grep -q 'pip show markitdown-mcp' "$SETUP"
+  # #487: the install command must carry the exact alpha pin AND the
+  # mcp[cli] co-install (docling-mcp shares the mcp 2.x SDK).
+  grep -qF 'markitdown-mcp==0.0.1a7' "$SETUP"
+  grep -qF 'mcp[cli]>=2.1.1,<3.0.0' "$SETUP"
 }
 
 @test "setup_sh_run_pack_merger_gates_install_on_enable_pack" {
   # hook must be dry-run-safe and keyed to the markitdown pack
   grep -q 'grep -qw "markitdown"' "$SETUP"
-  grep -q 'install_local_mcp_launchers' "$SETUP"
+  grep -q 'install_markitdown_mcp' "$SETUP"
   local hook
   hook="$(sed -n '/run_pack_merger()/,/^}/p' "$SETUP" | grep -A2 'grep -qw "markitdown"')"
   [[ "$hook" == *'DRY_RUN'* ]]
 }
 
-@test "setup_ps1_mirrors_rc_gated_install_hook" {
-  grep -q 'mergeRc = \$LASTEXITCODE' "$SETUP_PS1"
-  # EnablePack regex gate: '(^|,)markitdown(,|$)'
-  grep -qF ',)markitdown(,' "$SETUP_PS1"
-  grep -q 'Install-LocalMcpLaunchers' "$SETUP_PS1"
-  grep -q 'pip show markitdown-local-mcp' "$SETUP_PS1"
+@test "setup_ps1_is_thin_launcher_hook_inherited_from_bash" {
+  # #474: the markitdown rc-gated install hook lives in setup.sh
+  # (pinned above); the ps1 forwards to it and keeps no copy.
+  grep -q 'setup.sh' "$SETUP_PS1"
+  run grep -q 'mergeRc' "$SETUP_PS1"
+  [ "$status" -ne 0 ]
 }
 
 @test "installer_has_pep668_break_system_packages_fallback" {
@@ -147,24 +151,16 @@ EOF
   # the installer must detect and retry with --break-system-packages.
   grep -q 'externally-managed-environment' "$SETUP"
   grep -q -- '--break-system-packages' "$SETUP"
-  grep -q 'externally-managed-environment' "$SETUP_PS1"
-  grep -q -- '--break-system-packages' "$SETUP_PS1"
-  # docling-mcp installs from PyPI too — its installer needs the same retry
-  sed -n '/^install_docling()/,/^}/p' "$SETUP" | grep -q -- '--break-system-packages'
-  sed -n '/^function Install-Docling/,/^}/p' "$SETUP_PS1" | grep -q -- '--break-system-packages'
+  # #474: the ps1 thin launcher keeps no pip logic of its own — PEP 668
+  # handling is inherited by delegation to setup.sh.
+  run grep -q 'externally-managed-environment' "$SETUP_PS1"
+  [ "$status" -ne 0 ]
 }
 
-@test "setup_ps1_hook_resets_lastexitcode_for_caller" {
-  # Invoke-PackMerger's install hook + Install-LocalMcpLaunchers early returns
-  # must reset $global:LASTEXITCODE = 0 (best-effort) — the caller checks it
-  # right after (Invoke-DeployAgents 'Provider-pack application failed').
-  local fn
-  fn="$(sed -n '/function Invoke-PackMerger/,/^}/p' "$SETUP_PS1")"
-  [[ "$fn" == *'Install-LocalMcpLaunchers'* ]]
-  [[ "$fn" == *'$global:LASTEXITCODE = 0'* ]]
-  local inst
-  inst="$(sed -n '/function Install-LocalMcpLaunchers/,/^}/p' "$SETUP_PS1")"
-  [ "$(grep -c 'global:LASTEXITCODE = 0' <<<"$inst")" -ge 3 ]
+@test "setup_ps1_launcher_propagates_exit_code" {
+  # #474: the old ps1 reset $global:LASTEXITCODE inside Invoke-PackMerger;
+  # the thin launcher instead propagates bash's exit code to the caller.
+  grep -q 'exit \$LASTEXITCODE' "$SETUP_PS1"
 }
 
 @test "no_doc_teaches_dead_permission_keys" {

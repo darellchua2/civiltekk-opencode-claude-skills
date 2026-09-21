@@ -16,6 +16,224 @@
 ## Entries
 
 <!-- Entries are appended here automatically when new learnings are saved -->
+<!-- Entries are appended here automatically when new learnings are saved -->
+
+### A launcher that hands Windows users into bash needs .gitattributes EOL pins
+
+- **Category**: convention
+- **File**: `conventions/delegation-launcher-needs-eol-attributes.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: default autocrlf clones CRLF-ify setup.sh and bash dies on \r — ship `*.sh text eol=lf` whenever a Windows entrypoint delegates into bash (#474 review)
+- **Date**: 2026-09-21
+
+### Dead functions kept alive by their own tests
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/dead-function-kept-alive-by-its-tests.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: deploy_skills_only had zero production callers post-#470 but green wrapper-pinning tests — re-point function-level pins at the live step list in the same change (#474 review)
+- **Date**: 2026-09-21
+
+### Tests that execute setup.sh end-to-end need a mktemp HOME, not just source-pins
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/unsandboxed-bats-run-deploys-into-real-home.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: even a no-op flag falls through to the headless deploy and prunes real backups — execution tests export a mktemp HOME (#474 review)
+- **Date**: 2026-09-21
+
+### Steps appended to one build_plan branch vanish when main rebuilds the plan
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-rebuild-drops-non-mode-side-steps.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: the headless/menu rebuild re-derives steps from flags — conditional side-steps must exist in every branch or the drop must warn loudly (#474 review)
+- **Date**: 2026-09-21
+
+### A thin launcher with a syntax error passes every textual delegation pin
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/thin-launcher-syntax-error-passes-text-pins.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: a stray brace made setup.ps1 unparseable while all ps1 pins (pure text greps) stayed green — when the runtime is absent from CI, add a structural parse proxy (#474 review BLOCK)
+- **Date**: 2026-09-21
+
+<!-- Entries are appended here automatically when new learnings are saved -->
+
+### Plugin pickers filtering by filename prefix drop companion files the plugin needs
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plugin-picker-prefix-filter-drops-companions.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: selecting opencode-* items without modeling companions shipped an inert vibeguard (fail-open, no masking) via the picker while the blanket path copied the config (#473 r2)
+- **Date**: 2026-09-21
+
+### First unguarded empty-array `${arr[@]}` crashes stock macOS bash 3.2 under nounset
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/unguarded-empty-array-under-nounset-bash32.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: setup.sh must stay 3.2-clean — every possibly-empty array gets a length-guard or scalar form before expansion, or macOS non-dry runs crash while CI (bash 5) stays green (#473 r2)
+- **Date**: 2026-09-21
+
+### A dry-run leak test asserting only exit 0 has no teeth
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/leak-test-asserts-exit-only.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: the child CLI installs for real AND exits 0 without the forwarding — leak nets assert the untouched surface (no artifacts), never just status (#473 r2)
+- **Date**: 2026-09-21
+
+<!-- Entries are appended here automatically when new learnings are saved -->
+
+### Provenance pins need ≥2 direct choices; equivalence pins need non-empty selections
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/provenance-pin-single-source-false-green.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: a one-choice provenance pin cannot see attribution bugs and an empty-selection equivalence pin cannot see driver drift — enforcement must cover the claim (#473 review)
+- **Date**: 2026-09-21
+
+### Steps that shell out to child CLIs inherit no dry-run behavior
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/new-steps-calling-child-clis-inherit-no-dry-run.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: forward the child's own --dry-run with the boolean-safe array form and add the PLAN-promised leak test — run_cmd does not reach child CLI calls (#473 review BLOCK)
+- **Date**: 2026-09-21
+
+### Attribution loops must test membership in the per-source closure, not the union pool
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/solo-closure-attribution-tested-the-union-pool.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: a union-pool predicate inside an attribution loop is always-true — every locked dep credited to the first solo entry and the transitive fallback went unreachable (#473 review)
+- **Date**: 2026-09-21
+
+<!-- Entries are appended here automatically when new learnings are saved -->
+
+### Bats tests mutating shipped artifacts: snapshot/restore + private fixture copies
+
+- **Category**: pattern
+- **File**: `patterns/bats-mutating-shipped-artifacts-snapshot-and-isolate.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: setup()/teardown cp-snapshot mutated shipped files (mktemp path — fixed /tmp names serialize --jobs), and fixture mutations use a private mktemp copy — a shared-fixture delete poisoned three later tests (#472)
+- **Date**: 2026-09-21
+
+### New ONLY-mode flag must extend validate_mode_conflicts in both lists
+
+- **Category**: convention
+- **File**: `conventions/new-plan-mode-wires-mode-conflict-validator.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: checklist for new setup.sh modes: defaults, parser arm, conflict validator (modes + packless lists), build_plan branch, completion case, both help surfaces, wiring pins — missing the validator silently swallows combined modes (#472)
+- **Date**: 2026-09-21
+
+<!-- Entries are appended here automatically when new learnings are saved -->
+
+### Merge writers must back up unparseable user JSON, never reset to {}
+
+- **Category**: solution
+- **File**: `solutions/merge-writers-backup-on-parse-failure.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: distinguish MISSING (fresh ok) from CORRUPT (os.replace to .corrupt.bak + warn) in merge-into-user-JSON writers; chmod 600 secret stores (#471 review)
+- **Date**: 2026-09-21
+
+### `${XDG_DATA_HOME:-…}` punches through HOME-only test sandboxes
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/xdg-data-home-punches-through-home-sandboxes.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: HOME sandboxing misses `${XDG_*:-$HOME/…}` resolution — unset XDG_DATA_HOME/XDG_CONFIG_HOME in the bash -c or tests mutate real user state on machines exporting it (#471 review)
+- **Date**: 2026-09-21
+
+### PLAN consumer-map row without an owning step
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-consumer-map-row-without-step.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: a Dependency & Consumer Map row naming a consumer with no owning implementation step is a silent coverage hole — walk every map row to a step at plan review (#487 arch review)
+- **Date**: 2026-09-21
+
+### Done-when gate escapes its phase
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/done-when-gate-escapes-its-phase.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: a done-whose pass condition depends on later-phase edits is unsatisfiable at its own step — scope gates to current phase state, exhaustive sweeps to the final gate phase (#487)
+- **Date**: 2026-09-21
+
+### Idempotency probe version-blindness defeats the pin-bump ritual
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/idempotency-probe-version-blind.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: pip show + import probes skip install for ANY installed version, so pin bumps never reach working installs — probe must assert the pinned version (#487 code review)
+- **Date**: 2026-09-21
+
+### markitdown-mcp upstream facts (alpha pin, co-install, residual)
+
+- **Category**: solution
+- **File**: `solutions/markitdown-mcp-alpha-pin-upstream-facts.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: upstream publishes only alphas (latest 0.0.1a7) — exact pin installs without --pre; requires markitdown[all] + mcp>=2.1.1,<3; coexists with docling-mcp 3.x on mcp 2.x; stdio default; bump ritual spans 3 files
+- **Date**: 2026-09-21
+<!-- Entries are appended here automatically when new learnings are saved -->
+
+### set -E would arm the ERR trap inside plan steps — never add it while dispatch-by-call
+
+- **Category**: solution
+- **File**: `solutions/errtrace-would-arm-the-err-trap-inside-steps.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: setup.sh's ERR trap is un-armed inside functions precisely because set -E is absent — adding it would route every deliberate step return 1 through error_handler's exit, bypassing the executor + epilogue (#470 review)
+- **Date**: 2026-09-20
+
+### Plan step functions must return, never exit
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-step-functions-must-return.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: sweep every step function for bare exit when introducing a single executor — setup_zai_api_key's exit 1 bypassed the epilogue on headless -y, deterministically (#470 review)
+- **Date**: 2026-09-20
+
+
+### AC cross-references must resolve to a real artifact
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/dangling-cross-reference-in-ac.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: an AC pointing at "the table in Technical Notes" that doesn't exist passes every per-step atomicity check — verify reference targets, add a reference-target check to the authoring self-check (#470 r2)
+- **Date**: 2026-09-20
+
+### Recount claimed structural counts in PLANs
+
+- **Category**: convention
+- **File**: `conventions/plan-counted-structural-removals-recount.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: "remove the six early-exit blocks" — main() has seven; the uncounted seventh carried the ticket's own swallowed-exit defect. Name every element; a count is a scope claim (#470 r2)
+- **Date**: 2026-09-20
 
 ### Gate success-log with the dry branch (early-return shape for new run_cmd gates)
 
@@ -591,17 +809,47 @@
 - **Summary**: count-drift sweeps must include LEARNINGS/ (docs-of-record), and docs-of-record should cite search anchors not file:line — line refs rot within weeks (#481 review)
 - **Date**: 2026-09-20
 
+### Two skill surfaces — root deployable + Docker-app project-scoped
+
+- **Category**: decision
+- **File**: `decisions/app-scoped-skill-surface.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: keep both surfaces + the app-scoped allow (root skills/ deployable, opencode_app/.opencode/skills app-only per #361); union guard + disjointness assert enforce it; revisit = split app config base if app skills grow (#486)
+- **Date**: 2026-09-20
+
+### Two artifact surfaces, one count vocabulary — every count names its surface
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/two-surface-count-conflation.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: root skills/ vs opencode_app/.opencode/skills — single-surface derivations mint phantoms and duplicate deltas (both happened in one session); fix = union guard (SKILL.md-filtered) + disjointness assert + surface-explicit counts; dated narratives keep period-true numbers (#486)
+- **Date**: 2026-09-20
+
 ### Invariant scope: quantifier must match the loop it lives in
 
 - **Category**: anti-pattern
 - **File**: `anti-patterns/invariant-scope-quantifier-vs-per-phase-loop.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: an invariant with boundary scope must name it explicitly ("the **final** pushed SHA") — "pushed SHA" inside a per-phase push loop misreads as tier=full every push; quantifier must match the loop it lives in (#488)
+- **Date**: 2026-09-21
 
 ### Format-token census classifies deferral-by-name as verified-compatible
 
 - **Category**: pattern
 - **File**: `patterns/format-token-census-deferral-classification.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: canonical-format changes census literal tokens across restating sites; surfaces that defer by name are zero-hit by design and classified verified-compatible — name immutable-history exclusions in the census record (#488)
+- **Date**: 2026-09-21
 
 ### Transient cross-file contract drift between per-phase commits is safe iff pinned
 
 - **Category**: pattern
 - **File**: `patterns/phased-canonical-contract-drift-window.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: editing a canonical contract and its deferring consumers in separate per-phase commits restates a stale format mid-window — safe iff the surface defers by name AND no test pins the stale example; verify both, don't reorder phases (#488)
+- **Date**: 2026-09-21

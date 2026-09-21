@@ -2,6 +2,61 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.26.0](https://github.com/darellchua2/opencode-config-template/compare/v9.25.1...v9.26.0) (2026-09-21)
+
+### Features
+
+* **deploy:** subcommands, presets, --list-items, de-bloat, ps1 thin launcher ([#474](https://github.com/darellchua2/opencode-config-template/issues/474)) ([#496](https://github.com/darellchua2/opencode-config-template/issues/496)) ([7c34a35](https://github.com/darellchua2/opencode-config-template/commit/7c34a35fea5e3ae27ee35c5e01329d64c8d95706))
+
+## [9.25.1](https://github.com/darellchua2/opencode-config-template/compare/v9.25.0...v9.25.1) (2026-09-20)
+
+### Bug Fixes
+
+* **docs:** review fixes — repoint deploy-path cite to deploy_content anchor, soften shadowing claim ([f5ca655](https://github.com/darellchua2/opencode-config-template/commit/f5ca6557db1b4861e9c72c1f0bf2efc2b81575b7))
+
+### Documentation
+
+* **learnings:** implement Phase 4 — two-surface-count-conflation learning + plan complete ([67b9a0b](https://github.com/darellchua2/opencode-config-template/commit/67b9a0bd4ca747454fad5188111a81d2a9c7d293))
+* **plan:** add PLAN-486.md for [#486](https://github.com/darellchua2/opencode-config-template/issues/486) ([2ffcf6b](https://github.com/darellchua2/opencode-config-template/commit/2ffcf6b477778247cfe19a20381ab7c83427978d))
+* **plan:** implement Phase 1 — surface evidence + 106-cite site inventory ([a89e9d5](https://github.com/darellchua2/opencode-config-template/commit/a89e9d52d1595bfc1aa2da233a981e2e19b277f6))
+* **skills:** implement Phase 3 — two-surface decision record + surface-explicit count prose ([f5bf109](https://github.com/darellchua2/opencode-config-template/commit/f5bf109a404d4c103be2fe7e1609106253584d40)), closes [#481](https://github.com/darellchua2/opencode-config-template/issues/481)
+
+## [9.25.0](https://github.com/darellchua2/opencode-config-template/compare/v9.24.0...v9.25.0) (2026-09-20)
+
+### Features
+
+* **deploy:** per-item deploy picker — OpenTUI dashboard, linear + headless drivers ([#473](https://github.com/darellchua2/opencode-config-template/issues/473)) ([#494](https://github.com/darellchua2/opencode-config-template/issues/494)) ([50e1bb7](https://github.com/darellchua2/opencode-config-template/commit/50e1bb7dc8db0e3ad692bcc6ca33c20267424b74))
+
+## [9.24.0](https://github.com/darellchua2/opencode-config-template/compare/v9.23.0...v9.24.0) (2026-09-20)
+
+### Features
+
+* **deploy:** models.dev regeneration script + --check-catalog drift check ([#472](https://github.com/darellchua2/opencode-config-template/issues/472)) ([#493](https://github.com/darellchua2/opencode-config-template/issues/493)) ([4f93b0d](https://github.com/darellchua2/opencode-config-template/commit/4f93b0d9baa853780b7892711804647745fbba50)), closes [#468-class](https://github.com/darellchua2/opencode-config-template/issues/468-class)
+
+## [9.23.0](https://github.com/darellchua2/opencode-config-template/compare/v9.22.0...v9.23.0) (2026-09-20)
+
+### Features
+
+* **deploy:** preset-driven provider credential capture + auth.json seeding ([#471](https://github.com/darellchua2/opencode-config-template/issues/471)) ([#492](https://github.com/darellchua2/opencode-config-template/issues/492)) ([3eb0c9d](https://github.com/darellchua2/opencode-config-template/commit/3eb0c9d4ee2287d7bc716005f84abbce077b514b))
+
+## [9.22.0](https://github.com/darellchua2/opencode-config-template/compare/v9.21.0...v9.22.0) (2026-09-20)
+
+### Features
+
+* **deploy:** deploy plan model + single executor with uniform epilogue ([#470](https://github.com/darellchua2/opencode-config-template/issues/470)) ([#490](https://github.com/darellchua2/opencode-config-template/issues/490)) ([6c81ed5](https://github.com/darellchua2/opencode-config-template/commit/6c81ed55f6be8cbcd867b7228f8a85435c3e4357)), closes [#379](https://github.com/darellchua2/opencode-config-template/issues/379) [#474](https://github.com/darellchua2/opencode-config-template/issues/474) [#379](https://github.com/darellchua2/opencode-config-template/issues/379) [#467](https://github.com/darellchua2/opencode-config-template/issues/467)
+
+## [9.21.0](https://github.com/darellchua2/opencode-config-template/compare/v9.20.0...v9.21.0) (2026-09-20)
+
+### Features
+
+* **deploy:** use upstream markitdown-mcp from PyPI instead of vendored launcher ([#487](https://github.com/darellchua2/opencode-config-template/issues/487)) ([a2d84c4](https://github.com/darellchua2/opencode-config-template/commit/a2d84c4591904e6930f4eea11d1bc5a6271c9f95))
+
+## [Unreleased]
+
+### Changed
+
+* **deploy:** swap markitdown to the official `markitdown-mcp` from PyPI (#487) — replaces the vendored `markitdown-local-mcp` launcher (deleted). Server command is now `markitdown-mcp` (stdio, `MARKITDOWN_ENABLE_PLUGINS=false` kept); setup installs `markitdown-mcp==0.0.1a7` with `mcp[cli]>=2.1.1,<3.0.0` co-installed so markitdown and docling share one MCP SDK 2.x. Residual (documented): cloud extras are present-but-dormant; audio file inputs upload to Google Speech and YouTube URLs contact YouTube.
+
 ## [9.20.0](https://github.com/darellchua2/opencode-config-template/compare/v9.19.6...v9.20.0) (2026-09-20)
 
 ### Features

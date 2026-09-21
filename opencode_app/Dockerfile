@@ -13,11 +13,10 @@ FROM python:3.12-slim-bookworm AS python-deps
 
 RUN python3 -m venv /opt/python-env
 
-# PLAN-GIT-262: bake the privacy-hardened markitdown MCP launcher into the
-# venv here — /app/mcp-servers/... does not exist until the runtime stage's
-# content COPYs, so the source must be COPY'd in-stage first. Do NOT use uv -
-# it is not installed in this image.
-COPY opencode_app/mcp-servers/markitdown-local-mcp /tmp/markitdown-local-mcp
+# #487: bake the upstream markitdown MCP server into the venv — pulled from
+# PyPI with the same exact pin as deploy/setup.sh and deploy/setup.ps1
+# (upstream publishes only alphas, so an exact pre-release pin is required;
+# bump all three together). Do NOT use uv - it is not installed in this image.
 RUN /opt/python-env/bin/pip install --no-cache-dir \
     "openpyxl>=3.1.0" \
     "pandas>=3.0.0" \
@@ -25,7 +24,7 @@ RUN /opt/python-env/bin/pip install --no-cache-dir \
     "requests>=2.32.0" \
     "numpy>=2.0.0" \
     "fastapi>=0.115.0" \
-    /tmp/markitdown-local-mcp
+    "markitdown-mcp==0.0.1a7"
 
 # ── Stage 3: runtime ─────────────────────────────────────────────────────────
 FROM python:3.12-slim-bookworm

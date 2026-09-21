@@ -93,7 +93,7 @@ Activate when user mentions:
 | `.xlsx` / `.csv` | `xlsx-specialist-subagent` |
 | READ/EXTRACT text from `.docx`/`.pptx`/`.xlsx` (born-digital) | Load `markitdown-mcp-skill` → call `markitdown` MCP |
 
-> **MCP tool access is session-inherited** from the deployed config's root-level `permission` pattern (`"markitdown*": "allow"`) — do NOT add `markitdown*` to this agent's `permission` block (no precedent; decided in #262). To enable markitdown calls, run `./deploy/setup.sh --enable-pack markitdown` (installs the launcher and flips `mcp.markitdown.enabled` + `permission."markitdown*": "allow"`), then restart opencode.
+> **MCP tool access is session-inherited** from the deployed config's root-level `permission` pattern (`"markitdown*": "allow"`) — do NOT add `markitdown*` to this agent's `permission` block (no precedent; decided in #262). To enable markitdown calls, run `./deploy/setup.sh --enable-pack markitdown` (installs the upstream `markitdown-mcp` server from PyPI and appends `permission."markitdown*": "allow"`), then restart opencode.
 
 ## Workflow
 

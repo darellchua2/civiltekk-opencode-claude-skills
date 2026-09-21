@@ -27,3 +27,8 @@ allowlists with a "extend deliberately" message. The #468 fix: non-object
 entries and primary-less preset objects are pushed into the broken list; the
 openrouter/local presets are a named `LOCAL_PRESETS` allowlist referenced
 from the data file's `$comment` so the two cannot drift silently.
+
+Recurrence #3 (2026-09-21, #471 review): the credential schema pin hardcoded
+the five remote preset names — a future provider without a credential block
+would skip capture with a green suite; inverted to a LOCAL allowlist with
+fail-on-bad-shape.

@@ -1,0 +1,4 @@
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.mjs text eol=lf
+*.bats text eol=lf

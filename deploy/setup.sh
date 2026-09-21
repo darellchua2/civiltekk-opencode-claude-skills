@@ -40,7 +40,6 @@
 #   -y, --yes           Auto-accept all prompts (non-interactive mode)
 #   -v, --verbose       Enable detailed debug output
 #   -u, --update        Update OpenCode CLI only (skip config/skills)
-#   -A, --enable-auto-update    Enable automatic opencode-ai updates
 #   -D, --disable-auto-update   Disable automatic updates
 #   -S, --schedule-update <schedule>  Set update schedule: daily|weekly|monthly|manual
 #   -C, --check-update  Check for available updates without installing
@@ -108,6 +107,7 @@ MODELS_DEFAULT_MAP="${INSTALLER_DIR}/models.default.json"
 PROVIDER_PRESETS="${INSTALLER_DIR}/provider-presets.json"
 # Global user overrides (~/.config/opencode/)
 USER_MODELS_MAP="${CONFIG_DIR}/models.json"
+SELECT_PLAN_FILE="${CONFIG_DIR}/deploy-plan.json"
 USER_OVERRIDES="${CONFIG_DIR}/agent-overrides.json"
 # Project-local overrides (repo root .opencode/)
 PROJECT_MODELS_MAP="${REPO_DIR}/.opencode/models.json"
@@ -332,6 +332,11 @@ PEONPING_ONLY=false       # --peonping (sound-notification installer only)
 ENABLE_AUTO_UPDATE=false
 UPDATE_SCHEDULE="manual"
 CHECK_UPDATE_ONLY=false
+CHECK_CATALOG_ONLY=false    # --check-catalog (models.dev drift check)
+SELECT_ITEMS=false          # --select (per-item deploy picker)
+LIST_ITEMS=false            # --list-items (registry catalog dump)
+SAVE_PRESET_NAME=""         # --save-preset <name>
+LOAD_PRESET_NAME=""         # --preset <name>
 KEEP_BACKUPS=5
 
 # Rollback mode (set by --rollback)
@@ -346,7 +351,7 @@ FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
 ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,docling,chrome-devtools)
-SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary sees 46 skills; full = shipped 105 verbatim)
+SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary-visible skills per deploy/skill-profiles.json; full = the shipped opencode.json skill set)
 ENABLE_LOCAL_LLM=false   # --enable-local-llm (gemma-4-E4B via llama.cpp, requires NVIDIA GPU)
 ENABLE_VLLM=false        # --enable-vllm (vLLM Docker server, requires >12GB VRAM)
 
@@ -535,6 +540,15 @@ USAGE:
   --peonping              Install PeonPing sound notifications  Headless /
                           (menu option 5 as a flag)             scripted installs
 
+  SUBCOMMANDS (aliases over the flags):
+    install | update | rollback | peonping | llm | plan | check-catalog
+
+  --select                Pick skills/agents/packs/plugins per item   Custom
+                          (interactive picker; emits a deploy plan)  deploys
+
+  --check-catalog         Compare provider-models.json with the live  Model-pin
+                          models.dev catalog (warnings only)     maintenance
+
   --rollback [TARGET]     Restore from a previous backup         Undo a bad deploy
                           TARGET:
                             (omitted)   Interactive picker
@@ -554,10 +568,16 @@ USAGE:
     -s, --skills-only     Skills-only deployment mode
     -u, --update          Update OpenCode CLI to latest version
     -P, --peonping        Install PeonPing sound notifications only
+    --select              Pick deploy items interactively (per-item deploy)
+    --list-items          Dump the deploy item catalog (skills/agents/…)
+    --save-preset <name>  Save models.json + deploy-plan.json as a preset
+    --preset <name>       Restore a saved preset (models.json; deploy-plan.json
+                          is only consumed together with --select)
+    --check-catalog       Warn if provider model pins drifted from models.dev
     --rollback [TARGET]   Restore from previous backup (see SETUP MODES above)
 
   UPDATE MANAGEMENT:
-    -A, --enable-auto-update      Enable automatic opencode-ai updates
+    -A, --enable-auto-update      (removed) schedule updates externally, e.g. cron
     -D, --disable-auto-update     Disable automatic updates
     -S, --schedule-update <schedule>  Set update check frequency:
                                       daily, weekly, monthly, manual (default)
@@ -592,11 +612,10 @@ USAGE:
 
   SKILL PROFILE (deploy-time primary visibility):
     --skill-profile <p>   lean (default) | full. lean rewrites the DEPLOYED
-                           config's skill permissions (permissions array) to 46
-                           primary-visible
-                           skills + "*": "deny" (subagents unaffected — they
-                           self-scope via frontmatter allows); full deploys the
-                           shipped 106-allow allowlist verbatim.
+                           config's skill permissions (permissions array) to the
+                           lean-profile skill set + "*": "deny" (subagents
+                           unaffected — they self-scope via frontmatter allows);
+                           full deploys the shipped allowlist verbatim.
 
   LOCAL LLM (gemma-4-E4B via llama.cpp in Docker):
     --enable-local-llm   Install local LLM inference server. Requires NVIDIA GPU,
@@ -626,7 +645,7 @@ USAGE:
     ./setup.sh -y -q                # Quick setup, non-interactive
 
   Provider packs (deploy-time MCP toggle):
-    ./setup.sh --enable-pack autodesk             # Enable all 4 Autodesk MCP servers
+    ./setup.sh --enable-pack autodesk             # Enable the Autodesk MCP servers
     ./setup.sh --enable-pack autodesk,markitdown   # Enable multiple packs
     ./setup.sh --quick --enable-pack markitdown   # Combine with other modes
 
@@ -707,7 +726,7 @@ USAGE:
     Usage: opencode --agent build "implement auth feature"
            opencode --agent explore "find all API routes"
 
-  MCP SERVERS (8):
+  MCP SERVERS:
     Auto-start (enabled by default):
       codegraph           Pre-indexed code knowledge graph (100% local)
       zai-web-reader      Web page content extraction (remote, needs ZAI_API_KEY)
@@ -717,7 +736,7 @@ USAGE:
     opencode.json or opencode-repo-setup-skill):
       atlassian           JIRA and Confluence integration (first use opens browser OAuth)
       next-devtools      Next.js DevTools integration
-      markitdown         Document-to-Markdown (local-only, privacy-hardened)
+      markitdown         Document-to-Markdown (upstream markitdown-mcp, stdio, plugins off)
       docling            Layout-aware document extraction (heavy ~3-4 GB)
       chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
                           (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
@@ -812,7 +831,10 @@ parse_arguments() {
                 shift
                 ;;
             -A|--enable-auto-update)
-                ENABLE_AUTO_UPDATE=true
+                # Auto-update was removed (#474): accepted no-op so existing
+                # scripts keep working.
+                ENABLE_AUTO_UPDATE=false
+                echo "Auto-update has been removed - schedule updates externally, e.g. cron: ./setup.sh --update"
                 shift
                 ;;
             -D|--disable-auto-update)
@@ -826,7 +848,9 @@ parse_arguments() {
                 fi
                 case "$2" in
                     daily|weekly|monthly|manual)
+                        # Removed with auto-update (#474): accepted no-op with a hint.
                         UPDATE_SCHEDULE="$2"
+                        echo "Auto-update has been removed - this flag is accepted but does nothing."
                         ;;
                     *)
                         log_error "Invalid --schedule-update value: '$2' (allowed: daily, weekly, monthly, manual)"
@@ -837,6 +861,14 @@ parse_arguments() {
                 ;;
             -C|--check-update)
                 CHECK_UPDATE_ONLY=true
+                shift
+                ;;
+            --check-catalog)
+                CHECK_CATALOG_ONLY=true
+                shift
+                ;;
+            --select)
+                SELECT_ITEMS=true
                 shift
                 ;;
             -P|--peonping)
@@ -928,6 +960,58 @@ parse_arguments() {
                 PROVIDER="vllm"
                 shift
                 ;;
+            --list-items)
+                LIST_ITEMS=true
+                shift
+                ;;
+            --save-preset)
+                if [ $# -lt 2 ] || [ -z "$2" ]; then
+                    log_error "--save-preset requires a name"
+                    exit 1
+                fi
+                SAVE_PRESET_NAME="$2"
+                shift 2
+                ;;
+            --preset)
+                if [ $# -lt 2 ] || [ -z "$2" ]; then
+                    log_error "--preset requires a name"
+                    exit 1
+                fi
+                LOAD_PRESET_NAME="$2"
+                shift 2
+                ;;
+            install)
+                shift
+                ;;
+            update)
+                UPDATE_ONLY=true
+                shift
+                ;;
+            rollback)
+                ROLLBACK_MODE=true
+                shift
+                if [ $# -gt 0 ] && [[ "$1" != -* ]]; then
+                    ROLLBACK_TARGET="$1"
+                    shift
+                fi
+                ;;
+            peonping)
+                PEONPING_ONLY=true
+                shift
+                ;;
+            llm)
+                ENABLE_LOCAL_LLM=true
+                ENABLE_VLLM=true
+                shift
+                ;;
+            plan)
+                SELECT_ITEMS=true
+                shift
+                ;;
+            check-catalog)
+                CHECK_CATALOG_ONLY=true
+                shift
+                ;;
             *)
                 log_error "Unknown option: $1"
                 echo "Use -h or --help for usage information"
@@ -952,7 +1036,11 @@ validate_mode_conflicts() {
     [ "$MIGRATE_ONLY" = true ] && modes+=("--migrate")
     [ "$ROLLBACK_MODE" = true ] && modes+=("--rollback")
     [ "$CHECK_UPDATE_ONLY" = true ] && modes+=("--check-update")
+    [ "$CHECK_CATALOG_ONLY" = true ] && modes+=("--check-catalog")
     [ "$PEONPING_ONLY" = true ] && modes+=("--peonping")
+    [ "$SELECT_ITEMS" = true ] && modes+=("--select")
+    [ "$LIST_ITEMS" = true ] && modes+=("--list-items")
+    [ -n "$SAVE_PRESET_NAME" ] && modes+=("--save-preset")
     if [ "${#modes[@]}" -gt 1 ]; then
         log_error "Mutually exclusive modes combined: ${modes[*]}. Choose one."
         exit 1
@@ -964,6 +1052,7 @@ validate_mode_conflicts() {
         [ "$MIGRATE_ONLY" = true ] && packless+=("--migrate")
         [ "$ROLLBACK_MODE" = true ] && packless+=("--rollback")
         [ "$CHECK_UPDATE_ONLY" = true ] && packless+=("--check-update")
+        [ "$CHECK_CATALOG_ONLY" = true ] && packless+=("--check-catalog")
         [ "$PEONPING_ONLY" = true ] && packless+=("--peonping")
         if [ "${#packless[@]}" -gt 0 ]; then
             log_error "--enable-pack has no effect with ${packless[*]} (packs merge into the deployed config, which these modes never write). Drop --enable-pack or use a config-deploy mode."
@@ -1841,24 +1930,6 @@ download_file() {
 ################################################################################
 
 # Show spinning progress
-show_progress() {
-    local message="$1"
-    local pid=$2
-    local delay=0.1
-    local spinstr='|/-\'
-
-    echo -n "${message} "
-
-    while ps -p $pid > /dev/null 2>&1; do
-        local temp=${spinstr#?}
-        printf " [%c]  " "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-
-    printf "    \b\b\b\b"
-}
 
 ################################################################################
 # SETUP FUNCTIONS
@@ -1951,8 +2022,10 @@ setup_zai_api_key() {
         log_error "No valid ZAI_API_KEY provided"
 
         if ! prompt_yes_no "Continue without API key? Some MCP services will not work." "n"; then
-            log_error "Setup cancelled. Please run this script again with your API key."
-            exit 1
+            # Non-critical plan step (#470): return, never exit — the executor
+            # warns and continues, and the epilogue still runs.
+            log_warn "Skipping Z.AI key setup - re-run this script to configure it."
+            return 1
         fi
     else
         log_success "API Key accepted: ${ZAI_API_KEY:0:8}...${ZAI_API_KEY: -4}"
@@ -1962,32 +2035,6 @@ setup_zai_api_key() {
 # Skills-only deploy: shared by the --skills-only flag path, menu option 2,
 # and the headless no-TTY default (#466). One body, three entry points —
 # duplicating it per site is how drift bugs are born (see #469).
-deploy_skills_only() {
-    log_info "Validating OpenCode installation..."
-    if command_exists opencode; then
-        log_success "OpenCode is installed ($(opencode --version 2>/dev/null))"
-    else
-        log_error "OpenCode CLI is not installed globally"
-        log_info "Please install OpenCode first: npm install -g opencode-ai"
-        exit 1
-    fi
-
-    if ! check_dependencies; then
-        log_error "Dependency check failed. Please install missing dependencies."
-        exit 1
-    fi
-
-    setup_config || true
-    deploy_agents || true
-    # Plugin/shim membership is platform parity, not mode accident (#469):
-    # ps1 -SkillsOnly has always shipped these (Deploy-Plugins +
-    # Setup-OpencodeInitShim via its config path). The opencode-* plugins
-    # include the default-enabled auto-continue hook.
-    deploy_plugins || true
-    setup_opencode_init_symlink || true
-    setup_learnings_dir || true
-    print_summary
-}
 
 # Setup PeonPing (AI agent sound notifications)
 setup_peonping() {
@@ -2285,8 +2332,8 @@ setup_nodejs() {
 
     if prompt_yes_no "Install/switch to Node.js v24?" "y"; then
         log_info "Installing Node.js v24..."
-        run_cmd "nvm install 24"
-        run_cmd "nvm use 24"
+        run_cmd "nvm install 26"
+        run_cmd "nvm use 26"
 
         if command_exists node; then
             log_success "Node.js $(node --version) installed and active"
@@ -2529,10 +2576,10 @@ setup_config() {
     # the legacy file as the live config so the preservation logic below applies
     # to it; if both exist, park the stale legacy copy instead of deleting it.
     if [ ! -f "$CONFIG_FILE" ] && [ -f "$LEGACY_CONFIG_FILE" ]; then
-        mv "$LEGACY_CONFIG_FILE" "$CONFIG_FILE"
+        run_cmd mv "$LEGACY_CONFIG_FILE" "$CONFIG_FILE"
         log_info "Migrated legacy config.json -> opencode.json (OpenCode v2 only reads opencode.json|opencode.jsonc)"
     elif [ -f "$CONFIG_FILE" ] && [ -f "$LEGACY_CONFIG_FILE" ]; then
-        mv "$LEGACY_CONFIG_FILE" "${LEGACY_CONFIG_FILE}.legacy-ignored"
+        run_cmd mv "$LEGACY_CONFIG_FILE" "${LEGACY_CONFIG_FILE}.legacy-ignored"
         log_warn "Stale legacy config.json found (ignored by OpenCode v2); renamed to config.json.legacy-ignored"
     fi
 
@@ -2576,9 +2623,13 @@ setup_config() {
             # jsonc-only machine): restore the one-live-config end state.
             park_jsonc_sibling
 
-            # Install local Python MCP launchers (PLAN-GIT-262: markitdown-local-mcp).
+            # Install the upstream markitdown MCP server (#487: markitdown-mcp from PyPI)
+            # only when the pack is requested — the server ships disabled:true, and
+            # markitdown[all] is a large install, so never on a plain deploy.
             # Best-effort — non-fatal on offline/pip-missing.
-            install_local_mcp_launchers
+            if echo "$ENABLE_PACK" | grep -qw "markitdown"; then
+                install_markitdown_mcp
+            fi
 
             # Install docling-mcp if --enable-pack docling was requested (PLAN-GIT-308).
             # Heavy (~3-4 GB) — only runs when explicitly opted in.
@@ -2623,49 +2674,78 @@ setup_config() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LOCAL MCP LAUNCHER INSTALL (PLAN-GIT-262)
+# MARKITDOWN MCP INSTALL (#487 — upstream markitdown-mcp from PyPI)
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Install in-repo Python-based MCP launchers (currently: markitdown-local-mcp)
-# onto the user's PATH so OpenCode can spawn them via the `command` field in
-# opencode.json. Uses pip (already a soft dep via codegraph/python tooling).
+# Install the official markitdown-mcp MCP server (microsoft/markitdown) from
+# PyPI onto the user's PATH so OpenCode can spawn it via the `command` field in
+# opencode.json. Replaces the former in-repo vendored launcher
+# (markitdown-local-mcp) — #487. Uses pip (already a soft dep via
+# codegraph/python tooling).
 #
-# Why pip, not uv: uv is not a repo dependency and is not installed in the
-# Docker image. pip is available everywhere Python is.
+# Why the exact pin: upstream publishes only alpha releases (0.0.1a1–0.0.1a7);
+# plain `pip install markitdown-mcp` fails ("no matching distribution") because
+# pip skips pre-releases. An exact pre-release pin installs without --pre and
+# keeps pre-release candidates out of transitive resolution. Bump ritual: the
+# pin appears in deploy/setup.sh, deploy/setup.ps1, and opencode_app/Dockerfile
+# — bump all three together.
+#
+# Why the mcp[cli] co-install: docling-mcp>=3.0 requires mcp[cli]>=2.0,<3.0 and
+# upstream markitdown-mcp requires mcp>=2.1.1,<3.0.0 — installing both specs in
+# one resolve keeps the shared MCP SDK at 2.x for both servers (the retired
+# vendored pin mcp<2.0 was mutually exclusive with docling and broke both).
 #
 # Why --user: avoids polluting system site-packages; console-script lands in
-# ~/.local/bin (Linux/macOS) or %APPDATA%\Python\Scripts (Windows). Python
-# 3.12+ auto-adds ~/.local/bin to PATH on most distros.
-install_local_mcp_launchers() {
+# ~/.local/bin (Linux/macOS). Python 3.12+ auto-adds ~/.local/bin to PATH on
+# most distros.
+install_markitdown_mcp() {
     echo ""
-    log_info "Installing local MCP launchers..."
 
-    # Idempotency: skip the network round-trip when already installed AND
-    # importable — `pip show` alone hides broken installs (e.g. the mcp SDK
-    # dependency missing), which surfaces later as "MCP error -32000:
-    # Connection closed" when the launcher crashes on import.
-    if python3 -m pip show markitdown-local-mcp >/dev/null 2>&1 \
-        && python3 -c "from markitdown_local_mcp.__main__ import main" >/dev/null 2>&1; then
-        log_success "markitdown-local-mcp already installed — skipping pip install"
+    # Dry-run contract (#467): the pip uninstall/install below mutate the
+    # user's site-packages — never during a preview.
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Would ensure markitdown-mcp==0.0.1a7 (pip --user)"
         return 0
     fi
 
-    # Source-of-truth launcher directory (relative to repo root = parent of deploy/)
-    local launcher_dir="${SCRIPT_DIR}/../opencode_app/mcp-servers/markitdown-local-mcp"
+    log_info "Installing markitdown-mcp (upstream, PyPI)..."
 
-    if [ ! -d "$launcher_dir" ]; then
-        log_warn "markitdown-local-mcp launcher source not found at ${launcher_dir} — skipping"
+    # Migrate old installs: the retired vendored launcher must not linger on
+    # PATH beside the new entry point (best-effort — absent is fine). PEP 668
+    # blocks plain uninstalls on externally-managed systems — retry once with
+    # --break-system-packages (mirrors the install path below).
+    python3 -m pip uninstall -y markitdown-local-mcp >/dev/null 2>&1 \
+        || python3 -m pip uninstall -y --break-system-packages markitdown-local-mcp >/dev/null 2>&1 \
+        || true
+
+    # Idempotency: skip the network round-trip when the PINNED version is
+    # already installed AND importable. Version-aware on purpose: a plain
+    # `pip show` + import probe passes for ANY installed version, so pin
+    # bumps would never reach machines with a working older alpha. `pip
+    # show` alone hides broken installs (e.g. the mcp SDK dependency
+    # missing), which surfaces later as "MCP error -32000: Connection
+    # closed" when the server crashes on import.
+    if python3 -m pip show markitdown-mcp 2>/dev/null | grep -qF "Version: 0.0.1a7" \
+        && python3 -c "from markitdown_mcp.__main__ import main" >/dev/null 2>&1; then
+        log_success "markitdown-mcp 0.0.1a7 already installed — skipping pip install"
         return 0
     fi
 
     # Prerequisite: python3 + pip
     if ! command_exists python3; then
-        log_warn "python3 not found — cannot install markitdown-local-mcp. Install Python 3.10+ and re-run."
+        log_warn "python3 not found — cannot install markitdown-mcp. Install Python 3.10+ and re-run."
         return 0
     fi
 
     if ! python3 -m pip --version >/dev/null 2>&1; then
-        log_warn "pip not available for python3 — cannot install markitdown-local-mcp. Install pip and re-run."
+        log_warn "pip not available for python3 — cannot install markitdown-mcp. Install pip and re-run."
+        return 0
+    fi
+
+    # Dry-run safe (#470 class sweep): this is a real network install into the
+    # user's Python user-site — never during a preview.
+    if [ "$DRY_RUN" = true ]; then
+        log_info "[DRY-RUN] Would pip install markitdown-local-mcp from ${launcher_dir}"
         return 0
     fi
 
@@ -2673,14 +2753,14 @@ install_local_mcp_launchers() {
     # (externally-managed-environment, Debian 12+/Ubuntu 23.04+) blocks plain
     # `pip install --user` — retry once with --break-system-packages; --user
     # keeps the install isolated to ~/.local, which is the risk PEP 668 guards.
-    log_info "pip install --user --force-reinstall ${launcher_dir}"
+    log_info 'pip install --user "markitdown-mcp==0.0.1a7" "mcp[cli]>=2.1.1,<3.0.0"'
     local pip_err
     pip_err="$(mktemp)"
-    if python3 -m pip install --user --force-reinstall --no-warn-script-location "$launcher_dir" >/dev/null 2>"$pip_err" \
+    if python3 -m pip install --user --no-warn-script-location "markitdown-mcp==0.0.1a7" "mcp[cli]>=2.1.1,<3.0.0" >/dev/null 2>"$pip_err" \
         || { grep -q "externally-managed-environment" "$pip_err" \
-            && python3 -m pip install --user --break-system-packages --force-reinstall --no-warn-script-location "$launcher_dir" >/dev/null 2>>"$pip_err"; }; then
+            && python3 -m pip install --user --break-system-packages --no-warn-script-location "markitdown-mcp==0.0.1a7" "mcp[cli]>=2.1.1,<3.0.0" >/dev/null 2>>"$pip_err"; }; then
         rm -f "$pip_err"
-        log_success "markitdown-local-mcp installed"
+        log_success "markitdown-mcp installed"
 
         # PATH check — warn (don't fail) if ~/.local/bin not on PATH
         local user_bin="${HOME}/.local/bin"
@@ -2689,12 +2769,12 @@ install_local_mcp_launchers() {
                 # All good
                 ;;
             *)
-                log_warn "${user_bin} is not on your PATH. Add it to your shell rc to use markitdown-local-mcp:"
+                log_warn "${user_bin} is not on your PATH. Add it to your shell rc to use markitdown-mcp:"
                 echo "    export PATH=\"${user_bin}:\$PATH\"" >&2
                 ;;
         esac
     else
-        log_warn "pip install failed for markitdown-local-mcp (offline?). The launcher is opt-in (enabled: false) — OpenCode will work without it. Re-run setup when online to enable."
+        log_warn "pip install failed for markitdown-mcp (offline?). The server is opt-in (disabled: true) — OpenCode will work without it. Re-run setup when online to enable."
         log_warn "pip stderr (last 3 lines):"
         tail -n 3 "$pip_err" >&2
         rm -f "$pip_err"
@@ -2702,7 +2782,7 @@ install_local_mcp_launchers() {
 }
 
 # Install docling-mcp (heavy ~3-4 GB) — only when --enable-pack docling is
-# requested. Unlike markitdown (local-dir pip install), docling-mcp comes from
+# requested. Like markitdown, docling-mcp comes from
 # PyPI. First convert downloads ~hundreds of MB of models from huggingface.co.
 install_docling() {
     if ! echo "$ENABLE_PACK" | grep -qw "docling"; then
@@ -3090,6 +3170,17 @@ run_resolver() {
         dry_arg="--dry-run --preview-dir ${DRY_RUN_PREVIEW_DIR}"
     fi
 
+    # D2 (#470): declining the config overwrite means the existing
+    # opencode.json wins — omit --config-src so the resolver bases its
+    # in-place model patch on the existing file (resolve-models.mjs :283-284
+    # fallback). No existing file ⇒ the resolver writes no config at all.
+    local config_src_arg=""
+    if [ "$SKIP_CONFIG_COPY" = true ]; then
+        log_info "Config copy declined - resolver patches the existing config in place (or writes none)"
+    else
+        config_src_arg="--config-src ${SOURCE_CONFIG}"
+    fi
+
     node "$RESOLVER_SCRIPT" \
         $agents_args \
         --tiers "$AGENT_TIERS" \
@@ -3098,7 +3189,7 @@ run_resolver() {
         $project_map_arg \
         --overrides "$USER_OVERRIDES" \
         $project_overrides_arg \
-        --config-src "$SOURCE_CONFIG" \
+        $config_src_arg \
         --config-dest "$CONFIG_FILE" \
         --state "$RESOLVED_SIDECAR" \
         $dry_arg \
@@ -3138,6 +3229,13 @@ run_pack_merger() {
         return 1
     fi
 
+    # D2 (#470): a declined config with no existing file means there is
+    # nothing to merge into — skip instead of a cryptic merge failure.
+    if [ "$SKIP_CONFIG_COPY" = true ] && [ ! -f "$CONFIG_FILE" ]; then
+        log_warn "Packs require a config you declined to create - skipping pack merge."
+        return 0
+    fi
+
     local target_config="$CONFIG_FILE"
     if [ "$DRY_RUN" = true ]; then
         target_config="${DRY_RUN_PREVIEW_DIR}/opencode.json"
@@ -3165,14 +3263,14 @@ run_pack_merger() {
         return 1
     fi
 
-    # Install-on-enable: markitdown's Python launcher is pip-installed, not
-    # baked into the target config — without this the enabled server fails to
-    # spawn. Mirrors install_docling gating. Skipped in dry-run
+    # Install-on-enable: markitdown's Python server is pip-installed from PyPI,
+    # not baked into the target config — without this the enabled server fails
+    # to spawn. Mirrors install_docling gating. Skipped in dry-run
     # (nothing real is deployed) and when the pack wasn't requested.
     # grep -qw (not anchored) is safe: validate_enable_pack fail-fast restricts
     # --enable-pack to real pack names, so no 'markitdown2' false positives.
     if [ "$DRY_RUN" != true ] && echo "$ENABLE_PACK" | grep -qw "markitdown"; then
-        install_local_mcp_launchers
+        install_markitdown_mcp
     fi
     return 0
 }
@@ -3354,7 +3452,7 @@ deploy_plugins() {
 # (action:"skill") inside the permissions array of the DEPLOYED config
 # (never the source opencode_app/opencode.json).
 #   lean (default) -> 70 primary-visible skills + "*": "deny"
-#   full           -> verified no-op (shipped 106-allow allowlist stays verbatim)
+#   full           -> verified no-op (shipped allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver
 # stages the preview config at $DRY_RUN_PREVIEW_DIR/opencode.json — patch that.
 run_skill_profile() {
@@ -3365,6 +3463,12 @@ run_skill_profile() {
     if [ ! -f "$SKILL_PROFILES_FILE" ]; then
         log_error "Skill profiles file not found: ${SKILL_PROFILES_FILE}"
         return 1
+    fi
+
+    # D2 (#470): same declined-config guard as run_pack_merger.
+    if [ "$SKIP_CONFIG_COPY" = true ] && [ ! -f "$CONFIG_FILE" ]; then
+        log_warn "Skill profile requires a config you declined to create - skipping."
+        return 0
     fi
 
     local target_config="$CONFIG_FILE"
@@ -3515,8 +3619,458 @@ deploy_agents() {
     return 0
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# DEPLOY PLAN MODEL (#470): one mode→steps mapping + one executor. Steps are
+# "critical|id|label|function"; critical failures stop the plan and make the
+# final exit code 1, non-critical failures warn and continue. Replaces the
+# six+ early-exit branches whose callers swallowed failures with `|| true`
+# and skipped backup/cleanup/summary entirely.
+# ─────────────────────────────────────────────────────────────────────────────
+PLAN_STEPS=()
+PLAN_MODE=""
+PLAN_FAILED_CRITICAL=""
+PLAN_FAILED_COUNT=0
+
+# Preconditions as steps (arch review): each mode carries the gates its
+# branch used to run — skills-only re-checks opencode + deps, models-only /
+# migrate-only require node. Manifest update is deliberately NON-critical:
+# init.mjs update exits 2 on pre-#379 installs and #379 decided that is a
+# warning (one full re-run adopts the manifest), not a failure.
+build_plan() {
+    validate_mode_conflicts
+    PLAN_STEPS=()
+    if [ "$ROLLBACK_MODE" = true ]; then
+        PLAN_MODE="rollback"
+        PLAN_STEPS+=("true|rollback|Restore from backup|rollback")
+    elif [ "$UPDATE_ONLY" = true ]; then
+        PLAN_MODE="update"
+        PLAN_STEPS+=("true|update-cli|Update opencode CLI|update_opencode_cli")
+    elif [ "$CHECK_UPDATE_ONLY" = true ]; then
+        PLAN_MODE="check-update"
+        PLAN_STEPS+=("true|deps|Dependency check|check_dependencies_strict")
+        PLAN_STEPS+=("true|check-update|Check for updates|check_for_updates_only")
+    elif [ "$CHECK_CATALOG_ONLY" = true ]; then
+        PLAN_MODE="check-catalog"
+        PLAN_STEPS+=("true|catalog-check|Check provider-models against models.dev|check_provider_catalog")
+    elif [ "$LIST_ITEMS" = true ]; then
+        PLAN_MODE="list-items"
+        PLAN_STEPS+=("true|dump-catalog|Dump the deploy item catalog|dump_catalog")
+    elif [ -n "$SAVE_PRESET_NAME" ]; then
+        PLAN_MODE="save-preset"
+        PLAN_STEPS+=("true|save-preset|Save user preset|save_user_preset")
+    elif [ "$MODELS_ONLY" = true ]; then
+        PLAN_MODE="models-only"
+        PLAN_STEPS+=("true|node-check|Node.js required|node_required")
+        PLAN_STEPS+=("false|provider|Select model provider|setup_model_provider")
+        PLAN_STEPS+=("false|credentials|Capture provider credentials|setup_provider_credentials")
+        PLAN_STEPS+=("true|resolver-config|Resolve models into config|resolve_models_config_only")
+        PLAN_STEPS+=("false|manifest-update|Update agent manifest|update_manifest")
+    elif [ "$MIGRATE_ONLY" = true ]; then
+        PLAN_MODE="migrate-only"
+        PLAN_STEPS+=("true|node-check|Node.js required|node_required")
+        PLAN_STEPS+=("true|migrate|Run v2.0 migration|run_migration_only")
+        PLAN_STEPS+=("true|resolver|Resolve models|run_resolver")
+    elif [ "$PEONPING_ONLY" = true ]; then
+        PLAN_MODE="peonping"
+        PLAN_STEPS+=("true|deps|Dependency check|check_dependencies_strict")
+        PLAN_STEPS+=("false|peonping|Install PeonPing sound notifications|setup_peonping")
+    elif [ "$SKILLS_ONLY" = true ]; then
+        PLAN_MODE="skills-only"
+        PLAN_STEPS+=("true|opencode-check|Validate opencode install|validate_opencode_install")
+        PLAN_STEPS+=("true|deps|Dependency check|check_dependencies_strict")
+        if [ -n "$LOAD_PRESET_NAME" ]; then
+            PLAN_STEPS+=("true|load-preset|Load preset ${LOAD_PRESET_NAME}|load_user_preset")
+        fi
+        PLAN_STEPS+=("true|config|Deploy config|setup_config")
+        PLAN_STEPS+=("true|agents|Deploy agents|deploy_agents")
+        PLAN_STEPS+=("true|plugins|Deploy plugins|deploy_plugins")
+        PLAN_STEPS+=("false|init-symlink|Install opencode-init shim|setup_opencode_init_symlink")
+        PLAN_STEPS+=("false|learnings|Set up learnings directory|setup_learnings_dir")
+    else
+        PLAN_MODE="full"
+        PLAN_STEPS+=("true|deps|Dependency check|check_dependencies_strict")
+        if [ -n "$LOAD_PRESET_NAME" ]; then
+            PLAN_STEPS+=("true|load-preset|Load preset ${LOAD_PRESET_NAME}|load_user_preset")
+        fi
+        if [ "$QUICK_SETUP" = false ]; then
+            PLAN_STEPS+=("false|gh-cli|Set up GitHub CLI|setup_github_cli")
+            PLAN_STEPS+=("false|zai-key|Configure Z.AI API key|setup_zai_api_key")
+            PLAN_STEPS+=("false|nvm|Set up nvm|setup_nvm")
+            PLAN_STEPS+=("false|nodejs|Set up Node.js|setup_nodejs")
+            PLAN_STEPS+=("false|opencode-install|Install opencode CLI|setup_opencode")
+        fi
+        PLAN_STEPS+=("true|config|Deploy config|setup_config")
+        PLAN_STEPS+=("false|local-llm|Configure local LLM|setup_local_llm")
+        PLAN_STEPS+=("false|vllm|Configure vLLM|setup_vllm")
+        PLAN_STEPS+=("false|provider|Select model provider|setup_model_provider")
+        PLAN_STEPS+=("false|credentials|Capture provider credentials|setup_provider_credentials")
+        if [ "$SELECT_ITEMS" = true ]; then
+            # Per-item picker (#473): selection replaces the blanket content
+            # deploy. Steps APPEND here (never interleave — deploy_delegate
+            # line-order pin); consumption gates on THIS RUN's flag + the plan
+            # file (a stale plan from a prior run must never alter this one).
+            PLAN_STEPS+=("false|provision-tui|Provision picker dependencies|provision_picker_deps")
+            PLAN_STEPS+=("true|select-items|Select items to deploy|run_item_picker")
+            PLAN_STEPS+=("true|deploy-selected-skills|Deploy selected skills|deploy_selected_skills")
+            PLAN_STEPS+=("true|deploy-selected-agents|Deploy selected agents|deploy_selected_agents")
+            PLAN_STEPS+=("false|apply-selected-extras|Apply selected packs and extras|apply_selected_packs_extras")
+        else
+            PLAN_STEPS+=("true|agents|Deploy agents|deploy_agents")
+            PLAN_STEPS+=("true|plugins|Deploy plugins|deploy_plugins")
+        fi
+        PLAN_STEPS+=("false|init-symlink|Install opencode-init shim|setup_opencode_init_symlink")
+        PLAN_STEPS+=("false|learnings|Set up learnings directory|setup_learnings_dir")
+        PLAN_STEPS+=("false|shell-vars|Set up shell variables|setup_shell_vars")
+    fi
+}
+
+# The single executor (#470): failures are owned HERE, not by callers.
+run_plan() {
+    PLAN_FAILED_CRITICAL=""
+    PLAN_FAILED_COUNT=0
+    local entry critical id label func
+    for entry in "${PLAN_STEPS[@]}"; do
+        IFS='|' read -r critical id label func <<< "$entry"
+        log_info "Plan step: $label"
+        if ! "$func"; then
+            if [ "$critical" = "true" ]; then
+                log_error "Critical step failed: $label"
+                PLAN_FAILED_CRITICAL="$id"
+                return 1
+            fi
+            log_warn "Non-critical step failed (continuing): $label"
+            PLAN_FAILED_COUNT=$((PLAN_FAILED_COUNT + 1))
+        fi
+    done
+    return 0
+}
+
+# ── Extracted step functions (behavior-preserving; placed below deploy_agents
+# to preserve deploy_delegate.bats' first-occurrence line-order pin) ──
+
+node_required() {
+    if ! command_exists node; then
+        log_error "Node.js is required for model resolution."
+        return 1
+    fi
+    return 0
+}
+
+check_dependencies_strict() {
+    if ! check_dependencies; then
+        log_error "Dependency check failed. Please install missing dependencies."
+        return 1
+    fi
+    return 0
+}
+
+validate_opencode_install() {
+    log_info "Validating OpenCode installation..."
+    if command_exists opencode; then
+        log_success "OpenCode is installed ($(opencode --version 2>/dev/null))"
+        return 0
+    fi
+    log_error "OpenCode CLI is not installed globally"
+    log_info "Please install OpenCode first: npm install -g opencode-ai"
+    return 1
+}
+
+resolve_models_config_only() {
+    RESOLVER_CONFIG_ONLY=true run_resolver
+}
+
+update_manifest() {
+    # Dry-run safe (#467): cmdUpdate gates writes and prune on !dry.
+    # NOTE: a conditional-expansion gate (${VAR:+word} form) would expand on
+    # the non-empty string "false" and permanently dry real runs — the
+    # explicit comparison form below is deliberate (see test_dry_run_leaks).
+    local dry_arg=""
+    [ "$DRY_RUN" = true ] && dry_arg="--dry-run"
+    node "${INSTALLER_DIR}/init.mjs" update ${PROVIDER:+--provider ${PROVIDER}} ${dry_arg}
+    local rc=$?
+    if [ "$rc" -ne 0 ]; then
+        # #379 contract: pre-#379 installs warn-and-continue (non-critical).
+        log_warn "manifest update skipped (exit ${rc}) — pre-#379 installs: one full ./deploy/setup.sh run adopts the manifest"
+    fi
+    return 0
+}
+
+# ── Provider credentials (#471): the identity step, coupled to provider
+# selection. Resolves the chosen preset (flag → models map → defaults), reads
+# its credential block, captures the key (env var headless, masked prompt
+# interactive), seeds auth.json for EACH auth_id (merge-never-clobber), and
+# verifies via `opencode auth list` when opencode is installed. OAuth presets
+# print the manual login hint instead of prompting.
+setup_provider_credentials() {
+    local chosen=""
+    if [ -n "$PROVIDER" ]; then
+        chosen="$PROVIDER"
+    else
+        # Derive the provider prefix from the deployed models map, falling back
+        # to the shipped defaults (local deploys omit primary → zai-coding-plan).
+        chosen="$(node -e '
+            const fs = require("fs");
+            const read = (f) => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return null; } };
+            const map = read(process.argv[1]) || read(process.argv[2]);
+            const primary = map && (map.primary || (map.tiers && map.tiers.primary));
+            if (primary) console.log(String(primary).split("/")[0]);
+        ' "$USER_MODELS_MAP" "$MODELS_DEFAULT_MAP" 2>/dev/null)"
+    fi
+    [ -z "$chosen" ] && { log_info "No model provider selected - skipping credential capture"; return 0; }
+
+    # Credential block lookup: match preset name OR any of its auth_ids.
+    local block
+    block="$(node -e '
+        const fs = require("fs");
+        const pp = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+        const presets = pp.presets || pp;
+        const chosen = process.argv[2];
+        for (const p of Object.values(presets)) {
+            const c = p.credential;
+            if (c && (p.primary || c.auth_ids) &&
+                (Object.keys(presets).find(n => presets[n] === p) === chosen || c.auth_ids.includes(chosen))) {
+                console.log(JSON.stringify(c));
+                break;
+            }
+        }
+    ' "$PROVIDER_PRESETS" "$chosen" 2>/dev/null)"
+    [ -z "$block" ] && { log_info "Provider '${chosen}' needs no credential - skipping"; return 0; }
+
+    local auth_ids env_var oauth
+    auth_ids="$(node -e 'console.log(JSON.stringify(JSON.parse(process.argv[1]).auth_ids))' "$block")"
+    env_var="$(node -e 'console.log(JSON.parse(process.argv[1]).env_var)' "$block")"
+    oauth="$(node -e 'console.log(JSON.parse(process.argv[1]).oauth ? "true" : "false")' "$block")"
+
+    # Dry-run preview stops before any capture (the prompt would collect a
+    # secret that the gate then discards — cleaner to not ask).
+    if [ "$DRY_RUN" = true ]; then
+        log_info "[DRY-RUN] Would capture credentials for provider '${chosen}'"
+        return 0
+    fi
+
+    if [ "$oauth" = "true" ]; then
+        # OAuth-capable providers authenticate via opencode's own interactive
+        # login — a headless key prompt would be wrong UX (AC: hint, no prompt).
+        local oid
+        for oid in $(node -e 'console.log(JSON.parse(process.argv[1]).auth_ids.join(" "))' "$block"); do
+            log_info "OAuth provider: run 'opencode auth login ${oid}' to authenticate (interactive)"
+        done
+        return 0
+    fi
+
+    # Idempotent: all auth_ids already seeded and no fresh env key ⇒ skip
+    # (re-runs must not re-prompt for a key that is already in auth.json).
+    if [ -z "${!env_var:-}" ] && [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/opencode/auth.json" ]; then
+        if node -e '
+            const fs = require("fs");
+            const auth = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            const ids = JSON.parse(process.argv[2]);
+            process.exit(ids.every(id => auth[id] && auth[id].key) ? 0 : 1);
+        ' "${XDG_DATA_HOME:-$HOME/.local/share}/opencode/auth.json" "$auth_ids" 2>/dev/null; then
+            log_info "Provider '${chosen}' credentials already seeded - skipping capture"
+            return 0
+        fi
+    fi
+
+    # Capture: env var first (headless), then a masked prompt (interactive).
+    local key="${!env_var:-}"
+    if [ -z "$key" ] && [ -t 0 ] && [ "$AUTO_ACCEPT" = false ]; then
+        echo ""
+        echo "  Credential for provider '${chosen}' (env \${${env_var}})"
+        read -rs -p "  ${env_var} (input hidden, Enter to skip): " key
+        echo ""
+    fi
+    if [ -z "$key" ]; then
+        log_warn "No ${env_var} provided - provider '${chosen}' stays unauthenticated (set ${env_var} and re-run)"
+        return 0
+    fi
+
+    # Seed EVERY auth_id (merge-never-clobber inside register_provider_auth).
+    local oid
+    for oid in $(node -e 'console.log(JSON.parse(process.argv[1]).auth_ids.join(" "))' "$block"); do
+        register_provider_auth "$oid" "$key"
+    done
+
+    # Verify via opencode's own view when it is installed. Exit status is the
+    # check — opencode renders provider DISPLAY names ("Z.AI Coding Plan"),
+    # not raw auth ids, so id-substring matching is unreliable.
+    if command_exists opencode; then
+        # Bounded: on a never-run opencode state dir the list command can stall
+        # (first-run initialization) — the verify is advisory, cap it at 15s.
+        local verify_cmd=(opencode auth list)
+        command_exists timeout && verify_cmd=(timeout 15 "${verify_cmd[@]}")
+        local listing
+        if listing="$("${verify_cmd[@]}" 2>/dev/null)"; then
+            log_success "Credentials registered (verified via 'opencode auth list'):"
+            if [ -n "$listing" ]; then
+                while IFS= read -r line; do log_info "  ${line}"; done <<< "$listing"
+            fi
+        else
+            log_warn "Could not verify the seeded credential via 'opencode auth list'"
+        fi
+    else
+        log_warn "opencode not found - skipping credential verification"
+    fi
+    return 0
+}
+
+check_provider_catalog() {
+    node "${DEPLOY_DIR}/regen-provider-models.mjs" --check
+}
+
+# ── Per-item picker steps (#473) ──
+provision_picker_deps() {
+    # The dashboard dep is only needed interactively; fresh clones have no
+    # node_modules, so provision it here (network-gated, non-critical — the
+    # picker falls back to linear prompts when this fails).
+    if [ -d "${REPO_DIR}/node_modules/@opentui/core" ]; then
+        return 0
+    fi
+    log_info "Provisioning picker dependencies (npm ci --omit=dev)..."
+    if (cd "${REPO_DIR}" && npm ci --omit=dev >/dev/null 2>&1); then
+        return 0
+    fi
+    log_warn "npm ci failed - the picker falls back to linear prompts"
+    return 1
+}
+
+run_item_picker() {
+    if [ "$DRY_RUN" = true ]; then
+        # W6: dry-run reads a PRE-SEEDED plan only — it never runs the picker
+        # (which would write one for real) and previews the consumption.
+        if [ ! -f "$SELECT_PLAN_FILE" ]; then
+            log_warn "Dry-run --select: no pre-seeded plan at ${SELECT_PLAN_FILE} - nothing to preview"
+            return 1
+        fi
+        log_info "[DRY-RUN] Would deploy items from ${SELECT_PLAN_FILE}:"
+        node -e 'const p=require(process.argv[1]); for (const g of ["skills","agents","mcps"]) console.log("  "+g+": "+((p[g]||[]).map(i=>i.name).join(", ")||"(none)"))' "$SELECT_PLAN_FILE" 2>/dev/null || true
+        return 0
+    fi
+    node "$TUI_SCRIPT" select-items --out "$SELECT_PLAN_FILE"
+}
+
+deploy_selected_group() {
+    # $1 = plan group (skills|agents). Direct picks only — locked-by items are
+    # pulled in automatically by init.mjs add's requiresSkills closure (#439).
+    # Dry-run (#473 review BLOCK): the child CLI gets its own --dry-run —
+    # boolean-safe array form, never ${DRY_RUN:+} (that shape fires on "false").
+    [ -f "$SELECT_PLAN_FILE" ] || { log_error "No selection plan at ${SELECT_PLAN_FILE}"; return 1; }
+    local names
+    names=$(node -e 'const p=require(process.argv[1]); console.log((p[process.argv[2]]||[]).filter(i=>i.source==="direct").map(i=>i.name).join(" "))' "$SELECT_PLAN_FILE" "$1")
+    [ -z "$names" ] && { log_info "No $1 selected"; return 0; }
+    # Length-guard before expansion: stock macOS bash 3.2 (no bash-4 features
+    # used in this script) treats "${arr[@]}" on an EMPTY array as unset under
+    # nounset — real (non-dry) --select runs would crash there.
+    local dry_args=""
+    if [ "$DRY_RUN" = true ]; then
+        dry_args="--dry-run"
+        node "${INSTALLER_DIR}/init.mjs" add $names $dry_args ${PROVIDER:+--provider ${PROVIDER}} || return 1
+    else
+        node "${INSTALLER_DIR}/init.mjs" add $names ${PROVIDER:+--provider ${PROVIDER}} || return 1
+    fi
+    return 0
+    return 0
+}
+
+deploy_selected_skills() {
+    deploy_selected_group skills
+}
+
+deploy_selected_agents() {
+    deploy_selected_group agents
+}
+
+apply_selected_packs_extras() {
+    local failed=0
+    local packs
+    packs=$(node -e 'const p=require(process.argv[1]); console.log((p.packs||[]).join(","))' "$SELECT_PLAN_FILE" 2>/dev/null)
+    if [ -n "$packs" ]; then
+        ENABLE_PACK="$packs" run_pack_merger || { log_warn "pack merge failed (non-critical)"; failed=1; }
+    fi
+    for e in $(node -e 'const p=require(process.argv[1]); console.log((p.extras||[]).join(" "))' "$SELECT_PLAN_FILE" 2>/dev/null); do
+        case "$e" in
+            local-llm) setup_local_llm || { log_warn "local LLM setup failed (non-critical)"; failed=1; } ;;
+            vllm)      setup_vllm || { log_warn "vLLM setup failed (non-critical)"; failed=1; } ;;
+        esac
+    done
+    # Selected plugins: copy only the picked opencode-* plugins (#473 review —
+    # plan.plugins was recorded but never consumed).
+    local plugin_count
+    plugin_count=$(node -e 'const p=require(process.argv[1]); console.log((p.plugins||[]).length)' "$SELECT_PLAN_FILE" 2>/dev/null)
+    if [ "${plugin_count:-0}" -gt 0 ]; then
+        run_cmd mkdir -p "${CONFIG_DIR}/plugins"
+        for pname in $(node -e 'const p=require(process.argv[1]); console.log((p.plugins||[]).join(" "))' "$SELECT_PLAN_FILE" 2>/dev/null); do
+            run_cmd cp -r "${REPO_DIR}/plugins/${pname}" "${CONFIG_DIR}/plugins/${pname}" || { failed=1; continue; }
+            # Companion files the plugin fail-opens without (#473 review): the
+            # vibeguard plugin is inert without its config (no masking).
+            if [ "$pname" = "opencode-vibeguard.ts" ] && [ -f "${REPO_DIR}/plugins/vibeguard.config.json" ]; then
+                run_cmd cp "${REPO_DIR}/plugins/vibeguard.config.json" "${CONFIG_DIR}/plugins/vibeguard.config.json"
+            fi
+        done
+    fi
+    # Consume-once (B2): the plan is spent only after a SUCCESSFUL deployment —
+    # a failed non-critical piece keeps the file so a re-run can retry; never
+    # deleted under dry-run.
+    if [ "$failed" -eq 0 ] && [ "$DRY_RUN" != true ]; then
+        rm -f "$SELECT_PLAN_FILE"
+    fi
+    return 0
+}
+
+dump_catalog() {
+    node -e '
+        const r = require(process.argv[1]);
+        const out = { skills: {}, agents: {}, packs: [], plugins: [], extras: ["local-llm", "vllm"] };
+        for (const s of r.skills) { (out.skills[s.category || "Uncategorized"] ||= []).push(s.name); }
+        for (const a of r.agents) { (out.agents[a.tier || "unassigned"] ||= []).push(a.stem); }
+        console.log(JSON.stringify(out, null, 2));
+    ' "${REPO_DIR}/installer/registry.json"
+}
+
+save_user_preset() {
+    case "$SAVE_PRESET_NAME" in
+        */*|""|.*) log_error "Invalid preset name: '${SAVE_PRESET_NAME}'"; return 1 ;;
+    esac
+    local preset_dir="${CONFIG_DIR}/presets/${SAVE_PRESET_NAME}"
+    run_cmd mkdir -p "$preset_dir"
+    if [ -f "$USER_MODELS_MAP" ]; then
+        run_cmd cp "$USER_MODELS_MAP" "${preset_dir}/models.json"
+    fi
+    if [ -f "$SELECT_PLAN_FILE" ]; then
+        run_cmd cp "$SELECT_PLAN_FILE" "${preset_dir}/deploy-plan.json"
+    fi
+    log_success "Preset '${SAVE_PRESET_NAME}' saved to ${preset_dir}"
+}
+
+load_user_preset() {
+    local preset_dir="${CONFIG_DIR}/presets/${LOAD_PRESET_NAME}"
+    if [ ! -d "$preset_dir" ]; then
+        log_error "Preset not found: ${preset_dir}"
+        return 1
+    fi
+    if [ -f "${preset_dir}/models.json" ]; then
+        node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "${preset_dir}/models.json" || { log_error "Preset models.json is not valid JSON"; return 1; }
+        run_cmd cp "${preset_dir}/models.json" "${USER_MODELS_MAP}"
+    fi
+    if [ -f "${preset_dir}/deploy-plan.json" ]; then
+        run_cmd cp "${preset_dir}/deploy-plan.json" "${SELECT_PLAN_FILE}"
+    fi
+    return 0
+}
+
+run_migration_only() {
+    # NOTE: run_migration currently has no failure path (all returns 0); if it
+    # gains one, propagate it here — this critical step would otherwise mask it
+    # with run_resolver's status.
+    run_cmd "mkdir -p ${AGENTS_DEST_DIR}"
+    run_migration
+    run_resolver
+}
+
 setup_learnings_dir() {
     log_info "Setting up user-level learnings directory..."
+
+    local LEARNINGS_DIR
 
     local LEARNINGS_DIR="${CONFIG_DIR}/learnings"
     local learnings_categories=("patterns" "decisions" "anti-patterns" "solutions" "conventions")
@@ -3609,38 +4163,56 @@ setx_env() {
 # Mirrors the Docker entrypoint's auth["zai"] write. MERGES — never clobbers
 # existing entries (zai-coding-plan, gemini, ...). Idempotent. MCP servers still
 # read {env:ZAI_API_KEY} independently — this only authenticates the model provider.
-register_zai_auth() {
-    [ -z "$ZAI_API_KEY" ] && return 0
+register_provider_auth() {
+    # Generalized auth.json seeder (#471): merge-never-clobber — writes only
+    # auth[auth_id], preserving every other entry. Dry-run and python3-safe.
+    local auth_id="$1"
+    local key="$2"
+    [ -z "$key" ] && return 0
     if [ "$DRY_RUN" = true ]; then
-        echo "[DRY-RUN] Would register zai credential in ~/.local/share/opencode/auth.json"
+        echo "[DRY-RUN] Would register $auth_id credential in ~/.local/share/opencode/auth.json"
         return 0
     fi
     if ! command_exists python3; then
-        log_warn "python3 not found — skipping auth.json registration for zai (model provider stays unauthenticated)"
+        log_warn "python3 not found — skipping auth.json registration for $auth_id (provider stays unauthenticated)"
         return 0
     fi
     local auth_dir="${XDG_DATA_HOME:-$HOME/.local/share}/opencode"
     local auth_file="${auth_dir}/auth.json"
-    ZAI_API_KEY="$ZAI_API_KEY" python3 - "$auth_file" "$auth_dir" <<'PYEOF'
+    AUTH_ID="$auth_id" AUTH_KEY="$key" python3 - "$auth_file" "$auth_dir" <<'PYEOF'
 import json, os, sys
 auth_file, auth_dir = sys.argv[1], sys.argv[2]
-key = os.environ.get("ZAI_API_KEY", "").strip()
-if not key:
+auth_id = os.environ.get("AUTH_ID", "").strip()
+key = os.environ.get("AUTH_KEY", "").strip()
+if not auth_id or not key:
     sys.exit(0)
 auth = {}
 try:
     with open(auth_file) as f:
         loaded = json.load(f)
-        auth = loaded if isinstance(loaded, dict) else {}
-except (FileNotFoundError, ValueError):
+        if isinstance(loaded, dict):
+            auth = loaded
+        else:
+            raise ValueError("auth.json is not an object")
+except FileNotFoundError:
     pass
-auth["zai"] = {"type": "api", "key": key}
+except ValueError:
+    # Merge-never-clobber must hold even for corrupt files (#471 review): a
+    # half-written auth.json must not be silently replaced (that would destroy
+    # every stored credential) — park it and start fresh, loudly.
+    backup = auth_file + ".corrupt.bak"
+    try:
+        os.replace(auth_file, backup)
+        print(f"  warning: auth.json was unparseable — moved to {backup}", file=sys.stderr)
+    except OSError:
+        pass
+auth[auth_id] = {"type": "api", "key": key}
 os.makedirs(auth_dir, exist_ok=True)
 with open(auth_file, "w") as f:
     json.dump(auth, f, indent=2)
-print("  auth.json providers: " + ", ".join(auth.keys()))
+os.chmod(auth_file, 0o600)  # API keys at rest — not group/world-readable
+print("  auth.json providers: " + ", ".join(sorted(auth.keys())))
 PYEOF
-    log_success "Registered zai credential in ${auth_file} (native opencode auth store)"
 }
 
 # Setup environment variables in shell config (bashrc, zshrc, etc.)
@@ -3683,9 +4255,10 @@ setup_shell_vars() {
         fi
     fi
 
-    # Register the PAYG `zai` provider in opencode's native auth store so it
+    # Register a provider credential (see the generalized contract below) in opencode's native auth store so it
     # resolves identically to the Docker path (single credential mechanism).
-    register_zai_auth
+    # auth.json seeding moved to setup_provider_credentials (#471) — the
+    # identity layer, coupled to provider selection, not shell-vars.
 
     # Offer to install autoresearch protocol helpers (ar-enable / ar-disable)
     # into existing bashrc / zshrc. Prompted — never silent.
@@ -3852,78 +4425,15 @@ check_for_updates_only() {
     fi
 
     update_last_check_time
-    echo "" >> "$UPDATE_LOG"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Update check: v${current_version} (latest: v${latest_version})" >> "$UPDATE_LOG"
+    # Trailing appends must not become the function's return status (#470
+    # review): a failed log write would flip the critical check-update step.
+    mkdir -p "$(dirname "$UPDATE_LOG")" 2>/dev/null || true
+    echo "" >> "$UPDATE_LOG" 2>/dev/null || true
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Update check: v${current_version} (latest: v${latest_version})" >> "$UPDATE_LOG" 2>/dev/null || true
+    return 0
 }
 
 # Perform auto-update
-auto_update_opencode() {
-    # Check if auto-update is enabled
-    if [ "$ENABLE_AUTO_UPDATE" = false ]; then
-        log_info "Auto-update is disabled"
-        return 0
-    fi
-
-    # Check if enough time has passed
-    if ! should_check_for_updates; then
-        log_info "Skipping auto-update (scheduled time not reached)"
-        return 0
-    fi
-
-    log_info "Checking for opencode-ai updates..."
-
-    # Get current version
-    local current_version
-    if ! command_exists opencode; then
-        log_warn "opencode-ai is not installed"
-        return 1
-    fi
-    current_version=$(opencode --version 2>/dev/null || echo "unknown")
-
-    # Get latest version
-    local latest_version
-    latest_version=$(npm view opencode-ai version 2>/dev/null || echo "unknown")
-
-    if [ "$latest_version" = "unknown" ]; then
-        log_error "Could not fetch latest version from npm registry"
-        log_info "Check your internet connection and try again"
-        return 1
-    fi
-
-    log_info "Current version: v${current_version}"
-    log_info "Latest version: v${latest_version}"
-
-    # Check if update is needed
-    if [ "$current_version" = "$latest_version" ]; then
-        log_success "opencode-ai is already up to date!"
-        update_last_check_time
-        return 0
-    fi
-
-    log_info "Update available: v${current_version} → v${latest_version}"
-
-    # Create backup before update
-    create_backup_before_update
-
-    # Perform update
-    log_info "Auto-updating opencode-ai to v${latest_version}..."
-    run_cmd "npm install -g opencode-ai@${latest_version}"
-
-    # Verify update
-    local new_version
-    new_version=$(opencode --version 2>/dev/null || echo "unknown")
-
-    if [ "$new_version" = "$latest_version" ]; then
-        log_success "opencode-ai updated successfully to v${new_version}"
-        update_last_check_time
-    else
-        log_error "Update failed. Current version: v${new_version}"
-        return 1
-    fi
-
-    echo "" >> "$UPDATE_LOG"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Auto-update: v${current_version} → v${new_version}" >> "$UPDATE_LOG"
-}
 
 ################################################################################
 # SUMMARY AND REPORTING
@@ -4031,7 +4541,7 @@ print_summary() {
          echo "    - web-search - Web search with cited results (auto-start, needs ZAI_API_KEY)"
          echo "    - atlassian - JIRA and Confluence (opt-in per-project)"
          echo "    - next-devtools - Next.js DevTools (opt-in)"
-         echo "    - markitdown - Document-to-Markdown, local-only, opt-in"
+         echo "    - markitdown - Document-to-Markdown (upstream markitdown-mcp), opt-in"
          echo "    - docling - Layout-aware document extraction, opt-in (~3-4 GB)"
          echo "    - chrome-devtools - Live Chrome automation, opt-in"
 
@@ -4181,130 +4691,39 @@ setup_opencode_init_symlink() {
 }
 
 main() {
-    # Parse command line arguments
     parse_arguments "$@"
 
-    # Validate --enable-pack names early (fail fast, non-zero exit). Done here
-    # rather than deep in deploy_agents because deploy_agents is invoked with
-    # `|| true` (a resolver failure should not abort the whole setup). A bogus
-    # pack name is a hard user error and MUST abort before any config work.
+    # Fail-fast pack validation, then plan validation (#470): mode conflicts
+    # die BEFORE the network check / menu render.
     if [ -n "$ENABLE_PACK" ]; then
         validate_enable_pack
     fi
-    validate_mode_conflicts
+    build_plan   # validation pass — PLAN_MODE computed, conflicts die here
 
-    # Display header
-    if [ "$UPDATE_ONLY" = false ] && [ "$SKILLS_ONLY" = false ]; then
-        echo "=== OpenCode Configuration Setup v${SCRIPT_VERSION} ==="
-        echo ""
-    elif [ "$SKILLS_ONLY" = true ]; then
-        echo "=== OpenCode Skills Deployment v${SCRIPT_VERSION} ==="
-        echo ""
-    else
-        echo "=== OpenCode CLI Updater v${SCRIPT_VERSION} ==="
-        echo ""
-    fi
+    # Display header, keyed off the plan mode (single-step modes print their
+    # own banners inside their steps).
+    case "$PLAN_MODE" in
+        skills-only)
+            echo "=== OpenCode Skills Deployment v${SCRIPT_VERSION} ==="
+            echo ""
+            ;;
+        update)
+            echo "=== OpenCode CLI Updater v${SCRIPT_VERSION} ==="
+            echo ""
+            ;;
+        full)
+            echo "=== OpenCode Configuration Setup v${SCRIPT_VERSION} ==="
+            echo ""
+            ;;
+    esac
 
     # Initialize logging
     init_logging
 
-    # Handle rollback mode (mutually exclusive with normal setup flow)
-    if [ "$ROLLBACK_MODE" = true ]; then
-        rollback
-        exit $?
-    fi
-
-    # Handle update-only mode
-    if [ "$UPDATE_ONLY" = true ]; then
-        update_opencode_cli
-        echo ""
-        echo "Update complete!"
-        exit 0
-    fi
-
-    # Handle models-only mode (v2.0): provider selection + model resolution only
-    if [ "$MODELS_ONLY" = true ]; then
-        log_info "Models-only mode (v2.0)"
-        if ! command_exists node; then
-            log_error "Node.js is required for model resolution."
-            exit 1
-        fi
-        setup_model_provider || true
-        # Config via resolver; agent files via the manifest path — update's
-        # written-hash comparison propagates tier/override changes (#379).
-        RESOLVER_CONFIG_ONLY=true run_resolver
-        # Dry-run safe (#467): the resolver above stages a preview; the manifest
-        # update must not re-apply for real. cmdUpdate gates writes and prune
-        # on !dry (init.mjs), so the flag is sufficient.
-        # NOTE: a conditional-expansion gate (${VAR:+word} form) would expand on
-        # the non-empty string "false" and permanently dry real runs — the
-        # explicit comparison form below is deliberate (see test_dry_run_leaks).
-        local dry_arg=""
-        [ "$DRY_RUN" = true ] && dry_arg="--dry-run"
-        node "${INSTALLER_DIR}/init.mjs" update ${PROVIDER:+--provider ${PROVIDER}} ${dry_arg}
-        rc=$?
-        if [ "$rc" -ne 0 ]; then
-            log_warn "manifest update skipped (exit ${rc}) — pre-#379 installs: one full ./deploy/setup.sh run adopts the manifest"
-        fi
-        echo ""
-        echo "Model resolution complete!"
-        exit 0
-    fi
-
-    # Handle PeonPing-only mode (#466): the flag spelling of menu option 5 —
-    # sound-notification installer, exit immediately after. Deps are re-checked
-    # here because menu option 5 got them for free from main's earlier check;
-    # the network check is intentionally NOT re-added (matches --quick: cron
-    # jobs run offline-tolerant, failures surface as run_cmd warnings).
-    if [ "$PEONPING_ONLY" = true ]; then
-        log_info "PeonPing Sound Notifications"
-        if ! check_dependencies; then
-            log_error "Dependency check failed. Please install missing dependencies."
-            exit 1
-        fi
-        setup_peonping || true
-        echo ""
-        echo "PeonPing setup complete!"
-        exit 0
-    fi
-
-    # Handle migrate-only mode (v2.0): v1.x -> v2.0 migration + resolution only
-    if [ "$MIGRATE_ONLY" = true ]; then
-        log_info "Migrate mode (v2.0)"
-        if ! command_exists node; then
-            log_error "Node.js is required for model resolution."
-            exit 1
-        fi
-        run_cmd "mkdir -p ${AGENTS_DEST_DIR}"
-        run_migration
-        run_resolver
-        echo ""
-        echo "Migration + model resolution complete!"
-        exit 0
-    fi
-
-    # Handle skills-only mode
-    if [ "$SKILLS_ONLY" = true ]; then
-        deploy_skills_only
-        echo ""
-        echo "Skills deployment complete!"
-        exit 0
-    fi
-
-    # Check dependencies
-    if ! check_dependencies; then
-        log_error "Dependency check failed. Please install missing dependencies."
-        exit 1
-    fi
-
-    # Check for update command
-    if [ "$CHECK_UPDATE_ONLY" = true ]; then
-        check_for_updates_only
-        exit 0
-    fi
-
-    # Check network connectivity (skip in quick setup)
-    if [ "$QUICK_SETUP" = false ]; then
+    # Auxiliary gates preserve their historical reachability: network check and
+    # auto-update ran only on the full-path branch (single-step modes exited
+    # before them). PLAN_MODE=full is exactly that branch under the plan model.
+    if [ "$PLAN_MODE" = "full" ] && [ "$QUICK_SETUP" = false ]; then
         if ! check_network; then
             log_warn "Network connectivity issues detected. Some features may not work."
             if ! prompt_yes_no "Continue anyway?" "n"; then
@@ -4317,127 +4736,110 @@ main() {
         fi
     fi
 
-    # Auto-update check (run before main menu).
-    # Note: $CHECK_UPDATE_ONLY is guaranteed false here — we exit at the block
-    # above when it's true. The previous `|| [ "$CHECK_UPDATE_ONLY" = false ]`
-    # was always-true and therefore a no-op.
-    if [ "$ENABLE_AUTO_UPDATE" = true ]; then
-        log_info "Auto-update is enabled (schedule: ${UPDATE_SCHEDULE})"
-        auto_update_opencode
-    fi
-
-    # Main menu (if not quick setup or skills-only)
-    if [ "$QUICK_SETUP" = false ] && [ "$SKILLS_ONLY" = false ] && [ "$AUTO_ACCEPT" = false ]; then
-        # TTY gate (#466): headless runs used to fall into the menu and let
-        # `read` hit EOF, silently taking the menu default. Now the default is
-        # announced and taken deterministically — no prompt is reached.
-        # (A FAILING network check still aborts headless runs before this
-        # point — fail-closed on purpose: don't deploy on known-bad network.)
+    # Interactive menu — only the full path ever showed it (historically gated
+    # on QUICK/SKILLS/AUTO_ACCEPT; single-step modes had exited earlier, which
+    # PLAN_MODE=full now encodes). Menu options only SET flags; the plan owns
+    # the steps (#470).
+    if [ "$PLAN_MODE" = "full" ] && [ "$AUTO_ACCEPT" = false ]; then
         if [ ! -t 0 ]; then
+            # TTY gate (#466): headless runs used to fall into the menu and let
+            # `read` hit EOF, silently taking the menu default. Now the default
+            # is announced and taken deterministically — no prompt is reached.
+            # (A FAILING network check still aborts headless runs before this
+            # point — fail-closed on purpose: don't deploy on known-bad network.)
             log_warn "No TTY detected - non-interactive run: defaulting to skills-only setup (the menu default). Use explicit flags (--quick, --skills-only, --update, --models-only, --migrate, --peonping) - see --help."
-            deploy_skills_only
+            SKILLS_ONLY=true
+        else
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "                      Setup Mode Selection"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
-            echo "Skills deployment complete!"
-            exit 0
+            echo "  1) Quick setup (config + skills only)"
+            echo "  2) Skills-only setup"
+            echo "  3) Full setup (API keys, Node.js, OpenCode)"
+            echo "  4) Update OpenCode CLI only"
+            echo "  5) Install PeonPing (sound notifications)"
+            echo ""
+
+            local setup_option
+            setup_option=$(prompt_user "Select option [default: 2]" "2")
+
+            case "$setup_option" in
+                1)
+                    echo ""
+                    log_info "Quick Setup: Copy opencode.json and skills only"
+                    QUICK_SETUP=true
+                    ;;
+                2)
+                    echo ""
+                    log_info "Skills-Only Setup: Copy skills folder only"
+                    SKILLS_ONLY=true
+                    ;;
+                3)
+                    log_info "Running full setup..."
+                    ;;
+                4)
+                    echo ""
+                    log_info "Update OpenCode CLI only"
+                    UPDATE_ONLY=true
+                    ;;
+                5)
+                    echo ""
+                    log_info "PeonPing Sound Notifications"
+                    PEONPING_ONLY=true
+                    ;;
+                *)
+                    log_warn "Invalid option. Running full setup..."
+                    ;;
+            esac
+            echo ""
         fi
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "                      Setup Mode Selection"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo "  1) Quick setup (config + skills only)"
-        echo "  2) Skills-only setup"
-        echo "  3) Full setup (API keys, Node.js, OpenCode)"
-        echo "  4) Update OpenCode CLI only"
-        echo "  5) Install PeonPing (sound notifications)"
-        echo ""
+        build_plan   # rebuild: the menu may have changed the mode (#470)
+    fi
 
-        local setup_option
-        setup_option=$(prompt_user "Select option [default: 2]" "2")
-
-        case "$setup_option" in
-            1)
-                echo ""
-                log_info "Quick Setup: Copy opencode.json and skills only"
-                QUICK_SETUP=true
-                ;;
-            2)
-                echo ""
-                log_info "Skills-Only Setup: Copy skills folder only"
-                deploy_skills_only
-                echo ""
-                echo "Skills deployment complete!"
-                exit 0
-                ;;
-            3)
-                log_info "Running full setup..."
-                ;;
-            4)
-                echo ""
-                log_info "Update OpenCode CLI only"
-                update_opencode_cli
-                echo ""
-                echo "Update complete!"
-                exit 0
-                ;;
-            5)
-                echo ""
-                log_info "PeonPing Sound Notifications"
-                setup_peonping || true
-                echo ""
-                echo "PeonPing setup complete!"
-                exit 0
-                ;;
-            *)
-                log_warn "Invalid option. Running full setup..."
-                ;;
+    # ── Execute the plan (#470) — failure state lands in PLAN_FAILED_CRITICAL ──
+    run_plan || true
+    # Mode completion lines (truthful: only when no critical step failed)
+    if [ -z "$PLAN_FAILED_CRITICAL" ]; then
+        case "$PLAN_MODE" in
+            skills-only)  echo ""; echo "Skills deployment complete!";;
+            models-only)  echo ""; echo "Model resolution complete!";;
+            migrate-only) echo ""; echo "Migration + model resolution complete!";;
+            update)       echo ""; echo "Update complete!";;
+            check-catalog) echo ""; echo "Catalog check complete!";;
+            list-items) echo ""; echo "Catalog dump complete!";;
+            save-preset) echo ""; echo "Preset saved!";;
+            peonping)     echo ""; echo "PeonPing setup complete!";;
         esac
-        echo ""
     fi
 
-    # Execute setup steps
-    if [ "$QUICK_SETUP" = false ] && [ "$SKILLS_ONLY" = false ]; then
-        setup_github_cli || true
-        setup_zai_api_key || true
-        setup_nvm || true
-        setup_nodejs || true
-        setup_opencode || true
-    else
-        if [ "$QUICK_SETUP" = true ]; then
-            log_info "Running quick setup: opencode.json and skills deployment only"
-        fi
-    fi
+    # ── Uniform epilogue (#470): content modes get backup + cleanup + summary
+    # on EVERY path — success or failure. Single-step modes complete above.
+    case "$PLAN_MODE" in
+        full|quick|skills-only)
+            create_zip_backup || true
+            cleanup_old_backups
+            print_summary
+            print_next_steps
+            ;;
+    esac
 
-    setup_config || true
-    setup_local_llm || true
-    setup_vllm || true
-    setup_model_provider || true
-    deploy_agents || true
-    deploy_plugins || true
-    setup_opencode_init_symlink || true
-    setup_learnings_dir || true
-    setup_shell_vars || true
-
-    # Zip backup (after all flat-file backups have been written, before cleanup)
-    create_zip_backup || true
-
-    cleanup_old_backups
-
-    # Print summary and next steps
-    print_summary
-    print_next_steps
-
-    # Log completion
     log "INFO" "=== OpenCode Setup Completed at $(date) ==="
 
-    # Prompt to exit
+    # Truthful exit (#470): non-zero iff a critical step failed.
+    if [ -n "$PLAN_FAILED_CRITICAL" ]; then
+        log_error "Setup finished WITH FAILURES (critical step: ${PLAN_FAILED_CRITICAL}). Log: ${LOG_FILE:-unknown}"
+        if [ "$AUTO_ACCEPT" = false ] && [ -t 0 ]; then
+            read -p "Press Enter to exit..."
+        fi
+        exit 1
+    fi
+
     if [ "$AUTO_ACCEPT" = false ]; then
         read -p "Press Enter to exit..."
     fi
-
     exit 0
 }
-
-# Run main function with all arguments (guard allows sourcing for testing)
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     main "$@"
 fi

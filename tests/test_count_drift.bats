@@ -34,8 +34,12 @@ AGENTS_DIR="agents"
   ! grep -qE 'Configured [0-9]+ agents:' deploy/setup.ps1
 }
 
-@test "get_agentcount_function_exists_in_setup_ps1" {
-  grep -q 'function Get-AgentCount' deploy/setup.ps1
+@test "setup_ps1_thin_launcher_delegates_counting_to_bash" {
+  # #474: setup.ps1 is a thin launcher — agent counting lives in setup.sh
+  # (count_agents, pinned above); the ps1 performs no selection logic.
+  grep -q 'setup.sh' deploy/setup.ps1
+  run grep -q 'function Get-AgentCount' deploy/setup.ps1
+  [ "$status" -ne 0 ]
 }
 
 # =============================================================================

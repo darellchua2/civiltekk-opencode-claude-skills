@@ -1,0 +1,6 @@
+{
+  "zai-coding-plan": { "models": { "glm-5.3": {}, "glm-5.3-flash": {}, "glm-5.3-highspeed": {} } },
+  "anthropic": { "models": { "claude-opus-5": {}, "claude-haiku-4-5": {} } },
+  "zai": { "models": { "glm-5.3": {}, "glm-5.3-flash": {} } },
+  "openai": { "models": { "gpt-5.6": {}, "gpt-5.4-mini": {} } }
+}

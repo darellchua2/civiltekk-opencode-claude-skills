@@ -43,35 +43,11 @@ SETUP_PS1="${REPO}/deploy/setup.ps1"
   ! grep -qE '^[[:space:]]*mv "\$\{CONFIG_DIR\}/opencode\.jsonc' "$SETUP_SH"
 }
 
-@test "setup.ps1 parks opencode.jsonc at all three sites in deploy order" {
-  park1=$(grep -nE '^[[:space:]]*Park-JsoncSibling[[:space:]]*$' "$SETUP_PS1" | sed -n 1p | cut -d: -f1)
-  park2=$(grep -nE '^[[:space:]]*Park-JsoncSibling[[:space:]]*$' "$SETUP_PS1" | sed -n 2p | cut -d: -f1)
-  park3=$(grep -nE '^[[:space:]]*Park-JsoncSibling[[:space:]]*$' "$SETUP_PS1" | sed -n 3p | cut -d: -f1)
-  prompt=$(grep -n 'Write-LogWarn "opencode.json already exists at' "$SETUP_PS1" | head -1 | cut -d: -f1)
-  copy=$(grep -n 'Copy-Item \$configSrc \$ConfigFile' "$SETUP_PS1" | head -1 | cut -d: -f1)
-  resolver=$(grep -n '& node \$ResolverScript @resolverArgs' "$SETUP_PS1" | head -1 | cut -d: -f1)
-  [ -n "$park1" ]
-  [ -n "$park2" ]
-  [ -n "$park3" ]
-  [ -n "$prompt" ]
-  [ -n "$copy" ]
-  [ -n "$resolver" ]
-  [ "$park1" -lt "$prompt" ]
-  [ "$prompt" -lt "$copy" ]
-  [ "$copy" -lt "$park2" ]
-  [ "$park2" -lt "$resolver" ]
-  [ "$resolver" -lt "$park3" ]
-}
-
-@test "setup.ps1 jsonc park helper guards on both configs and is DryRun-safe" {
-  # helper is the single park implementation: one guard, one guarded mutation
-  [ "$(grep -c 'function Park-JsoncSibling' "$SETUP_PS1")" -eq 1 ]
-  [ "$(grep -c '(Test-Path \$ConfigFile) -and (Test-Path \$JsoncConfigFile)' "$SETUP_PS1")" -eq 1 ]
-  [ "$(grep -c 'if (-not \$DryRun) { Move-Item \$JsoncConfigFile' "$SETUP_PS1")" -eq 1 ]
-  [ "$(grep -c 'Write-LogWarn "Stale opencode.jsonc' "$SETUP_PS1")" -eq 1 ]
-  [ "$(grep -cE '^[[:space:]]*Park-JsoncSibling[[:space:]]*$' "$SETUP_PS1")" -eq 3 ]
-  # post-resolver park fires only after a successful apply-mode resolver run
-  grep -q 'if (-not \$DryRun -and \$LASTEXITCODE -eq 0) {' "$SETUP_PS1"
-  # negative pin: no unguarded statement-start Move-Item of the jsonc
-  ! grep -qE '^[[:space:]]*Move-Item \$JsoncConfigFile' "$SETUP_PS1"
+@test "setup.ps1 is a thin launcher — jsonc parking is inherited from setup.sh (#474)" {
+  # The native-PowerShell duplicate (and its Park-JsoncSibling helpers) was
+  # the parity-bug source; #474 replaced it with a bootstrap that forwards
+  # everything to setup.sh, where the parking logic lives and is pinned.
+  grep -q 'setup.sh' deploy/setup.ps1
+  run grep -q 'Park-JsoncSibling' deploy/setup.ps1
+  [ "$status" -ne 0 ]
 }
