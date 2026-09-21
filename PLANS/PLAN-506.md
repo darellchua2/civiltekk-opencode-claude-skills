@@ -103,11 +103,12 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 3: Rebuild `LEARNINGS/_index.md`
 
-- [ ] **3.1** Regenerate `_index.md` from the final corpus: one entry per learning file on disk (expect 118 after Phase 1), a single `<!-- Entries are appended here automatically -->` marker at the top of the Entries section, the storage-locations footer moved to file end, the allowlist entry summary re-derived from disk (see the Derivation line below)
+- [x] **3.1** Regenerate `_index.md` from the final corpus: one entry per learning file on disk (expect 118 after Phase 1), a single `<!-- Entries are appended here automatically -->` marker at the top of the Entries section, the storage-locations footer moved to file end, the allowlist entry summary re-derived from disk (see the Derivation line below)
     — **Why:** the index is the fallback discovery surface; 26 orphaned files, 7 duplicated markers, a mid-file footer, and a stale summary (148/46 vs actual 146/70) make it lie in four ways
     — **Done when:** entry count == file count == 118; exactly one marker; footer after the last entry; the allowlist summary states disk-derived numbers (146 shipped / 106 full allows / 70 lean / 36 hidden vs full) and notes that one of the 106 allows (`github-runners-setup-skill`) is app-scoped — shipped under `opencode_app/.opencode/skills/`, outside root `skills/` (see `decisions/app-scoped-skill-surface.md`)
     — **Consumers affected:** continuous-learning-skill recall fallback, plan-execution skill, human search
     — Derivation: `find LEARNINGS -name '*.md' ! -name '_index.md' | wc -l`; `grep -A3 '"action": "skill"' opencode_app/opencode.json | grep -c '"effect": "allow"'` (= 106 — a raw `"action": "skill"` count returns 107 because it includes the deny-all rule at opencode.json:29-31); `python3 -c` over `deploy/skill-profiles.json` lean keys (= 70)
+    — **Done:** Index regenerated: 118 entries == 118 files, single marker, footer at end, allowlist summary = 146 shipped / 106 full allows / 70 lean / 36 hidden vs full with app-scoped note (derivation cross-check returned 106); 92 curated summaries preserved from the old index, 14 hand-written, 12 prose-derived; files: LEARNINGS/_index.md; fixes: 3 generator iterations (field-order regex, LEARNINGS/ prefix key, HAND-vs-old priority)
 
 ### Phase 4: Fix the writer ritual
 
