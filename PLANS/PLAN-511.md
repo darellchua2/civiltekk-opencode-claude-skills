@@ -90,3 +90,5 @@ GATE 14225de tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 ## Gate Trace (review-fix)
 
 GATE 17fee22 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+GATE 36d1489 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+Note: memo cites the content-commit SHA; gate ran on the identical working tree pre-commit (worktree clean after). CI is the unconditional re-run.
