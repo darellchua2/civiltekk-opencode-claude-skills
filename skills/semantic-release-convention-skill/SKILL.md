@@ -15,7 +15,7 @@ I define the standardized conventions for the entire release pipeline from commi
 1. **Commit Message Convention**: Conventional Commits format with types, scopes, and breaking change indicators
 2. **PR Title Convention**: PR titles must follow Conventional Commits format
 3. **PR Label Rules**: Every PR requires exactly one semver label (`major`/`minor`/`patch`) as the version bump decision factor
-4. **Merge Strategy**: Squash merge with conventional commit title and PR description as body
+4. **Merge Strategy**: feature/fix heads squash-merge with conventional commit title and PR description as body; long-lived heads merge with merge commits (head-class rule, same as `pr-merge-workflow-skill`)
 5. **Release Tag Convention**: Branch-aware versioned tags with prerelease suffixes
 6. **GitHub Actions Requirements**: Four CI/CD workflows for enforcement
 
@@ -123,7 +123,7 @@ feat(api)!: remove deprecated v1 endpoints
 ### Rules
 
 - PR titles MUST follow Conventional Commits format (same as commit messages)
-- This ensures consistency between commits and PRs when using squash merge
+- This ensures consistency between commits and PRs when using squash merge (feature/fix heads; long-lived heads use merge commits — see §4 Merge Strategy)
 
 ### Format
 
@@ -193,11 +193,21 @@ A PR MUST NOT be merged without exactly one semver label. GitHub Actions should 
 
 ## 4. Merge Strategy
 
-### Convention: Squash Merge
+### Convention: two-tier merge — head-branch class decides
 
-All PRs are merged using **squash merge** to maintain a clean, conventional commit history.
+Classify the PR by its **head** branch before merging (the SHA divergence harm
+exists when the head branch survives the merge):
 
-### Merge Commit Format
+- **Feature/fix heads** (`feature/*`, `fix/*`, `hotfix/*`, `chore/*`, and any
+  other short-lived head) → **squash merge** — one conventional commit per PR
+  keeps the target branch clean and changelog generation reliable.
+- **Long-lived heads** (`main`, `master`, `dev`, `develop`, `production`,
+  `prod`, `uat`, `staging`, `stage`, `preprod`, `pre-dev`, `qa`, `test`,
+  `integration`, `release/*`) → **merge commit** (`gh pr merge --merge`) —
+  squash duplicates content under new SHAs and promotion branches (dev→uat,
+  uat→main) stop converging. Same rule as `pr-merge-workflow-skill`.
+
+### Merge Commit Format (squash-merged PRs)
 
 - **Title**: PR title (already in Conventional Commits format)
 - **Body**: PR description
@@ -210,7 +220,7 @@ Configure in repository settings:
 - **Allow squash merging**: Yes
 - **Squash merge commit title**: PR title
 - **Squash merge commit message**: PR body
-- **Allow merge commits**: No (or disabled for enforcement)
+- **Allow merge commits**: Yes (required for promotions — long-lived-head PRs)
 - **Allow rebase merging**: Optional
 
 ---
@@ -385,7 +395,7 @@ jobs:
 2. Developer creates PR → Title must follow Conventional Commits
 3. PR gets semver label → Auto-detected from title, manually adjustable
 4. PR is reviewed → Label enforcement ensures exactly 1 semver label
-5. PR is squash-merged → Title becomes commit message in target branch
+5. PR is merged → feature/fix heads: squash-merged, title becomes commit message in target branch; long-lived heads: merge commit
 6. GitHub Action fires → Reads PR label, determines version bump
 7. Release tag created → Branch-aware: v1.2.3 (prod) or v1.2.3-dev.1 (dev)
 8. GitHub Release created → With auto-generated changelog
@@ -398,7 +408,7 @@ jobs:
 | Commit format | `<type>(<scope>): <subject>` |
 | PR title format | `<type>(<scope>): <subject> [TICKET]` |
 | Version decision factor | PR label (`major`/`minor`/`patch`) |
-| Merge strategy | Squash merge |
+| Merge strategy | Feature/fix heads: squash; long-lived heads: merge commit |
 | Production tags | `v1.0.0` |
 | Non-production tags | `v1.0.0-{branch}.N` |
 | Breaking changes | `feat!:` or `BREAKING CHANGE:` in footer |
