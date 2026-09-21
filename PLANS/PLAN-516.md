@@ -28,14 +28,16 @@ Cross-module consumers exist (`resolve-models.mjs`, regen script, tests) → arc
 ## Implementation Phases
 
 ### Phase 1: Agent files — functional recipe + prose
-- [ ] **1.1** Update `agents/image-analyzer-subagent.md`: change the fallback recipe payload from `"model": "glm-5v-turbo"` to `"model": "glm-5.3-flash"`, and reword the L68 prose from "using `glm-5v-turbo` on the pay-as-you-go endpoint — a different model from the native one" to describe calling the same multimodal model (`glm-5.3-flash`) directly via API.
+- [x] **1.1** Update `agents/image-analyzer-subagent.md`: change the fallback recipe payload from `"model": "glm-5v-turbo"` to `"model": "glm-5.3-flash"`, and reword the L68 prose from "using `glm-5v-turbo` on the pay-as-you-go endpoint — a different model from the native one" to describe calling the same multimodal model (`glm-5.3-flash`) directly via API.
     — **Why:** the recipe payload is the only functional use of the dead model; prose must match it or the file self-contradicts.
     — **Done when:** `grep -c "glm-5v-turbo" agents/image-analyzer-subagent.md` returns 0 and the payload line reads `"model": "glm-5.3-flash"`.
     — **Consumers affected:** error-resolver-subagent + error-resolver-workflow-skill reference the recipe by name (prose only; updated in 1.2/2.1).
-- [ ] **1.2** Update `agents/error-resolver-subagent.md` screenshot-analysis prose: replace "the inline direct-API fallback recipe in `image-analyzer-subagent` (`glm-5v-turbo`, a different model)" with wording naming `glm-5.3-flash` (no "different model" caveat — it no longer is one). Keep the `glm-4.6v-flash` "do NOT invoke" warning (still valid: that free endpoint was retired).
+    — **Done:** payload L94 + fallback prose L68-69 now name glm-5.3-flash; files: agents/image-analyzer-subagent.md; fixes: none
+- [x] **1.2** Update `agents/error-resolver-subagent.md` screenshot-analysis prose: replace "the inline direct-API fallback recipe in `image-analyzer-subagent` (`glm-5v-turbo`, a different model)" with wording naming `glm-5.3-flash` (no "different model" caveat — it no longer is one). Keep the `glm-4.6v-flash` "do NOT invoke" warning (still valid: that free endpoint was retired).
     — **Why:** stale prose would direct readers to a purged model.
     — **Done when:** `grep -c "glm-5v-turbo" agents/error-resolver-subagent.md` returns 0.
     — **Consumers affected:** none (self-contained prose).
+    — **Done:** fallback reference now reads "(`glm-5.3-flash`, the same model called directly over HTTP)"; glm-4.6v warning kept; files: agents/error-resolver-subagent.md; fixes: none
 
 ### Phase 2: Skill prose
 - [ ] **2.1** Update `skills/error-resolver-workflow-skill/SKILL.md` §Image Input Routing step 2: replace "(`glm-5v-turbo` — a different model from the native one)" with `glm-5.3-flash` wording.
@@ -88,6 +90,9 @@ Cross-module consumers exist (`resolve-models.mjs`, regen script, tests) → arc
 
 ## Dependencies
 None — single ticket, no `blocked-by`.
+
+## Gate Trace
+GATE 54cb78a tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 
 ## Plan-Review Adjudications (architecture review, 2026-09-21)
 - **Purge gate vs the plan file itself (MAJOR, fixed):** `PLANS/PLAN-516.md` is git-tracked and persists post-merge (precedent: `PLANS/PLAN-507.md`), yet must name the token to describe the purge. AC#2 / step 5.1 therefore exclude `--exclude-dir=PLANS` and harden to `grep -rniE "5v[-_]?turbo"`.
