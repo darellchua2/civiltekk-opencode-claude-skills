@@ -41,18 +41,21 @@ All nodes are documentation leaves; no cross-module code consumers → architect
     — **Done:** routing cell + rule 3 → background-shell poll with exit notification; files: agents/zai-media-subagent.md; fixes: rule-3 wording no longer names the replaced v1 flag (AC1 grep hit; fix attempt 1)
 
 ### Phase 2: Responsive-audit docs + README
-- [ ] **2.1** Rewrite `skills/playwright-responsive-audit-skill/SKILL.md` "PTY execution" section (~L30-34): one long-running runner via `background: true` when a watch mode is used (`--ui` if `$DISPLAY`/`xvfb-run` available), else per-iteration foreground `npx playwright test` with an explicit `timeout`; early-abort via sentinel file or process kill instead of `pty_write "\x03"`.
+- [x] **2.1** Rewrite `skills/playwright-responsive-audit-skill/SKILL.md` "PTY execution" section (~L30-34): one long-running runner via `background: true` when a watch mode is used (`--ui` if `$DISPLAY`/`xvfb-run` available), else per-iteration foreground `npx playwright test` with an explicit `timeout`; early-abort via sentinel file or process kill instead of `pty_write "\x03"`.
     — **Why:** Upstream source of the subagent's execution model; defines the pattern 2.2 aligns to.
     — **Done when:** `grep -nE 'pty_spawn|pty_read|pty_write|pty_kill|notifyOnExit' skills/playwright-responsive-audit-skill/SKILL.md` returns zero hits; background/timeout instructions present; the six-assertion methodology text untouched.
     — **Consumers affected:** `agents/responsive-audit-subagent.md` (updated in 2.2).
-- [ ] **2.2** Rewrite `agents/responsive-audit-subagent.md` "PTY Execution Model" section (L76-128) as the background execution model: Strategy A = background watch runner driven by completion notifications; Strategy B (persistent warm shell via `pty_write`) has no v2 port → per-iteration foreground runs with explicit `timeout`; update the referencing lines (~100, ~120, ~128); keep the 6-assertion methodology, 3-tier fix ladder, and batch-bash fallback unchanged.
+    — **Done:** section renamed "Background execution"; watch-runner vs explicit-timeout strategies + sentinel early-abort written; tier tables untouched; files: skills/playwright-responsive-audit-skill/SKILL.md; fixes: none
+- [x] **2.2** Rewrite `agents/responsive-audit-subagent.md` "PTY Execution Model" section (L76-128) as the background execution model: Strategy A = background watch runner driven by completion notifications; Strategy B (persistent warm shell via `pty_write`) has no v2 port → per-iteration foreground runs with explicit `timeout`; update the referencing lines (~100, ~120, ~128); keep the 6-assertion methodology, 3-tier fix ladder, and batch-bash fallback unchanged.
     — **Why:** The subagent's prompt is executed verbatim by the model; naming nonexistent `pty_*` tools breaks DETECT/RE-VERIFY on stock v2.
     — **Done when:** `grep -nE 'pty_spawn|pty_read|pty_write|pty_kill|pty_' agents/responsive-audit-subagent.md` returns zero hits; methodology sections (assertions, tiers) verbatim vs pre-edit.
     — **Consumers affected:** Primary sessions spawning responsive audits; uiux-reviewer handoffs unchanged.
-- [ ] **2.3** Update `README.md` category-table wording: line ~638 "persistent PTY watch loop" → background watch runner phrasing; line ~640 "async submit + PTY poll" → "async submit + background poll". Row and skill counts unchanged.
+    — **Done:** section + Step 2/Step 5/screenshot intro rewritten to Strategies A/B with notifications and explicit timeouts; methodology anchors intact (6-assertion ×3, tier ladder untouched); files: agents/responsive-audit-subagent.md; fixes: none
+- [x] **2.3** Update `README.md` category-table wording: line ~638 "persistent PTY watch loop" → background watch runner phrasing; line ~640 "async submit + PTY poll" → "async submit + background poll". Row and skill counts unchanged.
     — **Why:** The table advertises capabilities; it must not describe removed tooling (docs-consistency rule).
     — **Done when:** `grep -n 'PTY' README.md` returns zero hits; table row count and skill counts identical to pre-edit.
     — **Consumers affected:** Repository readers; installer counts untouched.
+    — **Done:** both rows reworded (background watch runner / background poll); counts and rows identical; files: README.md; fixes: none
 
 ### Phase 3: Local v1 SDK hygiene (no repo diff)
 - [ ] **3.1** In the MAIN checkout (`/home/silentx/VSCODE/opencode-config-template`, not the worktree — the files are untracked and absent from fresh checkouts): confirm `grep -rn '@opencode-ai/plugin' scripts/ tests/` returns zero hits, delete `.opencode/package.json`, `.opencode/package-lock.json`, `.opencode/node_modules/`, re-run `bats tests/` and confirm green, then post the evidence (grep result + suite tail + deletion listing) as a comment on issue #507.
@@ -85,3 +88,4 @@ None — single ticket, no `blocked-by:` refs.
 ## Gate Trace
 
 GATE 0ca94d6 tier=light lint=- typecheck=- build=- unit=t e2e=- (Phase 1: scoped greps on the two owned files clean; `bats tests/test_skill_isolation.bats` 5/5; 1 gate fix)
+GATE df095c1 tier=light lint=- typecheck=- build=- unit=t e2e=- (Phase 2: AC1 grep zero across skills/ + agents/; README PTY zero; methodology anchors intact; `bats tests/test_skill_isolation.bats` 5/5)

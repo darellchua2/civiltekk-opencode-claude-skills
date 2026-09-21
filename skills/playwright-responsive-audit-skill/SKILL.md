@@ -27,11 +27,11 @@ Desktop 1280×720 (Chrome) · Mobile 375×667 (Pixel 5, touch) · Tablet 768×10
 
 **Tier 3 — Report only** (needs human/design judgment; never auto-fix): complex dataviz, multi-step wizards, drag-and-drop, canvas/SVG scaling, third-party widget overflow.
 
-## PTY execution (display-branched)
+## Background execution (display-branched)
 
-The loop iterates detect→fix→re-verify many times — keep ONE persistent PTY session for the Playwright runner (`pty_spawn`/`pty_read`/`pty_write`; ungated in opencode) instead of paying 5–15s cold start per batch bash call. Display: use `$DISPLAY` when set, else `xvfb-run` if available; headless fallback when neither.
+The loop iterates detect→fix→re-verify many times — avoid paying a 5–15s Playwright cold start per batch bash call by keeping ONE long-running runner: when a watch mode is useful (`--ui` with `$DISPLAY` or `xvfb-run` available), run it as a background shell command (`background: true`) and let the completion notification deliver each re-verify; otherwise run per-iteration foreground `npx playwright test` calls with an explicit `timeout` (ms). Early-abort by touching a sentinel file the watch runner checks (or killing the process) once the first defect is confirmed — don't wait for the full suite. Display: use `$DISPLAY` when set, else `xvfb-run` if available; headless fallback when neither.
 
-> Removed 2026-09: the six assertion implementations line-by-line (locator + expect recipes per defect), fixtures/helpers listings, full config dumps, tier-by-tier worked examples — kept the tier classification tables (the decision content), viewport matrix, and the PTY strategy.
+> Removed 2026-09: the six assertion implementations line-by-line (locator + expect recipes per defect), fixtures/helpers listings, full config dumps, tier-by-tier worked examples — kept the tier classification tables (the decision content), viewport matrix, and the execution strategy.
 
 ## Iteration Protocol (opt-in)
 
