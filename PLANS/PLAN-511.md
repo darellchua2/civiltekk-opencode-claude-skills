@@ -48,14 +48,23 @@
 
 ### Phase 3: slide-skill design doc + verification
 
-- [ ] **3.1** Update `skills/pptx-generate-slide-skill/docs/DESIGN-template-agnostic.md:209` to path-neutral wording.
+- [x] **3.1** Update `skills/pptx-generate-slide-skill/docs/DESIGN-template-agnostic.md:209` to path-neutral wording.
     — **Why:** last literal in the ticket scope; keeps #515's guard clean.
     — **Done when:** `rg -l "\.opencode/skills" skills/pptx-*/` returns nothing.
     — **Consumers affected:** maintainers.
-- [ ] **3.2** Verification: copy both skill dirs to `/tmp/opencode/pptx-probe/`, run one snippet per skill with `SKILL_DIR` pointing there (extract_schema import; state_machine import with sibling slide skill), run `bats tests/test_skill_isolation.bats` (vendored trees untouched), then the full exit gate.
+    — **Done:** tree diagram root path-neutral; literals 0 across all three pptx skill trees; files: skills/pptx-generate-slide-skill/docs/DESIGN-template-agnostic.md; fixes: none
+- [x] **3.2** Verification: copy both skill dirs to `/tmp/opencode/pptx-probe/`, run one snippet per skill with `SKILL_DIR` pointing there (extract_schema import; state_machine import with sibling slide skill), run `bats tests/test_skill_isolation.bats` (vendored trees untouched), then the full exit gate.
     — **Why:** the ticket's AC is behavioral (works from an arbitrary location), not textual.
     — **Done when:** both probe imports succeed, isolation guard green, full suite green.
     — **Consumers affected:** installer (registry unchanged — no frontmatter edits; assert byte-identical).
+    — **Done:** probe1 (extract_schema) + probe2 (state_machine + ppt_builder via sibling default) both import OK from /tmp/opencode/pptx-probe; registry byte-identical (timestamp-only churn discarded); full suite 529/529; files: none (verification); fixes: none
+
+## Gate Trace
+
+GATE 9a8b4de tier=light lint=n.a typecheck=n.a build=- unit=t e2e=n.a
+GATE af52665 tier=light lint=n.a typecheck=n.a build=- unit=t e2e=n.a
+GATE af52665 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+Note: lint axis = `.opencode/skills` literal sweep (0) + frontmatter validation via build-registry substitute; final pushed SHA may carry PLAN-only commits differing from af52665 by the PLAN file alone (tree-equivalent); CI is the unconditional re-run.
 
 ## Technical Notes
 - The scripts already self-bootstrap (`_COMMON_SCRIPTS = Path(__file__).resolve().parent / "_common"` — e.g. master_cloner.py:29, ppt_builder.py:44); only SKILL.md prose hardcodes paths. No script edits → vendored trees stay byte-identical by construction.
