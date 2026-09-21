@@ -2,11 +2,31 @@
 
 A multi-mode OpenCode configurator repository:
 
-1. **User-Space Deploy** — Run `./deploy/setup.sh` to copy config, agents, and skills to `~/.config/opencode/` for global use
+1. **User-Space Deploy** — Run `./deploy/setup.sh` (or, after any deploy, the `opencode-setup` command) to copy config, agents, and skills to `~/.config/opencode/` for global use
 2. **Docker Standalone** — Run `docker compose up -d` to launch OpenCode as a web endpoint
-3. **Individual Install (npx)** — Run `npx github:darellchua2/opencode-config-template add <name>` to pull a single skill or agent (shadcn-style copy model)
+3. **Individual Install (npx)** — Run `npx github:darellchua2/opencode-config-template add <name>` to pull a single skill or agent (shadcn-style copy model); bare `npx github:darellchua2/opencode-config-template` opens the interactive TUI
 
 > **v2.0.0 upgrade?** See [`MIGRATION.md`](./MIGRATION.md) for breaking changes (stale agent cleanup, zip backup format, new `--rollback` / `--no-zip-backup` flags) and rollback instructions.
+
+## Quick Start
+
+Pick the entrypoint by what you want — no need to read further for a first install:
+
+| You want | Command | Needs |
+|----------|---------|-------|
+| Full deploy — interactive menu (config + agents + skills to `~/.config/opencode/`) | `./deploy/setup.sh` from a clone, or `opencode-setup` after any deploy | A clone + bash |
+| Full deploy — no clone, remote one-shot | `npx -p github:darellchua2/opencode-config-template opencode-setup --quick --yes` | Node 20+ |
+| Browse the catalog interactively (arrow-key TUI), then install a subset | `npx github:darellchua2/opencode-config-template` | Node 20+ |
+| One specific skill or agent | `npx github:darellchua2/opencode-config-template add <name>` | Node 20+ |
+| Curated per-project subset (preset) | `opencode-init --project . --preset review --yes` | Any prior deploy, or `npx github:… --project . --preset review --yes` |
+| Self-hosted web endpoint (browser) | `docker compose up -d` → http://localhost:4097 | Docker |
+
+Every `setup.sh` deploy installs two PATH commands into `~/.local/bin/`:
+
+- **`opencode-setup`** — re-run the full deploy from any directory; all flags pass through (`opencode-setup --quick`, `opencode-setup --provider anthropic`, …). It symlinks back to the clone it deployed from — edit files there, re-run here.
+- **`opencode-init`** — the project-scoped installer and catalog browser (see [Project-Scoped Install](#project-scoped-install-opencode-init)).
+
+> The remote `npx … opencode-setup` variant runs the deploy out of npm's cache clone of this repo (default branch), so it always uses the latest published state; pin a branch with `npx -p github:darellchua2/opencode-config-template#<branch> opencode-setup`.
 
 ## Repository Structure
 
@@ -18,7 +38,7 @@ opencode-config-template/
 │   └── vibeguard.config.json    # Secret-masking regex patterns
 ├── deploy/                      # User-space deployment files
 │   ├── .AGENTS.md               # User-space subagent routing (deployed)
-│   ├── setup.sh / setup.ps1     # User-space deployment scripts
+│   ├── setup.sh / setup.ps1     # User-space deployment scripts (setup.sh = bin: opencode-setup)
 │   └── packs/ + merge-packs / apply-skill-profile / skill-profiles / tui
 ├── installer/                   # npx installer (self-contained CLI flow)
 │   ├── init.mjs                 # `npx … add <name>` entry (bin: opencode-skill)
@@ -86,6 +106,8 @@ node deploy/regen-provider-models.mjs
 ./deploy/setup.sh --migrate                 # run v1.x -> v2.0 migration
 ./deploy/setup.sh --force                   # re-resolve, ignoring preserved hand-edits
 ```
+
+Once deployed, the same script is on your PATH as `opencode-setup` (installed to `~/.local/bin/`) — every flag above works from any directory, e.g. `opencode-setup --quick --yes`.
 
 ### Model Resolution (v2.0)
 
@@ -192,6 +214,8 @@ Install a single skill or agent without cloning the repo — the shadcn/ui model
 
 ```bash
 npx github:darellchua2/opencode-config-template add solid-principles-skill
+npx github:darellchua2/opencode-config-template            # bare = interactive TUI, no args needed
+npx -p github:darellchua2/opencode-config-template opencode-setup   # full deploy without cloning
 ```
 
 ### Scope & config strategy

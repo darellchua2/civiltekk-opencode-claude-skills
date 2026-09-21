@@ -63,8 +63,19 @@ set -o nounset   # Error on undefined variables
 # GLOBAL VARIABLES
 ################################################################################
 
-# Resolve directories (setup.sh lives in deploy/, repo root is one level up)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Resolve directories (setup.sh lives in deploy/, repo root is one level up).
+# Symlink-aware: invoked via a PATH shim (~/.local/bin/opencode-setup, npm bin
+# links), BASH_SOURCE is the shim, not this file — follow the link chain first
+# or REPO_DIR resolves to the shim's parent and deploys copy nothing.
+OC_SETUP_SELF="${BASH_SOURCE[0]}"
+while [ -L "$OC_SETUP_SELF" ]; do
+    OC_SETUP_LINK="$(readlink "$OC_SETUP_SELF")"
+    case "$OC_SETUP_LINK" in
+        /*) OC_SETUP_SELF="$OC_SETUP_LINK" ;;
+        *) OC_SETUP_SELF="$(dirname "$OC_SETUP_SELF")/$OC_SETUP_LINK" ;;
+    esac
+done
+SCRIPT_DIR="$(cd "$(dirname "$OC_SETUP_SELF")" && pwd)"
 REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # Read version from VERSION file
@@ -3752,6 +3763,7 @@ build_plan() {
         PLAN_STEPS+=("true|agents|Deploy agents|deploy_agents")
         PLAN_STEPS+=("true|plugins|Deploy plugins|deploy_plugins")
         PLAN_STEPS+=("false|init-symlink|Install opencode-init shim|setup_opencode_init_symlink")
+        PLAN_STEPS+=("false|setup-symlink|Install opencode-setup shim|setup_opencode_setup_symlink")
         PLAN_STEPS+=("false|learnings|Set up learnings directory|setup_learnings_dir")
     else
         PLAN_MODE="full"
@@ -3786,6 +3798,7 @@ build_plan() {
             PLAN_STEPS+=("true|plugins|Deploy plugins|deploy_plugins")
         fi
         PLAN_STEPS+=("false|init-symlink|Install opencode-init shim|setup_opencode_init_symlink")
+        PLAN_STEPS+=("false|setup-symlink|Install opencode-setup shim|setup_opencode_setup_symlink")
         PLAN_STEPS+=("false|learnings|Set up learnings directory|setup_learnings_dir")
         PLAN_STEPS+=("false|shell-vars|Set up shell variables|setup_shell_vars")
     fi
@@ -4764,6 +4777,38 @@ setup_opencode_init_symlink() {
            && echo "    export PATH=\"${user_bin}:\$PATH\"" >&2 ;;
     esac
     log_info "Tip: individual skills/agents can also be installed via: npx github:darellchua2/opencode-config-template add <name>"
+}
+
+# Setup the opencode-setup symlink (full-deploy entrypoint shim).
+# Symlinks <repo>/deploy/setup.sh -> ~/.local/bin/opencode-setup so the full
+# configurator deploy is on PATH and runnable from any directory (safe only
+# because the SCRIPT_DIR resolution above follows symlinks). Idempotent:
+# refreshes a stale link, skips a correct one. Additive — does not touch any
+# other setup.sh behavior.
+setup_opencode_setup_symlink() {
+    local setup_src="${REPO_DIR}/deploy/setup.sh"
+    if [ ! -f "$setup_src" ]; then
+        log_warn "setup.sh source not found at ${setup_src}; skipping symlink"
+        return 0
+    fi
+    local user_bin="${HOME}/.local/bin"
+    # Dry-run safe (#469, same class as #467): run_cmd only logs in preview.
+    run_cmd mkdir -p "$user_bin"
+    local link="${user_bin}/opencode-setup"
+    # Refresh if missing or pointing elsewhere; leave alone if already correct.
+    if [ -L "$link" ] && [ "$(readlink -f "$link" 2>/dev/null)" = "$(readlink -f "$setup_src" 2>/dev/null)" ]; then
+        log_info "opencode-setup symlink already correct at ${link}"
+    else
+        run_cmd ln -sf "$setup_src" "$link"
+        log_success "opencode-setup installed to ${link}"
+    fi
+    # PATH check (mirrors the opencode-init pattern ~line 4788)
+    case ":${PATH}:" in
+        *":${user_bin}:"*) ;;
+        *) log_warn "${user_bin} is not on your PATH. Add it to your shell rc to use opencode-setup:" \
+           && echo "    export PATH=\"${user_bin}:\$PATH\"" >&2 ;;
+    esac
+    log_info "Tip: full redeploys from any directory: opencode-setup"
 }
 
 main() {
