@@ -9,3 +9,7 @@
 **Date**: 2026-09-15
 
 **Evidence**: #382 review (WARN, plan-execution-skill guardrails note — the finding predates #408, which merged `plan-automation-loop-skill` into `plan-execution-skill`; path updated 2026-09-21, #506); plugin README Options section (defaults: `default_token_budget` unset, `max_goal_duration_seconds` unset).
+#510 instance: AGENTS.md §Portability intro claimed all three rules are
+"enforced by the portability guard test (#515)" while #515's issued scope
+enforces only rules 1–2 — doc claims must match the enforcing artifact's actual
+scope; soften to per-rule attribution.

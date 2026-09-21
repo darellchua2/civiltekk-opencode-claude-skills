@@ -33,7 +33,7 @@ name: <skill-name>          # required; MUST equal directory name; ^[a-z0-9]+(-[
 description: <1-1024 chars> # required; house style ≤50 words, preserve trigger phrases
 license: Apache-2.0         # house default
 compatibility: opencode
-metadata:                   # optional string map; house sub-keys: protocol, pattern ONLY
+metadata:                   # optional string map; house sub-keys: protocol, pattern, os, harness (portability — see ## Portability)
 category: <registry-group>  # installer-registry-only (build-registry/init/setup counts)
 ---
 ```
@@ -57,6 +57,22 @@ Gate skills in the `permissions` array (config.json) or agent frontmatter — NO
 ```
 
 Last matching rule wins; deny-all first, allows after. The same `permissions` rules shape is used in config.json and agent frontmatter. `tools: skill: false` and the `permission.skill` map are deprecated.
+
+## Portability
+
+Skills ship to other harnesses (`--target claude|agents|kimi|kilo`) and OSes. Three house rules (full contract: repo `AGENTS.md` §Portability contract):
+
+1. **Capability-binding block** — any harness-specific runtime mechanism (background shell, interactive question, subagent delegation) is written as a capability with per-harness rows plus a portable fallback:
+
+   ```markdown
+   <capability sentence>.
+   - OpenCode: <mechanism>
+   - Claude Code: <mechanism>
+   - Other/none: <portable fallback — nohup+log-poll / plain-reply question / inline>
+   ```
+
+2. **Metadata vocabulary** (installer-only, zero runtime effect): double-quoted comma-separated strings, never brackets — `metadata.os: "linux, macos"` when the skill does not run everywhere; `metadata.harness: "opencode"` when the skill is about OpenCode itself.
+3. **Bash rule** — every bash snippet carries `Requires bash (git-bash/WSL on Windows)` or becomes a `node -e` one-liner (Node is guaranteed: the installer is npx-based).
 
 ## File safety
 
