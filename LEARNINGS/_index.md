@@ -1103,6 +1103,42 @@
 - **Date**: 2026-07-26
 - **Summary**: **Context**: When editing `opencode_app/opencode.json`
 
+### Plan-file self-hit breaks purge gate
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/plan-file-self-hit-breaks-purge-gate.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: A tracked PLANS/PLAN-*.md (or any pipeline-written record — LEARNINGS candidates, review memos) whose AC gates grep repo-wide for a token it contains makes the gate unpassable — decide the exclusion set up front (own surfaces: PLANS/, LEARNINGS/) or keep records token-free; reviewers on purge tickets emit token-free candidates (#516)
+- **Date**: 2026-09-21
+
+### Dual-provider catalog entry proves endpoint swap
+
+- **Category**: pattern
+- **File**: `LEARNINGS/patterns/dual-provider-catalog-entry-proves-endpoint-swap.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: A model-id swap in a dual-endpoint API recipe is provable without a live call when provider-models.json (models.dev-pinned) lists the replacement under both provider prefixes the recipe's key resolution can select; on purge tickets keep candidates token-free (#516)
+- **Date**: 2026-09-21
+
+### Deliberate catalog divergence needs regen exclusion
+
+- **Category**: solution
+- **File**: `LEARNINGS/solutions/deliberate-catalog-divergence-needs-regen-exclusion.md`
+- **Confidence**: medium
+- **Scope**: project
+- **Summary**: A deliberate divergence from a generated catalog (models.dev-pinned file vs purge mandate) is unenforced — regen re-adds and --check is warn-only; fix with a regen exclusion list, interim ceiling is a reconciling $comment sentence naming the re-add behavior (#516)
+- **Date**: 2026-09-21
+
+### Transport-only fallback kills disclaimer drift
+
+- **Category**: pattern
+- **File**: `LEARNINGS/patterns/transport-only-fallback-kills-disclaimer-drift.md`
+- **Confidence**: medium
+- **Scope**: project
+- **Summary**: A fallback that reuses the native model id (different transport, same model) deletes the cross-doc "different model" disclaimer class instead of maintaining it — prefer transport-only divergence when picking fallback models (#516)
+- **Date**: 2026-09-21
+
 ---
 
 - Project-level: `LEARNINGS/` (this directory, git-committed)
