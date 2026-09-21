@@ -133,6 +133,7 @@ GATE 4afd089 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: provider
 GATE 7c0b49b tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 GATE d87303b tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 GATE 5139d03 tier=full lint=n.a typecheck=n.a build=n.a unit=t(bats tests/ 529/529) e2e=n.a
+GATE 3020197 tier=full lint=n.a typecheck=n.a build=n.a unit=t(bats tests/ 529/529) e2e=n.a — post-review-fix re-gate (code review WARN-1/WARN-2 fixes: token-free LEARNINGS, regen re-add warning, LEARNINGS/ gate exclusion)
 
 ## Plan-Review Adjudications (architecture review, 2026-09-21)
 - **Purge gate vs the plan file itself (MAJOR, fixed):** `PLANS/PLAN-516.md` is git-tracked and persists post-merge (precedent: `PLANS/PLAN-507.md`), yet must name the token to describe the purge. AC#2 / step 5.1 therefore exclude `--exclude-dir=PLANS` and harden to `grep -rniE "5v[-_]?turbo"`.
