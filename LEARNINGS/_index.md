@@ -826,3 +826,30 @@
 - **Scope**: project
 - **Summary**: root skills/ vs opencode_app/.opencode/skills — single-surface derivations mint phantoms and duplicate deltas (both happened in one session); fix = union guard (SKILL.md-filtered) + disjointness assert + surface-explicit counts; dated narratives keep period-true numbers (#486)
 - **Date**: 2026-09-20
+
+### Invariant scope: quantifier must match the loop it lives in
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/invariant-scope-quantifier-vs-per-phase-loop.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: an invariant with boundary scope must name it explicitly ("the **final** pushed SHA") — "pushed SHA" inside a per-phase push loop misreads as tier=full every push; quantifier must match the loop it lives in (#488)
+- **Date**: 2026-09-21
+
+### Format-token census classifies deferral-by-name as verified-compatible
+
+- **Category**: pattern
+- **File**: `patterns/format-token-census-deferral-classification.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: canonical-format changes census literal tokens across restating sites; surfaces that defer by name are zero-hit by design and classified verified-compatible — name immutable-history exclusions in the census record (#488)
+- **Date**: 2026-09-21
+
+### Transient cross-file contract drift between per-phase commits is safe iff pinned
+
+- **Category**: pattern
+- **File**: `patterns/phased-canonical-contract-drift-window.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: editing a canonical contract and its deferring consumers in separate per-phase commits restates a stale format mid-window — safe iff the surface defers by name AND no test pins the stale example; verify both, don't reorder phases (#488)
+- **Date**: 2026-09-21

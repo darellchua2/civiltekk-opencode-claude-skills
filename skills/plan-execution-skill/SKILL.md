@@ -59,13 +59,13 @@ All modes parse the same structure:
    - [guardrail] `phases_done >= MAX_PHASES` (12) or `total_fixes >= MAX_FIXES` (20) → HALT + `[goal:blocked]`
    - 4a. IMPLEMENT — every atomic step; delegate per matrix below; keep a per-step WORK LOG
    - 4b. TEST NEW CODE — new/modified source files (`git diff --name-only --diff-filter=AM`, minus configs/docs/PLAN) get tests (TS: `bar.test.ts` sibling; PY: `tests/foo/test_bar.py`; mirror the nearest existing test). Trivial pure-data additions exempt.
-   - 4c. VERIFY — the gate per `verification-loop-skill` §The gate contract (sequence, scoped-lint rule, verdict protocol; E2E per the E2E rule). On green, append the memo line `GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t|-|n.a>` to the PLAN trace block (memo format: §Gate memo there).
-   - 4d. FIX-ON-FAIL — max 3 attempts per gate step: read full output → root cause → fix → append to WORK LOG → re-run failed step then the whole gate. Each attempt increments `total_fixes`. After 3 failures: STOP — no checkbox, no commit, no push; report blocker + ask user. **Never push red code.**
+   - 4c. VERIFY — the gate per `verification-loop-skill` §The gate contract, at the tier §Tiered gating there selects: **light** (scoped lint + typecheck + affected tests) is the per-phase default; **full** when the phase hit a critical-area anchor, judgment says high risk, or you are unsure; the **ticket exit gate** — the last gate of this PLAN run — runs full unconditionally. E2E per the E2E rule. On green, append the memo line `GATE <short-sha> tier=light|full lint=t typecheck=t build=t|- unit=t|-|n.a e2e=t|-|n.a` to the PLAN trace block (memo format: §Gate memo there); per full-gate escalation, add one WORK LOG line naming the anchor or judgment reason (nothing for light). The **final** pushed SHA of the run must carry a green `tier=full` memo (the ticket exit gate provides it); intermediate phase pushes carry their tier memo as phase evidence.
+   - 4d. FIX-ON-FAIL — max 3 attempts per gate step: read full output → root cause → fix → append to WORK LOG → re-run failed step then the whole tier-selected gate. Each attempt increments `total_fixes`. After 3 failures: STOP — no checkbox, no commit, no push; report blocker + ask user. **Never push red code.**
    - 4e. ON GREEN — tick ALL checkboxes (phase-level, every sub-step, satisfied acceptance criteria) + write the `— Done:` line per step (see Traceability)
    - 4f/4g. COMMIT + PUSH — one atomic commit: phase files + PLAN update together (see Commit + push)
    - 4h. REPORT — one-line phase status, continue
 
-**A phase advances ONLY when its gate is fully green.** Red gate = no checkbox, no Done line, no commit, no push.
+**A phase advances ONLY when its applicable gate tier is green.** Red gate = no checkbox, no Done line, no commit, no push.
 
 ### Delegate matrix (4a)
 

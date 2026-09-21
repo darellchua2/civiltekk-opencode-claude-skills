@@ -16,7 +16,21 @@ I am the **canonical verification-gate contract** for this estate. Pipeline surf
 
 ### Gate sequence (in order)
 
-LINT → TYPECHECK → BUILD → UNIT → E2E. E2E runs only per the E2E rule: Playwright configured (`playwright.config.*` + `@playwright/test`) AND the change touched frontend code. Backend-only change → skip e2e and say so.
+LINT → TYPECHECK → BUILD → UNIT → E2E. E2E runs only per the E2E rule: Playwright configured (`playwright.config.*` + `@playwright/test`) AND the change touched frontend code. Backend-only change → skip e2e and say so. This sequence is the **full gate**; §Tiered gating below decides when the full sequence runs versus the light subset.
+
+### Tiered gating (which checks run, when)
+
+Robustness lives at the boundaries; detection runs cheaply in between. No check runs twice for the same risk. Two tiers:
+
+- **Light gate** — the per-phase default: scoped lint (changed files, zero NEW errors) + typecheck + **affected tests only** (tests covering the changed code, not the whole suite). Build and e2e do not run. Running light needs no justification — it is the rule.
+- **Full gate** — the complete sequence above with the **full** unit suite. Runs when:
+  1. the phase touched a **critical-area anchor**: dependency manifests, config/CI/deploy files, entry points, schema/migrations, auth/security paths, or a Dependency & Consumer Map node with cross-module consumers;
+  2. the agent judges the change risk high, or is unsure — **unsure always escalates to full**;
+  3. the **ticket exit gate** — the last gate before the PR for the ticket — runs full **unconditionally**, whatever the final phase touched.
+
+Escalation is **one-directional**: light is the default; full is triggered, never justified away. Per full-gate escalation, record one line in the WORK LOG naming the anchor or judgment reason; record nothing for light gates.
+
+Tiering never weakens the invariants: INCONCLUSIVE is never a pass at either tier, and never-push-red holds at every tier — the push boundary requires a green `tier=full` memo (§Gate memo).
 
 ### Command discovery (once per run)
 
@@ -33,9 +47,12 @@ Discover commands from project manifests in this order: `package.json` scripts �
 After every green gate, write one line into the PLAN trace block (or task record when no PLAN exists):
 
 ```
-GATE <short-sha> lint=t typecheck=t build=t unit=t e2e=<t|-|n.a>
+GATE <short-sha> tier=light|full lint=t typecheck=t build=t|- unit=t|-|n.a e2e=t|-|n.a
 ```
 
+- `tier` records which tier ran (§Tiered gating).
+- An axis with no applicable check records `n.a` — e.g. `unit=n.a` on a light gate whose phase had zero affected tests. `n.a` means non-applicable, never INCONCLUSIVE. `unit=n.a` is valid only on `tier=light` memos: the full gate always runs the full unit suite, so a push-authorizing `tier=full` memo can never carry it. An axis skipped **by tier** (build/e2e on a light gate) records `-`; `n.a` is reserved for an axis with no applicable **target** (E2E-rule skip, zero affected tests) — build has no `n.a` form.
+- **Push invariant**: the **final** pushed SHA must carry a green `tier=full` memo — the ticket exit gate plus any post-gate fix re-gate provide it; intermediate phase pushes carry their tier memo as phase evidence. A `tier=light` line is never a push authorization.
 - Same tree SHA already green since the last gate → later pipeline stages skip the re-run and state it.
 - No memo for the current SHA → run the gates. Skipping on absent evidence is forbidden.
 - CI (`gh pr checks`) remains the only unconditional re-run (post-push).
