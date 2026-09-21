@@ -36,10 +36,16 @@ _Before writing steps, list each touched file/module and who consumes it._
 
 ### Phase 2: Verify no runtime/registry drift
 
-- [ ] **2.1** Run `node installer/build-registry.mjs`; confirm exit 0 and `git status --porcelain registry.json` empty (vocabulary is prose — no frontmatter values changed in this ticket, so the registry must not move).
+- [x] **2.1** Run `node installer/build-registry.mjs`; confirm exit 0 and `git status --porcelain registry.json` empty (vocabulary is prose — no frontmatter values changed in this ticket, so the registry must not move).
     — **Why:** repo rule rebuilds the registry after any frontmatter change; here it doubles as proof that a docs-only ticket caused zero registry drift.
     — **Done when:** build-registry exits 0 with an unchanged `registry.json`.
     — **Consumers affected:** installer, setup.sh counts.
+    — **Done:** build-registry exit 0, registry.json unchanged; full bats suite 529/529; files: none (verification-only step); fixes: none
+
+## Gate Trace
+
+GATE 7787015 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
+GATE 7787015 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 
 ## Technical Notes
 - Binding-block canonical shape (from zai-video-skill:90 prior art):
