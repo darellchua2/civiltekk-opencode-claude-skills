@@ -369,7 +369,7 @@
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/sweep-set-from-audit-list-misses-grep-derived-consumers.md`
-- **Confidence**: 0.85
+- **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
 - **Summary**: When a path move (or rename) makes old strings dead, derive the repoint sweep from `grep -rn "<old-path-string>"` across all file types — every hit is either repointed or explicitly exempted with a dated note. An audit list is a lower bound, not the universe: sibling consumers cite the same dead paths and are found only by the string, not by the list. Gate the sweep on the same grep returning zero
@@ -1167,6 +1167,7 @@
 - **Scope**: project
 - **Summary**: "pre-verified repo facts" in review briefs are claims — #519's brief asserted no merge-method defaults elsewhere while semantic-release-convention-skill carried 9 squash directives incl. a governance MUST; reviewers re-run the one grep before relying on embedded negatives, and briefs state claims with the producing command (#519)
 - **Date**: 2026-09-21
+
 ### Tracker issue body is the tiebreaker for flagged scope
 
 - **Category**: solution

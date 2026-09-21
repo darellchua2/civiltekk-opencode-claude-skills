@@ -1,7 +1,7 @@
 # A repoint sweep derived from an audited-file list misses grep-derived sibling consumers
 
 - **Category**: anti-pattern
-- **Confidence**: 0.85
+- **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
 - **Ticket**: #506 (code review WARN-3 + Mode R round 2)
