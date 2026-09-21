@@ -60,11 +60,13 @@ migration, and how to revert.
   4. `~/.config/opencode/models.json` (tier map, global)
   5. `installer/models.default.json` (Z.AI defaults)
 
-> **Default tier models:** `reasoning` → `zai-coding-plan/glm-5.3`. **Image analysis (#283)**
-> is not a vision tier — `image-analyzer-subagent`/`error-resolver-subagent` run on `docs`
-> (`glm-4.7`) and obtain image content via `zai-vision-analysis-skill` (free `glm-4.6v-flash`
-> through a direct Z.AI API call, since models.dev doesn't list it). The `vision` tier
-> (`zai/glm-4.6v`) is opt-in paid only. The resolver also runs an **exposed-model guard** at
+> **Default tier models:** `reasoning` → `zai-coding-plan/glm-5.3`; `vision` →
+> `zai-coding-plan/glm-5.3-flash` (native multimodal — `image-analyzer-subagent`,
+> `error-resolver-subagent`, `uiux-reviewer-subagent`, `zai-media-subagent` see images directly;
+> no vision skill or MCP; #349, #372). The former `zai-vision-analysis-skill` and its free
+> direct-API model were removed (GIT-364); text-only sessions use the inline direct-API fallback
+> recipe embedded in `image-analyzer-subagent` (the same `glm-5.3-flash` model). The resolver
+> also runs an **exposed-model guard** at
 > deploy (`--provider-models installer/provider-models.json`, aligned to models.dev) that fails
 > fast if a tier/source-config pin references a model its provider doesn't serve.
 

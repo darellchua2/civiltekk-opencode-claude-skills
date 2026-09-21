@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.30.0](https://github.com/darellchua2/opencode-config-template/compare/v9.29.0...v9.30.0) (2026-09-21)
+
+### Features
+
+* **installer:** collapse flash-class models onto glm-5.3-flash ([#522](https://github.com/darellchua2/opencode-config-template/issues/522)) — Phase 1 ([ceafa45](https://github.com/darellchua2/opencode-config-template/commit/ceafa45cc291d6604c77e2fd48f4aca43c266730))
+
+### Bug Fixes
+
+* **learnings:** review fixes — confidence field sync, index separator, partial-refresh recurrence ([#522](https://github.com/darellchua2/opencode-config-template/issues/522)) ([dd693bf](https://github.com/darellchua2/opencode-config-template/commit/dd693bf0bde4972230333e264592c5a20566f57c))
+
+### Documentation
+
+* **plan:** add PLAN-522.md for [#522](https://github.com/darellchua2/opencode-config-template/issues/522) ([0d122bd](https://github.com/darellchua2/opencode-config-template/commit/0d122bd51875b3f1eb6df7d992e5534f258c2dc8))
+* **plan:** append post-review-fix tier=full gate memo ([#522](https://github.com/darellchua2/opencode-config-template/issues/522)) ([a444228](https://github.com/darellchua2/opencode-config-template/commit/a444228b24c585b071994e33940312e74e527937))
+* **plan:** apply plan-review findings to PLAN-522 (map census, scope wording, LEARNINGS) ([c0e1e62](https://github.com/darellchua2/opencode-config-template/commit/c0e1e624180c06136392c70603ce9786ac64a391))
+* **plan:** trace PLAN-522 complete — exit gate tier=full ([d645e8d](https://github.com/darellchua2/opencode-config-template/commit/d645e8de9ab2f69a12e8c8dc531855f43dfe0519))
+* **skills:** head-class merge policy — merge commits for long-lived-head PRs ([#521](https://github.com/darellchua2/opencode-config-template/issues/521)) ([d8e8d1f](https://github.com/darellchua2/opencode-config-template/commit/d8e8d1feddbfccddf289c3401b1d7ac2d08b9463)), closes [#519](https://github.com/darellchua2/opencode-config-template/issues/519) [55/#72](https://github.com/55/opencode-config-template/issues/72) [#519](https://github.com/darellchua2/opencode-config-template/issues/519) [#520](https://github.com/darellchua2/opencode-config-template/issues/520)
+
+## [9.29.0](https://github.com/darellchua2/opencode-config-template/compare/v9.28.2...v9.29.0) (2026-09-21)
+
+### Features
+
+* **installer:** purge pre-5.3 vision models from provider catalog ([#516](https://github.com/darellchua2/opencode-config-template/issues/516)) — Phase 4 ([7c0b49b](https://github.com/darellchua2/opencode-config-template/commit/7c0b49b16b1ee4f38df27fadf010c47847105558))
+
+### Bug Fixes
+
+* **docs:** review fixes — token-free LEARNINGS, regen re-add warning, gate exclusion ([#516](https://github.com/darellchua2/opencode-config-template/issues/516)) ([3020197](https://github.com/darellchua2/opencode-config-template/commit/3020197f24ecdb2e1bd088257440fb9013217923))
+
+### Documentation
+
+* **agents:** implement Phase 2 — responsive-audit + README on v2 background shell ([557183d](https://github.com/darellchua2/opencode-config-template/commit/557183d760e399150604e9e2c45c834866f5a965))
+* **agents:** route vision fallback recipe to glm-5.3-flash ([#516](https://github.com/darellchua2/opencode-config-template/issues/516)) — Phase 1 ([a83a00b](https://github.com/darellchua2/opencode-config-template/commit/a83a00bba08ffd35242080e2006cda1ff452f07c))
+* **learnings:** Phase 1 — fold residuals and remove superseded learnings ([#506](https://github.com/darellchua2/opencode-config-template/issues/506)) ([a583fc1](https://github.com/darellchua2/opencode-config-template/commit/a583fc1f95de6e651112c6d2818c678d1bb249d1))
+* **learnings:** Phase 2 — repoint stale evidence in 9 learnings ([#506](https://github.com/darellchua2/opencode-config-template/issues/506)) ([40c4d88](https://github.com/darellchua2/opencode-config-template/commit/40c4d88022db5ff362dcfecde88e58e26e8c8b3d)), closes [#474](https://github.com/darellchua2/opencode-config-template/issues/474)
+* **learnings:** Phase 3 — rebuild _index.md from the 118-file corpus ([#506](https://github.com/darellchua2/opencode-config-template/issues/506)) ([db3c0f7](https://github.com/darellchua2/opencode-config-template/commit/db3c0f797341d1a4e748d72ee4c08220c3334be3))
+* **learnings:** review fixes — index summary/heading sync, tier-model-swap repoint, ritual edit-rule ([#506](https://github.com/darellchua2/opencode-config-template/issues/506)) ([1ba03c9](https://github.com/darellchua2/opencode-config-template/commit/1ba03c9cdb21c09a11940b10bb06f2b4b1c5709c))
+* **learnings:** upgrade the 3 merged-in entry summaries to rule-style ([#506](https://github.com/darellchua2/opencode-config-template/issues/506)) ([8bfebcd](https://github.com/darellchua2/opencode-config-template/commit/8bfebcd2e42a8ef98b066cc7b2f10f84a5683f97))
+* **plan:** add PLAN-506.md for [#506](https://github.com/darellchua2/opencode-config-template/issues/506) ([7d1b308](https://github.com/darellchua2/opencode-config-template/commit/7d1b308fd0254a7c126172cd371e7330d752d4cc))
+* **plan:** add PLAN-507.md for [#507](https://github.com/darellchua2/opencode-config-template/issues/507) ([0ca94d6](https://github.com/darellchua2/opencode-config-template/commit/0ca94d67c194a2b56ba244958197e6e5e8134c70))
+* **plan:** add PLAN-516.md for [#516](https://github.com/darellchua2/opencode-config-template/issues/516) ([e68b3f1](https://github.com/darellchua2/opencode-config-template/commit/e68b3f1c66ffd952e9eb7ed391f1833ee5e0dccc))
+* **plan:** append post-merge-rebase tier=full gate memo ([#516](https://github.com/darellchua2/opencode-config-template/issues/516)) ([fe86f18](https://github.com/darellchua2/opencode-config-template/commit/fe86f185d068727e5f5721276ac276a4605e304b))
+* **plan:** append post-review-fix tier=full gate memo ([#516](https://github.com/darellchua2/opencode-config-template/issues/516)) ([5b61eb3](https://github.com/darellchua2/opencode-config-template/commit/5b61eb3d7a7ca0733a9e944fea0450fdbfc85c7c))
+* **plan:** append review-fix re-gate memo (tier=full) ([2888c8b](https://github.com/darellchua2/opencode-config-template/commit/2888c8bfc5e256951ca631ae707f38a944743d07))
+* **plan:** append tier=full gate memo for 1ba03c9 (review-fix tree) ([#506](https://github.com/darellchua2/opencode-config-template/issues/506)) ([2cb1e31](https://github.com/darellchua2/opencode-config-template/commit/2cb1e31c8c2a75829b0b522a48124da0bd8cbce5))
+* **plan:** append tier=full gate memo for 79c6fb6 ([#506](https://github.com/darellchua2/opencode-config-template/issues/506)) ([3812d3b](https://github.com/darellchua2/opencode-config-template/commit/3812d3bb7d12927f9e37333accd397591638a8b2))
+* **plan:** append tier=full gate memo for post-merge tree 8bfebcd ([#506](https://github.com/darellchua2/opencode-config-template/issues/506)) ([361ce19](https://github.com/darellchua2/opencode-config-template/commit/361ce194e0d7ba4889d3106ba6cbbb4668163182))
+* **plan:** apply arch review + Mode R rulings to PLAN-506 ([#506](https://github.com/darellchua2/opencode-config-template/issues/506)) ([736e73a](https://github.com/darellchua2/opencode-config-template/commit/736e73ac32c974a1abb42dac3900b1e3a3c23492))
+* **plan:** apply plan-review findings to PLAN-516 (purge-gate self-hit fix) ([54cb78a](https://github.com/darellchua2/opencode-config-template/commit/54cb78af77391e9e43c910a0da1eefefee54c8be))
+* **plan:** Phase 6 — tick verification gates, 39/39 bats green ([#506](https://github.com/darellchua2/opencode-config-template/issues/506)) ([79c6fb6](https://github.com/darellchua2/opencode-config-template/commit/79c6fb6210a8c32d9541600d6576d3861098980c))
+* **plan:** tick PLAN-507 acceptance criteria — all verified at exit gate ([7d6e183](https://github.com/darellchua2/opencode-config-template/commit/7d6e18364c2ed3b52d528b8805376b6f433c1b7c))
+* **plan:** trace Phases 3-4 — local SDK cleanup evidence + tier=full exit gate ([61f9ced](https://github.com/darellchua2/opencode-config-template/commit/61f9ced10efad45aec726efdb0498ed771f8072c))
+* **plan:** trace PLAN-516 complete — all phases green, exit gate tier=full ([79dfe36](https://github.com/darellchua2/opencode-config-template/commit/79dfe36b7ace900c073e5f030eb9f4bde58adde5))
+* purge pre-5.3 vision model references from prose ([#516](https://github.com/darellchua2/opencode-config-template/issues/516)) — Phase 5 ([d87303b](https://github.com/darellchua2/opencode-config-template/commit/d87303b01dcb70e0010b0bef23f539ff335e5a58))
+* remove plan files ([9bd649b](https://github.com/darellchua2/opencode-config-template/commit/9bd649b53fbc202765ac579cba577c2aecd44000))
+* review fixes — per-run background passes, concept-grep residue, explicit download timeout ([2831552](https://github.com/darellchua2/opencode-config-template/commit/283155290a4e6865dad3c5c7bd908d5e180e2e33))
+* **skill:** Phase 4 — continuous-learning writer ritual: single-marker, same-write index updates ([#506](https://github.com/darellchua2/opencode-config-template/issues/506)) ([4a555a0](https://github.com/darellchua2/opencode-config-template/commit/4a555a0af1f2d4074d7124843ba53ab47a2ce67c))
+* **skills:** align skill prose with glm-5.3-flash fallback recipe ([#516](https://github.com/darellchua2/opencode-config-template/issues/516)) — Phase 2 ([a58c09f](https://github.com/darellchua2/opencode-config-template/commit/a58c09f1075688b629fea528c4674499142c172e))
+* **skills:** implement Phase 1 — video/media docs on v2 background shell ([df095c1](https://github.com/darellchua2/opencode-config-template/commit/df095c19062c93adebd574b689016475e2af3161))
+* vision fallback calls glm-5.3-flash in AGENTS/README ([#516](https://github.com/darellchua2/opencode-config-template/issues/516)) — Phase 3 ([4afd089](https://github.com/darellchua2/opencode-config-template/commit/4afd089e4bc96d8e9bca748edcae11ebcbe1c972))
+
 ## [9.28.2](https://github.com/darellchua2/opencode-config-template/compare/v9.28.1...v9.28.2) (2026-09-21)
 
 ### Bug Fixes

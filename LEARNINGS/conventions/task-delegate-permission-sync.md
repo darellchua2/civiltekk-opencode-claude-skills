@@ -11,7 +11,7 @@ Adding/removing a `permission.task` allow entry on an agent touches FOUR surface
 A diff that updates only some of them is partially stale by construction:
 
 1. Agent frontmatter `permission.task` — `"*": deny` first, then alphabetical.
-2. `deploy/registry.json` via `node deploy/build-registry.mjs` — regen is REQUIRED
+2. `installer/registry.json` via `node installer/build-registry.mjs` — regen is REQUIRED
    even when the agent description is unchanged (`delegatesTo = keysOf(perm.task)`,
    build-registry.mjs:140, plus reverse `requiredBy` edge :155-159).
    `--check` is the read-only CI drift gate (returns before `writeFile`; normalizes
@@ -31,7 +31,7 @@ A step that asks a `bash: deny` delegate to diff, lint, or commit is dead-on-arr
 ## Reviewer check
 
 For any diff touching `permission.task`:
-- `node deploy/build-registry.mjs --check` exits 0;
+- `node installer/build-registry.mjs --check` exits 0;
 - registry diff is exactly the expected edges + `generatedAt`;
 - README row matches registry `delegatesTo`;
 - grep the agent body for the delegate list (section + closing note);

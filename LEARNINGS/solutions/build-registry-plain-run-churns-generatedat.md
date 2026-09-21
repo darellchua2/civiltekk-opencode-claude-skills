@@ -40,5 +40,13 @@ empty `git diff` again; caught by architecture review. PLAN authors: any
 registry step defaults to the `--check exits 0` form — do not re-derive
 this gate from first principles.
 
+Recurrence 4 (#519, 2026-09-21): PLAN-519 step 2.1 prescribed plain run +
+"commit only if changed" + `git status --porcelain registry.json` — both the
+churn and a new variant: the pathspec named `registry.json` (root) while the
+artifact lives at `installer/registry.json` (`OUT_FILE`,
+installer/build-registry.mjs:45), so the porcelain check matched nothing and
+exited 0 — a false-green on top of the phantom-failure mode. Caught by
+architecture review; rewritten to `--check` exits 0.
+
 Related: `solutions/docs-registry-is-build-site-artifact.md`,
 `patterns/skill-add-count-sync-blast-radius.md`.

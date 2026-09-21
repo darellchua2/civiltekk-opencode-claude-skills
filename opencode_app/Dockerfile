@@ -14,9 +14,10 @@ FROM python:3.12-slim-bookworm AS python-deps
 RUN python3 -m venv /opt/python-env
 
 # #487: bake the upstream markitdown MCP server into the venv — pulled from
-# PyPI with the same exact pin as deploy/setup.sh and deploy/setup.ps1
-# (upstream publishes only alphas, so an exact pre-release pin is required;
-# bump all three together). Do NOT use uv - it is not installed in this image.
+# PyPI with the same exact pin as deploy/setup.sh (upstream publishes only
+# alphas, so an exact pre-release pin is required; bump both together —
+# these two files are the only pin surfaces since #474).
+# Do NOT use uv - it is not installed in this image.
 RUN /opt/python-env/bin/pip install --no-cache-dir \
     "openpyxl>=3.1.0" \
     "pandas>=3.0.0" \
@@ -60,7 +61,7 @@ ENV PATH="/opt/python-env/bin:${PATH}" \
 
 # OpenCode v2 ships on npm as the scoped package @opencode/cli (the legacy
 # opencode-ai package remains v1-only and silently ignores the v2 `plugins`
-# key — see LEARNINGS/solutions/docker-v1-binary-ignores-v2-plugins-key.md).
+# key — see LEARNINGS/decisions/goal-plugin-v2-readoption.md, Docker note).
 # The old global TS toolchain packages are deliberately absent: the v2 binary
 # runs TS plugins natively (Bun-embedded) — nothing in this image invokes them.
 RUN npm install -g "@opencode/cli@${OPENCODE_VERSION}"
