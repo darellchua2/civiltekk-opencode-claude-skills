@@ -17,32 +17,13 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
-### A zero-reference gate must census where the string lives and exclude itself
+### Advisory visibility checks must not run at full-catalog scale
 
 - **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/zero-reference-gate-must-census-and-self-exclude.md`
+- **File**: `LEARNINGS/anti-patterns/advisory-check-full-catalog-noise.md`
 - **Confidence**: 0.9
 - **Scope**: project
-- **Date**: 2026-09-21
-- **Summary**: derive the include set from a census of where the string actually appears (all file types incl. extensionless Dockerfile and *.sh), never from expected doc types — and exclude the plan document itself, which quotes the slugs it bans (#506 arch review BLOCK-1)
-
-### A derived summary tuple must be self-consistent — arithmetic and derivation semantics
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/derived-summary-tuple-must-be-self-consistent.md`
-- **Confidence**: 0.85
-- **Scope**: project
-- **Date**: 2026-09-21
-- **Summary**: the derivation command must match the claim's semantics (count "effect": "allow" within skill rules, not the rule key — the deny-all inflates by one) and the tuple must pass its own arithmetic (107−70=37 exposed 107 as the raw count; 106−70=36 is the truth); annotate cross-surface members (#506 BLOCK-2)
-
-### A repoint sweep derived from an audited-file list misses grep-derived sibling consumers
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/sweep-set-from-audit-list-misses-grep-derived-consumers.md`
-- **Confidence**: 0.85
-- **Scope**: project
-- **Date**: 2026-09-21
-- **Summary**: derive the sweep from grep of the old path strings across all file types — an audit list is a lower bound; sibling consumers citing the same dead paths (tier-model-swap's ENOENT verification commands post-#378) are found only by the string (#506 code review WARN-3)
+- **Summary**: checkStrictAllowlist warns per hidden skill with a JSON rule suggestion. Against the deployed default lean profile (deny-all + 46 allows of ~148 shipped skills) every `setup.sh --yes` redeploy and every `npx update` prints a 100+ line warning whose advice (paste allow rules / --permit) contradicts the lean-profile design — the deploy re-applies lean right after. Gate per-item advisory checks on pa
 
 ### A bare mv beside run_cmd breaks the --dry-run contract
 
@@ -60,6 +41,22 @@
 - **Scope**: project
 - **Summary**: bats runs test bodies under `set -e`, but bash errexit exempts every command inside a `&&`/`||` list except the final one — an ordering pin `assert1 && assert2 && assert3` therefore enforces only assert3. Put each `[ ]` on its own line (bare mid-test assertions are fail-fast, per `bats-errexit-loop-failfast`), and make grep anchors unique to the target site: `if (Test-Path $ConfigFile) {` matched 
 
+### Safety snapshot gated on a side-effect-created directory
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/conditional-backup-dead-path.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: BACKUP_DIR is created as a side effect of unrelated user choices (config-overwrite confirm, v1→v2 migration). A pre-clobber snapshot must `mkdir -p` its own target whenever there is content to snapshot — never depend on the backup dir already existing. In a `--yes` redeploy (the standard path) the gate skips the snapshot exactly when force-copy is about to overwrite local edits. Found in #379 revi
+
+### Anti-pattern: explicit `permissions:` block + checkout without `contents: read`
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/explicit-permissions-block-checkout-403.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: An explicit `permissions:` block switches the job to explicit mode — every unlisted scope becomes `none`, and `actions/checkout` under `contents: none` fails with "Resource not accessible by integration" (403). Pair any scoped block whose job runs checkout with `contents: read`, and pin it in the workflow-shape bats test (#446 review; actions/labeler#870).
+
 ### Anti-pattern: regenerated artifact left unstaged after phase work
 
 - **Category**: anti-pattern
@@ -67,6 +64,30 @@
 - **Confidence**: n.a.
 - **Scope**: project
 - **Summary**: `node installer/build-registry.mjs` writes `installer/registry.json` on disk; if the phase commit doesn't `git add` it, the branch ships main's stale registry while local gates pass (they read disk). #408 merged-state caught it only at code review — the reviewer's diff-alphabetical-skip noticed `installer/registry.json` missing between `pack-devops.json` and `opencode_app/README.md`.
+
+### `gh api --paginate --jq` evaluates per page — aggregations count pages
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/gh-api-paginate-jq-per-page-aggregation.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: `gh api --paginate --jq '<aggregate>'` applies the jq template **once per response page** and concatenates the text output — it does not aggregate across pages. Expressions like `[.items[] | select(...)] | length` therefore emit one number per page; command substitution captures `"2\n1"` and the downstream `[ "$n" -gt 0 ]` fails with "integer expression expected" (silently taking the else branch).
+
+### Anti-pattern: a global in-flight guard bleeds across sessions
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/global-in-flight-guard-cross-session-bleed.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: **Context**: #418 review round 2 — the auto-continue plugin's own-send echo guard used a single global counter; while a send to session A was in flight, the prompt hook dropped a *real* user message in session B, silently keeping B ESC-latched and its counter stale on a multi-session server.
+
+### Legacy manifest upgrades must probe every on-disk target, not just the default
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/legacy-upgrade-target-probe.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: A legacy manifest that recorded names but not per-target state loses the target set on upgrade. Synthesizing `entries` from only the default target silently stops maintaining the other targets: `update` never re-copies or prunes them (stale forever), while `remove`/`--prune` still delete them — inconsistent lifecycle. Upgrade loops must existsSync-probe every known target dir and record what they 
 
 ### Anti-pattern: merge-resolved JSON duplicate keys pass every lenient gate
 
@@ -84,6 +105,14 @@
 - **Scope**: project
 - **Summary**: Parking/renaming a config file the runtime actively READS (`opencode.jsonc`) has different safety semantics than parking one it ignores (`config.json`): an unconditional rename can silently disable a user's sole live config. Require a both-exist guard (or prompt), and scope the invariant to the script's END STATE — the resolver also writes `opencode.json` in apply mode (decline-copy path, `--model
 
+### Partial version-normalization sweep leaves display sites lying
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/partial-version-normalization-sweep.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: When a binary's version banner format differs from a bare semver, a normalization fix that touches only the compare sites is a partial sweep: every consumer of the string — comparisons AND display/summary interpolation — must route through one shared normalizer, or display sites print raw banners and, for format-crossing upgrades (v1 bare vs v2 prefixed), can mislabel which package is actually ins
+
 ### Anti-pattern: profile-membership breaks count arithmetic
 
 - **Category**: anti-pattern
@@ -92,6 +121,46 @@
 - **Scope**: project
 - **Summary**: Before writing a N→N−k target for a profile/count in a plan, grep which arrays actually contain each removed key — do not infer from one surface.
 
+### pty streaming semantics unportable to background exit
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/pty-streaming-semantics-unportable-to-background-exit.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: **Context**: #507 review — the rewritten Strategy A promised per-iteration results from a persistent `--ui` watch runner started with `background: true`, plus sentinel-file early-stop. Verified against opencode.ai/v2/docs/tools: a background command notifies the session ONCE, when it finishes; a watcher that never exits never notifies; there is no stream-read of a running command and no kill API.
+
+### token enumeration ac greps miss concept mentions
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/token-enumeration-ac-greps-miss-concept-mentions.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: **Context**: #507 — the acceptance grep enumerated the five removed v1 tool tokens (`pty_spawn|pty_read|pty_write|pty_kill|notifyOnExit`) and passed, while `skills/plan-execution-skill/SKILL.md:83` still taught the concept in prose ("PTY loop"); only the code review's concept-level sweep caught it.
+
+### Anti-pattern: YAML guard via adjacency grep assumes key order and quoting
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/yaml-guard-adjacency-grep.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: `grep -A1 "resource: X" | grep "effect: allow"` guards miss effect-before-resource ordering, unquoted resource values, and broader-glob allows. Scan per-rule blocks bounded by `- action:` and test action+effect flags at block close — see `tests/test_reviewer_no_writes.bats` (#445 review).
+
+### doc commands teach explicit timeout when bound exceeds default
+
+- **Category**: convention
+- **File**: `LEARNINGS/conventions/doc-commands-teach-explicit-timeout-when-bound-exceeds-default.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: **Context**: #507 review — `skills/zai-video-skill/SKILL.md` §3 teaches `curl --max-time 600` run verbatim in the foreground; the v2 shell's 2-minute foreground default harness-kills it long before its own bound on slow or 4K downloads.
+
+### Decision: Adaptive review drops proactive requirements review; gaps flow via Mode R relay
+
+- **Category**: decision
+- **File**: `LEARNINGS/decisions/adaptive-review-requirements-relay.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: Worktree-pipeline Step 7 selects reviewers by blast-radius only (no proactive requirements review); uiux gained a required Requirements Gaps field; surfaced gaps relay to requirements-specialist Mode R; Step 1 preflight guards per-skill installs (2026-09-18).
+
 ### Decision: MCP Availability Guard single-homed at jira-git-integration-skill
 
 - **Category**: decision
@@ -99,6 +168,38 @@
 - **Confidence**: n.a.
 - **Scope**: project
 - **Summary**: Policy text lives only in `jira-git-integration-skill` §MCP Availability Guard; per-skill copies are pointer + their own REST endpoint, headings frozen verbatim (#434).
+
+### Decision: reviewer subagents return LEARNINGS candidates as content
+
+- **Category**: decision
+- **File**: `LEARNINGS/decisions/reviewer-learnings-return-as-content.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: Reviewer subagents hold no edit permissions — they emit `LEARNINGS candidates:` blocks (Category/File/Confidence/Scope/Summary/Date) and the pipeline orchestrator writes files, appends _index.md, and commits in the worktree (#445 single-writer rule).
+
+### v1-to-v2 CLI migration must uninstall before install
+
+- **Category**: decision
+- **File**: `LEARNINGS/decisions/v1-to-v2-migrate-uninstall-before-install.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: The v1 npm package `opencode-ai` (frozen 1.18.31) and the v2 scoped package `@opencode/cli` both provide the `opencode` bin; installing v2 over a package-managed v1 leaves the shared bin link shadowed or broken (npm owns bin links per package — uninstalling the stale one afterward can remove the link v2 needs). The official order (opencode.ai/v2 migrate-v1: "Remove a package-managed V1 installatio
+
+### bats structure pin: grep line-ordering test for shell call ordering
+
+- **Category**: pattern
+- **File**: `LEARNINGS/patterns/bats-structure-pin-call-order.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: When a refactor's correctness rests on call ORDER inside a 4k-line shell script (lift must see pre-overwrite agents; CLI owns agent files before config-only resolve), pin it with a bats test: `grep -n` each anchor (exact indentation to disambiguate call sites), assert line numbers ascending, and negatively grep the removed pattern. Cheap, review-anchored, and survives future edits. Established in 
+
+### Pattern: jq @tsv needs sentinels for nullable columns
+
+- **Category**: pattern
+- **File**: `LEARNINGS/patterns/jq-tsv-sentinel-for-nullable-columns.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: `jq @tsv` output parsed with `IFS=$'\t' read` collapses empty cells — tab is IFS whitespace, so a null field shifts every later column left. Emit a sentinel for nullable columns in the jq program (`// "false"`) and rely on positional parsing only for never-null enum fields (#446 conflict labeler).
 
 ### Pattern: skill-dir consolidation trips count literals everywhere
 
@@ -114,7 +215,7 @@
 - **File**: `LEARNINGS/solutions/credential-regex-host-port-false-positive.md`
 - **Confidence**: n.a.
 - **Scope**: project
-- **Summary**: **Type:** solution (refines the SECRET_ASSIGNMENT false-negative pattern) **Confidence:** 0.9 (verified via node regex test) **Scope:** any secret-detection / redaction regex that targets connection-string credentials
+- **Summary**: The URL-credential regex `://[^:\s]+:[^@\s]+@` — recommended to catch `user:pass@host` connection strings — **cannot distinguish `user:pass@host` (credential) from `host:port@path` (port + @-route)**. It matches any `scheme://X:Y@` where X has no colon and Y has no `@`.
 
 ### docling-mcp-server defaults to streamable-http, not stdio
 
@@ -122,7 +223,15 @@
 - **File**: `LEARNINGS/solutions/docling-mcp-defaults-to-http.md`
 - **Confidence**: n.a.
 - **Scope**: project
-- **Summary**: **Type:** solution **Confidence:** 0.95 (verified: bare spawn ignores MCP initialize on stdin; `--transport stdio` answers) **Scope:** any `mcp.servers.docling` (or docling-mcp-backed) local server config
+- **Summary**: `docling-mcp-server` (PyPI `docling-mcp[local]`) defaults to `--transport streamable-http` — it starts a uvicorn HTTP app and never speaks stdio. OpenCode (`type: "local"`, stdio) gets silence and reports `MCP error -32000: Connection closed`, even though the binary spawns cleanly. Fix: `command: ["docling-mcp-server", "--transport", "stdio"]`. Also: its pip install needs `--break-system-packages`
+
+### ERR-trap interpolations need nounset defaults — a crashing handler masks the real rc
+
+- **Category**: solution
+- **File**: `LEARNINGS/solutions/err-trap-interpolations-need-nounset-defaults.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: **Audit rule for new traps**: every variable interpolated in a trap *action* string gets a nounset default (`:-`), because a trap can fire in contexts with a different variable universe than the authoring site — and a handler that crashes converts any non-zero into 127, masking the real return code. Prefer degrading the diagnostic (`line 0`) over rc masking. Related but distinct: `unguarded-empty-
 
 ### plugin tool input frozen v2011
 
@@ -132,6 +241,22 @@
 - **Scope**: project
 - **Summary**: **Context**: After the 2026-09-20 opencode 2.0.11 upgrade, EVERY `question` call failed with `Attempted to assign to readonly property` before any part was created — the whole prompt layer was dead (`/goal`, pipelines, intake). DB forensics showed zero question parts since the upgrade date.
 
+### Redocly `operation-description` is OFF by default in `recommended`
+
+- **Category**: solution
+- **File**: `LEARNINGS/solutions/redocly-operation-description-off-by-default.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: "Redocly's default `recommended` ruleset already enforces `operation-description` as an error."
+
+### tsoa response examples: `@Example()` decorator, not `@example` JSDoc
+
+- **Category**: solution
+- **File**: `LEARNINGS/solutions/tsoa-response-example-decorator-not-jsdoc.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: tsoa has **two** different example mechanisms that are easy to conflate:
+
 ### Dead functions kept alive by their own tests
 
 - **Category**: anti-pattern
@@ -139,25 +264,34 @@
 - **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: deploy_skills_only had zero production callers post-#470 but green wrapper-pinning tests — re-point function-level pins at the live step list in the same change (#474 review)
+- **Summary**: deploy_skills_only had zero production callers after #470's plan model (the build_plan skills-only branch calls the individual steps directly), but its parity tests still passed — they pinned the wrapper, not the live path. The de-bloat ticket nearly shipped a corpse guarded by green tests.
 
-### Done-when gate escapes its phase
+### A derived summary tuple must be self-consistent — arithmetic and derivation semantics
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/derived-summary-tuple-must-be-self-consistent.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Date**: 2026-09-21
+- **Summary**: PLAN-506's AC stated "146 shipped / 107 full allows / 70 lean / 36 hidden vs full". The tuple fails its own arithmetic (107−70=37, not 36) because the derivation command (`grep -c '"action": "skill"'`) counts the deny-all rule at `opencode_app/opencode.json:29-31` — raw rule count 107, allow-effect rules 106, and only 106−70=36 matches the AC's own "hidden" claim. Two count surfaces, one vocabular
+
+### Anti-pattern: done-when gate escapes its phase
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/done-when-gate-escapes-its-phase.md`
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: a done-whose pass condition depends on later-phase edits is unsatisfiable at its own step — scope gates to current phase state, exhaustive sweeps to the final gate phase (#487)
+- **Summary**: A done-when gate whose pass condition depends on edits scheduled in a *later* phase is unsatisfiable at its own step and forces either early cross-phase edits or gate rot.
 
-### Idempotency probe version-blindness defeats the pin-bump ritual
+### Anti-pattern: idempotency probe version-blindness defeats the pin-bump ritual
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/idempotency-probe-version-blind.md`
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: pip show + import probes skip install for ANY installed version, so pin bumps never reach working installs — probe must assert the pinned version (#487 code review)
+- **Summary**: `pip show <pkg>` + import probes skip the install for ANY installed version, so pin bumps never propagate to working installs — the probe only heals broken installs. The retired `--force-reinstall` flow converged to the pin; the probe does not.
 
 ### Invariant scope: quantifier must match the loop it lives in
 
@@ -166,7 +300,7 @@
 - **Confidence**: 0.75
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: an invariant with boundary scope must name it explicitly ("the **final** pushed SHA") — "pushed SHA" inside a per-phase push loop misreads as tier=full every push; quantifier must match the loop it lives in (#488)
+- **Summary**: plan-execution 4c stated "The pushed SHA must carry a green `tier=full` memo" inside a per-phase loop whose 4f/4g push every iteration — light-gate phases legitimately produce only `tier=light` memos (code review #488).
 
 ### A dry-run leak test asserting only exit 0 has no teeth
 
@@ -175,7 +309,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: the child CLI installs for real AND exits 0 without the forwarding — leak nets assert the untouched surface (no artifacts), never just status (#473 r2)
+- **Summary**: `select_dry_run_with_preseeded_plan_writes_nothing` asserted only `[ "$status" -eq 0 ]`. Walking it against the unfixed code: the child CLI (init.mjs add) has no TTY guard on the add path, so without the --dry-run forwarding it really installs and STILL exits 0 — the test passed on the exact regression it existed to catch.
 
 ### Steps that shell out to child CLIs inherit no dry-run behavior
 
@@ -184,25 +318,16 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: forward the child's own --dry-run with the boolean-safe array form and add the PLAN-promised leak test — run_cmd does not reach child CLI calls (#473 review BLOCK)
+- **Summary**: The #473 select-consumption step ran `node init.mjs add <name>` with no DRY_RUN handling — run_plan executes steps verbatim in dry-run, so a `--select --dry-run` preview installed skills/agents into the user's live config. run_cmd (the usual dry-safe wrapper) does not apply to child CLI invocations.
 
-### Partial version-normalization sweep leaves display sites lying
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/partial-version-normalization-sweep.md`
-- **Confidence**: 0.8
-- **Scope**: project
-- **Date**: 2026-09-21
-- **Summary**: normalizing a version banner only at compare sites leaves display/summary interpolation printing raw banners and can mislabel the installed package across a format-crossing upgrade — one shared normalizer for every consumer, compare AND display (#499 review)
-
-### PLAN consumer-map row without an owning step
+### Anti-pattern: PLAN consumer-map row without an owning step
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/plan-consumer-map-row-without-step.md`
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: a Dependency & Consumer Map row naming a consumer with no owning implementation step is a silent coverage hole — walk every map row to a step at plan review (#487 arch review)
+- **Summary**: A Dependency & Consumer Map row that names a consumer but maps to no implementation step is a silent coverage hole.
 
 ### Steps appended to one build_plan branch vanish when main rebuilds the plan
 
@@ -211,7 +336,7 @@
 - **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: the headless/menu rebuild re-derives steps from flags — conditional side-steps must exist in every branch or the drop must warn loudly (#474 review)
+- **Summary**: The #474 load-preset step was appended only in build_plan's full branch, but main rebuilds the plan after the headless no-TTY default flips SKILLS_ONLY — the rebuild re-derives steps from flags alone, so `--preset foo` was silently ignored on headless runs.
 
 ### Plugin pickers filtering by filename prefix drop companion files the plugin needs
 
@@ -220,7 +345,7 @@
 - **Confidence**: 0.8
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: selecting opencode-* items without modeling companions shipped an inert vibeguard (fail-open, no masking) via the picker while the blanket path copied the config (#473 r2)
+- **Summary**: The #473 picker offered `plugins/opencode-*` items; selecting opencode-vibeguard.ts copied the plugin but not `plugins/vibeguard.config.json` — which the plugin documents as fail-open (missing config ⇒ no masking). The picker path shipped an inert security plugin while the blanket deploy_plugins path (whole-dir copy) shipped it correctly.
 
 ### Provenance pins need ≥2 direct choices; equivalence pins need non-empty selections
 
@@ -229,7 +354,7 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: a one-choice provenance pin cannot see attribution bugs and an empty-selection equivalence pin cannot see driver drift — enforcement must cover the claim (#473 review)
+- **Summary**: Two #473 pins were false greens: the provenance pin used ONE direct choice (a single solo entry cannot expose the attribution bug), and the driver "equivalence" pin compared only the lengths of an EMPTY selection — while tui.mjs's header claimed "equivalence is test-pinned".
 
 ### Attribution loops must test membership in the per-source closure, not the union pool
 
@@ -238,7 +363,16 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: a union-pool predicate inside an attribution loop is always-true — every locked dep credited to the first solo entry and the transitive fallback went unreachable (#473 review)
+- **Summary**: The #473 picker's provenance loop checked `pool.includes(name)` where `pool` was the full combined closure — tautologically true for every item being mapped, so every locked dependency was credited to the first solo entry in insertion order, `locked-by:transitive` was unreachable, and the persisted plan misrecorded who required what whenever more than one thing was selected.
+
+### A repoint sweep derived from an audited-file list misses grep-derived sibling consumers
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/sweep-set-from-audit-list-misses-grep-derived-consumers.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Date**: 2026-09-21
+- **Summary**: When a path move (or rename) makes old strings dead, derive the repoint sweep from `grep -rn "<old-path-string>"` across all file types — every hit is either repointed or explicitly exempted with a dated note. An audit list is a lower bound, not the universe: sibling consumers cite the same dead paths and are found only by the string, not by the list. Gate the sweep on the same grep returning zero
 
 ### A thin launcher with a syntax error passes every textual delegation pin
 
@@ -247,7 +381,7 @@
 - **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: a stray brace made setup.ps1 unparseable while all ps1 pins (pure text greps) stayed green — when the runtime is absent from CI, add a structural parse proxy (#474 review BLOCK)
+- **Summary**: The #474 ps1 rewrite left a stray `}` plus a duplicated tail (an edit artifact of a partial-block replacement). The file was unparseable PowerShell — it would have died before param() binding on every Windows invocation — yet all 486 bats pins stayed green, because every ps1 pin is a textual grep and CI has no pwsh to parse with.
 
 ### First unguarded empty-array `${arr[@]}` crashes stock macOS bash 3.2 under nounset
 
@@ -256,7 +390,7 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: setup.sh must stay 3.2-clean — every possibly-empty array gets a length-guard or scalar form before expansion, or macOS non-dry runs crash while CI (bash 5) stays green (#473 r2)
+- **Summary**: `local dry_args=(); … "${dry_args[@]}"` under `set -o nounset`: bash < 4.4 (macOS stock /bin/bash 3.2.57) treats the expansion of an EMPTY declared array as unbound — real (non-dry) `--select` runs crash on macOS while dry-run (non-empty) and Linux CI (bash 5) stay green.
 
 ### Tests that execute setup.sh end-to-end need a mktemp HOME, not just source-pins
 
@@ -265,7 +399,7 @@
 - **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: even a no-op flag falls through to the headless deploy and prunes real backups — execution tests export a mktemp HOME (#474 review)
+- **Summary**: `run bash "$SETUP_SH" -A` in test_subcommands.bats ran unsandboxed: even a "no-op" flag falls through to the headless skills-only default, which performs a real deploy into the developer's live ~/.config/opencode — including cleanup_old_backups pruning genuine backups to 5.
 
 ### `${XDG_DATA_HOME:-…}` punches through HOME-only test sandboxes
 
@@ -274,7 +408,16 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: HOME sandboxing misses `${XDG_*:-$HOME/…}` resolution — unset XDG_DATA_HOME/XDG_CONFIG_HOME in the bash -c or tests mutate real user state on machines exporting it (#471 review)
+- **Summary**: Credential-seeding tests sandboxed `HOME` into a temp dir, yet on machines exporting `XDG_DATA_HOME` they wrote `new-provider` entries into the developer's REAL `~/.local/share/opencode/auth.json` (setup.sh resolves the auth path via `${XDG_DATA_HOME:-$HOME/.local/share}`), and assertions read the untouched sandbox copy — red per-environment, not per-change.
+
+### A zero-reference gate must census where the string lives and exclude itself
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/zero-reference-gate-must-census-and-self-exclude.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-21
+- **Summary**: A "zero references to the removed slugs" gate grepped only `--include="*.md" --include="*.bats" --include="*.mjs"`. It missed the two real consumers — `opencode_app/Dockerfile:63` (extensionless) and `opencode_app/docker-entrypoint.sh:132` (`*.sh`) — and it matched the PLAN document itself, which quotes the slugs it bans. The gate could never exit clean while simultaneously certifying a hole it ex
 
 ### A launcher that hands Windows users into bash needs .gitattributes EOL pins
 
@@ -283,7 +426,7 @@
 - **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: default autocrlf clones CRLF-ify setup.sh and bash dies on \r — ship `*.sh text eol=lf` whenever a Windows entrypoint delegates into bash (#474 review)
+- **Summary**: A default Git-for-Windows clone (core.autocrlf=true) checks out shell scripts with CRLF; bash dies on `$'\r'`. The old native ps1 never ran bash; the #474 thin launcher does. Any repo whose Windows entrypoint delegates into bash must ship `*.sh text eol=lf` in .gitattributes (and `*.ps1 text eol=crlf`).
 
 ### New ONLY-mode flag must extend validate_mode_conflicts in both lists
 
@@ -292,16 +435,7 @@
 - **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: checklist for new setup.sh modes: defaults, parser arm, conflict validator (modes + packless lists), build_plan branch, completion case, both help surfaces, wiring pins — missing the validator silently swallows combined modes (#472)
-
-### v1-to-v2 CLI migration must uninstall before install
-
-- **Category**: decision
-- **File**: `LEARNINGS/decisions/v1-to-v2-migrate-uninstall-before-install.md`
-- **Confidence**: 0.85
-- **Scope**: project
-- **Date**: 2026-09-21
-- **Summary**: `opencode-ai` (frozen v1) and `@opencode/cli` (v2) share the `opencode` bin link — migration must run uninstall-then-install (official migrate-v1 order); declines warn (v1 silently ignores the v2 plugins key) and print_summary labels 1.x installs honestly (#499)
+- **Summary**: Adding an ONLY-mode flag to setup.sh requires ALL of: defaults block entry, parser arm, conflict validator registration in BOTH lists (modes exclusivity + enable-pack packless), build_plan branch, mode completion case, both help surfaces, wiring pins. Missing the validator lets the build_plan elif chain silently swallow any combined mode (`--check-catalog --skills-only` ran only the check, exit 0)
 
 ### Bats tests mutating shipped artifacts: snapshot/restore + private fixture copies
 
@@ -310,7 +444,7 @@
 - **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: setup()/teardown cp-snapshot mutated shipped files (mktemp path — fixed /tmp names serialize --jobs), and fixture mutations use a private mktemp copy — a shared-fixture delete poisoned three later tests (#472)
+- **Summary**: Bats tests that mutate a shipped file snapshot/restore it in setup()/teardown (cp to a mktemp path — a fixed /tmp name serializes future --jobs runs), and fixture mutations go through a PRIVATE mktemp copy. #472's drop-fatal test deleted a provider from the SHARED fixture and poisoned the three tests after it — every one of them failed for a reason unrelated to its own assertion.
 
 ### Format-token census classifies deferral-by-name as verified-compatible
 
@@ -319,9 +453,9 @@
 - **Confidence**: 0.8
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: canonical-format changes census literal tokens across restating sites; surfaces that defer by name are zero-hit by design and classified verified-compatible — name immutable-history exclusions in the census record (#488)
+- **Summary**: A canonical-format change's blast radius = literal-token census (`GATE <sha>`, `lint=t`): grep every restating site for the tokens, then classify each hit update/no-change. Surfaces that defer by name only zero-hit *by design* and take the "verified compatible" classification — never invent changes for them. Name deliberate exclusions (immutable history dirs) in the census record itself.
 
-### Inline question-payload specs at prose-only prompt sites
+### inline question payload specs at prose sites
 
 - **Category**: pattern
 - **File**: `LEARNINGS/patterns/inline-question-payload-specs-at-prose-sites.md`
@@ -337,25 +471,16 @@
 - **Confidence**: 0.7
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: editing a canonical contract and its deferring consumers in separate per-phase commits restates a stale format mid-window — safe iff the surface defers by name AND no test pins the stale example; verify both, don't reorder phases (#488)
+- **Summary**: Editing a canonical contract and its deferring consumers in separate per-phase commits creates a window where the consumer restates the stale format (e.g. tierless memo after Phase 1, before Phase 2). The window is safe iff (a) the stale surface already points at the canonical by name and (b) no test pins the stale example — pre-verify both before relying on it; do not "fix" by reordering phases.
 
-### ERR-trap interpolations need nounset defaults — a crashing handler masks the real rc
-
-- **Category**: solution
-- **File**: `LEARNINGS/solutions/err-trap-interpolations-need-nounset-defaults.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-21
-- **Summary**: variables interpolated inside a trap action string get `:-` nounset defaults — `error_handler "${BASH_LINENO[0]}"` crashed under nounset in sourced contexts, converting expected return-1 into exit 127 (BW01 every suite run); fix `:-0` + regression pin (#501)
-
-### markitdown-mcp upstream facts (alpha pin, co-install, residual)
+### Solution: markitdown-mcp upstream facts (alpha pin, co-install, residual)
 
 - **Category**: solution
 - **File**: `LEARNINGS/solutions/markitdown-mcp-alpha-pin-upstream-facts.md`
 - **Confidence**: 0.95
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: upstream publishes only alphas (latest 0.0.1a7) — exact pin installs without --pre; requires markitdown[all] + mcp>=2.1.1,<3; coexists with docling-mcp 3.x on mcp 2.x; stdio default; bump ritual spans 2 files (deploy/setup.sh + opencode_app/Dockerfile; ps1 thin since #474)
+- **Summary**: Upstream markitdown-mcp publishes only alphas (latest 0.0.1a7) — exact pin installs without --pre; requires markitdown[all] + mcp>=2.1.1,<3; coexists with docling-mcp 3.x on mcp 2.x; stdio default; bump ritual spans 2 files (deploy/setup.sh + opencode_app/Dockerfile; ps1 thin since #474)
 
 ### Merge writers must back up unparseable user JSON, never reset to {}
 
@@ -364,7 +489,7 @@
 - **Confidence**: 0.8
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: distinguish MISSING (fresh ok) from CORRUPT (os.replace to .corrupt.bak + warn) in merge-into-user-JSON writers; chmod 600 secret stores (#471 review)
+- **Summary**: `register_provider_auth` merges one key into the user's auth.json. The inherited pattern reset `auth = {}` on any parse failure (FileNotFoundError AND ValueError alike) — so a half-written auth.json got replaced by a one-entry file, silently destroying every stored provider key.
 
 ### readJsonMaybe tolerates only "$comment" lines — doc claims of JSONC stripping are false
 
@@ -373,7 +498,34 @@
 - **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: resolver dest must be strict JSON (only "$comment": lines stripped, resolve-models.mjs:80-83); "//"-commented configs throw loud before any write (#491 review)
+- **Summary**: Two ticket PLANs (#470-era, #491) claimed `readJsonMaybe` strips JSONC comments so commented configs patch cleanly. Reality: `stripJsonComments` (resolve-models.mjs:80-83) removes only `"$comment":` lines; a `//`-commented opencode.json throws at :75 BEFORE any write (writes happen at :400+) — loud failure, no partial state, but not the tolerance the docs promised.
+
+### Fix-round PLAN sync stopped at the AC block — Technical Notes and gate trace left stale
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/plan-fix-round-ac-only-sync.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-20 (#448 re-review, fix round 1)
+- **Summary**: When a review/Mode-R fix round changes shipped behavior, the fixer syncs the PLAN's Acceptance Criteria (amended AC text, ticked) but leaves the plan-body restatements alone. In #448 the drop rule changed from "items with no usable `options` array are dropped" to "keep with `options: []`" — the plugin header comment, code, and tests were all updated, and the AC was amended, yet `PLANS/PLAN-448.md`
+
+### Uncoordinated `execute.before` writers on `event.input` — vibeguard restore vs. plugin payload rewrites
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/concurrent-execute-before-writers-event-input.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Date**: 2026-09-20 (#448 plan review)
+- **Summary**: Every local plugin that hooks `ctx.tool.hook('execute.before')` becomes a **concurrent writer** on the same `event.input` field, with ordering decided by plugin glob order (an implementation detail, currently alphabetical). `plugins/vibeguard.ts:490-496` registers an unguarded (all-tools) hook that mutates `event.input` **in place** (`restoreDeep`) to unmask `__VG_…__` placeholders before executio
+
+### `setup.sh --dry-run` under non-interactive stdin takes the skills-only path — plugin deploy is never previewed
+
+- **Category**: solution
+- **File**: `LEARNINGS/solutions/setup-sh-dry-run-menu-skips-plugin-deploy.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Date**: 2026-09-20 (#448 plan review)
+- **Summary**: `./deploy/setup.sh --dry-run` run headless (stdin at EOF, e.g. `</dev/null` in CI) resolves the interactive menu to Skills-Only Setup: the flow exits via "Skills deployment complete!" and **never calls `deploy_plugins()`** (deploy/setup.sh:4303) — zero `[DRY-RUN] Would execute: cp -r …/plugins/` lines are printed, yet the script still exits 0. A dry-run gate grepping for a plugin copy line false-f
 
 ### Env-prefix sandboxing of globals a sourced script reassigns is clobbered
 
@@ -382,7 +534,7 @@
 - **Confidence**: 0.95
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: `REPO_DIR=x bash -c "source setup.sh; …"` dies at source time — assign sandbox globals after source and md5-pin the real target as an escape detector (#467 review)
+- **Summary**: A bats pin ran `REPO_DIR="$d/repo" bash -c "source deploy/setup.sh; … setup_local_llm_env"`, expecting the sandboxed repo dir. setup.sh:70 unconditionally reassigns `REPO_DIR` from `SCRIPT_DIR` at source time — the env prefix was dead on arrival. Consequences stacked three ways: the dry pin went vacuously green (asserted on a file nothing wrote), the real-run "positive control" rewrote the develop
 
 ### `${VAR:+word}` gates on non-emptiness, not truth — banned on boolean strings
 
@@ -391,16 +543,7 @@
 - **Confidence**: 0.95
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: with DRY_RUN="false" (non-empty), `${DRY_RUN:+--dry-run}` expands on every run — real models-only deploys became silent previews; use `[ "$FLAG" = true ] && arg=` (#467 review BLOCK)
-
-### Uncoordinated `execute.before` writers on `event.input` — vibeguard restore vs. plugin payload rewrites
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/concurrent-execute-before-writers-event-input.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-20
-- **Summary**: #448 plan review: multiple plugins hooking `ctx.tool.hook("execute.before")` share `event.input` in glob order — payload-rewriting plugins must never write partial/truncated strings that could split a vibeguard `__VG_<CATEGORY>_<hash>__` placeholder (restoreDeep could not restore fragments); copy verbatim or skip
+- **Summary**: `node … update ${DRY_RUN:+--dry-run}` looked like a clean dry-run gate, but `DRY_RUN` is the *string* `"false"` when unset-flagged (setup.sh:326) — non-empty, so `:+` expanded on every run. Real `--models-only` deploys silently became permanent previews: the resolver applied, the manifest update printed its dry JSON and changed nothing, and the script still said "Model resolution complete!".
 
 ### AC cross-references must resolve to a real artifact
 
@@ -409,7 +552,7 @@
 - **Confidence**: 0.8
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: an AC pointing at "the table in Technical Notes" that doesn't exist passes every per-step atomicity check — verify reference targets, add a reference-target check to the authoring self-check (#470 r2)
+- **Summary**: PLAN-470's AC delegated full/quick/single-step step lists to "the table in Technical Notes" — no such table existed (Technical Notes held only a criticality list). Per-step atomicity checks (Why/Done-when/Consumers all present) passed while the AC pointed at a nonexistent artifact, leaving pin authoring (1.6) with unspecified expected values.
 
 ### Delta derived from a single surface duplicates entries in the other
 
@@ -418,16 +561,16 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: changes landing in two arrays with different memberships need the delta computed against EACH surface (union−lean=26 vs union−full=3) — single-surface derivations silently duplicate entries while subset/typo guards pass green (#481 plan review)
+- **Summary**: Changes landing in two arrays with different memberships (full allowlist vs lean profile) need the delta computed against EACH surface — a single-surface delta silently duplicates entries while subset/typo guards stay green (#481 plan review).
 
-### Directory-scoped rename sweeps miss repo-root docs
+### Directory-scoped rename sweeps miss repo-root docs that teach the spelling
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/directory-scoped-rename-sweep-misses-root-docs.md`
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: frontmatter-vocabulary sweeps scoped to code dirs skip README/opencode_app teaching sites, and literal `action: task` greps pass vacuously over `action:"task"` — sweep repo-root *.md + opencode_app/ with form-insensitive patterns and named exclusions (#482)
+- **Summary**: Frontmatter-vocabulary sweeps scoped to code dirs skip README/opencode_app teaching sites, and literal `action: task` greps pass vacuously over `action:"task"` — sweep repo-root *.md + opencode_app/ with form-insensitive patterns and named exclusions (#482).
 
 ### Dry-run preview logs must not interpolate secret values
 
@@ -436,25 +579,16 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: new run_cmd-style gates copy "Would set K=V" shapes — fine for ports, a key leak for secrets; preview logs interpolate names only, values redacted (#469 review WARN)
+- **Summary**: A new DRY_RUN gate logged `Would set ${key}=${value} via setx` — for the API-key variable that puts the full key into terminal scrollback and CI transcripts on every preview run. The script's house convention redacts: first8/last4 (:1958) or name-only with "(value suppressed)".
 
-### Embedded diff hunks + a path claim are untrusted — probe .git/HEAD first
+### Embedded diff hunks + a path claim are untrusted — reviewer probes .git/HEAD first
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/embedded-diff-hunks-unverifiable-probe-git-head-first.md`
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: review prompts embedding hunks plus a worktree path can name the wrong tree — reviewer's first act is a no-shell branch probe (.git/HEAD + one hunk spot-check); on mismatch fail fast with probe evidence instead of reviewing the prompt's copy (#482 Step 9)
-
-### Explicit `permissions:` block + checkout without `contents: read`
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/explicit-permissions-block-checkout-403.md`
-- **Confidence**: high
-- **Scope**: project
-- **Date**: 2026-09-20
-- **Summary**: Explicit `permissions:` sets unlisted scopes to none — `actions/checkout` 403s under `contents: none`; pair scoped blocks with `contents: read` and pin it in workflow-shape bats tests (#446 review)
+- **Summary**: Review prompts embedding diff hunks plus a worktree path can name the wrong tree — the reviewer's first act is a no-shell branch probe (.git/HEAD + one hunk spot-check); on mismatch fail fast with probe evidence (#482 Step 9).
 
 ### Guard error branches need negative fixtures in the same change
 
@@ -463,7 +597,7 @@
 - **Confidence**: 0.8
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: a guard fix that adds fail-loudly branches ships a committed negative fixture per branch — manual runs don't survive the next refactor (#468 round 2)
+- **Summary**: A review fix added two fail-loudly branches to the #468 pin checker (non-object preset entry, missing `.primary`). Their correctness was proven by a manual one-off run; the committed fixture still exercised only the membership branch — so both new branches were silently deletable while the suite stayed green.
 
 ### Negated assertions are errexit-exempt — they can never fail a bats test
 
@@ -472,7 +606,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: `! grep …` as an assertion line never fails under set -e — assert absence with `run` + explicit status check (#467 review)
+- **Summary**: A bats test line `! grep -q '^PATTERN' file` (asserting absence) passed even though the file DID contain the pattern — the gate was a no-op and the false green hid a vacuous sandbox.
 
 ### node -e argv has no script-name slot — slice(2) shifts args silently
 
@@ -481,7 +615,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: under node -e, argv = [execPath, ...args] — slice(2) dropped the first arg and a sibling test PASSED on shifted meaningless inputs (false green, #468)
+- **Summary**: A bats test passed `node -e "$SCRIPT" "$A" "$B"` with a checker that read `process.argv.slice(2)`. Under `node -e`, argv is `[execPath, ...args]` — there is no script-name slot like `node file.js` has. slice(2) dropped the first real argument and shifted the rest; one test threw (ERR_INVALID_ARG_TYPE) while a sibling test PASSED on meaningless shifted inputs — a false green, not a crash.
 
 ### Partial record refresh contradicts itself
 
@@ -490,16 +624,7 @@
 - **Confidence**: 0.8
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: refreshing a decision record's header/update-block while leaving body counts stale creates in-file contradictions — refresh every count or freeze the body behind a dated historical label (#481 review)
-
-### Fix-round PLAN sync stopped at the AC block — Technical Notes and gate trace left stale
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/plan-fix-round-ac-only-sync.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-20
-- **Summary**: #448 re-review: behavior-changing fix synced the amended AC + code + tests but left PLANS/PLAN-448.md:79 stating the superseded drop rule and no GATE memo for the re-run — sweep every PLAN restatement (Technical Notes, step enumerations, gate trace) of a changed rule, not just the AC block
+- **Summary**: Refreshing a decision record's header/update-block while leaving body counts stale creates in-file contradictions — refresh every count in the same edit or freeze the body behind a dated historical label (#481 review).
 
 ### Plan step functions must return, never exit
 
@@ -508,7 +633,7 @@
 - **Confidence**: 0.8
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: sweep every step function for bare exit when introducing a single executor — setup_zai_api_key's exit 1 bypassed the epilogue on headless -y, deterministically (#470 review)
+- **Summary**: `setup_zai_api_key` (a NON-critical plan step) still ended an invalid/declined key with `exit 1`. Under the #470 executor that bypassed the uniform epilogue (no zip backup, no summary) and turned a warn-and-continue into a hard mid- deploy failure — deterministic for headless `-y` with no `ZAI_API_KEY` (EOF → invalid → decline default).
 
 ### Prefix-keyed guards silently exempt every unknown shape
 
@@ -517,7 +642,7 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: guards keyed by known prefixes exempt-by-omission — the #281 zai-only arrays let a nonexistent anthropic pin ship; unknown shapes must FAIL and exemptions must be named allowlists (#468)
+- **Summary**: Two generations of the same bug: (1) the #281 deploy guard validated only `zai*` prefixes, so the broken anthropic `claude-haiku-4-6` pin shipped unnoticed; (2) the pin test written to fix it skipped preset entries without `.primary`, so a future shape change (renamed key, wrong nesting) would escape both coverage and pin checks with a fully green suite.
 
 ### Two artifact surfaces, one count vocabulary — every count names its surface
 
@@ -526,7 +651,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: root skills/ vs opencode_app/.opencode/skills — single-surface derivations mint phantoms and duplicate deltas (both happened in one session); fix = union guard (SKILL.md-filtered) + disjointness assert + surface-explicit counts; dated narratives keep period-true numbers (#486)
+- **Summary**: Root skills/ vs opencode_app/.opencode/skills — single-surface derivations mint phantoms and duplicate deltas; fix = union guard (SKILL.md-filtered) + disjointness assert + surface-explicit counts; dated narratives keep period-true numbers (#486).
 
 ### Unified dispatch swallows per-mode preconditions
 
@@ -537,23 +662,14 @@
 - **Date**: 2026-09-20
 - **Summary**: Collapsing setup.sh's six mode branches into one planner/executor nearly shipped three regressions at once: skills-only (documented as the offline/headless escape path) would have gained the network check and menu gate it never had; its hidden `check_dependencies` precondition vanished from the step list; models-only/migrate-only lost their node-presence gates.
 
-### v1 frontmatter action names are inert under opencode v2
+### v1 frontmatter action names are inert under opencode v2 — rename and probe with a matrix
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/v1-action-names-inert-under-v2.md`
 - **Confidence**: 0.95
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: `action: bash`/`action: task` rules do nothing on v2 (actions are `shell`/`subagent`) — v1 deny leaves the tool executable; rename restores enforcement (probe matrix: v1 child inert, v2 child enforced via tool filtering; distinct from the skill-action bug in #50149) (#482)
-
-### YAML guard via adjacency grep assumes key order and quoting
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/yaml-guard-adjacency-grep.md`
-- **Confidence**: high
-- **Scope**: project
-- **Date**: 2026-09-20
-- **Summary**: Adjacency grep guards (`grep -A1 resource … | grep effect: allow`) miss effect-before-resource ordering, unquoted resources, and broader-glob allows; scan per-rule blocks bounded by `- action:` instead (#445 review: test_reviewer_no_writes.bats)
+- **Summary**: Agent frontmatter `action: bash`/`action: task` rules do nothing on opencode v2 (actions are `shell`/`subagent`) — a v1 deny leaves the tool executable; the rename restores enforcement, licensed only by the 2×2 probe matrix (#482).
 
 ### `blocked-by:` format has one parser, multiple producers
 
@@ -562,16 +678,16 @@
 - **Confidence**: 0.8
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: the `blocked-by: <ref>` body-line format has one parser (worktree-pipeline Step 1 skip-guard) and two producers (ticket-creation, wayfinder) — producers restate minimally + cite the parser; parser changes sweep all producers (#476 review)
+- **Summary**: The `blocked-by: <ref>` issue-body line has **one parser** — `worktree-pipeline-skill` Step 1's skip-guard (whole-body scan, ticket regex `^(#\d+|[\w.-]+/[\w.-]+#\d+|[A-Z][A-Z0-9]+-\d+)$`) — and **two producers**: `ticket-creation-skill` (Step 4b, this convention's origin) and `wayfinder-skill`. Producers restate the format minimally and point at the parser's rule (`policy-single-home-pointer-shap
 
-### Recount claimed structural counts in PLANs
+### Recount claimed structural counts in PLANs — an unnamed element is an unrecorded scope decision
 
 - **Category**: convention
 - **File**: `LEARNINGS/conventions/plan-counted-structural-removals-recount.md`
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: "remove the six early-exit blocks" — main() has seven; the uncounted seventh carried the ticket's own swallowed-exit defect. Name every element; a count is a scope claim (#470 r2)
+- **Summary**: PLAN-470 said "remove the six early-exit blocks"; main() has seven. The uncounted seventh (`--check-update`, setup.sh:4301-4304) carries the exact defect the ticket exists to kill — `check_for_updates_only` returns 1 on real failures (:3830/:3840) while the caller exits 0 unconditionally — and would have survived outside the truthful-exit contract.
 
 ### Structure-pinning tests are first-class consumers for any refactor PLAN
 
@@ -582,14 +698,14 @@
 - **Date**: 2026-09-20
 - **Summary**: PLAN-470's Dependency & Consumer Map listed runtime consumers only — and missed three bats files that awk/grep the SOURCE SHAPE of functions: test_skills_only_parity.bats (function-body extraction), test_dry_run_leaks.bats (literal gate-string pins), deploy_delegate.bats (first-occurrence line-order pin). Executing the refactor as planned would have red-gated CI midway and tempted a "fix" that del
 
-### Two skill surfaces — root deployable + Docker-app project-scoped
+### Decision: two skill surfaces — root deployable + Docker-app project-scoped
 
 - **Category**: decision
 - **File**: `LEARNINGS/decisions/app-scoped-skill-surface.md`
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: keep both surfaces + the app-scoped allow (root skills/ deployable, opencode_app/.opencode/skills app-only per #361); union guard + disjointness assert enforce it; revisit = split app config base if app skills grow (#486)
+- **Summary**: Keep both skill surfaces: root skills/ (deployable, 146 dirs) + opencode_app/.opencode/skills (Docker-app project-scoped: github-runners-setup-skill); union guard + disjointness assert enforce it; revisit = split the app config base if app skills grow (#486).
 
 ### Decline-config contract honored by omitting --config-src
 
@@ -598,16 +714,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: "Decline config overwrite" (SKIP_CONFIG_COPY=true) means the user's existing opencode.json wins: `run_resolver` omits `--config-src`, and resolve-models.mjs's configSrc→configDest fallback (:280-285) bases its in-place model patch on the existing file. With no existing config, no config is written at all (write gated on `configPatched`, :463-468) — agents still resolve. Execution-verified both dir
-
-### Reviewer subagents return LEARNINGS candidates as content
-
-- **Category**: decision
-- **File**: `LEARNINGS/decisions/reviewer-learnings-return-as-content.md`
-- **Confidence**: high
-- **Scope**: project
-- **Date**: 2026-09-20
-- **Summary**: Reviewer subagents hold no edit permissions — they emit `LEARNINGS candidates:` blocks (Category/File/Confidence/Scope/Summary/Date) and the pipeline orchestrator writes files, appends _index.md, and commits in the worktree (#445 single-writer rule)
+- **Summary**: "Decline config overwrite" (SKIP_CONFIG_COPY=true) means the user's existing opencode.json wins: `run_resolver` omits `--config-src` and resolve-models bases its in-place patch on the existing file; execution-verified both directions (#470 D2; #491 update: presence-gated for --models-only/--migrate).
 
 ### The child skill gate follows the merged config, not the agent frontmatter
 
@@ -616,7 +723,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: subagent skill loading resolves against merged config layers (global/project), not frontmatter skill allows — config-layer allows are the working unlock (#481 workaround for upstream #50149); includes the 3-step regression probe + revert-flip check
+- **Summary**: Subagent skill loading resolves against merged config layers (global/project), not agent-frontmatter skill allows — config-layer allows are the working unlock while upstream #50149 stands (#481); includes the 3-step regression probe + revert-flip check.
 
 ### Conditionally-armed detectors need an always-armed complement
 
@@ -625,7 +732,7 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: a guard armed only under local machine state (worktree .env exists) never fires in CI — pair it with a state-independent positive control covering the same regression class (#467 round 2)
+- **Summary**: The #467 sandbox-escape detector (md5 of the worktree `.env` before/after a test run) only arms when that file exists — never in CI, where the worktree `.env` is absent. Paired with it, the positive control (real run MUST change sandbox bytes) is always armed and catches the same regression class in CI.
 
 ### Count-literal sweeps must include docs-of-record
 
@@ -634,7 +741,7 @@
 - **Confidence**: 0.75
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: count-drift sweeps must include LEARNINGS/ (docs-of-record), and docs-of-record should cite search anchors not file:line — line refs rot within weeks (#481 review)
+- **Summary**: Count-drift sweeps must include LEARNINGS/ (docs-of-record), and docs-of-record should cite search anchors not file:line — line refs rot within weeks (#481 review).
 
 ### A fail-closed guard couples cross-file edits into one atomic unit
 
@@ -643,25 +750,16 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: fail-closed cross-file guards (apply-skill-profile.mjs:74-81 lean⊆full exit 1) name their atomic unit — the append, its source-file prerequisite, and their test-pinned mirrors ride one commit or per-push CI goes red (#481 plan review)
+- **Summary**: Fail-closed cross-file guards (apply-skill-profile.mjs lean⊆full exit 1) name their atomic unit — the append, its source-file prerequisite, and their test-pinned mirrors ride one commit or per-push CI goes red (#481 plan review).
 
-### Gate success-log with the dry branch (early-return shape for new run_cmd gates)
+### Unconditional log_success after run_cmd overstates completion in dry-run
 
 - **Category**: pattern
 - **File**: `LEARNINGS/patterns/gate-success-log-with-the-dry-branch.md`
 - **Confidence**: 0.8
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: unconditional log_success after run_cmd claims completion in dry-run — new gates use the run_cmd early-return shape (deploy/setup.sh:1117); legacy sites sweep into #470 (#469 review)
-
-### jq @tsv needs sentinels for nullable columns
-
-- **Category**: pattern
-- **File**: `LEARNINGS/patterns/jq-tsv-sentinel-for-nullable-columns.md`
-- **Confidence**: high
-- **Scope**: project
-- **Date**: 2026-09-20
-- **Summary**: `jq @tsv` + `IFS=$'\t' read` collapses empty cells and shifts later columns; emit `// "false"` sentinels for nullable columns in the jq program (#446 conflict labeler)
+- **Summary**: Unconditional log_success after run_cmd claims completion in dry-run — new gates use the run_cmd early-return shape (deploy/setup.sh:1117); legacy sites sweep into #470 (#469 review)
 
 ### Menu-case-to-flag extraction must re-derive the menu path's free preconditions
 
@@ -670,7 +768,7 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: a flag spelling for a menu case must explicitly re-add (or deliberately omit, with a comment) the preconditions the interactive path inherited from main — deps check, network check (#466)
+- **Summary**: Giving PeonPing (menu option 5) a `--peonping` flag would silently drop two preconditions the menu path got for free: menu options run after main's `check_dependencies` AND the network check. Copying only the case body (`setup_peonping`) would have shipped a flag that fails differently offline.
 
 ### Permission-enforcement probes need a 2×2 matrix
 
@@ -679,7 +777,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: probe rule-name version (v1 alias vs v2 native) × session shape (top-level vs child-spawn); only the v2-name child-spawn cell licenses a "rename restores enforcement" claim — single-cell probes conflate alias mismatch with wholesale child-session rule breakage (#482)
+- **Summary**: Probing whether a permission rule enforces crosses rule-name version (v1 alias vs v2 native) × session shape (top-level vs child-spawn); only the v2-name × child-spawn cell licenses a "rename restores enforcement" claim (#482).
 
 ### Prompt EOF takes the default — headless safety hinges on gate defaults
 
@@ -688,7 +786,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: setup.sh prompts resolve EOF to their declared default, so a headless code path is safe iff its gate prompts' defaults match the intended action — audit defaults, not just reachability (#466)
+- **Summary**: setup.sh's `prompt_user`/`prompt_yes_no` resolve EOF stdin (`read` with no TTY) to the declared default (`${result:-$default_value}`) — they never hang and never return junk. So the headless safety of any code path is decided entirely by what each gate prompt's default IS.
 
 ### Subagent briefs can misdescribe the subagent's own toolset — probe, don't trust
 
@@ -697,7 +795,7 @@
 - **Confidence**: 0.7
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: parent briefs assert runtime facts ("no shell") that can be false when denies are inert — subagent probes one cheap tool call before degrading to read-only; on contradiction use the stronger capability and say so (#482 Step 9 reviewer re-ran all gates itself)
+- **Summary**: A parent brief may assert false runtime facts ("you have no shell") — the subagent probes one cheap tool call before degrading to read-only; on contradiction use the stronger capability and say so (#482 Step 9).
 
 ### set -E would arm the ERR trap inside plan steps — never add it while dispatch-by-call
 
@@ -706,7 +804,7 @@
 - **Confidence**: 0.75
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: setup.sh's ERR trap is un-armed inside functions precisely because set -E is absent — adding it would route every deliberate step return 1 through error_handler's exit, bypassing the executor + epilogue (#470 review)
+- **Summary**: setup.sh arms a global ERR trap (:487) but never sets `set -E`/errtrace, so the trap never fires inside functions. This is LOAD-BEARING for the #470 plan executor: `run_plan` dispatches steps as `if ! "$func"` and step functions deliberately `return 1` for warn-and-continue semantics.
 
 ### `gh issue edit --body` replaces — appending is fetch-then-write
 
@@ -715,16 +813,25 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: `gh issue edit --body` replaces the whole body — appending requires fetch (`gh issue view --json body`) + rewrite via `--body-file`; instruction text hinting "append via --body" invites body clobbering (#476 review)
+- **Summary**: `gh issue edit --body <text>` **replaces** the entire issue body — there is no append mode. Any instruction (skill text, agent runbook) that hints "append a line via `gh issue edit --body`" invites an agent literalizing it into clobbering the body, acceptance criteria included. The safe pattern is fetch-then-write:
 
-### `setup.sh --dry-run` under non-interactive stdin takes the skills-only path — plugin deploy is never previewed
+### bats test bodies run under errexit — for-loop assertions are fail-fast
 
 - **Category**: solution
-- **File**: `LEARNINGS/solutions/setup-sh-dry-run-menu-skips-plugin-deploy.md`
-- **Confidence**: 0.95
+- **File**: `LEARNINGS/solutions/bats-errexit-loop-failfast.md`
+- **Confidence**: 0.9
 - **Scope**: project
-- **Date**: 2026-09-20
-- **Summary**: #448 plan review (empirically traced): default/EOF menu path resolves to Quick/Skills-Only which never calls `deploy_plugins()` — use `--dry-run -y` for plugin-deploy previews; also `run_cmd` echoes the expanded `$HOME` path, never literal `~`, so grep gates must match the absolute form
+- **Date**: 2026-09-19 (#417 review)
+- **Summary**: Review knee-jerk: a bats `for` loop whose body is a bare `grep -q` / `cmp -s` "only fails on the last iteration" — flag it as false-pass. False. bats-core executes each test body under `set -e`; any failing command inside the loop aborts the test immediately. The `run` helper exists precisely to capture failures without tripping errexit, and `!`-prefixed commands are exempt.
+
+### Anti-pattern: normative rule added, in-file example left stale
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/rule-added-example-stale.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-19 (#417 re-review)
+- **Summary**: Adding a normative rule to a skill (e.g. title-prefix parity at `ticket-creation-skill/SKILL.md:148`) without updating the same file's Example Usage that illustrates the flow leaves the example teaching the deprecated behavior — examples are the strongest prompt signal agents copy. Genus of `heading-rename-syncs-quoted-pointers`: when a commit adds or changes a rule, sweep the file's own examples 
 
 ### build-registry plain run always rewrites generatedAt — "zero diff" done-whens must use --check
 
@@ -753,41 +860,32 @@
 - **Date**: 2026-09-19 (#402 architecture review)
 - **Summary**: Plans/tickets ask for "`installer/registry.json` + `docs/registry.json` rebuilt via `build-registry.mjs`". The docs copy can never satisfy that: `build-registry.mjs` writes ONLY `installer/registry.json` (OUT_FILE, installer/build-registry.mjs:45).
 
-### Case-sensitive grep gates false-green on file-tree prose
+### agentModel (init.mjs) and resolveAgent (resolve-models.mjs) are a precedence-parity pair
+
+- **Category**: convention
+- **File**: `LEARNINGS/conventions/agent-override-precedence-parity.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-19 (#401 code review)
+- **Summary**: `installer/init.mjs` `agentModel` (~:280) must mirror `installer/resolve-models.mjs` `resolveAgent` (~:205) at the two agent-overrides levels: project pin (`<project>/.opencode/agent-overrides.json`) > global pin (`~/.config/opencode/agent-overrides.json`)
+
+### Case-sensitive / line-anchored grep gates false-green on file-tree prose
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/case-sensitive-grep-gates-false-green.md`
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-19
-- **Summary**: #423 review: PLAN-423 3.5 gate read green while README.md:32 still said "Symlink bridge" — case-sensitive prose grep missed the capital, and the line-anchored path pattern can't match ASCII trees that split parent/child across lines; use grep -i plus bare child-name patterns for tree blocks
+- **Summary**: PLAN-423's 3.5 reference gate reported "reference greps empty", yet `README.md:32` still documented the deleted symlink bridge: `├── .opencode/ # Symlink bridge → root content (local serve only)`.
 
-### `gh api --paginate --jq` evaluates per page — aggregations count pages
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/gh-api-paginate-jq-per-page-aggregation.md`
-- **Confidence**: 0.95
-- **Scope**: project
-- **Date**: 2026-09-19
-- **Summary**: REST `--paginate` applies `--jq` once per page (concatenated text; `--slurp` is mutually exclusive with `--jq`) — `[...]|length` emits one number per page and breaks silently at >100 items (per_page forced to 100); stream items with `--jq` then `wc -l` / `jq -s` instead (#361 review: dispatcher idle-count)
-
-### `git stash` exits 0 on nothing-to-save — porcelain-gated STASHED flags lie
+### `git stash` exits 0 on "No local changes to save" — porcelain-gated STASHED flags lie
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/git-stash-nothing-to-save-exit-zero.md`
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-19
-- **Summary**: #423 fix round: `git status --porcelain` counts untracked files as dirty but `git stash` (no -u) stashes nothing and still exits 0 — a STASHED flag set from porcelain + exit code goes true with no stash created, and the later pop fails on an empty stash; gate on `--untracked-files=no` or compare the refs/stash rev before/after
-
-### Global in-flight guard bleeds across sessions
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/global-in-flight-guard-cross-session-bleed.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-19
-- **Summary**: Scope hook-suppression/in-flight guards to the affected entity (per-session Set), never a global counter — a send in flight for session A must not swallow a real user message in session B (#418 auto-continue review round 2)
+- **Summary**: `restart-opencode-docker.sh` fix round introduced:
 
 ### Guard-regex quote-shape mismatch false-greens on regression spellings
 
@@ -796,7 +894,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-19
-- **Summary**: #437 review: the isolation guard's segmented `"_"` pattern passed its canary yet missed 8/10 real spellings incl. the exact pre-fix lines (`parents[2] / "_common"`); census historical lines before writing grep guards and plant those spellings in canaries
+- **Summary**: `tests/test_skill_isolation.bats` test 2 passed its mutation canary yet missed 8/10 realistic regression spellings — including the exact pre-#437 lines (`parents[2] / "_common"`, `_SKILLS / "_common" / "scripts"`): the pattern required a segmented `"_"` token, but every historical line used the single-segment spelling `"_common"` (code-review #437, empirically run).
 
 ### Anti-pattern: Manifest claims a file the gate skipped
 
@@ -816,32 +914,14 @@
 - **Date**: 2026-09-19
 - **Summary**: **Context**: Adding a value-only rule to an agent frontmatter `permissions` array (PLAN-404, gh-cli-setup-skill allow rule).
 
-### Normative rule added, in-file example left stale
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/rule-added-example-stale.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-19
-- **Summary**: when a commit adds or changes a skill rule, sweep the same file's Example Usage of that flow — stale examples are the strongest signal teaching agents the deprecated behavior
-
-### Validator crashes on invalid input
+### Anti-pattern: a validator must never crash on the input it exists to reject
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/validator-crashes-on-invalid-input.md`
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-19
-- **Summary**: Never let a validator traceback on the invalid input it exists to reject (#402 spec_to_dxf parallel-constraint crash); guard extractions or skip dependent checks when schema errors exist
-
-### init.mjs agentModel ↔ resolve-models resolveAgent precedence parity
-
-- **Category**: convention
-- **File**: `LEARNINGS/conventions/agent-override-precedence-parity.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-19
-- **Summary**: agentModel must mirror resolveAgent at both override levels (project > global > tier), incl. throw-on-malformed-JSON; changes land in both files + fake-HOME bats per level
+- **Summary**: **Context**: #402 review — `spec_to_dxf.py` parallel/aligned constraint path called `math.dist` on unguarded `_point()` results and divided by line length without a zero guard; an invalid spec (malformed or zero-length line geometry referenced by a `parallel` constraint) raised TypeError/ZeroDivisionError before the validation report was emitted, breaking the "exit 1 + report, no traceback" contra
 
 ### Derive consistency pins from the source-of-truth file at runtime
 
@@ -850,16 +930,16 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-19
-- **Summary**: #439 review: tests pinning two files together must derive expectations from the source-of-truth file at runtime (grep HANDOFF_* from the guard), not restate literals in both — derived pins make drift a hard failure instead of two files aging separately
+- **Summary**: A test that pins two files to each other must derive its expectation from the source-of-truth file at runtime (grep HANDOFF_OWNER/HANDOFF_TARGET out of `tests/test_skill_isolation.bats`, as `tests/test_requires_skills.bats` does) — not restate the literals in both files (the `tests/test_docling_skill.bats` impliesMcp style). Derived pins turn drift into a hard test failure instead of two files agi
 
-### Single-homed policy prose — copies are pointer + skill-specific only
+### Convention: Single-homed policy prose — copies are pointer + skill-specific only
 
 - **Category**: convention
 - **File**: `LEARNINGS/conventions/policy-single-home-pointer-shape.md`
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-19
-- **Summary**: #434 review: dedup-target copies of single-homed policy keep pointer + skill-specific endpoint/skip clause only; compressed policy ladders inside copies are residual drift (genus of conditional-mode-blocks-supersede-all-restatements); glosses belong to consumers, not §-section owners
+- **Summary**: **Context**: #434 single-homed the MCP Availability Guard into `jira-git-integration-skill` (canonical); 6 other locations became pointers.
 
 ### new skill count literal gates
 
@@ -879,15 +959,6 @@
 - **Date**: 2026-09-19
 - **Summary**: **Context**: PLAN-409 review. Plans executed by plan-automation-loop commit + push per phase, and CI (release.yml) runs the full bats suite plus `node installer/build-registry.mjs --check` on every push.
 
-### bats test bodies run under errexit — for-loop assertions are fail-fast
-
-- **Category**: solution
-- **File**: `LEARNINGS/solutions/bats-errexit-loop-failfast.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-19
-- **Summary**: bats-core runs test bodies under `set -e` — a failing grep/cmp inside a for-loop aborts the test immediately; do not flag multi-iteration assertion loops as false-pass (#417 review false positive)
-
 ### Conditional-mode blocks must supersede all restatements, not just the numbered list
 
 - **Category**: pattern
@@ -906,15 +977,6 @@
 - **Date**: 2026-09-18 (#399 Step 9 review)
 - **Summary**: An explicit skip list plus a partial "proceed via" enumeration in the same instruction block leaves unnamed steps ambiguous for agent runtimes — each unnamed step resolves arbitrarily depending on which sentence the runtime obeys. Skip-path ∪ proceed-path must equal the full step list, or the unnamed steps must be explicitly dispositioned.
 
-### Adaptive review drops proactive requirements review; gaps flow via Mode R relay
-
-- **Category**: decision
-- **File**: `LEARNINGS/decisions/adaptive-review-requirements-relay.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-18
-- **Summary**: Step 7 selects reviewers by blast-radius only; uiux gained a required Requirements Gaps field; surfaced gaps relay to requirements-specialist Mode R; Step 1 preflight guards per-skill installs
-
 ### A hand-rolled YAML-subset parser cannot read a shape richer than the shapes it was built for
 
 - **Category**: solution
@@ -924,50 +986,14 @@
 - **Date**: 2026-09-17 (#380 plan review)
 - **Summary**: `installer/build-registry.mjs` parseFrontmatter (:72-121) handles scalars and nested maps only. Any plan that rewrites frontmatter into YAML **sequences** (`- action:` rule lists) while touching only the downstream reader lines (:144-146) is unimplementable: the parser collapses a rules array into `{"- action": "...", resource: "...", effect: "..."}` (last rule survives, keys overwrite) and `fm.pe
 
-### Advisory visibility checks must not run at full-catalog scale
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/advisory-check-full-catalog-noise.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-17
-- **Summary**: checkStrictAllowlist on `add --all`/`update` prints 100+ misleading warning lines against the default lean profile — gate per-item advisories to partial selections
-
-### Safety snapshot gated on a side-effect-created directory
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/conditional-backup-dead-path.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-17
-- **Summary**: deploy_content's content-backup gate `[ -d "$BACKUP_DIR" ]` is dead in `--yes` redeploys (config-overwrite prompt auto-accepts default n → no create_backup) — snapshots must mkdir their own target
-
-### Legacy manifest upgrades must probe every on-disk target
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/legacy-upgrade-target-probe.md`
-- **Confidence**: 0.85
-- **Scope**: project
-- **Date**: 2026-09-17
-- **Summary**: #379 legacy entries synthesis hashes opencode targets only — claude-target installs silently stop being updated/pruned; probe every target dir when upgrading manifests
-
-### Unexpanded `$(cat …)` in subagent prompt + cwd on wrong branch
+### Anti-pattern: subagent review prompts with unexpanded `$(cat …)` + cwd on the wrong branch
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/unexpanded-cat-embedding-wrong-branch-cwd.md`
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-17
-- **Summary**: #383 review spawn delivered literal `$(cat …)` (never expanded) while the subagent's clone sat on main without the feat/383 ref — read-only tools returned the pre-trim side; embed real `git show` output or run the reviewer in the branch worktree
-
-### bats structure pin: grep line-ordering test for shell call ordering
-
-- **Category**: pattern
-- **File**: `LEARNINGS/patterns/bats-structure-pin-call-order.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-17
-- **Summary**: Pin call order in big shell scripts with bats grep line-number assertions (mig < deploy_content < config-only resolver) + negative grep of the removed pattern — #379's ordering rule regression net
+- **Summary**: **Context**: #383 content-trim review spawn. The parent's prompt embedded 7 file bodies as literal `$(cat skills/…/SKILL.md)` — the substitution never executed. The subagent's cwd was on `main` (pre-trim side), the `feat/383` ref did not exist in that clone (not in `.git/packed-refs`, no loose ref, no `.git/worktrees/`, no copy under `/tmp/opencode`), and `bash:deny` blocked `git show`. Review cou
 
 ### frontmatter shape change blast radius
 
@@ -978,14 +1004,14 @@
 - **Date**: 2026-09-17
 - **Summary**: **Context**: Changing the frontmatter *format* of `agents/*.md` (e.g. #380 `permission:` map → `permissions:` array), as opposed to changing a value.
 
-### Skill-content trim with verbatim preservation (#383 recipe)
+### Pattern: Skill-content trim with verbatim preservation (the #383 recipe)
 
 - **Category**: pattern
 - **File**: `LEARNINGS/patterns/skill-trim-verbatim-preservation.md`
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-17
-- **Summary**: 93% SKILL.md trim recipe — frontmatter byte-identical, Learning entries verbatim, external anchors + live workflow contracts intact, dated removal-note blockquote, compose-don't-duplicate pointers
+- **Summary**: **Context**: 93% content cut across 51 SKILL.md files (issue #383) under the rule "a skill encodes only what is house-specific: triggers, conventions, version-pinned facts, workflow contracts, codified learnings".
 
 ### Literal-only stale-path greps miss variable indirection
 
@@ -994,16 +1020,16 @@
 - **Confidence**: 0.95
 - **Scope**: project
 - **Date**: 2026-09-15
-- **Summary**: Path-move sweeps grepping only literal `deploy/<file>` miss `${DEPLOY_DIR}/<file>` forms — #378's setup.sh:3008 provider-models guard silently skipped post-move while all PLAN grep gates read 0; sweep the variables that resolve into the moved dir, not just literal paths
+- **Summary**: Path-move sweeps that grep only literal `deploy/<file>` strings miss references built from shell variables. #378 moved `provider-models.json` to `installer/` but `deploy/setup.sh:3008` read it as `${DEPLOY_DIR}/provider-models.json` — every PLAN grep gate returned 0 while the `-f` presence test silently flipped to skip, disabling the exposed-model guard on Linux/macOS (the ps1 mirror at `setup.ps1:1884` WAS repointed → platform divergence). When auditing a move, enumerate every variable that resolves into the moved dir (`DEPLOY_DIR`, `$DeployDir`, `Join-Path $DeployDir …`) and grep uses of THAT variable too, not just literal paths.
 
-### Doc claims about runtime enforcement must match plugin defaults
+### doc claims match plugin defaults
 
 - **Category**: convention
 - **File**: `LEARNINGS/conventions/doc-claims-match-plugin-defaults.md`
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-15
-- **Summary**: Document only the enforcement a plugin's ACTIVE defaults provide (option-gated features get an inline "only when configured") — #382 review caught "enforces token/duration limits" claimed while both budgets ship unset
+- **Summary**: **Context**: Code review of #382 flagged that `plan-automation-loop-skill` claimed the goal plugin "enforces turn/token/duration limits" — but the plugin ships `default_token_budget` and `max_goal_duration_seconds` **unset**, so with the repo's no-options config only turn limits (`max_auto_turns: 25`), no-progress pause, the prompt-failure ceiling, and Plan-mode locks are actually enforced.
 
 ### Convention: Heading renames must sync quoted § pointers
 
@@ -1021,18 +1047,18 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-15
-- **Summary**: In docs stamped "Verified against <source>", every command/env var/field path must trace to that source or carry an inference label at EACH occurrence — #385 review caught unlabeled cache-inference restated under "Why v2 dropped pruning", uncited `OPENCODE_DISABLE_AUTOCOMPACT`/`opencode stats`, and `session.warming` (actual key: top-level `warming`)
+- **Summary**: In any doc section stamped "Verified against <source>", every actionable command, env var, and config field path must trace to that source — or carry its own citation or explicit inference/unverified label at EACH occurrence, not only where the claim first drives a recommendation. #385 review: the cache-inference was labeled in the ranked-levers list but restated as bare fact under "Why v2 dropped
 
-### Re-adopt goal mode as @prevalentware/opencode-goal-plugin (v2), caret-pinned
+### goal plugin v2 readoption
 
 - **Category**: decision
 - **File**: `LEARNINGS/decisions/goal-plugin-v2-readoption.md`
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-14
-- **Summary**: plugins: ["@prevalentware/opencode-goal-plugin@^0.1.48"] — caret pin (v1 breakage was v1-only versions under v2 runtime, not pinning), no options (secure defaults), no commands.goal block; wejick/opencode-goal rejected; #387 resolved — v2 binary + authenticated goal-presence healthcheck (see the file's Docker note)
+- **Summary**: plugins: ["@prevalentware/opencode-goal-plugin@^0.1.48"] — caret pin (v1 breakage was v1-only versions under v2 runtime, not pinning), no options (secure defaults), no commands.goal block (v2 self-registers); wejick/opencode-goal rejected; #387 resolved — v2 binary + authenticated goal-presence healthcheck (see the file's Docker note)
 
-### path-move restructure: anchor CI tarball gates, verify search-path consumers
+### Path-move restructure: anchor CI tarball gates, verify search-path consumers
 
 - **Category**: solution
 - **File**: `LEARNINGS/solutions/path-move-ci-gate-anchoring.md`
@@ -1047,53 +1073,35 @@
 - **File**: `LEARNINGS/conventions/task-delegate-permission-sync.md`
 - **Confidence**: 0.9
 - **Scope**: project
-- **Date**: 2026-08-27
-- **Summary**: Task-delegate allow-list changes sync 4 surfaces (frontmatter, registry regen, README row, agent-body note); delegation step wording must respect the delegate's own permission ceiling (bash:deny → parent owns diff/lint/commit)
+- **Date**: 2026-08-27 (GIT-350 review)
+- **Summary**: Adding/removing a `permission.task` allow entry on an agent touches FOUR surfaces. A diff that updates only some of them is partially stale by construction:
 
-### Tier→model swap blast radius (7 surfaces, plus deploy-script echoes)
+### tier model swap blast radius
 
 - **Category**: pattern
 - **File**: `LEARNINGS/patterns/tier-model-swap-blast-radius.md`
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-08-27
-- **Summary**: Model tier swaps touch 7 surfaces — tier JSON, presets, guard arrays, agent .md (desc+body→registry regen), SKILL prose, doc tables, and hardcoded model echoes in setup scripts (setup.sh --status)
+- **Summary**: **Context**: When swapping a model pinned to an agent tier in this repo (models.default.json / provider-presets.json)
 
-### Redocly `operation-description` is OFF by default in `recommended`
+### skill permission allowlist
 
-- **Category**: solution
-- **File**: `LEARNINGS/solutions/redocly-operation-description-off-by-default.md`
-- **Confidence**: 0.95
+- **Category**: decision
+- **File**: `LEARNINGS/decisions/skill-permission-allowlist.md`
+- **Confidence**: 0.9
 - **Scope**: project
-- **Date**: 2026-08-05
-- **Summary**: redocly's `recommended` ruleset does NOT enable `operation-description` (off by default); a per-field description mandate is load-bearing until `redocly.yaml` sets `operation-description: error`
+- **Date**: 2026-08-14
+- **Summary**: Ship a permissions deny-all-first allowlist in opencode_app/opencode.json (full = 106 allow rules, one of them app-scoped) + deploy/skill-profiles.json lean (70); --skill-profile lean|full rewrites only action:"skill" rules at deploy time. Post-#481: reviewer skill union is config-allowed (upstream #50149 ignores frontmatter skill allows in child sessions) — 146 shipped / 106 full allows / 70 lean / 36 hidden vs full; counts re-derive from disk before citing.
 
-### tsoa response examples use `@Example()` decorator, not `@example` JSDoc
-
-- **Category**: solution
-- **File**: `LEARNINGS/solutions/tsoa-response-example-decorator-not-jsdoc.md`
-- **Confidence**: 0.95
-- **Scope**: project
-- **Date**: 2026-08-05
-- **Summary**: tsoa response-body examples require the `@Example()`/`@Response()` TypeScript decorators; `@example` JSDoc only covers params/model props
-
-### opencode.json // comments break CI
+### jsonc comments in opencode json
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/jsonc-comments-in-opencode-json.md`
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-07-26
-- **Summary**: Never add // comments to opencode_app/opencode.json — CI bats tests use Python json.load() which can't parse JSONC
-
-### Skill permission allowlist — shipped 146, lean profile 70 (post-#481), deploy default lean
-
-- **Category**: decision
-- **File**: `LEARNINGS/decisions/skill-permission-allowlist.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-07-26
-- **Summary**: Ship a permissions deny-all-first allowlist in opencode_app/opencode.json (full = 106 allow rules, one of them app-scoped) + deploy/skill-profiles.json lean (70); --skill-profile lean|full rewrites only action:\"skill\" rules at deploy time. Post-#481: reviewer skill union is config-allowed (upstream #50149 ignores frontmatter skill allows in child sessions) — 146 shipped / 106 full allows / 70 lean / 36 hidden vs full; counts re-derive from disk before citing.
+- **Summary**: **Context**: When editing `opencode_app/opencode.json`
 
 ---
 

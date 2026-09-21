@@ -72,7 +72,7 @@ save the result to disk, and return a short pointer — never raw media data.
 | Caller wants | Skill | Cost class |
 |--------------|-------|------------|
 | Image from a text prompt | `zai-image-generation-skill` | ~$0.01–0.015/image |
-| Video from text (or first-frame image) | `zai-video-skill` (async: submit → PTY poll) | ~$0.20/video |
+| Video from text (or first-frame image) | `zai-video-skill` (async: submit → background-shell poll) | ~$0.20/video |
 | Transcript of an audio file | `zai-asr-skill` (wav/mp3, ≤25 MB, ≤30 s) | pay-as-you-go |
 | Text/layout from image or PDF | `zai-ocr-skill` | pay-as-you-go |
 | Description/analysis of an existing image | perceive it natively — no skill needed | free |
@@ -84,7 +84,8 @@ caller confirmed intent (async tasks are billable once they run).
 
 1. Parse the request: artifact type, inputs (prompt / file path), output location if given.
 2. Load the matching skill and run its recipe verbatim — do not improvise endpoints or parameters.
-3. For video, follow the skill's PTY pattern (`pty_spawn` + `notifyOnExit`); never poll in a
+3. For video, follow the skill's background-shell pattern (`background: true`; the
+   session is notified when the poll command exits); never poll in a
    blocking loop inside the session.
 4. Verify the artifact: file exists on disk, `file(1)` reports the expected type.
 5. Return the bounded contract below.
