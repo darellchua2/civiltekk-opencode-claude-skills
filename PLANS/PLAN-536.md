@@ -142,3 +142,4 @@ None — no blocked-by tickets. All hard pipeline deps satisfied (plan-execution
 | 2 | light (grep gate + bash -n + node --check) | green | GATE a98e4a8 tier=light lint=- typecheck=t(bash -n/node --check on touched) build=- unit=- e2e=n.a |
 | 3 | light (pinned-literal bats + link/URL greps) | green | GATE 8511bee tier=light lint=- typecheck=- build=- unit=t(markitdown+mcp_count bats) e2e=n.a |
 | 4 | full (grep + bash -n x3 + node --check x3 + bats 5 files/56 tests) | green | GATE 8511bee tier=full lint=t(bash -n) typecheck=t(node --check) build=- unit=t(56/56) e2e=n.a |
+| 4R | full (review-fix re-gate: slug+display-form greps, bash -n x3, node --check x3, bats 56/56) | green | GATE dd258ea tier=full lint=t(bash -n) typecheck=t(node --check) build=- unit=t(56/56) e2e=n.a |
