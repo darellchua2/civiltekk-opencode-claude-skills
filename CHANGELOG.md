@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.34.0](https://github.com/darellchua2/opencode-config-template/compare/v9.33.0...v9.34.0) (2026-09-22)
+
+### Features
+
+* **agents:** mirror ponytail check-gate lens; docs for plugin shipping + default persistence ([a83ebc3](https://github.com/darellchua2/opencode-config-template/commit/a83ebc383e778798d0500d2c1cdf5db8690d7288))
+* **installer:** ship enforcement plugin with ponytail skill installs ([b0d2836](https://github.com/darellchua2/opencode-config-template/commit/b0d2836c7d1f1373b4b9151a117b476947b8e8fb))
+* **plugins:** re-vendor ponytail v4.10.0 + persisted default mode ([da25d5f](https://github.com/darellchua2/opencode-config-template/commit/da25d5ff324c08b417015a0edcb1bb201dd864a0))
+
+### Bug Fixes
+
+* **installer,plugins:** review round — same-process default, corrupt-config backup, update re-ship, project conflict gating ([5ff4144](https://github.com/darellchua2/opencode-config-template/commit/5ff41440e11f4d88377baecda20584a47516f540))
+
+### Documentation
+
+* **plan:** add PLAN-533.md for [#533](https://github.com/darellchua2/opencode-config-template/issues/533) ([d3989e9](https://github.com/darellchua2/opencode-config-template/commit/d3989e9768c18179f094d83f337aa48c5f45a0b9))
+* **plan:** patch PLAN-533 per architecture review + Mode R resolutions; add LEARNINGS ([1a021a0](https://github.com/darellchua2/opencode-config-template/commit/1a021a0b4123cd2f32e2250f023a4f8574a717e9))
+* **plan:** review-fix trace + exit gate memo (trace 5ff4144, tier=full) ([a0324e0](https://github.com/darellchua2/opencode-config-template/commit/a0324e00b166357d334f9affe18a8155c48ecdbc))
+* **plan:** tick PLAN-533 Phase 1 (trace da25d5f) ([66eda0d](https://github.com/darellchua2/opencode-config-template/commit/66eda0db77da726f27f86cc86f18da7a0df00a58))
+* **plan:** tick PLAN-533 Phase 2 (trace b0d2836) ([d19b778](https://github.com/darellchua2/opencode-config-template/commit/d19b778737773ad11d98bf56e847861c87631615))
+* **plan:** tick PLAN-533 Phase 3 + ACs (trace a83ebc3, exit gate full) ([10823b8](https://github.com/darellchua2/opencode-config-template/commit/10823b8c025543e0de4b6aa80adc29ccff50ae95))
+
 ## [9.33.0](https://github.com/darellchua2/opencode-config-template/compare/v9.32.0...v9.33.0) (2026-09-22)
 
 ### Features
