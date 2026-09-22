@@ -146,6 +146,8 @@ Both issue forms enforce a search-first attestation and structured fields — a 
 
 Blank issues are disabled; pick a template. Include your environment (OS, Node, opencode version, install method) for bugs.
 
+Want to contribute a skill or agent? See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+
 ## Prerequisites
 
 - **Node.js v20+** and npm (setup scripts can install Node for you; nvm recommended)
