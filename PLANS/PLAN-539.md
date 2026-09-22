@@ -6,11 +6,11 @@
 
 ## Acceptance Criteria
 
-- [ ] Root `CONTRIBUTING.md` exists with sections: proposing changes, adding a skill/agent checklist, running tests, commit conventions, multi-target/portability note
-- [ ] All contract content is by-reference (links to AGENTS.md/README.md sections) — no copied contract paragraphs
-- [ ] README Support section links CONTRIBUTING.md (one line)
-- [ ] Every internal link resolves (file-level links + section names; no fragile anchors)
-- [ ] No catalog impact: skill/agent counts unchanged (146/34), pinned README literals untouched ("146 skill directories", "Configuration (2)", "ships 8 MCP server entries")
+- [x] Root `CONTRIBUTING.md` exists with sections: proposing changes, adding a skill/agent checklist, running tests, commit conventions, multi-target/portability note
+- [x] All contract content is by-reference (links to AGENTS.md/README.md sections) — no copied contract paragraphs
+- [x] README Support section links CONTRIBUTING.md (one line)
+- [x] Every internal link resolves (file-level links + section names; no fragile anchors)
+- [x] No catalog impact: skill/agent counts unchanged (146/34), pinned README literals untouched ("146 skill directories", "Configuration (2)", "ships 8 MCP server entries")
 
 ## Dependency & Consumer Map
 
@@ -43,18 +43,21 @@
 
 ### Phase 2: README link + exit gate (full tier)
 
-- [ ] **2.1** Add one line to the README Support section (`## Support & reporting issues`, :140) linking `CONTRIBUTING.md` — placed after the issue-template bullets, phrased for the contributor audience ("Want to contribute a skill or agent? See CONTRIBUTING.md")
+- [x] **2.1** Add one line to the README Support section (`## Support & reporting issues`, :140) linking `CONTRIBUTING.md` — placed after the issue-template bullets, phrased for the contributor audience ("Want to contribute a skill or agent? See CONTRIBUTING.md")
     — **Why:** completes the AC's discoverability requirement; the Support section is the natural second stop after reporting issues
     — **Done when:** `git diff origin/main...HEAD -- README.md` shows exactly one added line inside the Support section; pinned literals verified untouched, mirroring the bats regexes byte-for-byte: `grep -oE '[0-9]+ skill director(y|ies)' README.md | head -1` = 146; `grep -oE '\*\*Configuration\*\* \([0-9]+\)' README.md` = `**Configuration** (2)`; `grep -oE 'ships [0-9]+ MCP server entries' README.md` = `ships 8`
     — **Consumers affected:** humans; pinned-literal bats (additive-only edit — proven by gate)
-- [ ] **2.2** Exit gate, full tier: (a) `bats tests/test_markitdown_skill.bats tests/test_mcp_count_consistency.bats tests/test_count_drift.bats tests/test_skill_isolation.bats tests/test_pack_permissions.bats` all green (the last is the fourth README-grepping consumer — fixed file list, can't match an additive link line, included so the gate matches the full README consumer set); (b) link-target greps from 1.2 re-run green; (c) `ls skills/ | grep -vc _archived` = 146 and `ls agents/*.md | wc -l` = 34 (untouched proof); (d) README diff is the single additive line
+    — **Done:** one line added to Support section; diff = exactly 1 additive line; pinned literals verified via bats-mirrored regexes (146 / **Configuration** (2) / ships 8); fixes: none
+- [x] **2.2** Exit gate, full tier: (a) `bats tests/test_markitdown_skill.bats tests/test_mcp_count_consistency.bats tests/test_count_drift.bats tests/test_skill_isolation.bats tests/test_pack_permissions.bats` all green (the last is the fourth README-grepping consumer — fixed file list, can't match an additive link line, included so the gate matches the full README consumer set); (b) link-target greps from 1.2 re-run green; (c) `ls skills/ | grep -vc _archived` = 146 and `ls agents/*.md | wc -l` = 34 (untouched proof); (d) README diff is the single additive line
     — **Why:** ticket AC requires mechanical proof; the bats set is the complete consumer set of every touched file
     — **Done when:** all four green; any failure fixed before push
     — **Consumers affected:** pipeline gate memo
-- [ ] **2.3** Write the `tier=full` gate memo into the Trace block, tick all AC boxes, commit and push
+    — **Done:** exit gate green: bats 5 files (37 tests), link greps, counts 146/34, diff shape; fixes: none
+- [x] **2.3** Write the `tier=full` gate memo into the Trace block, tick all AC boxes, commit and push
     — **Why:** Step 10's PR citation requires a green tier=full memo on the final pushed SHA
     — **Done when:** memo line present on the pushed SHA; PLAN fully ticked
     — **Consumers affected:** pr-workflow citation
+    — **Done:** tier=full memo written; all AC ticked; fixes: none
 
 ## Technical Notes
 
@@ -77,3 +80,4 @@ None — no blocked-by tickets. All hard pipeline deps satisfied (plan-execution
 | Phase | Gate | Result | Notes |
 |-------|------|--------|-------|
 | 1 | light (1.2 mechanical checks) | green | GATE 58eed84 tier=light lint=- typecheck=- build=- unit=- e2e=n.a |
+| 2 | full (bats 5 files/37 tests + link greps + counts + diff shape) | green | GATE 2cb000a tier=full lint=t(bats) typecheck=- build=- unit=t(37/37) e2e=n.a |
