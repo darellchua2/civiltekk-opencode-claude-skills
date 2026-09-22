@@ -81,3 +81,4 @@ None — no blocked-by tickets. All hard pipeline deps satisfied (plan-execution
 |-------|------|--------|-------|
 | 1 | light (1.2 mechanical checks) | green | GATE 58eed84 tier=light lint=- typecheck=- build=- unit=- e2e=n.a |
 | 2 | full (bats 5 files/37 tests + link greps + counts + diff shape) | green | GATE 2cb000a tier=full lint=t(bats) typecheck=- build=- unit=t(37/37) e2e=n.a |
+| 2R | full (review-fix re-gate: bats 5 files/37 tests, sentinels, headings, README diff shape) | green | GATE edf0d98 tier=full lint=t(bats) typecheck=- build=- unit=t(37/37) e2e=n.a |
