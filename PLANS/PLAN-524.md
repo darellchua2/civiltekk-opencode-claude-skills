@@ -39,10 +39,13 @@
 WORK LOG Phase 1: full-gate escalation — anchor: cross-module consumer nodes (agents/*.md → deploy/setup.sh, installer/build-registry.mjs, opencode_app Docker, bats fixtures). Gate `GATE b5d2eee tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a`.
 
 ### Phase 2: Standalone-scoped gates line
-- [ ] **2.1** Scope `agents/pr-workflow-subagent.md`'s closing "Always ensure all quality gates pass before creating PR" to the standalone path.
+- [x] **2.1** Scope `agents/pr-workflow-subagent.md`'s closing "Always ensure all quality gates pass before creating PR" to the standalone path.
     — **Why:** the closing line conflicts with pipeline mode's skip of steps 2/2.5/3/4; the supersession note resolves it, but the restatement is drift bait.
     — **Done when:** the line names the standalone path and points pipeline mode at the Pipeline mode section / CI merge gate.
     — **Consumers affected:** deploy/install/docker chain (prose only).
+    — **Done:** line now reads "Standalone path only: …" with pipeline-mode deferral to memo citation + CI; files: agents/pr-workflow-subagent.md; fixes: none
+
+WORK LOG Phase 2: full-gate escalation — anchor: cross-module consumer nodes (agents/*.md → deploy/installer/docker chain). Gate `GATE 35448eb tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a`.
 
 ### Phase 3: Command description + registry regen
 - [ ] **3.1** Fix the `/run-plan` description in `opencode_app/opencode.json` to name tiered gating (light per phase — scoped lint + typecheck + affected tests; full on anchors and the exit gate), preserving the `/goal` sentence (docker-compose.yml:29-31's healthcheck comment anchors to it), and update the matching restatement in `README.md`'s Git/Workflow category cell (README.md:624) to the same tiered phrasing.
@@ -80,4 +83,6 @@ _(gate memos appended here by /run-plan --gate)_
 ```
 WORK LOG Phase 1: tier=full — anchor: cross-module consumer nodes (agents/*.md → deploy/installer/docker/bats chain)
 GATE b5d2eee tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+WORK LOG Phase 2: tier=full — anchor: cross-module consumer nodes (agents/*.md → deploy/installer/docker chain)
+GATE 35448eb tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 ```
