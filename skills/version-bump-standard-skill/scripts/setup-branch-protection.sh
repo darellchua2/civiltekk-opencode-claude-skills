@@ -12,7 +12,8 @@ Description:
     Applies branch protection rules to the 'uat' and 'main' branches:
     - Required status check: check-source-branch (strict)
     - 1 required approving review
-    - Linear history enforced
+    - Merge commits allowed (required_linear_history: false — promotion
+      merges dev→uat/uat→main are long-lived-head PRs and need merge commits)
     - No force pushes, no deletions
     - Admins enforced
 
@@ -54,7 +55,7 @@ PROTECTION_PAYLOAD=$(cat << 'EOF'
     "require_code_owner_reviews": false
   },
   "restrictions": null,
-  "required_linear_history": true,
+  "required_linear_history": false,
   "allow_force_pushes": false,
   "allow_deletions": false
 }

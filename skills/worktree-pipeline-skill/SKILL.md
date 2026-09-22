@@ -172,8 +172,11 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
     in the PR body (keep the `#` — `Closes #366`, not `Closes 366`; must
     predate the merge).
     **CI gate**: `timeout 1800 gh pr checks <num> --watch` (GNU coreutils;
-    macOS: `gtimeout`) — 30-minute timeout; merge when green. Zero
-    configured checks (exits non-zero with "no checks reported") → merge
+    macOS: `gtimeout`) — 30-minute timeout; merge when green with
+    `gh pr merge <num> --squash` — the `feat/<KEY>` head is short-lived, so
+    squash is the classifier verdict (`pr-merge-workflow-skill` Phase 1
+    head-class rule).
+    Zero configured checks (exits non-zero with "no checks reported") → merge
     directly with a "no CI configured" note. JIRA tickets: after merge,
     ensure exactly one `jira-status-updater` transition to Done —
     pr-workflow-subagent's Task ends at PR creation, so this is yours:
