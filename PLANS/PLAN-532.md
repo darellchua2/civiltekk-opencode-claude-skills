@@ -76,10 +76,12 @@ Cross-module edges exist (generated registry; script↔doc payload sync) → arc
 ## Gate Trace
 
 GATE cc060c6 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+GATE 57f9981 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 
 ## Progress Log
 
 - 2026-09-22: All 4 phases complete — linear-history flip (7163a1d), Phase 0 pre-flight (671e90d), squash pin (c367d58), registry regen + full exit gate (cc060c6, 174 ok / 0 failed). Acceptance criteria ticked: content in place + gates green per step Done lines.
+- 2026-09-22: Code review — 1 BLOCK (compare API ahead_by/behind_by inverted; operands swapped to {target}...{source}), 2 minors (hazard clause dropped, description word-count informational). Full gate re-run on 57f9981: 174 ok / 0 failed, bash -n OK, registry --check no drift. LEARNINGS: compare-api anti-pattern + build-registry Recurrence 6.
 
 ## Technical Notes
 - Promotion message conventions already exist: `semantic-release-convention-skill` §Promotion Merge Commits (`chore(promote): <from> → <to> (#N)`) — Phase 0 references, not duplicates.
