@@ -394,6 +394,8 @@ HOME="$(mktemp -d)" node installer/init.mjs add tdd-workflow-skill --yes        
 bats tests/update.bats                                # 5. CI safety (--yes/--dry-run only)
 ```
 
+**Downstream template:** [installer/templates/api-quality/](./installer/templates/api-quality/) — a Redocly lint ruleset + pre-commit hook enforcing OpenAPI authoring quality for repos this config's API skills work against (see its README for adoption).
+
 Update installed content without a full setup rerun:
 
 ```bash
@@ -405,6 +407,8 @@ npx github:darellchua2/civiltekk-opencode-claude-skills update --prune  # also r
 
 Environment variable persistence: macOS/Linux writes shell rc; Windows uses `setx` / `$PROFILE` (Git Bash / PowerShell respectively).
 </details>
+
+#### Full setup reference
 
 <details>
 <summary><strong>Full setup reference — every flag</strong></summary>

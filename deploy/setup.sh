@@ -3,7 +3,7 @@
 ################################################################################
 # OpenCode Configuration Setup Script
 #
-# Copyright 2026 OpenCode Configuration Template Contributors
+# Copyright 2026 CivilTekk OpenCode & Claude Skills Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
