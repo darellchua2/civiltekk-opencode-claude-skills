@@ -20,6 +20,7 @@
 | `deploy/tui.mjs` (loadPickerData, planFromFlags) | scanners from deploy-plan-items.mjs (Phase 1) | `setup.sh --select` picker (dashboard + linear + defaults) | low |
 | `deploy/setup.sh` `dump_catalog` | scanners from deploy-plan-items.mjs (Phase 1) | `--list-items` CLI output | low |
 | `deploy/setup.sh` `apply_selected_packs_extras` | `plugins/` source tree (companion artifacts) | `--select` plugin deploy | med — plugin correctness at runtime |
+| `installer/dependency-map.json` (`pluginCompanions` key) | — | `deploy/setup.sh` `apply_selected_packs_extras`, `tests/test_select_items.bats` cross-surface pin | low |
 | `deploy/setup.sh` main() Setup Mode menu | build_plan (SELECT_ITEMS flag) | interactive menu users | low |
 
 Cross-module node: the scanners have consumers in two modules (`deploy/tui.mjs` and `deploy/setup.sh`) — architecture review is selected for plan review.
@@ -27,9 +28,9 @@ Cross-module node: the scanners have consumers in two modules (`deploy/tui.mjs` 
 ## Implementation Phases
 
 ### Phase 1: Shared scanners (foundation)
-- [ ] **1.1** Add exported `scanPackNames(packsDir)` and `scanPluginNames(pluginsDir)` to `installer/deploy-plan-items.mjs` (packs = `pack-*.json` stems; plugins = `opencode-*.ts` files only), with a doc note that caller-passed-dir readdir is the module's one I/O exception.
+- [ ] **1.1** Add exported `scanPackNames(packsDir)` and `scanPluginNames(pluginsDir)` to `installer/deploy-plan-items.mjs` (packs = `pack-*.json` stems; plugins = `opencode-*.ts` files only), with a doc note that caller-passed-dir readdir is the module's one I/O exception — added at BOTH contract-comment sites: the module header (`deploy-plan-items.mjs` "No I/O beyond caller-passed data") and the `tests/test_select_items.bats` header ("one pure module").
     — **Why:** the pack/plugin filter rule currently lives in two drifted copies inside `deploy/tui.mjs` (`loadPickerData` scans `opencode-*` unfiltered, `planFromFlags` filters `.ts` only); the catalog dump in `setup.sh` has a third, empty copy. One source is the fix for all three.
-    — **Done when:** a `node --input-type=module -e` import of the module returns 5 pack stems and 5 plugin `.ts` names for this repo's `deploy/packs/` and `plugins/` dirs.
+    — **Done when:** a `node -e` import of the module returns 5 pack stems and 5 plugin `.ts` names for this repo's `deploy/packs/` and `plugins/` dirs.
     — **Consumers affected:** `deploy/tui.mjs` and `deploy/setup.sh` `dump_catalog` (both switch in Phases 1–2).
 - [ ] **1.2** Switch `deploy/tui.mjs` `loadPickerData` and `planFromFlags` (`--defaults` path) to call the shared scanners.
     — **Why:** removes the README from the selectable inventory and ends the 6-vs-5 defaults/inventory inconsistency.
@@ -37,13 +38,13 @@ Cross-module node: the scanners have consumers in two modules (`deploy/tui.mjs` 
     — **Consumers affected:** `setup.sh --select` picker UX (inventory and defaults now agree).
 
 ### Phase 2: Truthful catalog, safe plugin picks, menu entry
-- [ ] **2.1** Rewrite `dump_catalog` in `deploy/setup.sh` to import the shared scanners (dynamic import in the existing `node` one-liner; no new file, no step-order change).
+- [ ] **2.1** Rewrite `dump_catalog` in `deploy/setup.sh` to import the shared scanners via dynamic `import()` inside the existing `node` one-liner, with the module path built from an argv-passed absolute `${REPO_DIR}` through `pathToFileURL` (never a relative specifier — `node -e` `import()` resolves against the process cwd, and `setup.sh` runs from any cwd via the `opencode-setup` PATH shim).
     — **Why:** `--list-items` currently hardcodes `packs: []` / `plugins: []`, telling users plugins are not installable — the ticket's headline gap.
-    — **Done when:** `./deploy/setup.sh --list-items` output lists all 5 pack names and all 5 `opencode-*.ts` plugins.
+    — **Done when:** `./deploy/setup.sh --list-items` output lists all 5 pack names and all 5 `opencode-*.ts` plugins, verified from the repo root AND from a different cwd (e.g. `cd /tmp` first).
     — **Consumers affected:** `--list-items` CLI output only.
-- [ ] **2.2** In `apply_selected_packs_extras`, replace the vibeguard-only special case with a companion `case` statement: `opencode-vibeguard-v2.ts` → also copy `vibeguard.config.json`; `opencode-ponytail-scoped.ts` → also copy `ponytail/` and `ATTRIBUTION.md`.
-    — **Why:** picking the ponytail wrapper today ships a broken plugin (its instructions source `ponytail/instructions.cjs` never lands); the vibeguard config is what arms masking.
-    — **Done when:** a sandboxed deploy of a pre-seeded plan containing only `opencode-ponytail-scoped.ts` produces `opencode-ponytail-scoped.ts`, `ponytail/SKILL.md`, `ponytail/instructions.cjs`, and `ATTRIBUTION.md` in the plugin dir (artifact set per `tests/test_ships_plugins.bats`).
+- [ ] **2.2** Add a `pluginCompanions` map to `installer/dependency-map.json` (plugin file name → companion artifacts; seed with `opencode-vibeguard-v2.ts` → `vibeguard.config.json` and `opencode-ponytail-scoped.ts` → `ponytail/` + `ATTRIBUTION.md`, matching the existing `shipsPlugins` facts) and have `apply_selected_packs_extras` consume it through the function's existing `node` idiom instead of a hardcoded bash `case`.
+    — **Why:** a bash `case` would fork companion knowledge `dependency-map.json` already declares (`shipsPlugins`) — the next companion-bearing plugin would then work on one install path and arrive broken on the other (arch review Major); the declarative map keeps the picker cp path and the manifest `shipPluginArtifacts` path single-sourced.
+    — **Done when:** a sandboxed deploy of a pre-seeded plan containing only `opencode-ponytail-scoped.ts` produces `opencode-ponytail-scoped.ts`, `ponytail/SKILL.md`, `ponytail/instructions.cjs`, and `ATTRIBUTION.md` in the plugin dir; no plugin file name is hardcoded in `apply_selected_packs_extras` (grep-verifiable).
     — **Consumers affected:** `--select` plugin deploy correctness; no change for skills/agents/packs/extras paths.
 - [ ] **2.3** Add Setup Mode menu option `6) Select items to deploy (skills / agents / packs / plugins)` that sets `SELECT_ITEMS=true` in `main()`.
     — **Why:** `--select` is flag-only; the default interactive menu gives no path to plugins/subagents — the discoverability gap.
@@ -59,9 +60,9 @@ Cross-module node: the scanners have consumers in two modules (`deploy/tui.mjs` 
     — **Why:** the catalog dump was the lying surface; pin it so it cannot silently regress to empty arrays.
     — **Done when:** the test fails on the pre-change behavior (empty arrays) and passes post-change.
     — **Consumers affected:** none (test-only).
-- [ ] **3.3** Add a bats test for plugin selection deploy: pre-seed a plan with only `opencode-ponytail-scoped.ts` (and a second case with only `opencode-vibeguard-v2.ts`), run the deploy in a sandbox `HOME`, assert the companion artifact sets land.
-    — **Why:** companion-copy correctness is the AC with real data-loss shape (a broken plugin in the user's config).
-    — **Done when:** both sandbox runs produce exactly the artifact sets from AC 3/4.
+- [ ] **3.3** Add a bats test for plugin selection deploy: pre-seed a plan with only `opencode-ponytail-scoped.ts` (and a second case with only `opencode-vibeguard-v2.ts`), run the deploy in a sandbox `HOME`, assert the companion artifact sets land; include a cross-surface pin asserting `pluginCompanions["opencode-ponytail-scoped.ts"]` covers the artifacts `dependency-map.json` `shipsPlugins` already declares.
+    — **Why:** companion-copy correctness is the AC with real data-loss shape (a broken plugin in the user's config); the cross-surface pin keeps the declarative map from drifting against the manifest path's expectations.
+    — **Done when:** both sandbox runs produce exactly the artifact sets from AC 3/4, and the cross-surface assertion passes against the live `dependency-map.json`.
     — **Consumers affected:** none (test-only).
 - [ ] **3.4** Add a bats test for menu option 6 wiring using `script -qec` (pseudo-TTY), asserting the picker plan steps are logged.
     — **Why:** the menu change is the only user-facing routing change; without a pin it can silently revert.
@@ -88,6 +89,6 @@ None — single ticket, no `blocked-by:` refs.
 | Risk | Mitigation |
 |------|------------|
 | `deploy_delegate.bats` line-order pin breaks from setup.sh edits | Edits confined to existing function bodies; suite run per Phase 2 completion (step 4.1) |
-| node one-liner in dump_catalog fails on Node versions without ESM `-e` support | Node >= 20 supports `--input-type=module -e`; repo already requires Node 20+ (installer CLI), and the ps1 bootstrap requires >= 26.4 |
+| `node -e` dynamic-import resolves against process cwd | Module path built from argv-passed absolute `${REPO_DIR}` via `pathToFileURL` (step 2.1); Done-when runs from a second cwd |
 | Pseudo-TTY test flaky in CI | `script -qec` is util-linux standard on ubuntu runners; if unstable, keep the wiring covered by a direct function-invocation test instead (fallback decided in review, not silently) |
-| Companion map drifts as new plugins ship | The scanners + companion `case` live next to the plugins they describe; `test_ships_plugins.bats` already pins the ponytail artifact set |
+| Companion knowledge drifts between picker path and manifest path | Single declarative home: `dependency-map.json` `pluginCompanions` (step 2.2); cross-surface pin in test 3.3 |
