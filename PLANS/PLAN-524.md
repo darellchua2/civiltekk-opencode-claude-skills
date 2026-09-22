@@ -90,4 +90,6 @@ WORK LOG Phase 2: tier=full — anchor: cross-module consumer nodes (agents/*.md
 GATE 35448eb tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 WORK LOG Phase 3 (ticket exit gate): tier=full unconditional — JSON validity t, registry --check t (no drift), full bats suite t
 GATE db96893 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+WORK LOG review-fix re-gate: tier=full on fixed tree (Guarantees :389 reword; LEARNINGS refinement) — JSON validity t, registry --check t, full bats t
+GATE 3867c76 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 ```
