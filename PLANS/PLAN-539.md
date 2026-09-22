@@ -25,18 +25,21 @@
 
 ### Phase 1: Author CONTRIBUTING.md
 
-- [ ] **1.1** Write root `CONTRIBUTING.md` with five sections: (1) Proposing changes — link the bug/feature issue templates (`.github/ISSUE_TEMPLATE/`), small vs. structural changes; (2) Adding a skill or agent — checklist pointing at `AGENTS.md` § Adding Skills or Subagents — Sync Rules, § Skill / Agent Frontmatter Contract, and the Skill Isolation Contract (self-containment: `npx add` copies one directory; `tests/test_skill_isolation.bats` enforces); (3) Running the tests — `bats tests/` (bats-core submodule note), the count-drift and literal-pinning guards (never hand-edit counts in README/setup.sh); (4) Commit conventions — Conventional Commits, atomic commits; (5) Multi-target awareness — `--target` installs (claude/kimi/kilo/agents) and the portability contract (bash rule, `metadata.os`/`metadata.harness` vocabulary). Reference style: file-level links + `§ Section Name` prose (house style — no anchors; AGENTS.md headings contain em-dashes whose GitHub slugs are fragile).
+- [x] **1.1** Write root `CONTRIBUTING.md` with five sections: (1) Proposing changes — link the bug/feature issue templates (`.github/ISSUE_TEMPLATE/`), small vs. structural changes; (2) Adding a skill or agent — checklist pointing at `AGENTS.md` § Adding Skills or Subagents — Sync Rules, § Skill / Agent Frontmatter Contract, and the Skill Isolation Contract (self-containment: `npx add` copies one directory; `tests/test_skill_isolation.bats` enforces); (3) Running the tests — `bats tests/` (bats-core submodule note), the count-drift and literal-pinning guards (never hand-edit counts in README/setup.sh); (4) Commit conventions — Conventional Commits, atomic commits; (5) Multi-target awareness — `--target` installs (claude/kimi/kilo/agents) and the portability contract (bash rule, `metadata.os`/`metadata.harness` vocabulary). Reference style: file-level links + `§ Section Name` prose (house style — no anchors; AGENTS.md headings contain em-dashes whose GitHub slugs are fragile).
     — **Why:** the ticket's entire deliverable — a contributor entry point that orients without duplicating maintainer docs
     — **Done when:** file exists; each of the five sections present; `grep -c "AGENTS.md" CONTRIBUTING.md` ≥ 3 (by-reference discipline is structural, not incidental)
     — **Consumers affected:** humans; GitHub UI (auto-links CONTRIBUTING.md on contribution surfaces)
-- [ ] **1.2** Verify by-reference discipline and link targets: for each section name CONTRIBUTING.md cites, grep the exact heading text in `AGENTS.md`/`README.md` (e.g. "Adding Skills or Subagents", "Skill / Agent Frontmatter Contract", "Portability contract"); confirm no contract table rows copied (sentinels: `| Key | Rule |` and `| Trigger | What to update |` absent from CONTRIBUTING.md, plus zero `^|` table lines anywhere in it — its five sections need no tables); `test -f` every file-level link target (.github/ISSUE_TEMPLATE/bug_report.yml, .github/ISSUE_TEMPLATE/feature_request.yml, tests/test_skill_isolation.bats, AGENTS.md, README.md)
+    — **Done:** CONTRIBUTING.md written (5 sections + license note; §-name refs; no tables); 5 AGENTS.md links; fixes: none
+- [x] **1.2** Verify by-reference discipline and link targets: for each section name CONTRIBUTING.md cites, grep the exact heading text in `AGENTS.md`/`README.md` (e.g. "Adding Skills or Subagents", "Skill / Agent Frontmatter Contract", "Portability contract"); confirm no contract table rows copied (sentinels: `| Key | Rule |` and `| Trigger | What to update |` absent from CONTRIBUTING.md, plus zero `^|` table lines anywhere in it — its five sections need no tables); `test -f` every file-level link target (.github/ISSUE_TEMPLATE/bug_report.yml, .github/ISSUE_TEMPLATE/feature_request.yml, tests/test_skill_isolation.bats, AGENTS.md, README.md)
     — **Why:** the AC's no-duplication rule must be mechanically checkable, not eyeballed; a wrong section reference ships a dead pointer
     — **Done when:** every cited section-name grep hits its file; both sentinel greps return zero matches in CONTRIBUTING.md
     — **Consumers affected:** none (verification step)
-- [ ] **1.3** Commit Phase 1 (`docs(contributing): add contributor guide — by-reference orientation to AGENTS.md contracts`)
+    — **Done:** heading greps 4/4, sentinels 0 (^| and table-header rows), test -f 6/6, isolation contract cited by name; fixes: none
+- [x] **1.3** Commit Phase 1 (`docs(contributing): add contributor guide — by-reference orientation to AGENTS.md contracts`)
     — **Why:** atomic revertable unit; new file isolated from the README edit
     — **Done when:** commit exists; working tree clean
     — **Consumers affected:** none
+    — **Done:** Phase 1 committed as 58eed84; fixes: none
 
 ### Phase 2: README link + exit gate (full tier)
 
@@ -73,4 +76,4 @@ None — no blocked-by tickets. All hard pipeline deps satisfied (plan-execution
 
 | Phase | Gate | Result | Notes |
 |-------|------|--------|-------|
-| — | — | — | executor appends per-phase rows; final `tier=full` memo line required |
+| 1 | light (1.2 mechanical checks) | green | GATE 58eed84 tier=light lint=- typecheck=- build=- unit=- e2e=n.a |
