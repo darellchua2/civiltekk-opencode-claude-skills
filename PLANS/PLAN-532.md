@@ -8,7 +8,7 @@
 - [ ] "promote dev to uat" triggers the flow; uat-only commits produce a merged backmerge PR before the promote PR
 - [ ] Neither side ahead → "nothing to promote" report, stop
 - [ ] Backmerge conflict or review block → report and stop; `--admin` never used
-- [ ] `required_linear_history` removed from the protection payload (script + both SKILL.md blocks), re-run note added for onboarded repos
+- [ ] `required_linear_history` removed from the protection payload (key retained, value flipped to `false`; script + both SKILL.md blocks), re-run note added for onboarded repos
 - [ ] Step 10 pins `--squash` for short-lived heads
 - [ ] Triggers added to `pr-merge-workflow-skill` description (`promote X to Y`, `backmerge`); `registry.json` rebuilt via `build-registry.mjs`
 - [ ] `test_skill_isolation.bats`, `test_autoresearch_protocol.bats`, `test_default_behavior.bats` stay green
@@ -24,7 +24,7 @@ _Before writing steps, list each touched file/module and who consumes it. `insta
 | `skills/version-bump-standard-skill/SKILL.md` | 1.1 (doc payload must match the flipped script payload) | agents following the skill's setup steps | low |
 | `skills/pr-merge-workflow-skill/SKILL.md` | 1.1 (promotion merge commits must be legal under protection) | agents triggering on "pr merge to [branch]" and the new "promote X to Y"; `semantic-release-convention-skill` §two-tier merge cites this rule | medium |
 | `skills/worktree-pipeline-skill/SKILL.md` | 1.1 (the flip removes the accidental guard that rejected `--merge` on feat PRs — the pin exists because of it) | `/run-worktree-pipeline` runs (Step 10 merge decision) | low |
-| `installer/registry.json` (generated) | producer `installer/build-registry.mjs`; input: `pr-merge-workflow-skill` description frontmatter | `installer/init.mjs` (reads registry.json only), the `npx ... add` installer | low |
+| `installer/registry.json` (generated) | producer `installer/build-registry.mjs`; input: `pr-merge-workflow-skill` description frontmatter | the `npx ... add` installer (`installer/init.mjs`, bin `opencode-skill` — reads registry.json) | low |
 
 Cross-module edges exist (generated registry; script↔doc payload sync) → architecture review selected at Step 7. No frontend signal → uiux not selected.
 
@@ -47,7 +47,7 @@ Cross-module edges exist (generated registry; script↔doc payload sync) → arc
     — **Consumers affected:** `installer/registry.json` (regenerated in 4.1); agent skill selection.
 - [ ] **2.2** Insert "## Phase 0: Promotion Pre-flight" between the Prerequisites section and "## Phase 1: Merge the PR": divergence check via `gh api repos/{owner}/{repo}/compare/{source}...{target}` (ahead_by/behind_by, one call, no local checkout); when the target holds commits the source lacks → create+merge the backmerge PR target→source first (`chore(backmerge): <target> → <source>`, merge-commit method `--merge --delete-branch=false`, then the Phase 2 CI watch) before the promotion PR (`chore(promote): <source> → <target>` per `semantic-release-convention-skill`); full-auto when the user requested a promotion and no PR exists, confirm-once when merging a specific open PR (a backmerge mutates that PR's head branch and re-triggers its CI); edge cases — neither side ahead → "nothing to promote" report and stop; source-ahead-only → straight to Phase 1; backmerge conflicts → report and stop; review-blocked → merge when mergeable, otherwise stop and report; `--admin` never used; Phase 0 runs only when head AND base are both long-lived lanes per the existing Phase 1 classifier list.
     — **Why:** this is the ticket's core feature — the backmerge-then-promote sequencing no skill currently orchestrates; keying on the long-lived-head classifier keeps `feat/*` pipeline PRs (worktree-pipeline-skill Step 10) unaffected.
-    — **Done when:** the SKILL.md contains the Phase 0 section with the compare API call, backmerge steps, both modes, all four edge-case rules, and the long-lived-lane scope note; existing Phase 1–4 text, "Iteration Protocol (opt-in)", the imperative gating preamble, and the citations are byte-identical (`git diff` shows additions only in that region).
+    — **Done when:** the SKILL.md contains the Phase 0 section with the compare API call, backmerge steps, both modes, all four edge-case rules, and the long-lived-lane scope note; existing Phase 1–4 text, "Iteration Protocol (opt-in)", the imperative gating preamble, and the citations are byte-identical (`git diff` shows additions only in that region); the new section must not reuse the preamble string "DO NOT execute any of the following unless" nor evaluator tokens (`results.tsv`, `Iterations:`) — each is asserted exactly-once / section-scoped by `tests/test_default_behavior.bats`.
     — **Consumers affected:** agents handling "pr merge to [branch]" on long-lived→long-lived merges; pipeline Step 10 untouched (feat heads never enter Phase 0).
 
 ### Phase 3: Worktree pipeline squash pin (worktree-pipeline-skill)
@@ -59,7 +59,7 @@ Cross-module edges exist (generated registry; script↔doc payload sync) → arc
 ### Phase 4: Registry regeneration + verification gates (exit gate: full)
 - [ ] **4.1** Run `node installer/build-registry.mjs` from the repo root and stage the regenerated `installer/registry.json` with the phase commit.
     — **Why:** repo rule — after ANY skill frontmatter change, rebuild and commit registry.json; a regenerated-but-unstaged artifact is the known generated-artifact anti-pattern.
-    — **Done when:** `git diff installer/registry.json` shows the new pr-merge description; `git status` shows no unstaged `installer/registry.json` after staging.
+    — **Done when:** `git diff installer/registry.json` shows the new pr-merge description; `git status` shows no unstaged `installer/registry.json` after staging; `node installer/build-registry.mjs --check` exits 0 (mechanical drift gate).
     — **Consumers affected:** `installer/init.mjs`, the `npx ... add` installer path.
 - [ ] **4.2** Run the full exit gate: `bash -n` on the edited script; `bats tests/test_skill_isolation.bats tests/test_autoresearch_protocol.bats tests/test_default_behavior.bats`; fix any failure before proceeding.
     — **Why:** the ticket's final AC names these three suites; the isolation guard and the pr-merge behavior tests (iteration protocol, gating preamble, citations) must stay green after the SKILL.md additions.
