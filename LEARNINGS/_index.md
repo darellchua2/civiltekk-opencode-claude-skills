@@ -1230,3 +1230,30 @@
 - **Scope**: project
 - **Summary**: winget installs IM7 (`magick` entry point); plain `convert` on Windows resolves to System32's FAT→NTFS tool — install rows and usage snippets must be reviewed as a pair (#513 review)
 - **Date**: 2026-09-22
+
+### PLAN per-file census claims must be derived from the tree
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-per-file-census-unverified.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: a PLAN's "N have X / M lack X" census asserted from memory was wrong twice (even the re-correction) and would have created duplicate metadata: keys invisible to every gate — capture the tree grep, reviewers re-run it, executors re-run before the first edit (#514)
+- **Date**: 2026-09-22
+
+### Portability warnings live in the install writers, not the resolver
+
+- **Category**: decision
+- **File**: `decisions/portability-warnings-in-writers-not-resolver.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: #514 warnings push into sel.warnings at the two writer sites AFTER effective-target resolution (writeUserScopeInstall via activeTargets — both never warns; writeInstall after --project degradation) — resolveSelection is target-free and shared; cmdAdd --all routes through writeUserScopeInstall anyway
+- **Date**: 2026-09-22
+
+### Learning write scripted via heredoc committed as content
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/learning-write-heredoc-committed-as-content.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: a scripted learning write left heredoc tail (EOF/cat/echo) inside the .md, companion file uncreated, index entries missing — all gate-invisible; verify learning artifacts (markdown-only body, companions exist, index gained entries) after any scripted write (#514 review)
+- **Date**: 2026-09-22

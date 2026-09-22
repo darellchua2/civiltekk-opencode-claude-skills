@@ -3,6 +3,8 @@ name: agent-introspection-debugging-skill
 description: Debug why agents or skills aren't working as expected with systematic diagnosis, configuration validation, and fix recommendations
 license: Apache-2.0
 compatibility: opencode
+metadata:
+  harness: "opencode"
 category: Agent Optimization
 ---
 

@@ -3,6 +3,8 @@ name: opencode-skill-creation-skill
 description: Generate OpenCode skills following official documentation best practices
 license: Apache-2.0
 compatibility: opencode
+metadata:
+  harness: "opencode"
 category: OpenCode Meta
 ---
 

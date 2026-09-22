@@ -3,6 +3,8 @@ name: strategic-compact-skill
 description: Suggest optimal context compaction strategies for AI agent sessions, preserving critical information while reducing token usage
 license: Apache-2.0
 compatibility: opencode
+metadata:
+  harness: "opencode"
 category: Agent Optimization
 ---
 
