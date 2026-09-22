@@ -188,6 +188,8 @@ Inside the self-correction protocol, the minimal fix that clears the gate is the
 
 Never trade the completion criteria for brevity: a lazy fix that leaves a blocking error is unfinished, not done. This does not change the iteration limits or abort conditions; it makes each retry leaner.
 
+Lazy code without its check is unfinished — an iteration that lands non-trivial logic lands its ONE runnable check with it; a green gate memo without the check is not green.
+
 ## Return Contract
 
 When your task is complete, return ONLY this structure:

@@ -137,6 +137,8 @@ Apply the ladder to the tests themselves, not just the code under test:
 
 This does not undercut the coverage targets; it makes the tests that exist count rather than padding the count.
 
+Lazy code without its check is unfinished — when you generate that check, it is ONE runnable test, the smallest thing that fails if the logic breaks (assert-based self-check or one focused test file), not a per-function suite unless asked.
+
 ## Return Contract
 
 When your task is complete, return ONLY this structure:

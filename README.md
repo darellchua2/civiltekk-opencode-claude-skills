@@ -750,7 +750,11 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 | `PONYTAIL_SUBAGENT_OFF` | (7 read-only agents) | Regex of agent names to exclude from injection |
 | `PONYTAIL_AGENT_MODE_MAP` | unset | JSON per-agent overrides, e.g. `{"build":"full","code-review-subagent":"lite"}` |
 
-Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. See `opencode_app/README.md` § Ponytail Plugin and `plugins/ATTRIBUTION.md` for the MIT attribution.
+Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. Persist the default across restarts: `/ponytail default <mode>` (writes `~/.local/share/opencode/ponytail-config.json` — under the opencode data dir, so it survives docker container recreation; `PONYTAIL_DEFAULT_MODE` still wins). Bare `/ponytail` reports the active level.
+
+**Skill-only installs get enforcement too (#533):** `npx github:darellchua2/opencode-config-template add ponytail-audit-skill` (or `-review-`/`-debt-`) ships the wrapper plugin alongside the skill — `opencode-ponytail-scoped.ts`, `ponytail/`, and `ATTRIBUTION.md` land in the opencode plugin dir (`~/.config/opencode/plugins/` user scope, `.opencode/plugins/` with `--project`), auto-loaded at startup. Non-opencode targets (`claude`/`agents`/`kimi`/`kilo`) get a notice instead — the skills work on-demand everywhere, runtime injection is opencode-specific. `--no-deps` skips the plugin copy.
+
+See `opencode_app/README.md` § Ponytail Plugin and `plugins/ATTRIBUTION.md` for the MIT attribution.
 
 ### Learnings Auto-Inject (local plugin)
 

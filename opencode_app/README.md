@@ -196,6 +196,7 @@ OpenCode supports subagent-to-subagent delegation via the Task tool, controlled 
 | Command | What it does |
 |---------|--------------|
 | `/ponytail [lite\|full\|ultra\|off]` | Set intensity, or report current mode with no argument |
+| `/ponytail default <mode>` | Persist the default across restarts (`ponytail-config.json` under the mounted data volume; env var still overrides) |
 | `/ponytail-help` | Quick command reference |
 | `/ponytail-lite` | Switch to lite (name the lazier alternative, user picks) |
 | `/ponytail-full` | Switch to full (the ladder enforced — default) |
