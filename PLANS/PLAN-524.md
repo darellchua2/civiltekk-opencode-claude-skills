@@ -34,7 +34,7 @@
     — **Why:** prose asserting blanket `bash: deny` becomes factually wrong after 1.1 — the same drift-bait class this ticket removes; Step 9's precomputed-diff mandate stays (it is a guarantee, not a permission consequence).
     — **Done when:** no skill prose claims the reviewer has blanket bash deny; Step 9 still requires orchestrator-computed diffs.
     — **Consumers affected:** skill runtime prompts.
-    — **Done:** delegate-matrix row now "never mutates — edit deny, bash allowlisted to read-only git"; pipeline Step 9 now "edit deny (+ read-only git allowlist; cwd is session checkout)"; files: skills/plan-execution-skill/SKILL.md, skills/worktree-pipeline-skill/SKILL.md; fixes: none
+    — **Done:** delegate-matrix row now "never mutates — edit deny, bash allowlisted to read-only git"; pipeline Step 9 now "edit deny (+ read-only git allowlist; cwd is session checkout)"; files: skills/plan-execution-skill/SKILL.md, skills/worktree-pipeline-skill/SKILL.md; fixes: Guarantees :389 "bash-denied delegates" reworded after code review (Major 1) — review-fix commit carries the re-gate memo
 
 WORK LOG Phase 1: full-gate escalation — anchor: cross-module consumer nodes (agents/*.md → deploy/setup.sh, installer/build-registry.mjs, opencode_app Docker, bats fixtures). Gate `GATE b5d2eee tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a`.
 
