@@ -3,6 +3,8 @@
 # Per-item deploy picker pins (#473): one pure module (deploy-plan-items)
 # behind three drivers with identical plan output; DAG auto-include with
 # provenance; setup wiring (provisioning, consume-once, per-mode matrix).
+# "Pure" = no writes/network; caller-passed-dir readdir (scanPackNames /
+# scanPluginNames) is the module's single documented I/O exception (#537).
 
 SETUP_SH="deploy/setup.sh"
 SETUP_PS1="deploy/setup.ps1"

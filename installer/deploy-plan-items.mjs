@@ -6,9 +6,11 @@
 // resolveSelection — ONE implementation, so the dashboard's lock display is
 // exactly what `init.mjs add` installs (arch review: never fork the edge set).
 //
-// No I/O beyond caller-passed data — every pin runs this module headlessly.
+// No writes, no network — the ONLY I/O is readdirSync on caller-passed dirs
+// (scanPackNames / scanPluginNames). Every pin runs this module headlessly.
 
 import { resolveSelection } from "./init.mjs";
+import { readdirSync } from "node:fs";
 
 export const EXTRA_ITEMS = ["local-llm", "vllm"];
 
@@ -16,6 +18,32 @@ export const EXTRA_ITEMS = ["local-llm", "vllm"];
 // are MCP server ids; the executor's pack merge consumes pack names). Pinned
 // by test_select_items.bats against the live dependency map.
 export const MCP_TO_PACK = { docling: "docling", markitdown: "markitdown", "next-devtools": "nextjs" };
+
+/** Provider pack names: `pack-<name>.json` stems from a caller-passed dir. */
+export function scanPackNames(packsDir) {
+  const names = [];
+  try {
+    for (const f of readdirSync(packsDir)) {
+      const m = f.match(/^pack-(.+)\.json$/);
+      if (m) names.push(m[1]);
+    }
+  } catch { /* no packs dir → no packs */ }
+  return names;
+}
+
+/** Selectable plugin entries from a caller-passed dir: `opencode-*.ts` files
+ * only — the loadable plugin surface. Companion artifacts (README docs,
+ * configs, dirs like `ponytail/`) are never standalone items; they travel
+ * with their plugin at deploy time (dependency-map.json pluginCompanions). */
+export function scanPluginNames(pluginsDir) {
+  const names = [];
+  try {
+    for (const f of readdirSync(pluginsDir)) {
+      if (f.startsWith("opencode-") && f.endsWith(".ts")) names.push(f);
+    }
+  } catch { /* no plugins dir */ }
+  return names;
+}
 
 /** Grouped selectable inventory from caller-loaded data. */
 export function buildInventory({ registry, packNames, pluginNames }) {

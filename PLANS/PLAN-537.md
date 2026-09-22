@@ -27,15 +27,21 @@ Cross-module node: the scanners have consumers in two modules (`deploy/tui.mjs` 
 
 ## Implementation Phases
 
+<!-- Gate trace
+GATE <phase-1-sha> tier=light lint=- typecheck=- build=- unit=t e2e=-
+-->
+
 ### Phase 1: Shared scanners (foundation)
-- [ ] **1.1** Add exported `scanPackNames(packsDir)` and `scanPluginNames(pluginsDir)` to `installer/deploy-plan-items.mjs` (packs = `pack-*.json` stems; plugins = `opencode-*.ts` files only), with a doc note that caller-passed-dir readdir is the module's one I/O exception — added at BOTH contract-comment sites: the module header (`deploy-plan-items.mjs` "No I/O beyond caller-passed data") and the `tests/test_select_items.bats` header ("one pure module").
+- [x] **1.1** Add exported `scanPackNames(packsDir)` and `scanPluginNames(pluginsDir)` to `installer/deploy-plan-items.mjs` (packs = `pack-*.json` stems; plugins = `opencode-*.ts` files only), with a doc note that caller-passed-dir readdir is the module's one I/O exception — added at BOTH contract-comment sites: the module header (`deploy-plan-items.mjs` "No I/O beyond caller-passed data") and the `tests/test_select_items.bats` header ("one pure module").
     — **Why:** the pack/plugin filter rule currently lives in two drifted copies inside `deploy/tui.mjs` (`loadPickerData` scans `opencode-*` unfiltered, `planFromFlags` filters `.ts` only); the catalog dump in `setup.sh` has a third, empty copy. One source is the fix for all three.
     — **Done when:** a `node -e` import of the module returns 5 pack stems and 5 plugin `.ts` names for this repo's `deploy/packs/` and `plugins/` dirs.
     — **Consumers affected:** `deploy/tui.mjs` and `deploy/setup.sh` `dump_catalog` (both switch in Phases 1–2).
-- [ ] **1.2** Switch `deploy/tui.mjs` `loadPickerData` and `planFromFlags` (`--defaults` path) to call the shared scanners.
+    — **Done:** scanners exported from deploy-plan-items.mjs with readdir exception documented at both header sites; import probe returns 5 packs + 5 plugins. files: installer/deploy-plan-items.mjs, tests/test_select_items.bats; fixes: none
+- [x] **1.2** Switch `deploy/tui.mjs` `loadPickerData` and `planFromFlags` (`--defaults` path) to call the shared scanners.
     — **Why:** removes the README from the selectable inventory and ends the 6-vs-5 defaults/inventory inconsistency.
     — **Done when:** `node deploy/tui.mjs select-items --print-plan --defaults` emits `plugins` with exactly the 5 `opencode-*.ts` names and no README entry.
     — **Consumers affected:** `setup.sh --select` picker UX (inventory and defaults now agree).
+    — **Done:** both paths consume the shared scanners; `readDirSyncCompat` helper and unused `readdirSync` import removed; defaults probe shows exactly the 5 `.ts` plugins. files: deploy/tui.mjs; fixes: none
 
 ### Phase 2: Truthful catalog, safe plugin picks, menu entry
 - [ ] **2.1** Rewrite `dump_catalog` in `deploy/setup.sh` to import the shared scanners via dynamic `import()` inside the existing `node` one-liner, with the module path built from an argv-passed absolute `${REPO_DIR}` through `pathToFileURL` (never a relative specifier — `node -e` `import()` resolves against the process cwd, and `setup.sh` runs from any cwd via the `opencode-setup` PATH shim).
