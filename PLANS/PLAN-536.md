@@ -80,22 +80,26 @@
 
 ### Phase 3: README rework
 
-- [ ] **3.1** Restructure README top matter: title "CivilTekk OpenCode & Claude Skills"; purpose-first intro (personal dev skills collection shared for single-skill use; OpenCode v2-native + multi-harness targets claude/agents/kimi/kilo); "Daily-driver commands" table for /create-ticket, /run-worktree-pipeline, /run-plan, /goal with note that slash commands ship with full deploys (single-skill installs get skills via natural-language triggers only); simplified install (three paths: one skill / full deploy / project preset + `--target` table + Docker one-liner); updated directory tree (no research/, no docs/, LEARNINGS as skeleton); Docker section declaring `opencode_app/` purpose (self-hosted browser endpoint of the whole setup); Support section linking `.github/ISSUE_TEMPLATE` bug/feature forms
+- [x] **3.1** Restructure README top matter: title "CivilTekk OpenCode & Claude Skills"; purpose-first intro (personal dev skills collection shared for single-skill use; OpenCode v2-native + multi-harness targets claude/agents/kimi/kilo); "Daily-driver commands" table for /create-ticket, /run-worktree-pipeline, /run-plan, /goal with note that slash commands ship with full deploys (single-skill installs get skills via natural-language triggers only); simplified install (three paths: one skill / full deploy / project preset + `--target` table + Docker one-liner); updated directory tree (no research/, no docs/, LEARNINGS as skeleton); Docker section declaring `opencode_app/` purpose (self-hosted browser endpoint of the whole setup); Support section linking `.github/ISSUE_TEMPLATE` bug/feature forms
     — **Why:** the agreed positioning — visitors see what this is and how to grab one skill in one command
     — **Done when:** all seven elements present in the rendered README top matter; no old title remains
     — **Consumers affected:** humans; `opencode_app/README.md` NOT edited (watch-clause: its skill-count literal stays valid untouched)
-- [ ] **3.2** Collapse deep reference into `<details><summary>` blocks: setup flag tables, MCP servers + provider packs + skill profiles, model resolution/tiers, plugins (vibeguard/ponytail/auto-continue/question-repair/learnings), skill categories + agents tables, LSP, knowledge persistence, CodeGraph, testing recipes, portability
+    — **Done:** README restructured: title/purpose/commands-table/install/tree/Docker/Support all present; opencode_app/README.md untouched (watch-clause held); fixes: none
+- [x] **3.2** Collapse deep reference into `<details><summary>` blocks: setup flag tables, MCP servers + provider packs + skill profiles, model resolution/tiers, plugins (vibeguard/ponytail/auto-continue/question-repair/learnings), skill categories + agents tables, LSP, knowledge persistence, CodeGraph, testing recipes, portability
     — **Why:** keep one entry file without link sprawl; agreed alternative to docs/ (which Phase 1 deletes)
     — **Done when:** every deep section renders inside a collapsed details block; no content dropped (moved, not deleted — historical count narration may compress); `<details>` wrapping keeps text greppable so bats assertions keep matching
     — **Consumers affected:** humans; test_markitdown_skill + test_mcp_count_consistency (greps read markdown source — wrapping is safe, rephrasing is not)
-- [ ] **3.3** Repair accuracy defects: fix broken `PLAN.md` root link (→ `PLANS/`), re-derive counts (`ls skills/ | grep -v _archived | wc -l` = 146, `ls agents/*.md | wc -l` = 34), Pages URL `darellchua2.github.io/civiltekk-opencode-claude-skills`, replace count-history narration with current numbers. **Pinned phrasings (test-consumed — survive verbatim, counts derived at execution time):** "N skill director(y|ies)" where N = disk count; "Configuration (N)" where N = `installer/registry.json` Configuration-category length; "ships N MCP server entries" where N = `opencode_app/opencode.json` mcp.servers count. A deliberate rephrase updates the consuming bats assertion in the same commit.
+    — **Done:** deep reference collapsed into 10 <details> blocks, content moved not deleted; greppable text preserved; fixes: none
+- [x] **3.3** Repair accuracy defects: fix broken `PLAN.md` root link (→ `PLANS/`), re-derive counts (`ls skills/ | grep -v _archived | wc -l` = 146, `ls agents/*.md | wc -l` = 34), Pages URL `darellchua2.github.io/civiltekk-opencode-claude-skills`, replace count-history narration with current numbers. **Pinned phrasings (test-consumed — survive verbatim, counts derived at execution time):** "N skill director(y|ies)" where N = disk count; "Configuration (N)" where N = `installer/registry.json` Configuration-category length; "ships N MCP server entries" where N = `opencode_app/opencode.json` mcp.servers count. A deliberate rephrase updates the consuming bats assertion in the same commit.
     — **Why:** stale counts and dead links erode trust; the pinned literals are CI contracts
     — **Done when:** counts match disk; `grep -n "PLAN.md](PLAN.md" README.md` empty; Pages URL carries new name; `bats tests/test_markitdown_skill.bats tests/test_mcp_count_consistency.bats` green on the worktree
     — **Consumers affected:** humans; both bats files
-- [ ] **3.4** Commit Phase 3 (`docs(readme): rework for shared-collection positioning under CivilTekk OpenCode & Claude Skills`)
+    — **Done:** PLAN.md link fixed (issue #268 + PLANS/), counts 146/34, Pages URL new; pinned literals 146 skill directories / **Configuration** (2) / ships 8 MCP server entries verified + both bats green; fixes: none
+- [x] **3.4** Commit Phase 3 (`docs(readme): rework for shared-collection positioning under CivilTekk OpenCode & Claude Skills`)
     — **Why:** editorial change isolated from mechanical sweep
     — **Done when:** commit exists; tree clean
     — **Consumers affected:** none new
+    — **Done:** Phase 3 committed as 8511bee; fixes: none
 
 ### Phase 4: Verification (ticket exit gate — full tier)
 
@@ -134,3 +138,4 @@ None — no blocked-by tickets. All hard pipeline deps satisfied (plan-execution
 |-------|------|--------|-------|
 | 1 | light (done-when greps) | green | GATE 45f1082 tier=light lint=- typecheck=- build=- unit=- e2e=n.a |
 | 2 | light (grep gate + bash -n + node --check) | green | GATE a98e4a8 tier=light lint=- typecheck=t(bash -n/node --check on touched) build=- unit=- e2e=n.a |
+| 3 | light (pinned-literal bats + link/URL greps) | green | GATE 8511bee tier=light lint=- typecheck=- build=- unit=t(markitdown+mcp_count bats) e2e=n.a |
