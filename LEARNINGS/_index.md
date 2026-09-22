@@ -1168,6 +1168,24 @@
 - **Summary**: "pre-verified repo facts" in review briefs are claims — #519's brief asserted no merge-method defaults elsewhere while semantic-release-convention-skill carried 9 squash directives incl. a governance MUST; reviewers re-run the one grep before relying on embedded negatives, and briefs state claims with the producing command (#519)
 - **Date**: 2026-09-21
 
+### Scoped shell allow rules have zero footprint in every generated artifact
+
+- **Category**: pattern
+- **File**: `LEARNINGS/patterns/scoped-shell-rules-zero-registry-footprint.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Scoped shell rules (non-`*` resources) feed no registry edges (build-registry.mjs:180-182, :236-242 — generatedAt-only diff, tier-4 proven), kimi/claude targets drop them with a documented warning (init.mjs:959-963), and the only mechanical consumer is tests/test_reviewer_no_writes.bats plus verbatim deploy copies. Prefix allows express read-intent, not a security boundary — `edit: deny` remains it (#524)
+- **Date**: 2026-09-22
+
+### Command-description parallel restatements drift when only the source is fixed
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/command-description-parallel-restatement-drift.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: Editing a `commands.*.description` without grepping its distinctive phrase repo-wide leaves parallel restatements stale — /run-plan's was mirrored in README.md:624 and anchored by docker-compose.yml:29-31. Map every hit before authoring steps (#524)
+- **Date**: 2026-09-22
+
 ### Tracker issue body is the tiebreaker for flagged scope
 
 - **Category**: solution

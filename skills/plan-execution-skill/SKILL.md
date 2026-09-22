@@ -73,7 +73,7 @@ All modes parse the same structure:
 | Task type | Delegate to |
 |---|---|
 | Test generation | `testing-subagent` |
-| Refactor / DRY | Handle directly (`code-review-subagent` is read-only — `edit`/`bash` deny; it reviews at pipeline Step 9) |
+| Refactor / DRY | Handle directly (`code-review-subagent` never mutates — `edit` deny, `bash` allowlisted to read-only git; it reviews at pipeline Step 9) |
 | Lint setup/fix | `linting-subagent` |
 | Docstrings for new/changed functions/classes | `documentation-subagent` (before the gate, same-phase commit; skip pure-data/trivial) |
 | Other docs (README, ADRs) | `documentation-subagent` |

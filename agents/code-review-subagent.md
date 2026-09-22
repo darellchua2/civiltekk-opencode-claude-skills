@@ -25,6 +25,21 @@ permissions:
   - action: shell
     resource: '*'
     effect: deny
+  - action: shell
+    resource: 'git diff*'
+    effect: allow
+  - action: shell
+    resource: 'git log*'
+    effect: allow
+  - action: shell
+    resource: 'git show*'
+    effect: allow
+  - action: shell
+    resource: 'git blame*'
+    effect: allow
+  - action: shell
+    resource: 'git status*'
+    effect: allow
   - action: webfetch
     resource: '*'
     effect: allow
@@ -112,6 +127,8 @@ and transitive impact are not yours — say so when they surface.
 **Before responding, recall LEARNINGS via the `memory` tool (scope: project, query: the review topic) AND read any `LEARNINGS/*.md` surfaced by the autoinject manifest. Do not skip patterns that apply.**
 
 **LEARNINGS candidates are report content, never writes.** You have no write access: if the review yields a reusable pattern, include it in your report under `LEARNINGS candidates:` with Category / File / Confidence / Scope / Summary / Date per entry — the orchestrator writes and commits them.
+
+**Scoped bash (read-intent forensics, not a security boundary).** You may run read-only git forensics — `git diff`, `git log`, `git show`, `git blame`, `git status` — to verify a finding before asserting it. `edit` stays denied; the fix path is always the orchestrator's report-back loop. Never run test suites or linters — the gate already ran them; re-running is the redundancy the pipeline memo exists to kill.
 
 Skills:
 - solid-principles: SOLID principle enforcement
