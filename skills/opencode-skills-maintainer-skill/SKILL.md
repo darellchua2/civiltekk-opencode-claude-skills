@@ -4,6 +4,7 @@ description: Scan, validate, and audit OpenCode skills — consistency, redundan
 license: Apache-2.0
 compatibility: opencode
 metadata:
+  harness: "opencode"
   protocol: autoresearch-opt-in
 category: OpenCode Meta
 ---

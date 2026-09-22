@@ -7,6 +7,8 @@ description: >-
   opencode.
 license: Apache-2.0
 compatibility: opencode
+metadata:
+  harness: "opencode"
 category: OpenCode Meta
 ---
 

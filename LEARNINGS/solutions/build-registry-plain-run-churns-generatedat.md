@@ -50,3 +50,7 @@ architecture review; rewritten to `--check` exits 0.
 
 Related: `solutions/docs-registry-is-build-site-artifact.md`,
 `patterns/skill-add-count-sync-blast-radius.md`.
+
+Recurrence 5 (#514 plan review): PLAN-514 step 4.1 drafted "second run → zero
+diff" again — caught before execution. PLAN templates should hard-code
+"`--check` exits 0", never "plain run → zero diff".

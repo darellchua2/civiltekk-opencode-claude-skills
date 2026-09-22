@@ -4,6 +4,7 @@ description: "Extract and store reusable patterns, decisions, insights from codi
 license: Apache-2.0
 compatibility: opencode
 metadata:
+  harness: "opencode"
   protocol: autoresearch-opt-in
 category: Agent Optimization
 ---

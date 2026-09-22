@@ -7,6 +7,7 @@ description: >-
 license: Apache-2.0
 compatibility: opencode
 metadata:
+  os: "linux"
   protocol: autoresearch-opt-in
 category: Responsive & Visual Testing
 ---

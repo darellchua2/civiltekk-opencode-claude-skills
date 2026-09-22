@@ -9,6 +9,7 @@ description: >-
 license: Apache-2.0
 compatibility: opencode
 metadata:
+  harness: "opencode"
   protocol: opencode-migrate-v1-to-v2
   pattern: detect-then-delegate
 category: OpenCode Meta
