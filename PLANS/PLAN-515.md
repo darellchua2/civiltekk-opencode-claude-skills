@@ -86,3 +86,16 @@ Note: lint axis = guard probes + seeded-violation proof; build = build-registry 
 ## Gate Trace (review-fix)
 
 GATE 5d2b248 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+
+### Phase 5: CI fix (post-Step-10, first CI run red)
+
+- [x] **5.4** Root-caused the first CI red: `rg: command not found` on ubuntu runners (all guard sweeps exited 127; tests 2–5 would have skipped vacuously). Rewrote the guard on POSIX grep/find — `GREP_ARGS` array, `[[:space:]]` classes, `find`-based non-vacuous canary — and re-verified: 5/5 clean, seeded fixture fails the 4 rule checks, full suite 534/534, `build-registry --check` green. LEARNINGS: `ci-runners-lack-ripgrep` captured.
+    — **Why:** CI halt trigger per the failure policy — root-caused and fixed forward (PR unmerged; main untouched).
+    — **Done when:** guard is rg-free; local suite green; CI green on the fix commit.
+    — **Consumers affected:** CI (Run bats tests); skill authors see real guard results.
+    — **Done:** grep/find rewrite + canary held; files: tests/test_portability.bats, LEARNINGS/*; fixes: tooling dependency on CI runners
+
+## Gate Trace (CI fix)
+
+GATE 4eaad26 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+Note: 534 tests (529 prior + 5 guard); memo cites the CI-fix content SHA; later PLAN-only commits are tree-equivalent; CI is the unconditional re-run.
