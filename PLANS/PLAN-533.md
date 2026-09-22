@@ -162,3 +162,5 @@ GATE a83ebc3 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 3 
 - Major 3 fixed: cmdUpdate re-ship + dry-run parity + refreshed-notice (tests: update re-ships / dry-run lists / no-deps adoption semantics).
 - Major 4 fixed: project-scope plugin artifacts conflict-gated like every other project artifact (exists + unowned + differs → conflict, never clobbered); manifest.plugins unions previous records (tests: conflict-never-clobbered, owned-refresh).
 - Minors: atomic write folded into M2; cmdRemove note gated on the removed name actually shipping plugins; project manifest union (with M4); test name de-versioned (census gate now literally zero).
+
+GATE 5ff4144 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Step 9 re-gate on fixed tree: bats 558/558 + registry --check + census zero — final gate memo for the pushed SHA)
