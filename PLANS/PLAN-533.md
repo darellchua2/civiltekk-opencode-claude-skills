@@ -73,30 +73,35 @@
 
 ### Phase 2: Installer ships the enforcement plugin
 
-- [ ] **2.1** Verify the project-scope plugin discovery path against opencode v2 docs (`opencode.ai/docs/plugins` + source check); in-repo empirical evidence already exists: `opencode_app/Dockerfile:82` (`COPY plugins/ /app/.opencode/plugins/`) and `research/ponytail-load-fix.md` (user-scope `~/.config/opencode/plugins/` glob); record the verified path (or a user-scope-only decision) in the PLAN trace
+- [x] **2.1** Verify the project-scope plugin discovery path against opencode v2 docs (`opencode.ai/docs/plugins` + source check); in-repo empirical evidence already exists: `opencode_app/Dockerfile:82` (`COPY plugins/ /app/.opencode/plugins/`) and `research/ponytail-load-fix.md` (user-scope `~/.config/opencode/plugins/` glob); record the verified path (or a user-scope-only decision) in the PLAN trace
     — **Why:** the installer must write the plugin where v2 actually discovers it — corroborating docs with the repo's own working docker setup avoids a docs-only mistake
     — **Done when:** PLAN trace block records the decision with doc/source + in-repo citation
     — **Consumers affected:** steps 2.2/2.3 implement against this decision
+    — **Done:** VERIFIED: opencode.ai/docs/plugins (updated 2026-09-21) — project plugins at .opencode/plugins/, global at ~/.config/opencode/plugins/, both auto-loaded at startup; corroborated in-repo by opencode_app/Dockerfile:82. Decision: both scopes supported; files: none (decision); fixes: none
 
-- [ ] **2.2** Extend `installer/dependency-map.json` with a `shipsPlugins` edge mapping the three ponytail skills to the plugin artifacts (`opencode-ponytail-scoped.ts`, `ponytail/`, `ATTRIBUTION.md`); update the `$comment` schema docs
+- [x] **2.2** Extend `installer/dependency-map.json` with a `shipsPlugins` edge mapping the three ponytail skills to the plugin artifacts (`opencode-ponytail-scoped.ts`, `ponytail/`, `ATTRIBUTION.md`); update the `$comment` schema docs
     — **Why:** the map is the single declarative edge source `init.mjs` reads; a parallel ad-hoc list inside init.mjs would drift on the next edge
     — **Done when:** JSON parses, `$comment` documents the new key, all three ponytail skills listed
     — **Consumers affected:** `installer/init.mjs`; `tests/test_skill_isolation.bats` (must not trip — plugin paths are not skill-to-skill edges)
+    — **Done:** shipsPlugins edge added (3 ponytail skills -> opencode-ponytail-scoped.ts, ponytail/, ATTRIBUTION.md) + $comment schema docs incl. non-HANDOFF note; files: installer/dependency-map.json; fixes: none
 
-- [ ] **2.3** Implement the plugin copy in `installer/init.mjs`: ponytail skill install → copy the three artifacts to the target plugin dir (user scope; project scope per 2.1); non-OpenCode targets (`claude`/`agents`/`kimi`/`kilo`) print a notice and skip; `--no-deps` skips the copy too; never overwrite unrelated files in an existing plugin dir (exact-name artifacts only)
+- [x] **2.3** Implement the plugin copy in `installer/init.mjs`: ponytail skill install → copy the three artifacts to the target plugin dir (user scope; project scope per 2.1); non-OpenCode targets (`claude`/`agents`/`kimi`/`kilo`) print a notice and skip; `--no-deps` skips the copy too; never overwrite unrelated files in an existing plugin dir (exact-name artifacts only)
     — **Why:** closes the enforcement gap — skill-only installs currently ship docs without runtime injection, which is the core complaint in the ticket
     — **Done when:** a ponytail skill install delivers the plugin artifacts to the verified dir; each non-OpenCode target prints the notice and copies nothing; `--no-deps` skips the copy
     — **Consumers affected:** `npx … add` CLI users; installer tests
+    — **Done:** init.mjs: PLUGINS_SRC + pluginsForSkills() + shipPluginArtifacts() (exact-name artifacts, force re-copy, never touches unrelated files); wired into writeUserScopeInstall (opencode/both ship; others notice) + writeInstall (.opencode/plugins/; non-oc project notice); dry-run JSON gains plugins key; both manifests record shipped artifacts; cmdRemove prints remain-note; files: installer/init.mjs; fixes: loadDepMap() whitelisted impliesMcp/requiresSkills only and silently dropped shipsPlugins — key added to the loader (root cause of first test run failures)
 
-- [ ] **2.4** Add installer tests pinning the new behavior — positive (plugin delivered on ponytail install) and negative fixtures (non-OpenCode notice, `--no-deps` skip)
+- [x] **2.4** Add installer tests pinning the new behavior — positive (plugin delivered on ponytail install) and negative fixtures (non-OpenCode notice, `--no-deps` skip)
     — **Why:** test-pinned installer behavior is repo convention (#454/#455); error branches need negative fixtures in the same change (LEARNINGS guard-error-branches rule)
     — **Done when:** new bats tests pass alongside the existing suite; both polarity fixtures present
     — **Consumers affected:** CI
+    — **Done:** tests/test_ships_plugins.bats 8/8: positive (user-scope artifacts+manifest, project .opencode/plugins/), negative (--no-deps, --target claude notice, --project --target kimi notice, non-plugin control), idempotent re-install, dry-run lists-without-writing; files: tests/test_ships_plugins.bats; fixes: manifest filename guess corrected to .skill-manifest.json
 
-- [ ] **2.5** Run the full bats suite + registry drift gate: `node installer/build-registry.mjs --check` must exit 0 (plain run always rewrites `generatedAt` — never commit timestamp churn; zero diff expected since no frontmatter changes are planned; if `--check` exits 1, fix the drift source and commit the content diff, never a generatedAt-only diff)
+- [x] **2.5** Run the full bats suite + registry drift gate: `node installer/build-registry.mjs --check` must exit 0 (plain run always rewrites `generatedAt` — never commit timestamp churn; zero diff expected since no frontmatter changes are planned; if `--check` exits 1, fix the drift source and commit the content diff, never a generatedAt-only diff)
     — **Why:** frontmatter-contract rule with the repo's canonical gate form (7th documented recurrence of the plain-run phantom avoided); the isolation guard must prove the new edge type doesn't trip it
     — **Done when:** bats green; `installer/build-registry.mjs --check` exits 0; no registry commit (or content-only diff committed if real drift surfaced)
     — **Consumers affected:** CI; `init.mjs` (reads registry only)
+    — **Done:** full bats suite 550/550 green (542 prior + 8 new); node installer/build-registry.mjs --check exit 0 — "registry OK (agents=34, skills=146, no drift)" → nothing to commit; files: none (gate); fixes: none
 
 ### Phase 3: Build/test gate clause + docs
 
@@ -141,3 +146,5 @@
 ## Trace
 
 GATE da25d5f tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 1: whole bats suite 542/542 — agents/ + plugins/ touched, so suite-wide beats scoped; no manifest lint/typecheck/build scripts)
+
+GATE b0d2836 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 2: whole bats suite 550/550 + registry drift guard — installer is a critical-area anchor)
