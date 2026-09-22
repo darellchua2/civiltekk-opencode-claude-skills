@@ -1,7 +1,7 @@
 <!--
-  Vendored from @dietrichgebert/ponytail v4.8.4 (MIT)
-  Source: https://github.com/DietrichGebert/ponytail/blob/v4.8.4/skills/ponytail/SKILL.md
-  Pinned at tag v4.8.4. Re-vendor deliberately on upstream bumps.
+  Vendored from @dietrichgebert/ponytail v4.10.0 (MIT)
+  Source: https://github.com/DietrichGebert/ponytail/blob/v4.10.0/skills/ponytail/SKILL.md
+  Pinned at tag v4.10.0. Re-vendor deliberately on upstream bumps.
   See ../ATTRIBUTION.md for license and attribution.
 -->
 
@@ -68,7 +68,7 @@ every sibling caller still broken. Fix it once, where all callers route through.
 - Fewest files possible. Shortest working diff wins — but only once you understand the problem. The smallest change in the wrong place isn't lazy, it's a second bug.
 - Complex request? Ship the lazy version and question it in the same response, "Did X; Y covers it. Need full X? Say so." Never stall on an answer you can default.
 - Two stdlib options, same size? Take the one that's correct on edge cases. Lazy means writing less code, not picking the flimsier algorithm.
-- Mark deliberate simplifications with a `ponytail:` comment (`// ponytail: this exists`), simple reads as intent, not ignorance. Shortcut with a known ceiling (global lock, O(n²) scan, naive heuristic)? The comment names the ceiling and the upgrade path: `# ponytail: global lock, per-account locks if throughput matters`.
+- Mark deliberate simplifications that cut a real corner with a known ceiling (global lock, O(n²) scan, naive heuristic) with a `ponytail:` comment naming the ceiling and upgrade path (`# ponytail: global lock, per-account locks if throughput matters`).
 
 ## Output
 

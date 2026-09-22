@@ -178,7 +178,7 @@ When `.codegraph/` exists in the project:
 
 If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 
-<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.10.0); re-sync when the ladder or "when NOT to be lazy" semantics change -->
 
 ## Ponytail loop lens (baked-in, role-tuned)
 

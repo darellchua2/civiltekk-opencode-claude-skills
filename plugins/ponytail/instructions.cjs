@@ -1,4 +1,4 @@
-// ponytail instruction builder — vendored + adapted from @dietrichgebert/ponytail v4.8.4 (MIT).
+// ponytail instruction builder — vendored + adapted from @dietrichgebert/ponytail v4.10.0 (MIT).
 // Source: hooks/ponytail-instructions.js + hooks/ponytail-config.js
 // Adaptations: reads the co-located SKILL.md (this dir); mode constants inlined
 // (drops the Claude-Code-specific config-file/CLAUDE_CONFIG_DIR paths we don't use).
