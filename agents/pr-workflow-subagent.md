@@ -170,7 +170,7 @@ PLAN.md Sync:
 - Commits PLAN changes with semantic format
 - Skips gracefully if no PLAN file exists
 
-Always ensure all quality gates pass before creating PR.
+Standalone path only: always ensure all quality gates pass before creating PR (pipeline mode skips these checks per the Pipeline mode section above — the `tier=full` memo citation replaces them, and the CI gate is the merge decision).
 
 ## Return Contract
 
