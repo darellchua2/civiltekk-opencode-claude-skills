@@ -22,33 +22,33 @@
 
 ### Phase 1: the guard
 
-- [ ] **1.1** Write `tests/test_portability.bats` (root overridable via `PORTABILITY_ROOT` for seeded-violation checks) with 4 tests: (a) no `.opencode/skills` literals in `skills/**/SKILL.md`; (b) every SKILL.md mentioning `background: true` contains an `Other/none` fallback row; (c) every SKILL.md matching unix idioms (`xvfb|pkill|\$DISPLAY`) declares `os: "linux…"` in frontmatter; (d) every frontmatter `os:`/`harness:` line matches the canonical authoring form `^  (os|harness): "[a-z0-9]+(, [a-z0-9]+)*"$` (Mode R ruling).
+- [x] **1.1** Write `tests/test_portability.bats` (root overridable via `PORTABILITY_ROOT` for seeded-violation checks) with 4 tests: (a) no `.opencode/skills` literals in `skills/**/SKILL.md`; (b) every SKILL.md mentioning `background: true` contains an `Other/none` fallback row; (c) every SKILL.md matching unix idioms (`xvfb|pkill|\$DISPLAY`) declares `os: "linux…"` in frontmatter; (d) every frontmatter `os:`/`harness:` line matches the canonical authoring form `^  (os|harness): "[a-z0-9]+(, [a-z0-9]+)*"$` (Mode R ruling).
     — **Why:** rules 1–2 of the portability contract need mechanical enforcement; rule 3 stays review-enforced (per #514-linked scope note on the issue).
     — **Done when:** `bats tests/test_portability.bats` green on the current tree.
     — **Consumers affected:** skill authors; CI.
-- [ ] **1.2** Seeded-violation verification: build a fixture tree at `/tmp/opencode/portability-seed/` (one violating SKILL.md per rule: a literal path, a `background: true` without fallback, `xvfb` without `metadata.os`, `os: [linux]` unquoted) and run `PORTABILITY_ROOT=<fixture> bats tests/test_portability.bats` — all 4 must fail; then run without the override — all must pass.
+    — **Done:** guard written with 4 tests (literals, background fallback, unix idioms→os, authoring form); green on current tree; files: tests/test_portability.bats; fixes: bats 1.13-env lacks `fail` helper — used return-1 + stderr idiom- [x] **1.2** Seeded-violation verification: build a fixture tree at `/tmp/opencode/portability-seed/` (one violating SKILL.md per rule: a literal path, a `background: true` without fallback, `xvfb` without `metadata.os`, `os: [linux]` unquoted) and run `PORTABILITY_ROOT=<fixture> bats tests/test_portability.bats` — all 4 must fail; then run without the override — all must pass.
     — **Why:** a guard that cannot fail is decoration (mirror of test_skill_isolation's canary discipline).
     — **Done when:** seeded run shows 4 failures; clean run shows 4 passes.
     — **Consumers affected:** none (fixture under /tmp).
 
 ### Phase 2: docs sync
 
-- [ ] **2.1** `skills/agent-introspection-debugging-skill/SKILL.md:100` — scope the stale metadata claim: "the v2 frontmatter contract **at the time** reserved metadata sub-keys `protocol`/`pattern` (pre-#510; now `protocol`, `pattern`, `os`, `harness`)".
+    — **Done:** seeded fixture (literal + background-without-fallback + xvfb-without-os + os: [linux]) → all 4 tests FAIL under PORTABILITY_ROOT; clean tree → 4/4 pass; files: none (fixture under /tmp/opencode/portability-seed); fixes: none- [x] **2.1** `skills/agent-introspection-debugging-skill/SKILL.md:100` — scope the stale metadata claim: "the v2 frontmatter contract **at the time** reserved metadata sub-keys `protocol`/`pattern` (pre-#510; now `protocol`, `pattern`, `os`, `harness`)".
     — **Why:** strongest remaining teacher of the superseded rule (#512 review fold-in).
     — **Done when:** the present-tense "only" claim is gone.
     — **Consumers affected:** skill authors reading the removal note.
-- [ ] **2.2** `README.md` — add a short "Skill portability" paragraph: binding-block convention, `metadata.os`/`metadata.harness`, installer warnings, pointer to AGENTS.md §Portability contract.
+    — **Done:** stale present-tense claim scoped 'at the time … pre-#510' with the current four sub-keys named; files: skills/agent-introspection-debugging-skill/SKILL.md; fixes: none- [x] **2.2** `README.md` — add a short "Skill portability" paragraph: binding-block convention, `metadata.os`/`metadata.harness`, installer warnings, pointer to AGENTS.md §Portability contract.
     — **Why:** the ticket's docs-sync AC; user-facing entry point for the conventions.
     — **Done when:** paragraph present and factually aligned with the contract.
     — **Consumers affected:** README readers.
 
 ### Phase 3: LEARNINGS + exit gate
 
-- [ ] **3.1** LEARNINGS: capture the guard decision (what rules 1–2 enforce, the `Other/none` token, the authoring-form regex, the exemptions — installer/tests/README/opencode_app docs are legitimate install-destination references) + append the index entry; verify artifacts after scripted writes (per the #514 heredoc anti-pattern).
+    — **Done:** Skill Portability section added before Testing & Development (3 conventions + contract pointer + guard reference); files: README.md; fixes: none- [x] **3.1** LEARNINGS: capture the guard decision (what rules 1–2 enforce, the `Other/none` token, the authoring-form regex, the exemptions — installer/tests/README/opencode_app docs are legitimate install-destination references) + append the index entry; verify artifacts after scripted writes (per the #514 heredoc anti-pattern).
     — **Why:** the conventions decision and its enforcement surface must be recallable.
     — **Done when:** learning file exists, markdown-only, index entry present.
     — **Consumers affected:** future sessions.
-- [ ] **3.2** Full exit gate: entire bats suite (incl. the new guard) + `build-registry --check` + count checks; final registry untouched (no frontmatter edits in this ticket — assert byte-identical).
+    — **Done:** guard-decision learning captured (4 checks, token, exemptions, PORTABILITY_ROOT fixtures); artifact verified markdown-only + index entry present (per #514 heredoc anti-pattern); files: LEARNINGS/decisions/portability-guard-enforces-rules-1-2.md, LEARNINGS/_index.md; fixes: none- [x] **3.2** Full exit gate: entire bats suite (incl. the new guard) + `build-registry --check` + count checks; final registry untouched (no frontmatter edits in this ticket — assert byte-identical).
     — **Why:** ticket exit gate runs full unconditionally.
     — **Done when:** suite green incl. 5 new guard tests; --check exits 0.
     — **Consumers affected:** installer, CI.
@@ -64,3 +64,8 @@
 ## Risks & Mitigation
 - *Guard false-positives on future legit mentions* → tests match the delivered spellings (census-derived), `Other/none` token case-insensitive per Mode R; seeded fixtures pin the intended failure modes.
 - *Docs drift vs contract* → README paragraph links AGENTS.md as source of truth; no second full spec.
+    — **Done:** full suite 533/533 (529 + 4 guard); --check exits 0; registry byte-identical (no frontmatter edits); files: none (verification); fixes: none
+## Gate Trace
+
+GATE 77f4aa0 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+Note: lint axis = guard probes + seeded-violation proof; build = build-registry --check; the post-commit PLAN-only push is tree-equivalent; CI is the unconditional re-run.
