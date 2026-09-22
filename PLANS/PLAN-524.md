@@ -5,11 +5,11 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] code-review-subagent frontmatter: shell `*` deny precedes read-only git allows; edit permission unchanged (deny)
-- [ ] pr-workflow-subagent closing gates line scoped to standalone path
-- [ ] /run-plan gate claim names tiered gating accurately in BOTH `opencode_app/opencode.json` (command description) and `README.md` Git/Workflow cell
-- [ ] registry.json regenerated after the 1.1 frontmatter edit; `node installer/build-registry.mjs --check` exits 0 (expected diff: `generatedAt` only — bash rules don't feed registry content; commit-or-skip)
-- [ ] Gate green per verification-loop-skill contract (tiered)
+- [x] code-review-subagent frontmatter: shell `*` deny precedes read-only git allows; edit permission unchanged (deny)
+- [x] pr-workflow-subagent closing gates line scoped to standalone path
+- [x] /run-plan gate claim names tiered gating accurately in BOTH `opencode_app/opencode.json` (command description) and `README.md` Git/Workflow cell
+- [x] registry.json regenerated after the 1.1 frontmatter edit; `node installer/build-registry.mjs --check` exits 0 (expected diff: `generatedAt` only — bash rules don't feed registry content; commit-or-skip)
+- [x] Gate green per verification-loop-skill contract (tiered)
 
 ## Dependency & Consumer Map
 
@@ -48,18 +48,21 @@ WORK LOG Phase 1: full-gate escalation — anchor: cross-module consumer nodes (
 WORK LOG Phase 2: full-gate escalation — anchor: cross-module consumer nodes (agents/*.md → deploy/installer/docker chain). Gate `GATE 35448eb tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a`.
 
 ### Phase 3: Command description + registry regen
-- [ ] **3.1** Fix the `/run-plan` description in `opencode_app/opencode.json` to name tiered gating (light per phase — scoped lint + typecheck + affected tests; full on anchors and the exit gate), preserving the `/goal` sentence (docker-compose.yml:29-31's healthcheck comment anchors to it), and update the matching restatement in `README.md`'s Git/Workflow category cell (README.md:624) to the same tiered phrasing.
+- [x] **3.1** Fix the `/run-plan` description in `opencode_app/opencode.json` to name tiered gating (light per phase — scoped lint + typecheck + affected tests; full on anchors and the exit gate), preserving the `/goal` sentence (docker-compose.yml:29-31's healthcheck comment anchors to it), and update the matching restatement in `README.md`'s Git/Workflow category cell (README.md:624) to the same tiered phrasing.
     — **Why:** current text promises lint+build+test+e2e per phase — an over-promise against verification-loop-skill §Tiered gating; README.md:624 restates the identical claim, so one source fixed and not the other leaves AC3 half-true — same drift-bait class.
     — **Done when:** description names light/full tiers, keeps the `/goal` sentence, file still parses as valid JSON; README Git/Workflow cell names light/full tiers for `/run-plan` (no lint+build+test+e2e-per-phase claim remains in either file).
     — **Consumers affected:** Docker endpoint command UX; repo front-door docs; docker-compose healthcheck comment anchor.
-- [ ] **3.2** Regenerate `installer/registry.json` via `node installer/build-registry.mjs` (frontmatter-contract mandate — 1.1 touched agent frontmatter). Expect a `generatedAt`-only diff: bash-action rules and body prose feed no registry edges or entries (build-registry.mjs:180-182, :236-242). Commit or exclude the churn line — CI-neutral (release.yml drift guard normalizes `generatedAt`).
+    — **Done:** description + README cell name light/full tiers, `/goal` sentence preserved, JSON parses; files: opencode_app/opencode.json, README.md; fixes: none
+- [x] **3.2** Regenerate `installer/registry.json` via `node installer/build-registry.mjs` (frontmatter-contract mandate — 1.1 touched agent frontmatter). Expect a `generatedAt`-only diff: bash-action rules and body prose feed no registry edges or entries (build-registry.mjs:180-182, :236-242). Commit or exclude the churn line — CI-neutral (release.yml drift guard normalizes `generatedAt`).
     — **Why:** AGENTS.md §Skill / Agent Frontmatter Contract mandates regen after any frontmatter change (1.1); per LEARNINGS/solutions/build-registry-plain-run-churns-generatedat.md the gate is the `--check` form, not a diff-content expectation.
     — **Done when:** `node installer/build-registry.mjs --check` exits 0; no hand-edits; any diff vs HEAD is the `generatedAt` line only.
     — **Consumers affected:** installer `npx add`, docs counts.
-- [ ] **3.3** Verify the final pushed SHA carries a green `tier=full` GATE memo line in this PLAN's trace block.
+    — **Done:** regen produced exactly the predicted generatedAt-only diff (verified via grep of +/- lines), committed with phase; `--check` exits 0; files: installer/registry.json; fixes: none
+- [x] **3.3** Verify the final pushed SHA carries a green `tier=full` GATE memo line in this PLAN's trace block.
     — **Why:** AC5 evidence — and the citation Step 10 hands to pr-workflow-subagent (a light-tier line never satisfies it).
     — **Done when:** `grep "GATE .* tier=full"` in this file's trace block shows HEAD's short SHA.
     — **Consumers affected:** Step 10 PR handoff.
+    — **Done:** exit-gate memo names db96893, the final code SHA of the run (pushed); deliberate deviation: the trace commit itself follows the memo, so the memo's SHA is HEAD~1 by construction (same-tree gate evidence); files: PLANS/PLAN-524.md; fixes: none
 
 ## Technical Notes
 - Gate discovery (formal at execution): no `package.json` scripts, no Makefile, no pyproject → contract substitutes: JSON validity check for `opencode_app/opencode.json` (`node -e require`), `node installer/build-registry.mjs` (repo's build artifact), bats for unit (`tests/agents_target.bats` affected; full `bats tests/` at exit gate). E2E: no Playwright → n.a.
@@ -85,4 +88,6 @@ WORK LOG Phase 1: tier=full — anchor: cross-module consumer nodes (agents/*.md
 GATE b5d2eee tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 WORK LOG Phase 2: tier=full — anchor: cross-module consumer nodes (agents/*.md → deploy/installer/docker chain)
 GATE 35448eb tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+WORK LOG Phase 3 (ticket exit gate): tier=full unconditional — JSON validity t, registry --check t (no drift), full bats suite t
+GATE db96893 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 ```
