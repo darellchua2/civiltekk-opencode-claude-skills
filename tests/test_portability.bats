@@ -2,10 +2,12 @@
 # Portability guard (#515) — enforces rules 1–2 of AGENTS.md §Portability contract.
 # Rule 3 (bash requirement declarations) stays review-enforced.
 # Set PORTABILITY_ROOT to check a fixture tree instead of the repo (seeded-violation tests).
+# Uses POSIX grep (+ -E), NOT rg — CI runners don't ship ripgrep (#515 CI fix).
 # `_archived/` is excluded: frozen skills are historical artifacts, not living guidance.
 
 setup() {
   ROOT="${PORTABILITY_ROOT:-$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)}"
+  GREP_ARGS=(--include='SKILL.md' --exclude-dir='_archived' -r)
 }
 
 # frontmatter_lines FILE — print SKILL.md frontmatter body (between the --- fences)
@@ -15,7 +17,7 @@ frontmatter_lines() {
 
 @test "portability: sweep is non-vacuous (skills tree enumerated)" {
   local n
-  n="$(rg --files "$ROOT/skills" --glob 'SKILL.md' --glob '!_archived/**' | wc -l)"
+  n="$(find "$ROOT/skills" -name 'SKILL.md' -not -path '*_archived*' | wc -l)"
   if [ "$n" -lt 1 ]; then
     echo "sweep found 0 SKILL.md files under $ROOT/skills — guard would pass vacuously" >&2
     return 1
@@ -23,7 +25,7 @@ frontmatter_lines() {
 }
 
 @test "portability: no .opencode/skills literals in SKILL.md bodies" {
-  run rg -l '\.opencode/skills' "$ROOT/skills" --glob 'SKILL.md' --glob '!_archived/**'
+  run grep -rlE '\.opencode/skills' "$ROOT/skills" "${GREP_ARGS[@]}"
   if [ "$status" -eq 0 ]; then
     echo "literal install paths found in: $output" >&2
     return 1
@@ -33,13 +35,13 @@ frontmatter_lines() {
 
 @test "portability: background-shell mentions carry a portable fallback row" {
   local files
-  files="$(rg -l 'background: true' "$ROOT/skills" --glob 'SKILL.md' --glob '!_archived/**' || true)"
+  files="$(grep -rlF 'background: true' "$ROOT/skills" "${GREP_ARGS[@]}" || true)"
   [ -z "$files" ] && skip "no background-shell mentions"
   local failures=""
   local f
   while IFS= read -r f; do
     [ -z "$f" ] && continue
-    if ! rg -qi 'Other/none' "$f"; then
+    if ! grep -qi 'Other/none' "$f"; then
       failures="$failures $f"
     fi
   done <<< "$files"
@@ -51,13 +53,13 @@ frontmatter_lines() {
 
 @test "portability: unix-only idioms declare metadata.os" {
   local files
-  files="$(rg -l 'xvfb|pkill|\$DISPLAY' "$ROOT/skills" --glob 'SKILL.md' --glob '!_archived/**' || true)"
+  files="$(grep -rlE 'xvfb|pkill|\$DISPLAY' "$ROOT/skills" "${GREP_ARGS[@]}" || true)"
   [ -z "$files" ] && skip "no unix-only idioms"
   local failures=""
   local f
   while IFS= read -r f; do
     [ -z "$f" ] && continue
-    if ! frontmatter_lines "$f" | rg -q '^  os: "linux'; then
+    if ! frontmatter_lines "$f" | grep -Eq '^  os: "linux'; then
       failures="$failures $f"
     fi
   done <<< "$files"
@@ -69,14 +71,14 @@ frontmatter_lines() {
 
 @test "portability: metadata os/harness use the canonical authoring form" {
   local files
-  files="$(rg -l '^  (os|harness): ' "$ROOT/skills" --glob 'SKILL.md' --glob '!_archived/**' || true)"
+  files="$(grep -rlE '^  (os|harness): ' "$ROOT/skills" "${GREP_ARGS[@]}" || true)"
   [ -z "$files" ] && skip "no os/harness metadata"
   local failures=""
   local f
   while IFS= read -r f; do
     [ -z "$f" ] && continue
     local bad
-    bad="$(frontmatter_lines "$f" | rg '^\s*(os|harness): ' | rg -v '^  (os|harness): "[a-z0-9]+(, [a-z0-9]+)*"$' || true)"
+    bad="$(frontmatter_lines "$f" | grep -E '^[[:space:]]*(os|harness): ' | grep -vE '^  (os|harness): "[a-z0-9]+(, [a-z0-9]+)*"$' || true)"
     [ -n "$bad" ] && failures="$failures
   $f: $bad"
   done <<< "$files"

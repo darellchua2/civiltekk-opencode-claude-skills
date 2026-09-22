@@ -34,3 +34,9 @@ real install destinations (census classified in #511). The guard scopes to
 skill bodies, where such a literal is always a bug. Known follow-up:
 `/tmp` snippet idioms in cad-gcode/cad-implicit/uiux-review are
 declaration-class debt, deliberately not policed here.
+
+CI fix (#515 first run): guard rewritten rg → POSIX grep after `rg: command
+not found` on ubuntu runners; canary test catches vacuous sweeps. Also:
+canonical-form check is rg -v regex inversion over a shared awk frontmatter
+slicer (case-globs can't express character classes), `_archived/` excluded
+(frozen artifacts), 5 checks total (4 rule checks + non-vacuous canary).

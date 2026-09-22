@@ -1275,3 +1275,12 @@
 - **Scope**: project
 - **Summary**: shell case-globs can't express character classes — a canonical "quoted lowercase comma" check implemented as globs validated only quote-wrapping; implement advertised forms as rg -v regex inversion over a shared awk frontmatter slice (#515 review)
 - **Date**: 2026-09-22
+
+### CI runners lack ripgrep — bats guards must use grep
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/ci-runners-lack-ripgrep-bats-guards-use-grep.md`
+- **Confidence**: 1.0
+- **Scope**: project
+- **Summary**: bats guards executing in CI must use POSIX grep/find/awk — rg is absent on ubuntu runners (127) and sweeps would read vacuous-green without the non-vacuous canary; local-green is not CI-green for tooling-dependent tests (#515 CI red)
+- **Date**: 2026-09-22
