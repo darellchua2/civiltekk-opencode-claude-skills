@@ -5,13 +5,13 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] "promote dev to uat" triggers the flow; uat-only commits produce a merged backmerge PR before the promote PR
-- [ ] Neither side ahead → "nothing to promote" report, stop
-- [ ] Backmerge conflict or review block → report and stop; `--admin` never used
-- [ ] `required_linear_history` removed from the protection payload (key retained, value flipped to `false`; script + both SKILL.md blocks), re-run note added for onboarded repos
-- [ ] Step 10 pins `--squash` for short-lived heads
-- [ ] Triggers added to `pr-merge-workflow-skill` description (`promote X to Y`, `backmerge`); `registry.json` rebuilt via `build-registry.mjs`
-- [ ] `test_skill_isolation.bats`, `test_autoresearch_protocol.bats`, `test_default_behavior.bats` stay green
+- [x] "promote dev to uat" triggers the flow; uat-only commits produce a merged backmerge PR before the promote PR
+- [x] Neither side ahead → "nothing to promote" report, stop
+- [x] Backmerge conflict or review block → report and stop; `--admin` never used
+- [x] `required_linear_history` removed from the protection payload (key retained, value flipped to `false`; script + both SKILL.md blocks), re-run note added for onboarded repos
+- [x] Step 10 pins `--squash` for short-lived heads
+- [x] Triggers added to `pr-merge-workflow-skill` description (`promote X to Y`, `backmerge`); `registry.json` rebuilt via `build-registry.mjs`
+- [x] `test_skill_isolation.bats`, `test_autoresearch_protocol.bats`, `test_default_behavior.bats` stay green
 
 ## Dependency & Consumer Map
 
@@ -76,6 +76,10 @@ Cross-module edges exist (generated registry; script↔doc payload sync) → arc
 ## Gate Trace
 
 GATE cc060c6 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+
+## Progress Log
+
+- 2026-09-22: All 4 phases complete — linear-history flip (7163a1d), Phase 0 pre-flight (671e90d), squash pin (c367d58), registry regen + full exit gate (cc060c6, 174 ok / 0 failed). Acceptance criteria ticked: content in place + gates green per step Done lines.
 
 ## Technical Notes
 - Promotion message conventions already exist: `semantic-release-convention-skill` §Promotion Merge Commits (`chore(promote): <from> → <to> (#N)`) — Phase 0 references, not duplicates.
