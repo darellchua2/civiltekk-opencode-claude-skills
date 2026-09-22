@@ -30,9 +30,9 @@ RUN /opt/python-env/bin/pip install --no-cache-dir \
 # ── Stage 3: runtime ─────────────────────────────────────────────────────────
 FROM python:3.12-slim-bookworm
 
-LABEL org.opencontainers.image.title="opencode-config-template" \
+LABEL org.opencontainers.image.title="civiltekk-opencode-claude-skills" \
       org.opencontainers.image.description="OpenCode standalone web endpoint - configurable agent/skill runner" \
-      org.opencontainers.image.source="https://github.com/darellchua2/opencode-config-template"
+      org.opencontainers.image.source="https://github.com/darellchua2/civiltekk-opencode-claude-skills"
 
 ARG OPENCODE_VERSION=2.0.8
 

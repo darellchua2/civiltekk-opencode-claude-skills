@@ -1,6 +1,6 @@
 #!/bin/sh
 # Redocly lint gate on staged OpenAPI specs.
-# Template from opencode-config-template — https://github.com/darellchua2/opencode-config-template
+# Template from civiltekk-opencode-claude-skills — https://github.com/darellchua2/civiltekk-opencode-claude-skills
 #
 # Install (plain git hook):
 #   cp pre-commit-redocly .git/hooks/pre-commit

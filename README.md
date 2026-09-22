@@ -4,7 +4,7 @@ A multi-mode OpenCode configurator repository:
 
 1. **User-Space Deploy** — Run `./deploy/setup.sh` (or, after any deploy, the `opencode-setup` command) to copy config, agents, and skills to `~/.config/opencode/` for global use
 2. **Docker Standalone** — Run `docker compose up -d` to launch OpenCode as a web endpoint
-3. **Individual Install (npx)** — Run `npx github:darellchua2/opencode-config-template add <name>` to pull a single skill or agent (shadcn-style copy model); bare `npx github:darellchua2/opencode-config-template` opens the interactive TUI
+3. **Individual Install (npx)** — Run `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>` to pull a single skill or agent (shadcn-style copy model); bare `npx github:darellchua2/civiltekk-opencode-claude-skills` opens the interactive TUI
 
 > **v2.0.0 upgrade?** See [`MIGRATION.md`](./MIGRATION.md) for breaking changes (stale agent cleanup, zip backup format, new `--rollback` / `--no-zip-backup` flags) and rollback instructions.
 
@@ -15,9 +15,9 @@ Pick the entrypoint by what you want — no need to read further for a first ins
 | You want | Command | Needs |
 |----------|---------|-------|
 | Full deploy — interactive menu (config + agents + skills to `~/.config/opencode/`) | `./deploy/setup.sh` from a clone, or `opencode-setup` after any deploy | A clone + bash |
-| Full deploy — no clone, remote one-shot | `npx -p github:darellchua2/opencode-config-template opencode-setup --quick --yes` | Node 20+ |
-| Browse the catalog interactively (arrow-key TUI), then install a subset | `npx github:darellchua2/opencode-config-template` | Node 20+ |
-| One specific skill or agent | `npx github:darellchua2/opencode-config-template add <name>` | Node 20+ |
+| Full deploy — no clone, remote one-shot | `npx -p github:darellchua2/civiltekk-opencode-claude-skills opencode-setup --quick --yes` | Node 20+ |
+| Browse the catalog interactively (arrow-key TUI), then install a subset | `npx github:darellchua2/civiltekk-opencode-claude-skills` | Node 20+ |
+| One specific skill or agent | `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>` | Node 20+ |
 | Curated per-project subset (preset) | `opencode-init --project . --preset review --yes` | Any prior deploy, or `npx github:… --project . --preset review --yes` |
 | Self-hosted web endpoint (browser) | `docker compose up -d` → http://localhost:4097 | Docker |
 
@@ -26,12 +26,12 @@ Every `setup.sh` deploy installs two PATH commands into `~/.local/bin/`:
 - **`opencode-setup`** — re-run the full deploy from any directory; all flags pass through (`opencode-setup --quick`, `opencode-setup --provider anthropic`, …). It symlinks back to the clone it deployed from — edit files there, re-run here.
 - **`opencode-init`** — the project-scoped installer and catalog browser (see [Project-Scoped Install](#project-scoped-install-opencode-init)).
 
-> The remote `npx … opencode-setup` variant runs the deploy out of npm's cache clone of this repo (default branch), so it always uses the latest published state; pin a branch with `npx -p github:darellchua2/opencode-config-template#<branch> opencode-setup`.
+> The remote `npx … opencode-setup` variant runs the deploy out of npm's cache clone of this repo (default branch), so it always uses the latest published state; pin a branch with `npx -p github:darellchua2/civiltekk-opencode-claude-skills#<branch> opencode-setup`.
 
 ## Repository Structure
 
 ```
-opencode-config-template/
+civiltekk-opencode-claude-skills/
 ├── skills/                      # 146 skill directories (source of truth)
 ├── agents/                      # 34 subagent .md files (source of truth)
 ├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings, auto-continue, question-repair)
@@ -209,12 +209,12 @@ docker compose build --no-cache
 
 ## Individual Skill/Agent Install (npx)
 
-Install a single skill or agent without cloning the repo — the shadcn/ui model (copy source into your config). See [issue #304](https://github.com/darellchua2/opencode-config-template/issues/304).
+Install a single skill or agent without cloning the repo — the shadcn/ui model (copy source into your config). See [issue #304](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/304).
 
 ```bash
-npx github:darellchua2/opencode-config-template add solid-principles-skill
-npx github:darellchua2/opencode-config-template            # bare = interactive TUI, no args needed
-npx -p github:darellchua2/opencode-config-template opencode-setup   # full deploy without cloning
+npx github:darellchua2/civiltekk-opencode-claude-skills add solid-principles-skill
+npx github:darellchua2/civiltekk-opencode-claude-skills            # bare = interactive TUI, no args needed
+npx -p github:darellchua2/civiltekk-opencode-claude-skills opencode-setup   # full deploy without cloning
 ```
 
 ### Scope & config strategy
@@ -230,29 +230,29 @@ MCPs are **never auto-merged** at user scope — the installer prints the snippe
 
 ```bash
 # A. Clean-slate user — zero config touch
-npx github:darellchua2/opencode-config-template add solid-principles-skill
+npx github:darellchua2/civiltekk-opencode-claude-skills add solid-principles-skill
 
 # B. Subagent (pulls required skills by default; --no-deps for just the file)
-npx github:darellchua2/opencode-config-template add tdd-subagent
-npx github:darellchua2/opencode-config-template add tdd-subagent --no-deps
+npx github:darellchua2/civiltekk-opencode-claude-skills add tdd-subagent
+npx github:darellchua2/civiltekk-opencode-claude-skills add tdd-subagent --no-deps
 
 # C. Strict-allowlist detected (setup.sh was run) — warns about hidden items
-npx github:darellchua2/opencode-config-template add my-custom-skill
+npx github:darellchua2/civiltekk-opencode-claude-skills add my-custom-skill
 
 # D. --permit — backup opencode.json + merge permission entries only
-npx github:darellchua2/opencode-config-template add my-custom-skill --permit
+npx github:darellchua2/civiltekk-opencode-claude-skills add my-custom-skill --permit
 
 # E. Skill needs an MCP — prints snippet, never auto-merges
-npx github:darellchua2/opencode-config-template add markitdown-mcp-skill
+npx github:darellchua2/civiltekk-opencode-claude-skills add markitdown-mcp-skill
 
 # E2. Skill declares a skill prerequisite — auto-installs it (stderr notice; --no-deps opts out)
-npx github:darellchua2/opencode-config-template add pptx-template-modifier-skill
+npx github:darellchua2/civiltekk-opencode-claude-skills add pptx-template-modifier-skill
 
 # F. Project scope (full-service)
-npx github:darellchua2/opencode-config-template add nextjs-specialist-subagent --project
+npx github:darellchua2/civiltekk-opencode-claude-skills add nextjs-specialist-subagent --project
 
 # Remove (user scope only; manifest-scoped — safe no-op after setup.sh)
-npx github:darellchua2/opencode-config-template remove solid-principles-skill
+npx github:darellchua2/civiltekk-opencode-claude-skills remove solid-principles-skill
 ```
 
 ### Multi-app install targets (`--target`)
@@ -261,13 +261,13 @@ Skills follow the [Agent Skills](https://agentskills.io) open standard — the s
 
 ```bash
 # G. Install to Claude Code (~/.claude/skills/<name>/SKILL.md)
-npx github:darellchua2/opencode-config-template add solid-principles-skill --target claude
+npx github:darellchua2/civiltekk-opencode-claude-skills add solid-principles-skill --target claude
 
 # Install to the cross-tool shared dir (~/.agents/) — read by Kimi Code and pi
-npx github:darellchua2/opencode-config-template add solid-principles-skill --target agents
+npx github:darellchua2/civiltekk-opencode-claude-skills add solid-principles-skill --target agents
 
 # Install to both opencode and Claude Code
-npx github:darellchua2/opencode-config-template add solid-principles-skill --target both
+npx github:darellchua2/civiltekk-opencode-claude-skills add solid-principles-skill --target both
 ```
 
 | Target | Destination | Notes |
@@ -283,13 +283,13 @@ npx github:darellchua2/opencode-config-template add solid-principles-skill --tar
 
 ### Browsing the catalog
 
-Run `opencode-init --list agents` or `--list skills` to browse in JSON, or visit the [GitHub Pages catalog](https://darellchua2.github.io/opencode-config-template/) (deployed on every `main` push).
+Run `opencode-init --list agents` or `--list skills` to browse in JSON, or visit the [GitHub Pages catalog](https://darellchua2.github.io/civiltekk-opencode-claude-skills/) (deployed on every `main` push).
 
 ## Project-Scoped Install (`opencode-init`)
 
 Not every project needs all 34 agents + 146 skills.
 
-> **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. The subagent-spawn allowlist (frontmatter `permissions` rules with `action:"subagent"`) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/opencode-config-template/issues/286) and `PLANS/PLAN-GIT-286.md`.
+> **Mutually exclusive with global deploy for isolation.** OpenCode **merges** config and **unions** agents/skills across `~/.config/opencode` and `<project>/.opencode`. A project subset only yields an *isolated* curated experience on a **clean slate** (no global deploy). If `~/.config/opencode/agents/` is non-empty, the project install is **additive** — `opencode-init` detects this and warns. The subagent-spawn allowlist (frontmatter `permissions` rules with `action:"subagent"`) still restricts auto-spawning even with a global deploy; `@`-mention still bypasses it. See [issue #286](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/286) and `PLANS/PLAN-GIT-286.md`.
 
 ### Presets
 
@@ -752,7 +752,7 @@ When enabled, retrofitted skills emit mechanical evaluator output `{"pass":bool,
 
 Switch mode per session: `/ponytail lite|full|ultra|off`, `/ponytail-help`. Persist the default across restarts: `/ponytail default <mode>` (writes `~/.local/share/opencode/ponytail-config.json` — under the opencode data dir, so it survives docker container recreation; `PONYTAIL_DEFAULT_MODE` still wins). Bare `/ponytail` reports the active level.
 
-**Skill-only installs get enforcement too (#533):** `npx github:darellchua2/opencode-config-template add ponytail-audit-skill` (or `-review-`/`-debt-`) ships the wrapper plugin alongside the skill — `opencode-ponytail-scoped.ts`, `ponytail/`, and `ATTRIBUTION.md` land in the opencode plugin dir (`~/.config/opencode/plugins/` user scope, `.opencode/plugins/` with `--project`), auto-loaded at startup. Non-opencode targets (`claude`/`agents`/`kimi`/`kilo`) get a notice instead — the skills work on-demand everywhere, runtime injection is opencode-specific. `--no-deps` skips the plugin copy. `npx update` re-ships the manifest-recorded plugin artifacts (opencode-target entries) so enforcement never lags the skill bodies; `update --no-deps` opts out, and a pre-#533 install is adopted by a bare `update`.
+**Skill-only installs get enforcement too (#533):** `npx github:darellchua2/civiltekk-opencode-claude-skills add ponytail-audit-skill` (or `-review-`/`-debt-`) ships the wrapper plugin alongside the skill — `opencode-ponytail-scoped.ts`, `ponytail/`, and `ATTRIBUTION.md` land in the opencode plugin dir (`~/.config/opencode/plugins/` user scope, `.opencode/plugins/` with `--project`), auto-loaded at startup. Non-opencode targets (`claude`/`agents`/`kimi`/`kilo`) get a notice instead — the skills work on-demand everywhere, runtime injection is opencode-specific. `--no-deps` skips the plugin copy. `npx update` re-ships the manifest-recorded plugin artifacts (opencode-target entries) so enforcement never lags the skill bodies; `update --no-deps` opts out, and a pre-#533 install is adopted by a bare `update`.
 
 See `opencode_app/README.md` § Ponytail Plugin and `plugins/ATTRIBUTION.md` for the MIT attribution.
 
@@ -865,7 +865,7 @@ Recipes for testing installer changes without touching your real `~/.config/open
 
 ```bash
 # 1. Clone dry-run — preview any install, write nothing
-git clone https://github.com/darellchua2/opencode-config-template
+git clone https://github.com/darellchua2/civiltekk-opencode-claude-skills
 node installer/init.mjs add tdd-subagent --dry-run
 
 # 2. npm link — exercise the real bin name from your working tree
@@ -874,7 +874,7 @@ opencode-skill add solid-principles-skill --dry-run
 npm unlink -g
 
 # 3. Branch testing via npx (github refs support branches — zero code)
-npx github:darellchua2/opencode-config-template#feat/my-branch add X --dry-run
+npx github:darellchua2/civiltekk-opencode-claude-skills#feat/my-branch add X --dry-run
 
 # 4. Sandboxed runs — isolated HOME, no real config touched
 HOME="$(mktemp -d)" node installer/init.mjs add tdd-workflow-skill --yes
@@ -886,8 +886,8 @@ tests/lib/bats-core/bin/bats tests/update.bats
 Upgrading installed content without a full setup rerun:
 
 ```bash
-npx github:darellchua2/opencode-config-template update          # re-copy changed entries
-npx github:darellchua2/opencode-config-template update --prune  # also remove registry-removed entries
+npx github:darellchua2/civiltekk-opencode-claude-skills update          # re-copy changed entries
+npx github:darellchua2/civiltekk-opencode-claude-skills update --prune  # also remove registry-removed entries
 ```
 
 **Redeploy contract:** `setup.sh --yes` force-copies content through the installer CLI. Existing

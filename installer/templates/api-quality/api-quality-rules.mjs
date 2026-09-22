@@ -1,5 +1,5 @@
 // Custom Redocly rules for API authoring quality.
-// Template from opencode-config-template (#320).
+// Template from civiltekk-opencode-claude-skills (#320).
 //
 // Redocly CLI 2.x plugin format: default export is a factory returning rule
 // modules; each rule is a function returning { severity, <VisitorType>(node, ctx) }.

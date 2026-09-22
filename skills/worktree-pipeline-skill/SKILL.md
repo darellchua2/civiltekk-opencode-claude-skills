@@ -48,7 +48,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   `plan-execution-skill` --gate (Step 8), agents `code-review-subagent`
   (Step 9) and `pr-workflow-subagent` (Step 10). Any missing → abort
   (`failed`) with the install hint
-  `npx github:darellchua2/opencode-config-template add <name>`. Soft deps
+  `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>`. Soft deps
   degrade with a note: `ticket-creation-skill` (only for new-work tickets,
   Step 3), `architecture-review-subagent` / `uiux-reviewer-subagent` /
   `requirements-specialist-subagent` (Step 7 skip-with-note rule).

@@ -70,4 +70,4 @@ Source: LEARNINGS/ (2 project). Refresh: /learnings-refresh
 - No conflict with `opencode-superlocalmemory` (different store: markdown vs vectors; v2 hook: `session.hook("context")` vs the memory plugin's own injection).
 - Requires `LEARNINGS/` to exist in the project root; absent → skips silently.
 
-See `research/ponytail-load-fix.md` for why this file is `.ts` (not `.mjs`).
+It is `.ts` (not `.mjs`) because OpenCode's local-plugin discovery glob matches only `*.{ts,js}` — an `.mjs` plugin file is silently never loaded (diagnostic history: `git log --all --oneline -- research`).

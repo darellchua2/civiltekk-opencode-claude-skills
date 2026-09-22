@@ -4776,7 +4776,7 @@ setup_opencode_init_symlink() {
         *) log_warn "${user_bin} is not on your PATH. Add it to your shell rc to use opencode-init:" \
            && echo "    export PATH=\"${user_bin}:\$PATH\"" >&2 ;;
     esac
-    log_info "Tip: individual skills/agents can also be installed via: npx github:darellchua2/opencode-config-template add <name>"
+    log_info "Tip: individual skills/agents can also be installed via: npx github:darellchua2/civiltekk-opencode-claude-skills add <name>"
 }
 
 # Setup the opencode-setup symlink (full-deploy entrypoint shim).

@@ -19,14 +19,14 @@ Filed as #320. Ships as a copy-adopt template — this repo is a configurator, n
 1. Copy the ruleset + plugin to your repo root:
 
    ```bash
-   curl -fsSL -o redocly.yaml https://raw.githubusercontent.com/darellchua2/opencode-config-template/main/installer/templates/api-quality/redocly.yaml
-   curl -fsSL -o api-quality-rules.mjs https://raw.githubusercontent.com/darellchua2/opencode-config-template/main/installer/templates/api-quality/api-quality-rules.mjs
+   curl -fsSL -o redocly.yaml https://raw.githubusercontent.com/darellchua2/civiltekk-opencode-claude-skills/main/installer/templates/api-quality/redocly.yaml
+   curl -fsSL -o api-quality-rules.mjs https://raw.githubusercontent.com/darellchua2/civiltekk-opencode-claude-skills/main/installer/templates/api-quality/api-quality-rules.mjs
    ```
 
 2. Install the hook (plain git — no framework dependency):
 
    ```bash
-   curl -fsSL -o .git/hooks/pre-commit https://raw.githubusercontent.com/darellchua2/opencode-config-template/main/installer/templates/api-quality/pre-commit-redocly
+   curl -fsSL -o .git/hooks/pre-commit https://raw.githubusercontent.com/darellchua2/civiltekk-opencode-claude-skills/main/installer/templates/api-quality/pre-commit-redocly
    chmod +x .git/hooks/pre-commit
    ```
 
