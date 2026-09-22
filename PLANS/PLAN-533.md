@@ -6,14 +6,14 @@
 
 ## Acceptance Criteria
 
-- [ ] `plugins/ponytail/SKILL.md` body matches upstream v4.10.0 (modulo the vendored-header comment); `plugins/ATTRIBUTION.md` pin bumped to v4.10.0
-- [ ] All 8 agent lens markers re-synced; no lens quotes the old `// ponytail: this exists` wording
-- [ ] Persisted default mode works: `/ponytail default <mode>` survives restart, env var still wins; bare `/ponytail` reports the active level
-- [ ] Installing a ponytail skill via the installer also delivers the plugin to the target plugin dir; `--no-deps` respected; non-OpenCode targets get a notice, not a copy
-- [ ] Gate paragraph injected with the ruleset; tdd/testing/loop-operator lenses mirror it
-- [ ] `node installer/build-registry.mjs` run; `registry.json` committed if changed
-- [ ] Bats suite passes; injection smoke test shows `PONYTAIL MODE ACTIVE` with the updated wording
-- [ ] Docs synced (README installer section, `deploy/setup.sh` help, CHANGELOG per release-please convention)
+- [x] `plugins/ponytail/SKILL.md` body matches upstream v4.10.0 (modulo the vendored-header comment); `plugins/ATTRIBUTION.md` pin bumped to v4.10.0
+- [x] All 8 agent lens markers re-synced; no lens quotes the old `// ponytail: this exists` wording
+- [x] Persisted default mode works: `/ponytail default <mode>` survives restart, env var still wins; bare `/ponytail` reports the active level
+- [x] Installing a ponytail skill via the installer also delivers the plugin to the target plugin dir; `--no-deps` respected; non-OpenCode targets get a notice, not a copy
+- [x] Gate paragraph injected with the ruleset; tdd/testing/loop-operator lenses mirror it
+- [x] `node installer/build-registry.mjs` run; `registry.json` committed if changed
+- [x] Bats suite passes; injection smoke test shows `PONYTAIL MODE ACTIVE` with the updated wording
+- [x] Docs synced (README installer section, `deploy/setup.sh` help, CHANGELOG per release-please convention)
 
 ## Dependency & Consumer Map
 
@@ -105,20 +105,23 @@
 
 ### Phase 3: Build/test gate clause + docs
 
-- [ ] **3.1** Gate paragraph is the EXISTING upstream text at `plugins/ponytail/SKILL.md:114-120` ("Lazy code without its check is unfinished…" — already present in v4.8.4 and v4.10.0, not mode-keyed, injects at every level): make ZERO SKILL.md body edits; mirror the existing paragraph into the testing lens (`agents/testing-subagent.md` — no mirror today) and the loop-operator lens (`:189` carries a different "unfinished" sentence); the tdd lens already mirrors it (`agents/tdd-subagent.md:173`)
+- [x] **3.1** Gate paragraph is the EXISTING upstream text at `plugins/ponytail/SKILL.md:114-120` ("Lazy code without its check is unfinished…" — already present in v4.8.4 and v4.10.0, not mode-keyed, injects at every level): make ZERO SKILL.md body edits; mirror the existing paragraph into the testing lens (`agents/testing-subagent.md` — no mirror today) and the loop-operator lens (`:189` carries a different "unfinished" sentence); the tdd lens already mirrors it (`agents/tdd-subagent.md:173`)
     — **Why:** AC #1 ("matches upstream modulo the vendored-header comment") and a 3.1 body edit are mutually exclusive — adding house text would duplicate the existing paragraph and retro-falsify 1.1's upstream-match gate; the real gap is the two lenses missing the mirror
     — **Done when:** the exact sentence "Lazy code without its check is unfinished" appears in testing-subagent.md and loop-operator-subagent.md (tdd verified already present); injection smoke output contains the same sentence
     — **Consumers affected:** testing/loop-operator subagent prompts; injected ruleset (assertion only — no change)
+    — **Done:** ZERO SKILL.md edits (gate text verified already at :114-120, unchanged in v4.10.0); verbatim sentence "Lazy code without its check is unfinished" mirrored into testing-subagent + loop-operator lenses (tdd already mirrors semantically at :173 — TDD red IS the runnable check); injection smoke asserts the sentence; files: agents/testing-subagent.md, agents/loop-operator-subagent.md; fixes: none
 
-- [ ] **3.2** Docs sync: README ponytail sections at `:610` and `:741` (plugin-shipping behavior + non-OpenCode notice); `deploy/setup.sh --help` verified NOT to describe installer behaviors (record the verified no-op outcome — nothing to edit); NO manual CHANGELOG entry — `.github/workflows/release.yml` runs `npx semantic-release` with `@semantic-release/changelog` + `@semantic-release/git` owning `CHANGELOG.md` (hand edits get overwritten at next release; conventional commits on this branch feed the bot — AC #8's "release-please" is a ticket mislabel for the repo's actual engine, record it in the trace)
+- [x] **3.2** Docs sync: README ponytail sections at `:610` and `:741` (plugin-shipping behavior + non-OpenCode notice); `deploy/setup.sh --help` verified NOT to describe installer behaviors (record the verified no-op outcome — nothing to edit); NO manual CHANGELOG entry — `.github/workflows/release.yml` runs `npx semantic-release` with `@semantic-release/changelog` + `@semantic-release/git` owning `CHANGELOG.md` (hand edits get overwritten at next release; conventional commits on this branch feed the bot — AC #8's "release-please" is a ticket mislabel for the repo's actual engine, record it in the trace)
     — **Why:** AGENTS.md sync rules — a behavior change that outpaces docs is drift; and writing to a bot-owned file is worse than not writing (silent overwrite + merge conflicts)
     — **Done when:** README documents the new deliverable and target-scope behavior; the setup.sh-help no-op and the semantic-release determination are recorded with evidence; commit messages follow Conventional Commits
     — **Consumers affected:** README readers; release automation (via conventional commits)
+    — **Done:** README: /ponytail default persistence (state-dir path, env-var precedence) + shipsPlugins install behavior (both scopes, non-opencode notice, --no-deps); opencode_app/README: /ponytail default row; deploy/setup.sh help VERIFIED no-op (only a generic tip line at :4779 — nothing to edit); CHANGELOG: .github/workflows/release.yml runs npx semantic-release with @semantic-release/changelog + @semantic-release/git — NO manual entry, conventional commits feed the bot (AC#8 "release-please" recorded as ticket mislabel); files: README.md, opencode_app/README.md; fixes: none
 
-- [ ] **3.3** Ticket exit gate (full tier): full bats suite, injection smoke with gate sentence, registry check — write the `GATE <short-sha> tier=full` memo line
+- [x] **3.3** Ticket exit gate (full tier): full bats suite, injection smoke with gate sentence, registry check — write the `GATE <short-sha> tier=full` memo line
     — **Why:** the pipeline's run-level last gate is full by contract; review fixes (Step 9) will re-run it on the fixed tree
     — **Done when:** all checks green and the `tier=full` memo line exists for the final tree
     — **Consumers affected:** PR citation (Step 10)
+    — **Done:** exit gate full tier: bats suite 550/550 green, build-registry --check exit 0 (agents=34 skills=146 no drift), injection smoke PASS (PONYTAIL MODE ACTIVE + gate sentence + v4.10.0 ceiling wording); files: none (gate); fixes: none
 
 ## Technical Notes
 
@@ -148,3 +151,5 @@
 GATE da25d5f tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 1: whole bats suite 542/542 — agents/ + plugins/ touched, so suite-wide beats scoped; no manifest lint/typecheck/build scripts)
 
 GATE b0d2836 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 2: whole bats suite 550/550 + registry drift guard — installer is a critical-area anchor)
+
+GATE a83ebc3 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 3 TICKET EXIT GATE: bats 550/550 + registry --check + injection smoke — run-level last gate, full by contract)
