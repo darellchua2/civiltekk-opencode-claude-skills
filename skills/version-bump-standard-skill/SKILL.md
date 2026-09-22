@@ -231,12 +231,18 @@ gh api repos/<org>/<repo>/branches/uat/protection --method PUT --input - << 'EOF
     "require_code_owner_reviews": false
   },
   "restrictions": null,
-  "required_linear_history": true,
+  "required_linear_history": false,
   "allow_force_pushes": false,
   "allow_deletions": false
 }
 EOF
 ```
+
+> **Note:** `required_linear_history` must stay `false` — promotion merges
+> (dev → uat, uat → main) are long-lived-head PRs and require merge commits
+> (squash duplicates content under new SHAs and the branches stop converging).
+> Repos onboarded before this change: re-run the idempotent
+> `scripts/setup-branch-protection.sh` to update the existing rules.
 
 ### main branch
 ```bash
@@ -250,7 +256,7 @@ gh api repos/<org>/<repo>/branches/main/protection --method PUT --input - << 'EO
     "require_code_owner_reviews": false
   },
   "restrictions": null,
-  "required_linear_history": true,
+  "required_linear_history": false,
   "allow_force_pushes": false,
   "allow_deletions": false
 }

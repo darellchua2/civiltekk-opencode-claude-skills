@@ -31,14 +31,16 @@ Cross-module edges exist (generated registry; script↔doc payload sync) → arc
 ## Implementation Phases
 
 ### Phase 1: Linear-history blocker fix (version-bump-standard-skill)
-- [ ] **1.1** Flip `"required_linear_history": true` → `false` in `skills/version-bump-standard-skill/scripts/setup-branch-protection.sh` (payload line 57) and update the header docstring (line 15 "Linear history enforced") to state merge commits are allowed for promotion merges.
+- [x] **1.1** Flip `"required_linear_history": true` → `false` in `skills/version-bump-standard-skill/scripts/setup-branch-protection.sh` (payload line 57) and update the header docstring (line 15 "Linear history enforced") to state merge commits are allowed for promotion merges.
     — **Why:** GitHub rejects merge commits on linear-history branches; promotions (dev→uat, uat→main) require merge commits per `pr-merge-workflow-skill` Phase 1 and `semantic-release-convention-skill` §Promotion Merge Commits — the current setting makes every promotion PR unmergeable on onboarded repos.
     — **Done when:** `grep -c '"required_linear_history": true' skills/version-bump-standard-skill/scripts/setup-branch-protection.sh` returns 0, the payload line reads `"required_linear_history": false`, the docstring no longer says "Linear history enforced", and `bash -n` on the script passes.
     — **Consumers affected:** future onboardings of uat/main protection; existing onboarded repos need the idempotent script re-run (covered by 1.2's note).
-- [ ] **1.2** Mirror the flip in `skills/version-bump-standard-skill/SKILL.md` (both protection payload blocks, lines 234 and 253) and add a note that already-onboarded repos must re-run the idempotent `setup-branch-protection.sh` to pick up the change.
+    — **Done:** payload flipped to `false` (script:58), docstring rewritten to "Merge commits allowed (required_linear_history: false …)" (script:15-16); grep count 0, "Linear history enforced" 0 matches, `bash -n` OK; files: setup-branch-protection.sh; fixes: none
+- [x] **1.2** Mirror the flip in `skills/version-bump-standard-skill/SKILL.md` (both protection payload blocks, lines 234 and 253) and add a note that already-onboarded repos must re-run the idempotent `setup-branch-protection.sh` to pick up the change.
     — **Why:** the SKILL.md payloads are the documented source agents copy; leaving `true` there recreates the blocker wherever the doc (not the script) is followed, and existing repos will not self-heal without the re-run note.
     — **Done when:** `grep -c '"required_linear_history": true' skills/version-bump-standard-skill/SKILL.md` returns 0; both blocks read `false`; a re-run note is present in the branch-protection section.
     — **Consumers affected:** agents and humans following the SKILL.md setup path.
+    — **Done:** both payload blocks flipped (SKILL.md:234, 259), re-run + rationale note added after the uat block (SKILL.md:241-245); grep count 0; files: version-bump-standard-skill/SKILL.md; fixes: none
 
 ### Phase 2: Promotion pre-flight (pr-merge-workflow-skill)
 - [ ] **2.1** Extend the `description` frontmatter of `skills/pr-merge-workflow-skill/SKILL.md` with the new trigger phrases: "promote <branch> to <branch>", "promote to uat", "backmerge <target> into <source>", keeping the existing "Not 'create pr'" boundary.
