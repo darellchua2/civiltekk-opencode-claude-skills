@@ -25,14 +25,18 @@
 ## Implementation Phases
 
 ### Phase 1: Scoped bash for the reviewer
-- [ ] **1.1** Add scoped shell allowlist to `agents/code-review-subagent.md` frontmatter — the existing `shell: '*': deny` rule stays, and allow rules for `git diff*`, `git log*`, `git show*`, `git blame*`, `git status*` are appended after it (last matching rule wins); add one body line noting the agent may verify findings with read-only git forensics; `edit: deny` untouched.
+- [x] **1.1** Add scoped shell allowlist to `agents/code-review-subagent.md` frontmatter — the existing `shell: '*': deny` rule stays, and allow rules for `git diff*`, `git log*`, `git show*`, `git blame*`, `git status*` are appended after it (last matching rule wins); add one body line noting the agent may verify findings with read-only git forensics; `edit: deny` untouched.
     — **Why:** the reviewer currently delegates trivial verification to `general`; scoped bash removes that hop without opening mutation — edit stays denied.
     — **Done when:** frontmatter shows the shell deny-* rule preceding exactly the five read-only git allows; edit rule unchanged; body notes the allowlist as read-intent forensics (not a security boundary — prefix allows can match chained commands; `edit: deny` is the boundary).
+    — **Done:** deny-* + five git allows in order, edit deny untouched; body line added under LEARNINGS paragraph; files: agents/code-review-subagent.md; fixes: none
     — **Consumers affected:** `deploy/setup.sh`, registry builder, Docker image, `tests/agents_target.bats` fixture — all re-verify via the gate.
-- [ ] **1.2** Fix stale `bash: deny` claims in `skills/plan-execution-skill/SKILL.md` (delegate matrix row) and `skills/worktree-pipeline-skill/SKILL.md` (Step 9 opening).
+- [x] **1.2** Fix stale `bash: deny` claims in `skills/plan-execution-skill/SKILL.md` (delegate matrix row) and `skills/worktree-pipeline-skill/SKILL.md` (Step 9 opening).
     — **Why:** prose asserting blanket `bash: deny` becomes factually wrong after 1.1 — the same drift-bait class this ticket removes; Step 9's precomputed-diff mandate stays (it is a guarantee, not a permission consequence).
     — **Done when:** no skill prose claims the reviewer has blanket bash deny; Step 9 still requires orchestrator-computed diffs.
     — **Consumers affected:** skill runtime prompts.
+    — **Done:** delegate-matrix row now "never mutates — edit deny, bash allowlisted to read-only git"; pipeline Step 9 now "edit deny (+ read-only git allowlist; cwd is session checkout)"; files: skills/plan-execution-skill/SKILL.md, skills/worktree-pipeline-skill/SKILL.md; fixes: none
+
+WORK LOG Phase 1: full-gate escalation — anchor: cross-module consumer nodes (agents/*.md → deploy/setup.sh, installer/build-registry.mjs, opencode_app Docker, bats fixtures). Gate `GATE b5d2eee tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a`.
 
 ### Phase 2: Standalone-scoped gates line
 - [ ] **2.1** Scope `agents/pr-workflow-subagent.md`'s closing "Always ensure all quality gates pass before creating PR" to the standalone path.
@@ -72,3 +76,8 @@ None.
 ## Trace
 
 _(gate memos appended here by /run-plan --gate)_
+
+```
+WORK LOG Phase 1: tier=full — anchor: cross-module consumer nodes (agents/*.md → deploy/installer/docker/bats chain)
+GATE b5d2eee tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+```
