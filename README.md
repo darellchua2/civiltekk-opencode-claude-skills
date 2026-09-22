@@ -847,6 +847,14 @@ a Redocly lint ruleset + pre-commit hook that enforces OpenAPI authoring quality
 (see its README for adoption).
 
 
+## Skill Portability
+
+Skills ship to multiple harness targets (`--target claude|agents|kimi|kilo`) and operating systems. Three conventions keep them portable (full contract: [AGENTS.md](AGENTS.md) §Portability contract, enforced by `tests/test_portability.bats`):
+
+1. **Capability-binding blocks** — harness-specific mechanisms (background shells, interactive prompts, subagent delegation) are written with per-harness rows plus a portable fallback; agents self-select their row.
+2. **Portability metadata** — `metadata.os: "linux, macos"` and `metadata.harness: "opencode"` in skill frontmatter; the installer warns when an install target or host platform doesn't match.
+3. **Bash rule** — shell snippets state `Requires bash (git-bash/WSL on Windows)` or use a `node -e` one-liner.
+
 ## Testing & Development
 
 Recipes for testing installer changes without touching your real `~/.config/opencode/`:

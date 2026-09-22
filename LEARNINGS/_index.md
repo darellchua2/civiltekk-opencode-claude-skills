@@ -1257,3 +1257,12 @@
 - **Scope**: project
 - **Summary**: a scripted learning write left heredoc tail (EOF/cat/echo) inside the .md, companion file uncreated, index entries missing — all gate-invisible; verify learning artifacts (markdown-only body, companions exist, index gained entries) after any scripted write (#514 review)
 - **Date**: 2026-09-22
+
+### Portability guard: what it enforces and what it exempts
+
+- **Category**: decisions
+- **File**: `decisions/portability-guard-enforces-rules-1-2.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: test_portability.bats enforces contract rules 1-2 (no .opencode/skills literals in skill bodies; Other/none fallback rows; metadata.os on unix idioms; canonical quoted-comma authoring form) — rule 3 stays review-enforced; PORTABILITY_ROOT enables seeded-violation fixtures (#515)
+- **Date**: 2026-09-22
