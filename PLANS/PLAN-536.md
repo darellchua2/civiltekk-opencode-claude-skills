@@ -6,12 +6,12 @@
 
 ## Acceptance Criteria
 
-- [ ] `research/` and `docs/` deleted
-- [ ] `LEARNINGS/` contains only `_index.md` + category dirs with `.gitkeep`; `.gitignore` has `LEARNINGS/**/*.md` and `!LEARNINGS/_index.md`
-- [ ] `grep -rn "opencode-config-template"` hits zero outside CHANGELOG.md and PLANS/
-- [ ] README titled "CivilTekk OpenCode & Claude Skills" with: purpose intro, /create-ticket + /run-worktree-pipeline + /run-plan + /goal commands table (incl. full-deploy note), simplified install paths, updated directory tree, opencode_app/ Docker purpose section, Support section linking issue templates, deep reference in `<details>`
-- [ ] Broken `PLAN.md` link fixed; skill/agent counts re-derived from `ls`; Pages URL updated to the new repo name
-- [ ] `bash -n` passes on touched scripts; `node --check` passes on touched .mjs; relevant bats guards pass
+- [x] `research/` and `docs/` deleted
+- [x] `LEARNINGS/` contains only `_index.md` + category dirs with `.gitkeep`; `.gitignore` has `LEARNINGS/**/*.md` and `!LEARNINGS/_index.md`
+- [x] `grep -rn "opencode-config-template"` hits zero outside CHANGELOG.md and PLANS/
+- [x] README titled "CivilTekk OpenCode & Claude Skills" with: purpose intro, /create-ticket + /run-worktree-pipeline + /run-plan + /goal commands table (incl. full-deploy note), simplified install paths, updated directory tree, opencode_app/ Docker purpose section, Support section linking issue templates, deep reference in `<details>`
+- [x] Broken `PLAN.md` link fixed; skill/agent counts re-derived from `ls`; Pages URL updated to the new repo name
+- [x] `bash -n` passes on touched scripts; `node --check` passes on touched .mjs; relevant bats guards pass
 
 ## Dependency & Consumer Map
 
@@ -103,14 +103,16 @@
 
 ### Phase 4: Verification (ticket exit gate — full tier)
 
-- [ ] **4.1** Run gates: (a) grep gate from 2.1; (b) `bash -n deploy/setup.sh restart-opencode-docker.sh installer/templates/api-quality/pre-commit-redocly`; (c) `node --check installer/build-site.mjs installer/templates/api-quality/api-quality-rules.mjs installer/init.mjs`; (d) bats set covering swept + reworked surfaces: `tests/test_count_drift.bats tests/test_skill_isolation.bats tests/init.bats tests/test_markitdown_skill.bats tests/test_mcp_count_consistency.bats` (`bats` resolves on PATH)
+- [x] **4.1** Run gates: (a) grep gate from 2.1; (b) `bash -n deploy/setup.sh restart-opencode-docker.sh installer/templates/api-quality/pre-commit-redocly`; (c) `node --check installer/build-site.mjs installer/templates/api-quality/api-quality-rules.mjs installer/init.mjs`; (d) bats set covering swept + reworked surfaces: `tests/test_count_drift.bats tests/test_skill_isolation.bats tests/init.bats tests/test_markitdown_skill.bats tests/test_mcp_count_consistency.bats` (`bats` resolves on PATH)
     — **Why:** ticket AC requires mechanical proof; this is the complete set of guards that consume the touched files (README literals included)
     — **Done when:** all four green; failures fixed before push
     — **Consumers affected:** pipeline gate memo
-- [ ] **4.2** Write the gate memo into this PLAN's trace block with `tier=full` and final SHA; tick all AC boxes
+    — **Done:** all four gates green on final tree: grep zero residue, bash -n x3, node --check x3, bats 56/56 (count_drift, skill_isolation, init, markitdown, mcp_count); fixes: none
+- [x] **4.2** Write the gate memo into this PLAN's trace block with `tier=full` and final SHA; tick all AC boxes
     — **Why:** Step 10 PR citation requires a green tier=full memo on the pushed SHA
     — **Done when:** memo line present; PLAN committed
     — **Consumers affected:** pr-workflow citation
+    — **Done:** exit-gate memo written; all AC ticked; fixes: none
 
 ## Technical Notes
 
@@ -139,3 +141,4 @@ None — no blocked-by tickets. All hard pipeline deps satisfied (plan-execution
 | 1 | light (done-when greps) | green | GATE 45f1082 tier=light lint=- typecheck=- build=- unit=- e2e=n.a |
 | 2 | light (grep gate + bash -n + node --check) | green | GATE a98e4a8 tier=light lint=- typecheck=t(bash -n/node --check on touched) build=- unit=- e2e=n.a |
 | 3 | light (pinned-literal bats + link/URL greps) | green | GATE 8511bee tier=light lint=- typecheck=- build=- unit=t(markitdown+mcp_count bats) e2e=n.a |
+| 4 | full (grep + bash -n x3 + node --check x3 + bats 5 files/56 tests) | green | GATE 8511bee tier=full lint=t(bash -n) typecheck=t(node --check) build=- unit=t(56/56) e2e=n.a |
