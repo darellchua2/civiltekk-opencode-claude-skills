@@ -75,7 +75,7 @@ Cross-module edges exist (generated registry; script↔doc payload sync) → arc
 
 ## Gate Trace
 
-GATE_PENDING_SHA tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+GATE cc060c6 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 
 ## Technical Notes
 - Promotion message conventions already exist: `semantic-release-convention-skill` §Promotion Merge Commits (`chore(promote): <from> → <to> (#N)`) — Phase 0 references, not duplicates.
