@@ -1257,3 +1257,30 @@
 - **Scope**: project
 - **Summary**: a scripted learning write left heredoc tail (EOF/cat/echo) inside the .md, companion file uncreated, index entries missing — all gate-invisible; verify learning artifacts (markdown-only body, companions exist, index gained entries) after any scripted write (#514 review)
 - **Date**: 2026-09-22
+
+### Portability guard: what it enforces and what it exempts
+
+- **Category**: decisions
+- **File**: `decisions/portability-guard-enforces-rules-1-2.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: test_portability.bats enforces contract rules 1-2 (no .opencode/skills literals in skill bodies; Other/none fallback rows; metadata.os on unix idioms; canonical quoted-comma authoring form) — rule 3 stays review-enforced; PORTABILITY_ROOT enables seeded-violation fixtures (#515)
+- **Date**: 2026-09-22
+
+### Canonical-form guards need regex, not case-globs
+
+- **Category**: solutions
+- **File**: `solutions/bash-canonical-form-guards-use-regex-not-case-globs.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: shell case-globs can't express character classes — a canonical "quoted lowercase comma" check implemented as globs validated only quote-wrapping; implement advertised forms as rg -v regex inversion over a shared awk frontmatter slice (#515 review)
+- **Date**: 2026-09-22
+
+### CI runners lack ripgrep — bats guards must use grep
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/ci-runners-lack-ripgrep-bats-guards-use-grep.md`
+- **Confidence**: 1.0
+- **Scope**: project
+- **Summary**: bats guards executing in CI must use POSIX grep/find/awk — rg is absent on ubuntu runners (127) and sweeps would read vacuous-green without the non-vacuous canary; local-green is not CI-green for tooling-dependent tests (#515 CI red)
+- **Date**: 2026-09-22
