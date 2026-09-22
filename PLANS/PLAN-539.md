@@ -29,7 +29,7 @@
     — **Why:** the ticket's entire deliverable — a contributor entry point that orients without duplicating maintainer docs
     — **Done when:** file exists; each of the five sections present; `grep -c "AGENTS.md" CONTRIBUTING.md` ≥ 3 (by-reference discipline is structural, not incidental)
     — **Consumers affected:** humans; GitHub UI (auto-links CONTRIBUTING.md on contribution surfaces)
-- [ ] **1.2** Verify by-reference discipline and link targets: for each section name CONTRIBUTING.md cites, grep the exact heading text in `AGENTS.md`/`README.md` (e.g. "Adding Skills or Subagents", "Skill / Agent Frontmatter Contract", "Portability contract"); confirm no contract table rows copied (sentinel greps: `| Key | Rule |` and `| Trigger | What to update |` absent from CONTRIBUTING.md)
+- [ ] **1.2** Verify by-reference discipline and link targets: for each section name CONTRIBUTING.md cites, grep the exact heading text in `AGENTS.md`/`README.md` (e.g. "Adding Skills or Subagents", "Skill / Agent Frontmatter Contract", "Portability contract"); confirm no contract table rows copied (sentinels: `| Key | Rule |` and `| Trigger | What to update |` absent from CONTRIBUTING.md, plus zero `^|` table lines anywhere in it — its five sections need no tables); `test -f` every file-level link target (.github/ISSUE_TEMPLATE/bug_report.yml, .github/ISSUE_TEMPLATE/feature_request.yml, tests/test_skill_isolation.bats, AGENTS.md, README.md)
     — **Why:** the AC's no-duplication rule must be mechanically checkable, not eyeballed; a wrong section reference ships a dead pointer
     — **Done when:** every cited section-name grep hits its file; both sentinel greps return zero matches in CONTRIBUTING.md
     — **Consumers affected:** none (verification step)
@@ -42,9 +42,9 @@
 
 - [ ] **2.1** Add one line to the README Support section (`## Support & reporting issues`, :140) linking `CONTRIBUTING.md` — placed after the issue-template bullets, phrased for the contributor audience ("Want to contribute a skill or agent? See CONTRIBUTING.md")
     — **Why:** completes the AC's discoverability requirement; the Support section is the natural second stop after reporting issues
-    — **Done when:** `git diff origin/main...HEAD -- README.md` shows exactly one added line inside the Support section; pinned literals verified untouched (`grep -oE '[0-9]+ skill director(y|ies)' README.md | head -1` = 146; `Configuration (2)`; `ships 8`)
+    — **Done when:** `git diff origin/main...HEAD -- README.md` shows exactly one added line inside the Support section; pinned literals verified untouched, mirroring the bats regexes byte-for-byte: `grep -oE '[0-9]+ skill director(y|ies)' README.md | head -1` = 146; `grep -oE '\*\*Configuration\*\* \([0-9]+\)' README.md` = `**Configuration** (2)`; `grep -oE 'ships [0-9]+ MCP server entries' README.md` = `ships 8`
     — **Consumers affected:** humans; pinned-literal bats (additive-only edit — proven by gate)
-- [ ] **2.2** Exit gate, full tier: (a) `bats tests/test_markitdown_skill.bats tests/test_mcp_count_consistency.bats tests/test_count_drift.bats tests/test_skill_isolation.bats` all green; (b) link-target greps from 1.2 re-run green; (c) `ls skills/ | grep -vc _archived` = 146 and `ls agents/*.md | wc -l` = 34 (untouched proof); (d) README diff is the single additive line
+- [ ] **2.2** Exit gate, full tier: (a) `bats tests/test_markitdown_skill.bats tests/test_mcp_count_consistency.bats tests/test_count_drift.bats tests/test_skill_isolation.bats tests/test_pack_permissions.bats` all green (the last is the fourth README-grepping consumer — fixed file list, can't match an additive link line, included so the gate matches the full README consumer set); (b) link-target greps from 1.2 re-run green; (c) `ls skills/ | grep -vc _archived` = 146 and `ls agents/*.md | wc -l` = 34 (untouched proof); (d) README diff is the single additive line
     — **Why:** ticket AC requires mechanical proof; the bats set is the complete consumer set of every touched file
     — **Done when:** all four green; any failure fixed before push
     — **Consumers affected:** pipeline gate memo
