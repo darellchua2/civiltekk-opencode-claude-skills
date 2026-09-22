@@ -57,22 +57,26 @@
 
 ### Phase 2: Rename sweep (opencode-config-template → civiltekk-opencode-claude-skills) + pointer fixes
 
-- [ ] **2.1** Replace every `opencode-config-template` occurrence in the 14 grep-derived live files: README.md, AGENTS.md, deploy/setup.sh, installer/build-site.mjs, installer/templates/api-quality/README.md, installer/templates/api-quality/api-quality-rules.mjs, installer/templates/api-quality/pre-commit-redocly, installer/templates/api-quality/redocly.yaml, opencode_app/Dockerfile (OCI `org.opencontainers.image.title` + `.source` labels), agents/opencode-tooling-subagent.md, skills/markitdown-mcp-skill/SKILL.md, skills/pptx-template-modifier-skill/SKILL.md, skills/worktree-pipeline-skill/SKILL.md, restart-opencode-docker.sh — CHANGELOG.md and PLANS/ stay untouched (history; GitHub redirects resolve)
+- [x] **2.1** Replace every `opencode-config-template` occurrence in the 14 grep-derived live files: README.md, AGENTS.md, deploy/setup.sh, installer/build-site.mjs, installer/templates/api-quality/README.md, installer/templates/api-quality/api-quality-rules.mjs, installer/templates/api-quality/pre-commit-redocly, installer/templates/api-quality/redocly.yaml, opencode_app/Dockerfile (OCI `org.opencontainers.image.title` + `.source` labels), agents/opencode-tooling-subagent.md, skills/markitdown-mcp-skill/SKILL.md, skills/pptx-template-modifier-skill/SKILL.md, skills/worktree-pipeline-skill/SKILL.md, restart-opencode-docker.sh — CHANGELOG.md and PLANS/ stay untouched (history; GitHub redirects resolve)
     — **Why:** shipped-forward text must carry the new repo path; npx commands, Pages URL, and OCI source labels are functional strings
     — **Done when:** `grep -rn "opencode-config-template" --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=_archived .` in the worktree matches only CHANGELOG.md and PLANS/*
     — **Consumers affected:** npx remote installs, Pages catalog URL, setup.sh help text, image registries
-- [ ] **2.2** Fix the two stale `research/` pointers left by 1.1: `plugins/README.md` (drop `research/` from the historical-records policy list) and `plugins/opencode-learnings-autoinject.README.md` (dead `research/ponytail-load-fix.md` link → one-clause inline summary of the .ts-not-.mjs rationale, or a git-history pointer)
+    — **Done:** sed sweep over 14 files; live grep residue zero; files: 14 listed; fixes: none
+- [x] **2.2** Fix the two stale `research/` pointers left by 1.1: `plugins/README.md` (drop `research/` from the historical-records policy list) and `plugins/opencode-learnings-autoinject.README.md` (dead `research/ponytail-load-fix.md` link → one-clause inline summary of the .ts-not-.mjs rationale, or a git-history pointer)
     — **Why:** living docs must not point at deleted paths; history pointers belong to the records, not to them
     — **Done when:** `grep -rn "research/" plugins/*.md plugins/*.README.md 2>/dev/null` empty in the worktree
     — **Consumers affected:** humans reading plugin docs
-- [ ] **2.3** Syntax-check touched executables: `bash -n deploy/setup.sh restart-opencode-docker.sh installer/templates/api-quality/pre-commit-redocly` and `node --check installer/build-site.mjs installer/templates/api-quality/api-quality-rules.mjs`
+    — **Done:** plugins/README.md policy list minus research/; autoinject README dead link → inline .ts rationale + git pathspec pointer; fixes: reworded pointer to keep done-when grep clean
+- [x] **2.3** Syntax-check touched executables: `bash -n deploy/setup.sh restart-opencode-docker.sh installer/templates/api-quality/pre-commit-redocly` and `node --check installer/build-site.mjs installer/templates/api-quality/api-quality-rules.mjs`
     — **Why:** sweep touches functional scripts; prove no breakage before content rework stacks on top
     — **Done when:** both commands exit 0
     — **Consumers affected:** opencode-setup bin, pages job, downstream pre-commit hook
-- [ ] **2.4** Commit Phase 2 (`chore(rebrand): sweep opencode-config-template → civiltekk-opencode-claude-skills (14 live files + 2 pointer fixes)`)
+    — **Done:** bash -n x3 + node --check x2 all green; fixes: none
+- [x] **2.4** Commit Phase 2 (`chore(rebrand): sweep opencode-config-template → civiltekk-opencode-claude-skills (14 live files + 2 pointer fixes)`)
     — **Why:** mechanical rename isolated from editorial rework for reviewable diff
     — **Done when:** commit exists; tree clean
     — **Consumers affected:** none new
+    — **Done:** Phase 2 committed as a98e4a8; fixes: none
 
 ### Phase 3: README rework
 
@@ -129,3 +133,4 @@ None — no blocked-by tickets. All hard pipeline deps satisfied (plan-execution
 | Phase | Gate | Result | Notes |
 |-------|------|--------|-------|
 | 1 | light (done-when greps) | green | GATE 45f1082 tier=light lint=- typecheck=- build=- unit=- e2e=n.a |
+| 2 | light (grep gate + bash -n + node --check) | green | GATE a98e4a8 tier=light lint=- typecheck=t(bash -n/node --check on touched) build=- unit=- e2e=n.a |
