@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.31.0](https://github.com/darellchua2/opencode-config-template/compare/v9.30.2...v9.31.0) (2026-09-22)
+
+### Features
+
+* **installer:** implement Phase 2 — registry carries os/harness ([e23bf4e](https://github.com/darellchua2/opencode-config-template/commit/e23bf4e1f108d8f0b534be121583df7b73d1677a))
+* **installer:** implement Phases 3-4 — portability warnings + gate ([5511a6f](https://github.com/darellchua2/opencode-config-template/commit/5511a6f1eda7ec9f83cbd013f335eccc45a517c1))
+* **skills:** implement Phase 1 — portability metadata on 14 skills ([1b062f4](https://github.com/darellchua2/opencode-config-template/commit/1b062f445eeb04fa637393c4ad76a0401403b248))
+
+### Bug Fixes
+
+* **installer:** review fixes — LEARNINGS repair, census correction, trim ([4645ff6](https://github.com/darellchua2/opencode-config-template/commit/4645ff6f4f5fd908f431c48276ef2edba1ca816a))
+
+### Documentation
+
+* **plan:** add PLAN-514.md for [#514](https://github.com/darellchua2/opencode-config-template/issues/514) ([4fc7875](https://github.com/darellchua2/opencode-config-template/commit/4fc7875739372769de4dac7863e323d75a67bae0))
+
 ## [9.30.2](https://github.com/darellchua2/opencode-config-template/compare/v9.30.1...v9.30.2) (2026-09-22)
 
 ### Bug Fixes
