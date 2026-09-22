@@ -5,6 +5,8 @@ description: >-
   README.md, AGENTS.md counts and listings.
 license: Apache-2.0
 compatibility: opencode
+metadata:
+  harness: "opencode"
 category: Documentation
 ---
 

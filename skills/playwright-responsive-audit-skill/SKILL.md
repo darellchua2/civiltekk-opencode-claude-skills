@@ -7,6 +7,7 @@ description: >-
 license: Apache-2.0
 compatibility: opencode
 metadata:
+  os: "linux"
   protocol: autoresearch-opt-in
 category: Responsive & Visual Testing
 ---
@@ -29,7 +30,7 @@ Desktop 1280×720 (Chrome) · Mobile 375×667 (Pixel 5, touch) · Tablet 768×10
 
 ## Background execution (display-branched)
 
-The loop iterates detect→fix→re-verify many times — run each DETECT/RE-VERIFY pass as its own background shell command (`background: true`): it returns immediately, the exit notification carries the results, and every pass is independently stoppable (foreground `pkill -f` on the runner pattern) for early abort. Always set an explicit `timeout` (ms) sized for the suite. Keep ONE long-running background server for cross-iteration queries — `npx playwright show-report` (headless), read over HTTP, stopped via `pkill -f` when done. Display: use `$DISPLAY` when set, else `xvfb-run` if available; headless fallback when neither.
+The loop iterates detect→fix→re-verify many times — run each DETECT/RE-VERIFY pass as its own background shell command so the session stays free: it returns immediately, the exit notification carries the results, and every pass is independently stoppable (foreground `pkill -f` on the runner pattern) for early abort. Harness binding (§Portability contract): OpenCode — shell `background: true` (exit notification carries results). Claude Code — Bash `run_in_background: true`. Other/none — `nohup <cmd> > /tmp/opencode/audit-pass.log 2>&1 &` and re-check the log between steps; stop via `kill <pid>` (`taskkill` on Windows; nohup/kill need bash — git-bash/WSL). Always set an explicit `timeout` (ms) sized for the suite. Keep ONE long-running background server for cross-iteration queries — `npx playwright show-report` (headless), read over HTTP, stopped via `pkill -f` when done. Display: use `$DISPLAY` when set, else `xvfb-run` if available; headless fallback when neither.
 
 > Removed 2026-09: the six assertion implementations line-by-line (locator + expect recipes per defect), fixtures/helpers listings, full config dumps, tier-by-tier worked examples — kept the tier classification tables (the decision content), viewport matrix, and the execution strategy.
 

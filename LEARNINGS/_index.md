@@ -369,7 +369,7 @@
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/sweep-set-from-audit-list-misses-grep-derived-consumers.md`
-- **Confidence**: 0.85
+- **Confidence**: high
 - **Scope**: project
 - **Date**: 2026-09-21
 - **Summary**: When a path move (or rename) makes old strings dead, derive the repoint sweep from `grep -rn "<old-path-string>"` across all file types — every hit is either repointed or explicitly exempted with a dated note. An audit list is a lower bound, not the universe: sibling consumers cite the same dead paths and are found only by the string, not by the list. Gate the sweep on the same grep returning zero
@@ -1184,4 +1184,94 @@
 - **Confidence**: 0.75
 - **Scope**: project
 - **Summary**: Editing a `commands.*.description` without grepping its distinctive phrase repo-wide leaves parallel restatements stale — /run-plan's was mirrored in README.md:624 and anchored by docker-compose.yml:29-31. Map every hit before authoring steps (#524)
+- **Date**: 2026-09-22
+
+### Tracker issue body is the tiebreaker for flagged scope
+
+- **Category**: solution
+- **File**: `LEARNINGS/solutions/tracker-issue-body-is-the-tiebreaker-for-flagged-scope.md`
+- **Confidence**: medium
+- **Scope**: project
+- **Summary**: When a review brief and a PLAN disagree on maintainer-directive scope for a flagged inclusion, fetch the tracker issue body before emitting a Requirements Gap — it is the authoritative tiebreaker (#522)
+- **Date**: 2026-09-22
+
+### Purge AC prefix coverage is accidental
+
+- **Category**: solution
+- **File**: `LEARNINGS/solutions/purge-ac-prefix-coverage-is-accidental.md`
+- **Confidence**: medium
+- **Scope**: project
+- **Summary**: A purge AC's grep alternation gates a flagged extension id only by prefix luck — list every removed id explicitly in the pattern, flagged extensions included (#522)
+- **Date**: 2026-09-22
+
+### Skill snippet paths resolve via env vars, never cwd-relative paths
+
+- **Category**: pattern
+- **File**: `patterns/skill-snippet-paths-via-env-not-cwd.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: SKILL.md/agent-doc python snippets resolve engines via `os.environ['SKILL_DIR']` and prerequisite siblings via `get('DEP_SKILL_DIR', normpath(SKILL_DIR/../dep))` — never `.opencode/skills/…` literals, which break on every non-project install target; missing export fails loud by design (#511)
+- **Date**: 2026-09-22
+
+### Binding-row fallback token: one shape, every site
+
+- **Category**: convention
+- **File**: `conventions/binding-row-token-single-shape.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: normalize mechanically-greppable contract markers at every insertion site in the implementing commit; probes grep the delivered token case-insensitively; inline rows satisfy the canonical binding block (#512, Mode R ruling — codified by #515's guard)
+- **Date**: 2026-09-22
+
+### PLAN checkboxes lag delivered hunks in the same diff
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-checkbox-state-lags-delivered-hunks.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: tick + Done-line each PLAN step in the same commit as its hunks — "code pushed, plan unticked" is an unfinished phase that --gate/--update will re-execute and that AC-verified claims inherit (#512 review)
+- **Date**: 2026-09-22
+
+### Single-sample parity probes miss type-conflict edges
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/single-sample-parity-probe-misses-type-conflicts.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: parity probes for reimplemented merge logic need type-mismatch fixtures on both sides (obj-vs-array, obj-vs-scalar, …) compared against the reference output — one well-formed sample let a delta-dropping recurse condition ship as "verified" (#513 review)
+- **Date**: 2026-09-22
+
+### Windows winget ImageMagick pairs with `magick`, not `convert`
+
+- **Category**: solution
+- **File**: `solutions/winget-im7-needs-magick-not-convert.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: winget installs IM7 (`magick` entry point); plain `convert` on Windows resolves to System32's FAT→NTFS tool — install rows and usage snippets must be reviewed as a pair (#513 review)
+- **Date**: 2026-09-22
+
+### PLAN per-file census claims must be derived from the tree
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/plan-per-file-census-unverified.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: a PLAN's "N have X / M lack X" census asserted from memory was wrong twice (even the re-correction) and would have created duplicate metadata: keys invisible to every gate — capture the tree grep, reviewers re-run it, executors re-run before the first edit (#514)
+- **Date**: 2026-09-22
+
+### Portability warnings live in the install writers, not the resolver
+
+- **Category**: decision
+- **File**: `decisions/portability-warnings-in-writers-not-resolver.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: #514 warnings push into sel.warnings at the two writer sites AFTER effective-target resolution (writeUserScopeInstall via activeTargets — both never warns; writeInstall after --project degradation) — resolveSelection is target-free and shared; cmdAdd --all routes through writeUserScopeInstall anyway
+- **Date**: 2026-09-22
+
+### Learning write scripted via heredoc committed as content
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/learning-write-heredoc-committed-as-content.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: a scripted learning write left heredoc tail (EOF/cat/echo) inside the .md, companion file uncreated, index entries missing — all gate-invisible; verify learning artifacts (markdown-only body, companions exist, index gained entries) after any scripted write (#514 review)
 - **Date**: 2026-09-22

@@ -27,7 +27,9 @@ The API returns a **temporary URL** (expires in ~30 days) on `mfile.z.ai`, so th
 
 ## Prerequisite — API key resolution
 
-The recipe resolves the key robustly (env first, then opencode's credential store):
+The recipe resolves the key robustly (env first, then opencode's credential store).
+
+> Harness binding (§Portability contract): the `ZAI_API_KEY` env var is the portable credential row — it alone works on every harness. The `~/.local/share/opencode/auth.json` fallback reads OpenCode's credential store (bonus row; ignore elsewhere — export the env var). Other/none (no auth.json store): export `ZAI_API_KEY` — the env var alone is sufficient. Recipe execution needs bash + curl + jq (any harness with a shell tool).
 
 ```bash
 KEY="${ZAI_API_KEY:-$(jq -r '.["zai-coding-plan"].key // .["zai"].key // empty' \

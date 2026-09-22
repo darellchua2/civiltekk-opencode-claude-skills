@@ -6,6 +6,8 @@ description: >-
   .urdf, .srdf, .sdf).
 license: Apache-2.0
 compatibility: opencode
+metadata:
+  os: "linux"
 category: CAD & Hardware Design
 ---
 

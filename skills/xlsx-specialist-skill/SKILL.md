@@ -363,6 +363,9 @@ sudo apt-get install libreoffice
 
 # macOS
 brew install --cask libreoffice
+
+# Windows
+winget install TheDocumentFoundation.LibreOffice   # or use WSL
 ```
 
 ### Sandbox Environment Issues

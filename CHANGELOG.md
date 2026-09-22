@@ -2,6 +2,84 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.31.0](https://github.com/darellchua2/opencode-config-template/compare/v9.30.2...v9.31.0) (2026-09-22)
+
+### Features
+
+* **installer:** implement Phase 2 — registry carries os/harness ([e23bf4e](https://github.com/darellchua2/opencode-config-template/commit/e23bf4e1f108d8f0b534be121583df7b73d1677a))
+* **installer:** implement Phases 3-4 — portability warnings + gate ([5511a6f](https://github.com/darellchua2/opencode-config-template/commit/5511a6f1eda7ec9f83cbd013f335eccc45a517c1))
+* **skills:** implement Phase 1 — portability metadata on 14 skills ([1b062f4](https://github.com/darellchua2/opencode-config-template/commit/1b062f445eeb04fa637393c4ad76a0401403b248))
+
+### Bug Fixes
+
+* **installer:** review fixes — LEARNINGS repair, census correction, trim ([4645ff6](https://github.com/darellchua2/opencode-config-template/commit/4645ff6f4f5fd908f431c48276ef2edba1ca816a))
+
+### Documentation
+
+* **plan:** add PLAN-514.md for [#514](https://github.com/darellchua2/opencode-config-template/issues/514) ([4fc7875](https://github.com/darellchua2/opencode-config-template/commit/4fc7875739372769de4dac7863e323d75a67bae0))
+
+## [9.30.2](https://github.com/darellchua2/opencode-config-template/compare/v9.30.1...v9.30.2) (2026-09-22)
+
+### Bug Fixes
+
+* **skills:** implement Phase 1 — PowerShell env variant + node jq alternative ([f501f70](https://github.com/darellchua2/opencode-config-template/commit/f501f701522509b1f0a4c9c252000c8e707bedd1))
+* **skills:** implement Phases 2-4 — OS variants, install rows, bash declarations ([0f0e352](https://github.com/darellchua2/opencode-config-template/commit/0f0e352571f7c830d2d993ab5cff3c661e999df2))
+* **skills:** review fixes — merge type-parity, Windows rows, magick note ([fd59ed6](https://github.com/darellchua2/opencode-config-template/commit/fd59ed64ef7e22f0d60e341eb04c0b8783c64608))
+
+### Documentation
+
+* **plan:** add PLAN-512.md for [#512](https://github.com/darellchua2/opencode-config-template/issues/512) ([c41fc88](https://github.com/darellchua2/opencode-config-template/commit/c41fc88eda77c4f1432b5d17fafd63c2dbf58df0))
+* **plan:** add PLAN-513.md for [#513](https://github.com/darellchua2/opencode-config-template/issues/513) ([9643f4e](https://github.com/darellchua2/opencode-config-template/commit/9643f4e54af46badfab7b666ce0c34ec29372cea))
+* **plan:** gate-cite equivalence note ([aa6826a](https://github.com/darellchua2/opencode-config-template/commit/aa6826a907cf44ddefa312029a5c516acec9d99c))
+* **plan:** re-gate memo on final content SHA ([781bb9d](https://github.com/darellchua2/opencode-config-template/commit/781bb9dd8553467dd809dbc102215a2305d9b982))
+* **plan:** trace Phase 5 — exit gate full green ([7c68f91](https://github.com/darellchua2/opencode-config-template/commit/7c68f9182be6ba14d35dd9f61bcd0ee558ba45b5))
+* **skills:** implement Phase 1 — question-tool harness bindings ([727eeb2](https://github.com/darellchua2/opencode-config-template/commit/727eeb2208f2646d88f0c6e011952d3e5fe723e9))
+* **skills:** implement Phase 2 — background-exec harness bindings ([29b56d4](https://github.com/darellchua2/opencode-config-template/commit/29b56d4e11559b834756a1bf957383292bbb4911))
+* **skills:** implement Phase 3 — zai credential-source harness bindings ([863fefe](https://github.com/darellchua2/opencode-config-template/commit/863fefeec8c91676c28d2aeaf40640d2764ca63e))
+* **skills:** implement Phase 4 — subagent-delegation harness bindings ([99b78bf](https://github.com/darellchua2/opencode-config-template/commit/99b78bf129fda620a46cf379bc9d631a1a9cc430))
+* **skills:** review fixes — normalize Other/none token, fix plan-execution fallback ([f6842c3](https://github.com/darellchua2/opencode-config-template/commit/f6842c38fe90f4f200a0466372ba4c9334aceac9))
+
+## [9.30.1](https://github.com/darellchua2/opencode-config-template/compare/v9.30.0...v9.30.1) (2026-09-21)
+
+### Bug Fixes
+
+* **skills:** implement Phase 1 — SKILL_DIR resolution in generate-template snippets ([9a8b4de](https://github.com/darellchua2/opencode-config-template/commit/9a8b4de645f5040c4f0da2946918e6c48387c6d1))
+* **skills:** implement Phase 2 — SKILL_DIR + sibling slide-skill resolution in modifier ([af52665](https://github.com/darellchua2/opencode-config-template/commit/af526651b538db2a8f43135d2bc6f4126fa787fc))
+* **skills:** path-neutral design-doc reference in slide skill ([14225de](https://github.com/darellchua2/opencode-config-template/commit/14225de996ca52776a1e419719163226e4e2e000))
+* **skills:** review fix — env-var rewrite in pptx-specialist-subagent; LEARNINGS ([36d1489](https://github.com/darellchua2/opencode-config-template/commit/36d1489d729d803dfbc71b7f8ae8ff6153ba669a))
+
+### Documentation
+
+* **plan:** add PLAN-510.md for [#510](https://github.com/darellchua2/opencode-config-template/issues/510) ([513029c](https://github.com/darellchua2/opencode-config-template/commit/513029c43c3854b4c354d49265039c3dddda153e))
+* **plan:** add PLAN-511.md for [#511](https://github.com/darellchua2/opencode-config-template/issues/511) ([8fda934](https://github.com/darellchua2/opencode-config-template/commit/8fda934cbfac304c53a61a885914baa1985cb824))
+* **plan:** annotate gate memo tree-equivalence ([2410722](https://github.com/darellchua2/opencode-config-template/commit/2410722b860d6dbe181573d5773a5e938dfcaca5))
+* **plan:** cite exit-gate memo on final SHA ([aeb80c6](https://github.com/darellchua2/opencode-config-template/commit/aeb80c69f5f6e244e49d3457b5bf3744c60a021c))
+* **plan:** cite review-fix gate memo ([9417c88](https://github.com/darellchua2/opencode-config-template/commit/9417c8838836463ce21a5ef2cdfc062c7bf209bb))
+* **plan:** memo final SHA ([17fee22](https://github.com/darellchua2/opencode-config-template/commit/17fee2286a7d1893215639fdded232c7bebfd0d6))
+* **plan:** post-merge re-gate memo ([bda94c8](https://github.com/darellchua2/opencode-config-template/commit/bda94c81b815285e4bb4f56157cf401a23371246))
+* **plan:** trace Phase 2 gate — exit gate full green ([b69a349](https://github.com/darellchua2/opencode-config-template/commit/b69a3494c2528d6faa7b491f5519ce9a8826f6f0))
+* **plan:** trace Phase 3 — exit gate full green ([7521e68](https://github.com/darellchua2/opencode-config-template/commit/7521e688e017ad929b89669a50000b3e6d90736f))
+* **skills:** implement Phase 1 — portability contract vocabulary ([7787015](https://github.com/darellchua2/opencode-config-template/commit/77870155a94cc0ad02f9b33f2ed5043bc3fa294d))
+* **skills:** review fixes — pin metadata value spelling, rescope [#514](https://github.com/darellchua2/opencode-config-template/issues/514)/[#515](https://github.com/darellchua2/opencode-config-template/issues/515) ([499b71d](https://github.com/darellchua2/opencode-config-template/commit/499b71d92e528299a322c5b0091ce48454b41d03))
+
+## [9.30.0](https://github.com/darellchua2/opencode-config-template/compare/v9.29.0...v9.30.0) (2026-09-21)
+
+### Features
+
+* **installer:** collapse flash-class models onto glm-5.3-flash ([#522](https://github.com/darellchua2/opencode-config-template/issues/522)) — Phase 1 ([ceafa45](https://github.com/darellchua2/opencode-config-template/commit/ceafa45cc291d6604c77e2fd48f4aca43c266730))
+
+### Bug Fixes
+
+* **learnings:** review fixes — confidence field sync, index separator, partial-refresh recurrence ([#522](https://github.com/darellchua2/opencode-config-template/issues/522)) ([dd693bf](https://github.com/darellchua2/opencode-config-template/commit/dd693bf0bde4972230333e264592c5a20566f57c))
+
+### Documentation
+
+* **plan:** add PLAN-522.md for [#522](https://github.com/darellchua2/opencode-config-template/issues/522) ([0d122bd](https://github.com/darellchua2/opencode-config-template/commit/0d122bd51875b3f1eb6df7d992e5534f258c2dc8))
+* **plan:** append post-review-fix tier=full gate memo ([#522](https://github.com/darellchua2/opencode-config-template/issues/522)) ([a444228](https://github.com/darellchua2/opencode-config-template/commit/a444228b24c585b071994e33940312e74e527937))
+* **plan:** apply plan-review findings to PLAN-522 (map census, scope wording, LEARNINGS) ([c0e1e62](https://github.com/darellchua2/opencode-config-template/commit/c0e1e624180c06136392c70603ce9786ac64a391))
+* **plan:** trace PLAN-522 complete — exit gate tier=full ([d645e8d](https://github.com/darellchua2/opencode-config-template/commit/d645e8de9ab2f69a12e8c8dc531855f43dfe0519))
+* **skills:** head-class merge policy — merge commits for long-lived-head PRs ([#521](https://github.com/darellchua2/opencode-config-template/issues/521)) ([d8e8d1f](https://github.com/darellchua2/opencode-config-template/commit/d8e8d1feddbfccddf289c3401b1d7ac2d08b9463)), closes [#519](https://github.com/darellchua2/opencode-config-template/issues/519) [55/#72](https://github.com/55/opencode-config-template/issues/72) [#519](https://github.com/darellchua2/opencode-config-template/issues/519) [#520](https://github.com/darellchua2/opencode-config-template/issues/520)
+
 ## [9.29.0](https://github.com/darellchua2/opencode-config-template/compare/v9.28.2...v9.29.0) (2026-09-21)
 
 ### Features

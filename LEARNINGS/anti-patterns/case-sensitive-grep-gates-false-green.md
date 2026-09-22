@@ -31,3 +31,8 @@ Verification greps over prose must be case-insensitive (`grep -ri`). For
 file-tree / ASCII-art doc blocks, additionally grep the bare child name
 (`\.opencode/`) and the comment text ("bridge") separately — a joined
 parent/child path never matches a split tree line.
+
+#512 instance: PLAN-512 step 5.2's probe `rg -c 'Other/none:'` (case-sensitive,
+colon) matched 0 of 15 delivered inline rows (`Other/none —`, `other/none —`,
+`harnesses without subagents —`, none) — the gate proved the pattern absent,
+not coverage present. Fixed probe: `rg -ni 'other/none'` per file.
