@@ -62,14 +62,20 @@ Cross-module edges exist (generated registry; script↔doc payload sync) → arc
     — **Done:** CI-gate sentence now pins `gh pr merge <num> --squash` with the Phase 1 classifier citation and an explicit never-`--merge` rationale (SKILL.md:175-179); affected suite test_tiered_gating.bats green (23 ok, incl. step10 tier=full citation test); files: worktree-pipeline-skill/SKILL.md; fixes: none
 
 ### Phase 4: Registry regeneration + verification gates (exit gate: full)
-- [ ] **4.1** Run `node installer/build-registry.mjs` from the repo root and stage the regenerated `installer/registry.json` with the phase commit.
+- [x] **4.1** Run `node installer/build-registry.mjs` from the repo root and stage the regenerated `installer/registry.json` with the phase commit.
     — **Why:** repo rule — after ANY skill frontmatter change, rebuild and commit registry.json; a regenerated-but-unstaged artifact is the known generated-artifact anti-pattern.
     — **Done when:** `git diff installer/registry.json` shows the new pr-merge description; `git status` shows no unstaged `installer/registry.json` after staging; `node installer/build-registry.mjs --check` exits 0 (mechanical drift gate).
     — **Consumers affected:** `installer/init.mjs`, the `npx ... add` installer path.
-- [ ] **4.2** Run the full exit gate: `bash -n` on the edited script; `bats tests/test_skill_isolation.bats tests/test_autoresearch_protocol.bats tests/test_default_behavior.bats`; fix any failure before proceeding.
+    — **Done:** registry rebuilt (agents=34, skills=146), diff shows only the pr-merge description line, `--check` → "registry OK … no drift", staged with the phase commit; files: installer/registry.json; fixes: none
+- [x] **4.2** Run the full exit gate: `bash -n` on the edited script; `bats tests/test_skill_isolation.bats tests/test_autoresearch_protocol.bats tests/test_default_behavior.bats`; fix any failure before proceeding.
     — **Why:** the ticket's final AC names these three suites; the isolation guard and the pr-merge behavior tests (iteration protocol, gating preamble, citations) must stay green after the SKILL.md additions.
     — **Done when:** all three bats suites exit 0 and the `GATE <short-sha> tier=full` memo line is recorded in the PLAN trace block.
     — **Consumers affected:** CI parity; the Step 9/10 gate-memo citation chain.
+    — **Done:** bash -n OK; all three suites green — 174 ok / 0 failed; memo line appended below; files: (gate only); fixes: none
+
+## Gate Trace
+
+GATE_PENDING_SHA tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 
 ## Technical Notes
 - Promotion message conventions already exist: `semantic-release-convention-skill` §Promotion Merge Commits (`chore(promote): <from> → <to> (#N)`) — Phase 0 references, not duplicates.
