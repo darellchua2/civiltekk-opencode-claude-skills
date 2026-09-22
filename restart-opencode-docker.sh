@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # restart-opencode-docker.sh
-# Purpose: Pull the latest 'main' branch of opencode-config-template and redeploy
+# Purpose: Pull the latest 'main' branch of civiltekk-opencode-claude-skills and redeploy
 #          the Docker-hosted OpenCode web service (docker compose up -d --build).
 #
 # Branch:  Deploys the 'main' branch — changes MUST be merged to main first.
