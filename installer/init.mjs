@@ -181,7 +181,8 @@ function pushPortabilityWarnings(sel, reg, targets) {
 
 // ─────────────────────────── selection resolver (Phase 3.1) ─────────────
 // Pure function: input selection -> resolved install set with transitive closure.
-export function resolveSelection({ agents: agentIn = [], skills: skillIn = [], mcps: mcpIn = [], presets = [] }, reg, depMap) {  const agentByName = new Map(reg.agents.map((a) => [a.stem, a]));
+export function resolveSelection({ agents: agentIn = [], skills: skillIn = [], mcps: mcpIn = [], presets = [] }, reg, depMap) {
+  const agentByName = new Map(reg.agents.map((a) => [a.stem, a]));
   const skillByName = new Map(reg.skills.map((s) => [s.name, s]));
   const warnings = [];
 

@@ -221,7 +221,7 @@ async function build() {
       category,
       audience: meta.audience || "",
       workflow: meta.workflow || "",
-      os: (meta.os || "").split(/,\s*/).filter(Boolean),
+      os: (meta.os || "").split(/,\s*/).map((x) => x.trim()).filter(Boolean),
       harness: meta.harness || "",
       requiredByAgents: [], // filled after
     });

@@ -23,12 +23,12 @@
 
 ### Phase 1: frontmatter metadata
 
-- [x] **1.1** Add `metadata.harness: "opencode"` to the 12 Tier A skills — `opencode-agent-creation`, `opencode-skill-creation`, `opencode-skills-maintainer`, `opencode-repo-setup`, `opencode-v2-migration`, `agent-introspection-debugging`, `context-budget`, `documentation-sync-workflow`, `documentation-consistency`, `strategic-compact`, `continuous-learning`, `plan-execution-skill`. Quoted string per the Mode R ruling. Census (verified by tree grep at plan review): 6 files HAVE `metadata:` (opencode-skill-creation, opencode-skills-maintainer, opencode-v2-migration, documentation-consistency, continuous-learning, plan-execution) → append the sub-key; 6 LACK it (opencode-agent-creation, opencode-repo-setup, agent-introspection-debugging, context-budget, documentation-sync-workflow, strategic-compact) → insert a new block. Never create a second `metadata:` key — the parser merges duplicate markers silently (build-registry.mjs:143).
+- [x] **1.1** Add `metadata.harness: "opencode"` to the 12 Tier A skills — `opencode-agent-creation`, `opencode-skill-creation`, `opencode-skills-maintainer`, `opencode-repo-setup`, `opencode-v2-migration`, `agent-introspection-debugging`, `context-budget`, `documentation-sync-workflow`, `documentation-consistency`, `strategic-compact`, `continuous-learning`, `plan-execution-skill`. Quoted string per the Mode R ruling. Census (base-tree grep, re-verified at code review — the plan-stage census was itself wrong): 5 files HAVE `metadata:` (opencode-skills-maintainer, opencode-v2-migration, documentation-consistency, continuous-learning, plan-execution) → append the sub-key; 7 LACK it (opencode-agent-creation, opencode-skill-creation, opencode-repo-setup, agent-introspection-debugging, context-budget, documentation-sync-workflow, strategic-compact) → insert a new block. Never create a second `metadata:` key — the parser merges duplicate markers silently (build-registry.mjs:143).
     — **Why:** these skills are about OpenCode itself; the marker powers the #514-installed cross-target warning.
     — **Done when:** `rg -l 'harness: "opencode"'` returns all 12.
     — **Consumers affected:** build-registry extraction (Phase 2); #515 guard.
     — **Done:** 12/12 carry `harness: "opencode"` (census corrected pre-execution: 6 appended, 6 new blocks — plan-review finding 2); no duplicate `metadata:` markers; files: 12 SKILL.md; fixes: plan census error caught at review    — **Done:** 12/12 files carry `harness: "opencode"` (census corrected pre-execution: 6 appended, 6 new blocks — plan-review finding 2); no duplicate `metadata:` markers; files: 12 SKILL.md; fixes: plan census error caught at review
-- [ ] **1.2** Add `metadata.os: "linux"` to `playwright-responsive-audit-skill` (xvfb/pkill/DISPLAY) and `cad-viewer-skill` (ROS 2/MoveIt2).
+- [x] **1.2** Add `metadata.os: "linux"` to `playwright-responsive-audit-skill` (xvfb/pkill/DISPLAY) and `cad-viewer-skill` (ROS 2/MoveIt2).
     — **Why:** honest platform declarations; installer warns on installs elsewhere.
     — **Done when:** `rg -l 'os: "linux"'` returns both.
     — **Consumers affected:** installer OS warning; playwright Windows users get a heads-up (skill remains usable headless).
@@ -75,3 +75,25 @@
 
 GATE e23bf4e tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 Note: build axis = `build-registry.mjs --check` + regen shape audit (os/harness on exactly 14 skills); lint axis = coverage probes (12+2 frontmatter, 4/4 smoke probes). Later PLAN-only commits are tree-equivalent; CI is the unconditional re-run.
+
+### Phase 5: Review fixes (post-Step-9)
+
+- [x] **5.1** Repair the LEARNINGS batch: rewrite plan-per-file-census (had heredoc-script tail), create the missing decisions file, append the 3 missing _index entries; add the review's learning-write-heredoc candidate.
+    — **Why:** review Major-1 — learnings stored corrupted and unfindable, gate-invisible.
+    — **Done when:** anti-pattern file is markdown-only; decisions file exists; index gained 3 entries.
+    — **Consumers affected:** future LEARNINGS recall; #515 authors.
+    — **Done:** all three repaired + heredoc-anti-pattern captured; files: LEARNINGS/*; fixes: heredoc-as-content corruption
+- [x] **5.2** Correct the PLAN 1.1 census to the base-tree truth (5 append / 7 new; opencode-skill-creation had none) and fix the learning file's census line.
+    — **Why:** review Major-2 — the record feeds #515's guard authorship.
+    — **Done when:** PLAN + learning state 5/7 with opencode-skill-creation in the lacks-list.
+    — **Consumers affected:** #515 guard.
+    — **Done:** corrected in both; files: PLANS/PLAN-514.md, LEARNINGS/anti-patterns/plan-per-file-census-unverified.md; fixes: twice-wrong census documented as the instance
+- [x] **5.3** Restore the newline after the resolveSelection signature (review NOTE — edit artifact in an exported pure function) and add `.map((x) => x.trim())` to the os split (robustness against "linux , macos" spellings).
+    — **Why:** NOTEs adopted — one edit artifact, one robustness gap.
+    — **Done when:** signature on its own line; trim present.
+    — **Consumers affected:** resolveSelection callers (none — cosmetic); os extraction edge.
+    — **Done:** both applied; files: installer/init.mjs, installer/build-registry.mjs; fixes: none
+
+## Gate Trace (review-fix)
+
+GATE 5511a6f tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
