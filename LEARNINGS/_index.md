@@ -1266,3 +1266,12 @@
 - **Scope**: project
 - **Summary**: test_portability.bats enforces contract rules 1-2 (no .opencode/skills literals in skill bodies; Other/none fallback rows; metadata.os on unix idioms; canonical quoted-comma authoring form) — rule 3 stays review-enforced; PORTABILITY_ROOT enables seeded-violation fixtures (#515)
 - **Date**: 2026-09-22
+
+### Canonical-form guards need regex, not case-globs
+
+- **Category**: solutions
+- **File**: `solutions/bash-canonical-form-guards-use-regex-not-case-globs.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: shell case-globs can't express character classes — a canonical "quoted lowercase comma" check implemented as globs validated only quote-wrapping; implement advertised forms as rg -v regex inversion over a shared awk frontmatter slice (#515 review)
+- **Date**: 2026-09-22

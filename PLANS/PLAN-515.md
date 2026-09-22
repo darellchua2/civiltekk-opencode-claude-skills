@@ -50,7 +50,7 @@
     — **Consumers affected:** future sessions.
     — **Done:** guard-decision learning captured (4 checks, token, exemptions, PORTABILITY_ROOT fixtures); artifact verified markdown-only + index entry present (per #514 heredoc anti-pattern); files: LEARNINGS/decisions/portability-guard-enforces-rules-1-2.md, LEARNINGS/_index.md; fixes: none- [x] **3.2** Full exit gate: entire bats suite (incl. the new guard) + `build-registry --check` + count checks; final registry untouched (no frontmatter edits in this ticket — assert byte-identical).
     — **Why:** ticket exit gate runs full unconditionally.
-    — **Done when:** suite green incl. 5 new guard tests; --check exits 0.
+    — **Done when:** suite green incl. the new guard tests; --check exits 0.
     — **Consumers affected:** installer, CI.
 
 ## Technical Notes
@@ -64,8 +64,25 @@
 ## Risks & Mitigation
 - *Guard false-positives on future legit mentions* → tests match the delivered spellings (census-derived), `Other/none` token case-insensitive per Mode R; seeded fixtures pin the intended failure modes.
 - *Docs drift vs contract* → README paragraph links AGENTS.md as source of truth; no second full spec.
-    — **Done:** full suite 533/533 (529 + 4 guard); --check exits 0; registry byte-identical (no frontmatter edits); files: none (verification); fixes: none
+    — **Done:** full suite 533/533 (529 + 4 guard tests; 5 after review-fix canary); --check exits 0; registry byte-identical (no frontmatter edits); files: none (verification); fixes: none
 ## Gate Trace
 
 GATE 77f4aa0 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 Note: lint axis = guard probes + seeded-violation proof; build = build-registry --check; the post-commit PLAN-only push is tree-equivalent; CI is the unconditional re-run.
+
+### Phase 4: Review fixes (post-Step-9)
+
+- [x] **4.1** Refute the review's BLOCK with tree evidence: playwright carries `metadata.os: "linux"` at feat/515 HEAD (merged via #514/PR #529); guard runs 5/5 green on the real worktree. The reviewer's cwd was a stale main checkout.
+    — **Why:** the BLOCK claimed test 3 cannot pass and the green claim was unreliable — disproven by re-running on the branch.
+    — **Done when:** fresh guard run + frontmatter capture recorded in this PLAN.
+    — **Consumers affected:** none.
+    — **Done:** frontmatter captured (os: "linux" present); guard 4/4 then 5/5 green; files: none (evidence record); fixes: none
+- [x] **4.2** Guard v2: regex-inversion canonical-form check (was case-globs), shared `frontmatter_lines` awk slicer (was head -15), non-vacuous sweep canary, `_archived/` exclusion; README per-rule enforcement attribution (rules 1–2 guard, rule 3 review).
+    — **Why:** review Majors (glob under-implementation, wrong extractor) + NOTEs (over-attribution, vacuous-pass, archived scope).
+    — **Done when:** 5/5 clean; seeded fixture still fails the 4 rule checks; README wording per-rule.
+    — **Consumers affected:** skill authors (guard output now names non-canonical lines).
+    — **Done:** all applied; files: tests/test_portability.bats, README.md, LEARNINGS/*; fixes: glob→regex, slicer dedupe, canary, attribution
+
+## Gate Trace (review-fix)
+
+GATE 5d2b248 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
