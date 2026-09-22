@@ -28,7 +28,7 @@
 // => isolation (curated subset) only holds on a clean slate (no global deploy).
 
 import { readFile, writeFile, mkdir, readdir, rm, cp, copyFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { dirname, join, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -42,6 +42,7 @@ const REPO = dirname(__dirname); // installer/.. = repo root
 const INSTALLER = __dirname; // installer dir (post-split); source files co-located
 const AGENTS_SRC = join(REPO, "agents");
 const SKILLS_SRC = join(REPO, "skills");
+const PLUGINS_SRC = join(REPO, "plugins");
 const REGISTRY_FILE = join(INSTALLER, "registry.json");
 const PRESETS_DIR = join(INSTALLER, "presets");
 const DEPMAP_FILE = join(INSTALLER, "dependency-map.json");
@@ -158,7 +159,7 @@ async function loadPresets() {
 }
 async function loadDepMap() {
   const d = await readJsonMaybe(DEPMAP_FILE);
-  return { impliesMcp: (d && d.impliesMcp) || {}, requiresSkills: (d && d.requiresSkills) || {} };
+  return { impliesMcp: (d && d.impliesMcp) || {}, requiresSkills: (d && d.requiresSkills) || {}, shipsPlugins: (d && d.shipsPlugins) || {} };
 }
 
 // ─────────────────────── portability warnings (#514) ────────────────────
@@ -247,6 +248,40 @@ export function resolveSelection({ agents: agentIn = [], skills: skillIn = [], m
     mcps: [...mc].sort(),
     warnings,
   };
+}
+
+// ─────────────────── shipsPlugins (#533) ─────────────────────────────────
+// Repo plugin artifacts shipped alongside a skill so runtime enforcement
+// (system-prompt injection) travels with the docs: the ponytail skills are
+// passive without the plugin. Declarative edge in dependency-map.json — same
+// pattern as impliesMcp/requiresSkills. OpenCode auto-loads plugin dirs at
+// startup (~/.config/opencode/plugins/ global, .opencode/plugins/ project —
+// verified against opencode.ai/docs/plugins 2026-09-21). Non-opencode targets
+// get a notice; --no-deps bypasses plugin shipping like it bypasses
+// requiresSkills.
+export function pluginsForSkills(skillNames, depMap, opts = {}) {
+  if (opts.noDeps) return [];
+  const out = new Set();
+  for (const s of skillNames || []) {
+    for (const f of depMap.shipsPlugins?.[s] || []) out.add(String(f).replace(/\/+$/, ""));
+  }
+  return [...out].sort();
+}
+
+async function shipPluginArtifacts(files, destDir) {
+  await mkdir(destDir, { recursive: true });
+  const shipped = [];
+  for (const name of files) {
+    const src = join(PLUGINS_SRC, name);
+    if (!existsSync(src)) {
+      console.error(`warning: plugin artifact missing: plugins/${name}`);
+      continue;
+    }
+    // exact-name artifacts only — unrelated files in the dest dir are never touched
+    await cp(src, join(destDir, name), { recursive: true, force: true });
+    shipped.push(name);
+  }
+  return shipped;
 }
 
 // ─────────────────────────── read modes (Phase 2) ───────────────────────
@@ -418,6 +453,22 @@ export async function writeInstall(sel, opts, reg, depMap) {
     else plan.skills.push({ name: sname, src, dst });
   }
 
+  // shipsPlugins (#533) — gated like every other project artifact: an existing
+  // non-manifest-owned plugin artifact that differs is a conflict (skipped,
+  // --force overrides the notice), never silently clobbered.
+  const pluginFiles = pluginsForSkills(sel.skills, depMap, opts);
+  const prevPlugins = prevManifest.plugins || [];
+  const gatedPluginFiles = [];
+  for (const name of pluginFiles) {
+    const dst = join(ocDir, "plugins", name);
+    if (existsSync(dst) && !prevPlugins.includes(name)) {
+      const src = join(PLUGINS_SRC, name);
+      const differs = statSync(src).isDirectory() ? await dirDiffers(src, dst) : await filesDiffer(src, dst);
+      if (differs) { plan.conflicts.push({ path: dst, kind: "plugin", name }); continue; }
+    }
+    gatedPluginFiles.push(name);
+  }
+
   // opencode.json conflict
   const ocConflict = ocProject && existsSync(ocFile) && !(prevManifest.configPath === ocFile);
   const manifest = {
@@ -430,7 +481,7 @@ export async function writeInstall(sel, opts, reg, depMap) {
   };
 
   if (dry) {
-    process.stdout.write(JSON.stringify({ dryRun: true, project, ...manifest, agents: sel.agents, skills: sel.skills, mcps: sel.mcps, warnings: sel.warnings, conflicts: plan.conflicts.map((c) => c.path) }, null, 2) + "\n");
+    process.stdout.write(JSON.stringify({ dryRun: true, project, ...manifest, agents: sel.agents, skills: sel.skills, mcps: sel.mcps, ...(pluginFiles.length ? { plugins: pluginFiles } : {}), warnings: sel.warnings, conflicts: plan.conflicts.map((c) => c.path) }, null, 2) + "\n");
     return;
   }
 
@@ -489,8 +540,18 @@ export async function writeInstall(sel, opts, reg, depMap) {
 
     // AGENTS.md (Phase 3.5)
     await writeFile(agentsMd, generateAgentsMd(sel, reg), "utf8");
+
+    // shipsPlugins (#533): project-scope plugin dir, auto-loaded at startup
+    let shippedPlugins = [];
+    if (gatedPluginFiles.length) shippedPlugins = await shipPluginArtifacts(gatedPluginFiles, join(ocDir, "plugins"));
+    // union with previously-shipped (Mode R: manifest is the system of record —
+    // a set change that drops ponytail skills must not orphan the record)
+    if (shippedPlugins.length) manifest.plugins = [...new Set([...prevPlugins, ...shippedPlugins])].sort();
   } else if (sel.mcps.length) {
     console.error(`note: MCP servers are configured via opencode.json — skipped for ${pTarget} project installs`);
+  }
+  if (pluginFiles.length && !ocProject) {
+    console.error(`note: runtime ponytail enforcement ships as an opencode plugin — skipped for ${pTarget} project target (skills remain on-demand)`);
   }
 
   // manifest
@@ -504,6 +565,7 @@ export async function writeInstall(sel, opts, reg, depMap) {
     console.log(`  config:  ${relative(project, ocFile)}`);
     console.log(`  models:  ${relative(project, modelsFile)}`);
     console.log(`  rules:   ${relative(project, agentsMd)}`);
+    if (manifest.plugins?.length) console.log(`  plugins: ${manifest.plugins.length}  -> ${relative(project, join(ocDir, "plugins"))}`);
   }
   if (sel.warnings.length) console.log(`  warnings: ${sel.warnings.length}`);
   for (const w of sel.warnings) console.log(`    - ${w}`);
@@ -725,6 +787,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
   const doOc = target === "opencode" || target === "both";
   const doClaude = target === "claude" || target === "both";
   pushPortabilityWarnings(sel, reg, activeTargets(target));
+  const pluginFiles = pluginsForSkills(sel.skills, depMap, opts);
 
   if (dry) {
     const destinations = {};
@@ -740,6 +803,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
       agents: sel.agents,
       skills: sel.skills,
       mcps: sel.mcps,
+      ...(pluginFiles.length ? { plugins: pluginFiles } : {}),
       warnings: sel.warnings,
     }, null, 2) + "\n");
     return;
@@ -789,6 +853,18 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     }
   }
 
+  // shipsPlugins (#533): opencode targets get the plugin artifacts (auto-loaded
+  // runtime enforcement); other targets get a notice — the skills still work
+  // on-demand there, only runtime injection is opencode-specific.
+  let shippedPlugins = [];
+  if (pluginFiles.length) {
+    if (doOc) {
+      shippedPlugins = await shipPluginArtifacts(pluginFiles, join(USER_OC, "plugins"));
+    } else {
+      console.error(`note: runtime ponytail enforcement ships as an opencode plugin — skipped for target '${target}' (skills remain on-demand)`);
+    }
+  }
+
   // update user-scope manifest (tracks ALL targets for uninstall/update). Agents are
   // recorded for every target whose TARGETS row carries an agentsDir (opencode,
   // agents-shared, claude, kimi, kilo). entries merge
@@ -804,6 +880,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     tool: "opencode-skill",
     agents: (doOc || TARGETS[target]?.agentsDir) ? [...new Set([...(prevManifest.agents || []), ...sel.agents])].sort() : (prevManifest.agents || []),
     skills: [...new Set([...(prevManifest.skills || []), ...sel.skills])].sort(),
+    ...(shippedPlugins.length ? { plugins: [...new Set([...(prevManifest.plugins || []), ...shippedPlugins])].sort() } : {}),
     entries,
   };
   await writeFile(USER_MANIFEST, JSON.stringify(manifest, null, 2) + "\n", "utf8");
@@ -812,6 +889,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     console.log(`installed (opencode) → ${USER_OC}:`);
     console.log(`  agents:  ${sel.agents.length}  -> ~/.config/opencode/agents/`);
     console.log(`  skills:  ${sel.skills.length}  -> ~/.config/opencode/skills/`);
+    if (shippedPlugins.length) console.log(`  plugins: ${shippedPlugins.length}  -> ~/.config/opencode/plugins/`);
   }
   if (doClaude) {
     console.log(`  claude:  ${sel.skills.length}  -> ~/.claude/skills/`);
@@ -1171,6 +1249,13 @@ async function cmdRemove(args, opts) {
   if (prev.entries) delete prev.entries[name];
   await writeFile(USER_MANIFEST, JSON.stringify(prev, null, 2) + "\n", "utf8");
   console.log(`removed '${name}' from user scope.`);
+  // shipped plugin artifacts (#533) are shared between skills and stay put —
+  // they are inert without the skill; remove them manually if fully desired.
+  // Gated on this name actually shipping plugins, so unrelated removals stay quiet.
+  const dm = await loadDepMap();
+  if (dm.shipsPlugins[name] && (prev.plugins || []).length) {
+    console.log(`note: shipped plugin artifacts remain (${prev.plugins.join(", ")}).`);
+  }
 }
 
 // ─────────────────────────── update (#379) ──────────────────────────────
@@ -1304,15 +1389,33 @@ async function cmdUpdate(args, opts) {
     else if (missingTargets === 0) plan.unchanged.push(name);
   }
 
+  // shipsPlugins refresh (#533 review Major 3): re-ship plugin artifacts for
+  // opencode-target skill entries so runtime enforcement never lags the skill
+  // bodies on the documented refresh path. Source set = plugins implied by
+  // opencode-target skills ∪ manifest-recorded plugins (depMap edges can be
+  // renamed between versions; the manifest is the system of record). --no-deps
+  // opts out. cmdUpdate is user-scope by construction → USER_OC/plugins only.
+  // Documented adoption: a pre-#533 manifest has no plugins key — bare update
+  // adopts enforcement for those installs (they never opted out);
+  // `update --no-deps` is the opt-out path.
+  const ocSkills = Object.entries(entries).filter(([, e]) => e.type === "skill" && e.targets?.opencode).map(([n]) => n);
+  const depMap = await loadDepMap();
+  const refreshFiles = [...new Set([...pluginsForSkills(ocSkills, depMap, opts), ...(prev.plugins || [])])]
+    .sort().filter((f) => existsSync(join(PLUGINS_SRC, f)));
+
   if (dry) {
-    process.stdout.write(JSON.stringify({ dryRun: true, scope: "user", legacyUpgraded: upgradedLegacy, ...plan }, null, 2) + "\n");
+    process.stdout.write(JSON.stringify({ dryRun: true, scope: "user", legacyUpgraded: upgradedLegacy, ...plan, ...(refreshFiles.length ? { plugins: refreshFiles } : {}) }, null, 2) + "\n");
     return;
   }
 
-  const manifest = { ...prev, generatedAt: new Date().toISOString(), entries };
+  let shippedPlugins = [];
+  if (refreshFiles.length) shippedPlugins = await shipPluginArtifacts(refreshFiles, join(USER_OC, "plugins"));
+
+  const manifest = { ...prev, generatedAt: new Date().toISOString(), entries, ...(shippedPlugins.length ? { plugins: [...new Set([...(prev.plugins || []), ...shippedPlugins])].sort() } : {}) };
   await writeFile(USER_MANIFEST, JSON.stringify(manifest, null, 2) + "\n", "utf8");
 
   console.log(`update complete: updated ${plan.updated.length} · unchanged ${plan.unchanged.length} · missing ${plan.missing.length}`);
+  if (shippedPlugins.length) console.log(`  plugins: ${shippedPlugins.length} refreshed -> ~/.config/opencode/plugins/`);
   if (plan.registryRemoved.length) console.log(`  registry-removed (present locally): ${plan.registryRemoved.join(", ")}${prune ? "" : " — re-run with --prune to remove"}`);
   if (plan.pruned.length) console.log(`  pruned: ${plan.pruned.join(", ")}`);
   if (plan.missing.length) for (const m of plan.missing) console.log(`  missing: ${m}`);

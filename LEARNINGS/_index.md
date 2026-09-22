@@ -17,6 +17,46 @@
 
 <!-- Entries are appended here automatically when new learnings are saved -->
 
+### Re-vendor version-string census
+
+- **Category**: pattern
+- **File**: `LEARNINGS/patterns/re-vendor-version-string-census.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: A re-vendor PLAN must own the old-version-string census, not just the pin files. PLAN-533 bumped 2 of 18 files carrying v4.8.4; two steps actively forbade touching theirs. Rule: exit gate `rg -l '<old-version>' --glob '!PLANS/**'` → zero (or explicit allowlist) — a stale pin in 13+ files means the next maintainer trusts a lying version.
+
+### Plan-step premise already true
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/plan-step-premise-already-true.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: A plan step whose done-when grep is already green pre-work certifies nothing — the executor ticks it with zero changes while the AC's real intent ships unverified. Rule: at plan review, run each grep-based done-when against the current tree; an already-passing gate means the premise is stale — rewrite it around the real deliverable.
+
+### Plugin-persisted state needs a volume-backed path
+
+- **Category**: decision
+- **File**: `LEARNINGS/decisions/plugin-persisted-state-needs-volume-backed-path.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: Plugin state that must survive restarts goes under ~/.local/share/opencode/, not ~/.config/opencode/ — docker compose mounts only the data dir; config-dir and /app state dies on container recreation. Pin the path in the PLAN (or record an env-var-only limitation); a map row naming the docker consumer without an owning step is the plan-consumer-map-row-without-step anti-pattern.
+
+### Persisted default frozen at module load
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/persisted-default-frozen-at-module-load.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: A runtime-persisted default resolved into a module-load const can never observe its own writer in-process — the command that persists it overpromises until an opaque restart. Rule: mutable shadow updated on successful persist (or lazy read), success message matches pickup semantics, plus a same-process new-session test.
+
+### Shipped side artifacts need a full lifecycle
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/shipped-side-artifacts-need-full-lifecycle.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: Wiring a new artifact class into install paths but not update/remove/prune leaves it stale or orphaned on the refresh path (#533: update refreshed skill bodies while the shipped plugin kept injecting old rules). Rule: enumerate add/update/remove/prune up front; refresh from manifest record ∪ current edges filtered to receiving targets.
+
 ### Advisory visibility checks must not run at full-catalog scale
 
 - **Category**: anti-pattern

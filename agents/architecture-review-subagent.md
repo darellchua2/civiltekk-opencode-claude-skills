@@ -218,7 +218,7 @@ Findings must be readable by a non-engineer decision-maker AND actionable by an 
 
 - Code changes: Request from parent agent (read-only review)
 
-<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.10.0); re-sync when the ladder or "when NOT to be lazy" semantics change -->
 
 ## Ponytail architecture lens (baked-in, role-tuned)
 

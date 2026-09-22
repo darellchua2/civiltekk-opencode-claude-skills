@@ -189,13 +189,14 @@ OpenCode supports subagent-to-subagent delegation via the Task tool, controlled 
 
 ## Ponytail Plugin (scoped wrapper)
 
-[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.8.4) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder. This container ships a **scoped wrapper plugin** (`plugins/opencode-ponytail-scoped.ts`) — not the stock npm adapter — because the stock adapter injects into ALL agents unconditionally and its `PONYTAIL_SUBAGENT_MATCHER` is non-functional on OpenCode. The wrapper scopes injection by agent type.
+[Ponytail](https://github.com/DietrichGebert/ponytail) (MIT, vendored at v4.10.0) makes coding agents write minimal necessary code via a 7-rung "lazy senior dev" ladder. This container ships a **scoped wrapper plugin** (`plugins/opencode-ponytail-scoped.ts`) — not the stock npm adapter — because the stock adapter injects into ALL agents unconditionally and its `PONYTAIL_SUBAGENT_MATCHER` is non-functional on OpenCode. The wrapper scopes injection by agent type.
 
 ### Commands
 
 | Command | What it does |
 |---------|--------------|
 | `/ponytail [lite\|full\|ultra\|off]` | Set intensity, or report current mode with no argument |
+| `/ponytail default <mode>` | Persist the default across restarts (`ponytail-config.json` under the mounted data volume; env var still overrides) |
 | `/ponytail-help` | Quick command reference |
 | `/ponytail-lite` | Switch to lite (name the lazier alternative, user picks) |
 | `/ponytail-full` | Switch to full (the ladder enforced — default) |

@@ -26,7 +26,7 @@ This directory (`plugins/ponytail/`) contains code vendored and adapted from the
 [ponytail](https://github.com/DietrichGebert/ponytail) project by Dietrich Gebert.
 
 - **Upstream:** https://github.com/DietrichGebert/ponytail
-- **Pinned version:** v4.8.4 (tag `v4.8.4`)
+- **Pinned version:** v4.10.0 (tag `v4.10.0`)
 - **License:** MIT (see full text below)
 - **Files vendored:**
   - `SKILL.md` — the ponytail ruleset (copied verbatim from `skills/ponytail/SKILL.md`)

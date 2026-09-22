@@ -178,7 +178,7 @@ When `.codegraph/` exists in the project:
 
 If `.codegraph/` does not exist, fall back to grep/glob/read normally.
 
-<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.10.0); re-sync when the ladder or "when NOT to be lazy" semantics change -->
 
 ## Ponytail loop lens (baked-in, role-tuned)
 
@@ -187,6 +187,8 @@ Inside the self-correction protocol, the minimal fix that clears the gate is the
 - Reuse an existing helper or stdlib over a new function; deletion of the offending code over a guard wrapping it, when both pass verification.
 
 Never trade the completion criteria for brevity: a lazy fix that leaves a blocking error is unfinished, not done. This does not change the iteration limits or abort conditions; it makes each retry leaner.
+
+Lazy code without its check is unfinished — an iteration that lands non-trivial logic lands its ONE runnable check with it; a green gate memo without the check is not green.
 
 ## Return Contract
 

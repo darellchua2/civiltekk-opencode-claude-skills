@@ -7,9 +7,9 @@ category: Code Quality
 ---
 
 <!--
-  Vendored from @dietrichgebert/ponytail v4.8.4 (MIT)
-  Source: https://github.com/DietrichGebert/ponytail/blob/v4.8.4/skills/ponytail-debt/SKILL.md
-  Pinned at tag v4.8.4. Re-vendor deliberately on upstream bumps.
+  Vendored from @dietrichgebert/ponytail v4.10.0 (MIT)
+  Source: https://github.com/DietrichGebert/ponytail/blob/v4.10.0/skills/ponytail-debt/SKILL.md
+  Pinned at tag v4.10.0. Re-vendor deliberately on upstream bumps.
   See ../../plugins/ATTRIBUTION.md for license and attribution.
 -->
 

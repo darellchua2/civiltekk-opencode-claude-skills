@@ -291,7 +291,7 @@ When the codebase is primarily a single language, delegate to the language-speci
 
 Always balance critique with positive feedback. Provide actionable recommendations.
 
-<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.10.0); re-sync when the ladder or "when NOT to be lazy" semantics change -->
 
 ## Ponytail review lens (baked-in, role-tuned)
 

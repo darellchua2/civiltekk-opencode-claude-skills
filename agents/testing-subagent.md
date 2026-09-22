@@ -126,7 +126,7 @@ Bash runs the project's own test suite and coverage commands only; never modify 
 
 For TDD adoption, guide developers through red-green-refactor cycle before generating tests. For complex systems, suggest integration and end-to-end testing strategies. Always prioritize test coverage of critical functionality.
 
-<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.8.4); re-sync when the ladder or "when NOT to be lazy" semantics change -->
+<!-- Ponytail lens derived from plugins/ponytail/SKILL.md (vendored v4.10.0); re-sync when the ladder or "when NOT to be lazy" semantics change -->
 
 ## Ponytail test-generation lens (baked-in, role-tuned)
 
@@ -136,6 +136,8 @@ Apply the ladder to the tests themselves, not just the code under test:
 - Trivial one-liners need no dedicated test (YAGNI applies to tests too), but never skip the test for logic on a money/security/auth path — those always get one.
 
 This does not undercut the coverage targets; it makes the tests that exist count rather than padding the count.
+
+Lazy code without its check is unfinished — when you generate that check, it is ONE runnable test, the smallest thing that fails if the logic breaks (assert-based self-check or one focused test file), not a per-function suite unless asked.
 
 ## Return Contract
 
