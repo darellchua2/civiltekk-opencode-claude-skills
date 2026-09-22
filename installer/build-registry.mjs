@@ -11,7 +11,7 @@
 //   (a) scalar:        `task: allow`  /  `edit: allow`  /  `bash: deny`
 //   (b) nested map:    `permission.task:` then indented `  "*": deny` / `  explore: allow`
 //                      `permission.skill:` then indented `  <name>: allow`
-//                      `metadata:` then indented `  audience: …` / `  workflow: …`
+//                      `metadata:` then indented `  audience: …` / `  workflow: …` / `  os: "linux, macos"` / `  harness: "opencode"`
 //   (c) sequence:      `permissions:` then indented `  - action: read` items with
 //                      deeper continuation lines (`    resource: '*'`) — collected
 //                      into an array of flat rule objects ({action,resource,effect})
@@ -27,7 +27,7 @@
 // Output shape (installer/registry.json):
 //   { "$comment": …, "generatedAt": …, "agents": [...], "skills": [...] }
 //   agent: { stem, description, mode, tier, category, requiresSkills[], delegatesTo[], requiredBy[] }
-//   skill: { name, description, category, audience, workflow, requiredByAgents[] }
+//   skill: { name, description, category, audience, workflow, os[], harness, requiredByAgents[] }
 //
 // Usage: node installer/build-registry.mjs            # writes installer/registry.json
 //        node installer/build-registry.mjs --check    # exit non-zero if output would differ (CI drift guard)
@@ -221,6 +221,8 @@ async function build() {
       category,
       audience: meta.audience || "",
       workflow: meta.workflow || "",
+      os: (meta.os || "").split(/,\s*/).filter(Boolean),
+      harness: meta.harness || "",
       requiredByAgents: [], // filled after
     });
   }
