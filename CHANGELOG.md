@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.31.1](https://github.com/darellchua2/opencode-config-template/compare/v9.31.0...v9.31.1) (2026-09-22)
+
+### Bug Fixes
+
+* **skills:** CI fix — POSIX grep guard, ripgrep not on runners ([4eaad26](https://github.com/darellchua2/opencode-config-template/commit/4eaad26b160d2ce5120cb0ae303b97132a95ac89))
+
+### Documentation
+
+* **plan:** add PLAN-515.md for [#515](https://github.com/darellchua2/opencode-config-template/issues/515) ([77f4aa0](https://github.com/darellchua2/opencode-config-template/commit/77f4aa0f8f3d8680b6a0b16ecb7405ec12d6ffb6))
+* **plan:** record CI fix phase + gate memo ([631d06f](https://github.com/darellchua2/opencode-config-template/commit/631d06f5fe0bd54e979e280b8770499a5be9f801))
+* **plan:** tick PLAN-515 steps + gate trace ([5d2b248](https://github.com/darellchua2/opencode-config-template/commit/5d2b24822b9c24d0e56cd2b602e12eeb76dc89a9))
+
 ## [9.31.0](https://github.com/darellchua2/opencode-config-template/compare/v9.30.2...v9.31.0) (2026-09-22)
 
 ### Features
