@@ -92,4 +92,6 @@ WORK LOG Phase 3 (ticket exit gate): tier=full unconditional — JSON validity t
 GATE db96893 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 WORK LOG review-fix re-gate: tier=full on fixed tree (Guarantees :389 reword; LEARNINGS refinement) — JSON validity t, registry --check t, full bats t
 GATE 3867c76 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+WORK LOG merge re-gate: origin/main merged into feat/524 (union of LEARNINGS index; registry regenerated) — tier=full on merged tree 9cb899e — JSON validity t, registry --check t, full bats t
+GATE 9cb899e tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
 ```
