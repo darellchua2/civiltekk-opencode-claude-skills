@@ -79,9 +79,9 @@ Use this workflow when:
 - Use a custom directory if specified by the user
 
 ### Step 4: Save ASCII to Text File
-- Save the ASCII diagram to a temporary text file:
+- Save the ASCII diagram to a temporary text file (repo-relative — any OS):
   ```bash
-  cat > /tmp/workflow.txt << 'EOF'
+  cat > diagrams/workflow.txt << 'EOF'
   [ASCII diagram content]
   EOF
   ```
@@ -90,8 +90,9 @@ Use this workflow when:
 - Use ImageMagick to convert the ASCII text to an image:
   ```bash
   convert -font Courier -pointsize 12 -background white -fill black \
-    -border 20 -bordercolor white /tmp/workflow.txt diagrams/workflow.png
+    -border 20 -bordercolor white diagrams/workflow.txt diagrams/workflow.png && rm diagrams/workflow.txt
   ```
+  Windows (ImageMagick 7 via winget): use `magick convert …` — plain `convert` is shadowed by `System32\convert.exe`.
 - Or use `asciio` or other ASCII diagram tools if available
 - Support multiple formats:
   - PNG (default)
@@ -280,6 +281,9 @@ brew install imagemagick
 
 # Ubuntu/Debian
 sudo apt-get install imagemagick
+
+# Windows
+winget install ImageMagick.ImageMagick   # or use WSL
 
 # Fedora/CentOS
 sudo dnf install imagemagick

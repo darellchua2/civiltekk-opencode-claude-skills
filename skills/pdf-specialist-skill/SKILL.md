@@ -21,7 +21,7 @@ category: Framework
 
 ## Prerequisites
 
-`pip install pypdf pdfplumber reportlab pdf2image pytesseract` · poppler-utils + qpdf (`sudo apt-get install poppler-utils qpdf`; macOS `brew install poppler qpdf`) · LibreOffice via `scripts/soffice.py` (auto-configured on first run)
+`pip install pypdf pdfplumber reportlab pdf2image pytesseract` · poppler-utils + qpdf (`sudo apt-get install poppler-utils qpdf`; macOS `brew install poppler qpdf`; Windows `winget install` or WSL) · LibreOffice via `scripts/soffice.py` (auto-configured on first run)
 
 ## Tool chain — house rules
 

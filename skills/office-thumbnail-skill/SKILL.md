@@ -33,11 +33,13 @@ Also used internally by:
 
 - **LibreOffice** (`soffice`) — headless PDF conversion
   ```bash
-  sudo apt-get install libreoffice
+  sudo apt-get install libreoffice          # Debian/Ubuntu
+  winget install TheDocumentFoundation.LibreOffice   # Windows (or use WSL)
   ```
 - **Poppler** (`pdftoppm`) — PDF to image conversion
   ```bash
-  sudo apt-get install poppler-utils
+  sudo apt-get install poppler-utils        # Debian/Ubuntu
+  # Windows: use WSL, or a poppler build via your package manager
   ```
 - **Python 3.9+**
 

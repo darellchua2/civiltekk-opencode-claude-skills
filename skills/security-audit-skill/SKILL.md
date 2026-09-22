@@ -70,7 +70,7 @@ Vibeguard (local v2 port at `plugins/opencode-vibeguard-v2.ts`, engine from `ope
 
 ### Verification steps
 
-1. **Smoke test:** `OPENCODE_VIBEGUARD_DEBUG=1 opencode` with a test `.env.local` containing known secrets. Check debug output for replace-counts > 0.
+1. **Smoke test:** `OPENCODE_VIBEGUARD_DEBUG=1 opencode` with a test `.env.local` containing known secrets. Check debug output for replace-counts > 0. PowerShell: `$env:OPENCODE_VIBEGUARD_DEBUG="1"; opencode`.
 2. **Transcript check:** prompt "show DATABASE_URL from .env.local" → confirm transcript shows `__VG_…__`, never plaintext.
 3. **Tool-exec check:** prompt "write a script using DATABASE_URL" → confirm output uses `$DATABASE_URL` or vibeguard restores at exec; provider transcript is clean.
 4. **Case-sensitivity:** with `PASSWORD=secret` and `STRIPE_SECRET_KEY=sk_test_...` in `.env.local`, confirm both are redacted. The global config uses `flags: "i"` on SECRET_ASSIGNMENT.
