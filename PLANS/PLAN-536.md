@@ -34,22 +34,26 @@
 
 ### Phase 1: Cleanup & LEARNINGS skeleton
 
-- [ ] **1.1** `git rm -r research/ docs/` in the worktree
+- [x] **1.1** `git rm -r research/ docs/` in the worktree
     — **Why:** unreferenced internal artifacts shipped as if product (grep-verified: only stale doc pointers remain, fixed in 2.2)
     — **Done when:** `test ! -d research && test ! -d docs` in the worktree; deletions staged
     — **Consumers affected:** none (living pointers fixed in 2.2)
-- [ ] **1.2** Reduce `LEARNINGS/` to skeleton: `git rm` all `LEARNINGS/**/*.md` EXCEPT `_index.md`; keep `patterns/ decisions/ solutions/ conventions/ anti-patterns/` dirs via their `.gitkeep` files
+    — **Done:** git rm -r research/ docs/ — dirs gone, deletions staged; files: research/, docs/; fixes: none
+- [x] **1.2** Reduce `LEARNINGS/` to skeleton: `git rm` all `LEARNINGS/**/*.md` EXCEPT `_index.md`; keep `patterns/ decisions/ solutions/ conventions/ anti-patterns/` dirs via their `.gitkeep` files
     — **Why:** 156 internal dev-memory entries are not product for a shared collection; skeleton preserves the documented shape
     — **Done when:** `git ls-files LEARNINGS | grep -v '\.gitkeep$' | grep -v '_index.md$'` outputs nothing
     — **Consumers affected:** learnings autoinject plugin (degrades gracefully — empty manifest); future sessions write untracked
-- [ ] **1.3** Append to `.gitignore`: `LEARNINGS/**/*.md` then `!LEARNINGS/_index.md`
+    — **Done:** 155 LEARNINGS content .md git-rm-ed; ls-files residue empty; files: LEARNINGS/**; fixes: none
+- [x] **1.3** Append to `.gitignore`: `LEARNINGS/**/*.md` then `!LEARNINGS/_index.md`
     — **Why:** future locally-written learnings stay off the public repo while the index template stays tracked
     — **Done when:** `git check-ignore -q LEARNINGS/patterns/foo.md` exits 0 AND `git check-ignore -q LEARNINGS/_index.md` exits 1
     — **Consumers affected:** git tracking only
-- [ ] **1.4** Commit Phase 1 (`chore(repo): remove research/ docs/; reduce LEARNINGS to skeleton + gitignore`)
+    — **Done:** .gitignore rules appended + verified (content ignored, _index tracked); files: .gitignore; fixes: none
+- [x] **1.4** Commit Phase 1 (`chore(repo): remove research/ docs/; reduce LEARNINGS to skeleton + gitignore`)
     — **Why:** atomic revertable unit; deletions separate from content rework
     — **Done when:** `git log -1 --format=%s` shows the message; working tree clean
     — **Consumers affected:** none
+    — **Done:** Phase 1 committed as 45f1082; files: PLANS/PLAN-536.md; fixes: none
 
 ### Phase 2: Rename sweep (opencode-config-template → civiltekk-opencode-claude-skills) + pointer fixes
 
@@ -124,4 +128,4 @@ None — no blocked-by tickets. All hard pipeline deps satisfied (plan-execution
 
 | Phase | Gate | Result | Notes |
 |-------|------|--------|-------|
-| — | — | — | executor appends per-phase rows; final `tier=full` memo line required |
+| 1 | light (done-when greps) | green | GATE 45f1082 tier=light lint=- typecheck=- build=- unit=- e2e=n.a |
