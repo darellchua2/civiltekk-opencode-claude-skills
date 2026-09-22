@@ -1284,3 +1284,12 @@
 - **Scope**: project
 - **Summary**: bats guards executing in CI must use POSIX grep/find/awk — rg is absent on ubuntu runners (127) and sweeps would read vacuous-green without the non-vacuous canary; local-green is not CI-green for tooling-dependent tests (#515 CI red)
 - **Date**: 2026-09-22
+
+### Compare API ahead_by counts the HEAD side — operand order must be pinned
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/compare-api-ahead-by-counts-head-side.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: GitHub `compare/{BASE}...{HEAD}` returns ahead_by = HEAD-side commits, behind_by = BASE-side commits; #532's Phase 0 labeled them backwards under `{source}...{target}` while in-repo LEARNINGS held the correct empirical direction — flows keyed on these fields must state the operand order and be checked against a known-divergence example (#532 code review BLOCK)
+- **Date**: 2026-09-22

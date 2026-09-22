@@ -33,12 +33,13 @@ treat as long-lived or ask). Feature/fix heads skip this phase entirely.
 
 ### Divergence check (one API call, no local checkout)
 
-`gh api repos/{owner}/{repo}/compare/{source}...{target}` → read `ahead_by`
-(commits the promotion will carry) and `behind_by` (target-only commits the
-source lacks — fixes that landed directly on the target lane):
+`gh api repos/{owner}/{repo}/compare/{target}...{source}` — BASE=target,
+HEAD=source — read `ahead_by` (source-side commits: what the promotion will
+carry) and `behind_by` (target-only commits the source lacks — fixes that
+landed directly on the target lane):
 
-- `behind_by == 0` → no backmerge needed; go straight to Phase 1.
 - `ahead_by == 0` and `behind_by == 0` → report "nothing to promote" and stop.
+- `behind_by == 0` → no backmerge needed; go straight to Phase 1.
 - `behind_by > 0` → backmerge first (below), then Phase 1.
 
 ### Backmerge PR (target → source)

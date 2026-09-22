@@ -175,7 +175,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
     macOS: `gtimeout`) — 30-minute timeout; merge when green with
     `gh pr merge <num> --squash` — the `feat/<KEY>` head is short-lived, so
     squash is the classifier verdict (`pr-merge-workflow-skill` Phase 1
-    head-class rule; never `--merge`, it duplicates content under new SHAs).
+    head-class rule).
     Zero configured checks (exits non-zero with "no checks reported") → merge
     directly with a "no CI configured" note. JIRA tickets: after merge,
     ensure exactly one `jira-status-updater` transition to Done —

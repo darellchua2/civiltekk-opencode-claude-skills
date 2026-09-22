@@ -54,3 +54,9 @@ Related: `solutions/docs-registry-is-build-site-artifact.md`,
 Recurrence 5 (#514 plan review): PLAN-514 step 4.1 drafted "second run → zero
 diff" again — caught before execution. PLAN templates should hard-code
 "`--check` exits 0", never "plain run → zero diff".
+
+Recurrence 6 (#532 plan review, 2026-09-22): PLAN-532 step 4.1 drafted
+plain-run + eyeball-diff ("git diff shows the new description") again — caught
+by architecture review pre-execution; done-when gained "`--check` exits 0".
+No phantom-failure risk this time (a real description change was expected),
+but the mechanical drift gate remains the required form.
