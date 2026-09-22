@@ -35,35 +35,41 @@
 
 ### Phase 1: Re-vendor ponytail v4.8.4 → v4.10.0
 
-- [ ] **1.1** Apply the upstream `ponytail:` marker rewording to `plugins/ponytail/SKILL.md` ("cut a real corner with a known ceiling"; drop the generic `// ponytail: this exists` example) and bump the vendored-from comment + source URLs to v4.10.0
+- [x] **1.1** Apply the upstream `ponytail:` marker rewording to `plugins/ponytail/SKILL.md` ("cut a real corner with a known ceiling"; drop the generic `// ponytail: this exists` example) and bump the vendored-from comment + source URLs to v4.10.0
     — **Why:** the ruleset source is the single source of truth for injected enforcement; the narrowed marker rule is the only semantic drift vs upstream v4.10.0 and the debt-harvest convention depends on it
     — **Done when:** `diff` against the fetched upstream v4.10.0 copy (`/tmp/opencode/ponytail-upstream/ponytail-SKILL.md`) shows only the vendored-header comment as delta
     — **Consumers affected:** `instructions.cjs` (runtime read), 8 agent lens sections, `deploy/setup.sh`, the injected system prompt
+    — **Done:** SKILL.md marker rule reworded to upstream v4.10.0 + header bumped; diff vs upstream copy clean (body identical); files: plugins/ponytail/SKILL.md; fixes: none
 
-- [ ] **1.2** Bump `plugins/ATTRIBUTION.md` pinned version to v4.10.0
+- [x] **1.2** Bump `plugins/ATTRIBUTION.md` pinned version to v4.10.0
     — **Why:** ATTRIBUTION.md is the pin record every vendored header points at; a stale pin misleads the next deliberate re-vendor
     — **Done when:** file states `Pinned version: v4.10.0 (tag \`v4.10.0\`)`
     — **Consumers affected:** none runtime; provenance readers
+    — **Done:** ATTRIBUTION pin now v4.10.0 (tag `v4.10.0`); files: plugins/ATTRIBUTION.md; fixes: none
 
-- [ ] **1.3** Re-sync the 8 agent lens provenance markers to `(vendored v4.10.0)` and record a lens-body delta review against the one-bullet upstream change (expected honest outcome: version strings only — no lens paraphrases the marker rule; `rg 'ponytail: this exists' agents/` is already zero pre-work, so that grep alone certifies nothing)
+- [x] **1.3** Re-sync the 8 agent lens provenance markers to `(vendored v4.10.0)` and record a lens-body delta review against the one-bullet upstream change (expected honest outcome: version strings only — no lens paraphrases the marker rule; `rg 'ponytail: this exists' agents/` is already zero pre-work, so that grep alone certifies nothing)
     — **Why:** a provenance marker citing the superseded version is not "re-synced" (AC #2); the delta review is the actual verification that lens bodies need no rewording
     — **Done when:** all 8 `Ponytail lens derived` markers state v4.10.0; the delta-review outcome (version strings only) recorded in the trace; `rg 'ponytail: this exists' agents/` still zero
     — **Consumers affected:** the 8 subagent system prompts; frontmatter-contract tests
+    — **Done:** 8/8 Ponytail lens markers now (vendored v4.10.0); delta review: version strings only (no lens paraphrases the marker rule; old-wording grep 0 pre and post); files: agents/*.md ×8; fixes: none
 
-- [ ] **1.4** Port persisted-default mode into `plugins/opencode-ponytail-scoped.ts`: config file pinned to `~/.local/share/opencode/ponytail-config.json` (XDG state dir — volume-mounted in docker, goal-plugin precedent `docker-compose.yml:16-17`), resolution order env var → config file → `full`; `/ponytail default <mode>` writes the config; bare `/ponytail` reports the active level instead of resetting
+- [x] **1.4** Port persisted-default mode into `plugins/opencode-ponytail-scoped.ts`: config file pinned to `~/.local/share/opencode/ponytail-config.json` (XDG state dir — volume-mounted in docker, goal-plugin precedent `docker-compose.yml:16-17`), resolution order env var → config file → `full`; `/ponytail default <mode>` writes the config; bare `/ponytail` reports the active level instead of resetting
     — **Why:** upstream v4.9.0's only feature with real payoff here — mode choice currently resets between restarts unless the env var is set; pinning the state dir is what makes "survives restart" true for the docker container too (only `~/.local/share/opencode` survives container recreation — `~/.config/opencode/` and `/app/` do not)
     — **Done when:** harness exercise (pattern of `research/ponytail-load-fix.md` §5) proves: default survives plugin re-init, env var wins over config file, bare command reports level, invalid mode args ignored; plus structural assertion that the config path resolves under the volume-mounted state dir (container-recreation survival)
     — **Consumers affected:** opencode runtime (auto-load), `deploy/setup.sh` deploy_plugins(), `opencode_app/` docker (this step owns the docker consumer named in the map)
+    — **Done:** persisted default ported: CONFIG_PATH pinned under ~/.local/share/opencode/ (volume-backed), BOM-tolerant merge write, env > file > full, /ponytail default <mode>, bare /ponytail reports level, help updated; files: plugins/opencode-ponytail-scoped.ts; fixes: none
 
-- [ ] **1.5** Own the full old-version-string census: `rg -l 'v4\.8\.4' --glob '!PLANS/**'` lists 18 files (8 agent markers covered by 1.3, `plugins/opencode-ponytail-scoped.ts:26`, `plugins/ponytail/instructions.cjs:1`, `README.md:610` + `:741`, `opencode_app/README.md:192`, the 3 derived-skill vendored-header pins, SKILL.md header + ATTRIBUTION covered by 1.1/1.2) — bump every pin to v4.10.0
+- [x] **1.5** Own the full old-version-string census: `rg -l 'v4\.8\.4' --glob '!PLANS/**'` lists 18 files (8 agent markers covered by 1.3, `plugins/opencode-ponytail-scoped.ts:26`, `plugins/ponytail/instructions.cjs:1`, `README.md:610` + `:741`, `opencode_app/README.md:192`, the 3 derived-skill vendored-header pins, SKILL.md header + ATTRIBUTION covered by 1.1/1.2) — bump every pin to v4.10.0
     — **Why:** a re-vendor that updates 2 of 18 version-bearing files leaves thirteen-plus lying pins; the next maintainer trusts a stale pin — the exact failure `plugins/ATTRIBUTION.md` warns about (plan-review Major)
     — **Done when:** `rg -l 'v4\.8\.4' --glob '!PLANS/**'` returns zero matches (PLAN-533's own phase title legitimately names the from-version)
     — **Consumers affected:** provenance readers; next re-vendor
+    — **Done:** census sweep complete: 7 additional pin files bumped; rg v4.8.4 → zero outside PLANS/ + LEARNINGS/ (historical from-version refs, deliberate allowlist); files: README.md, opencode_app/README.md, wrapper header, instructions.cjs header, 3 derived-skill headers; fixes: none
 
-- [ ] **1.6** Injection smoke test on the updated ruleset
+- [x] **1.6** Injection smoke test on the updated ruleset
     — **Why:** proof the v2 plugin still injects end-to-end after the edits — the AC demands the updated wording in the injected block
     — **Done when:** harness output contains `PONYTAIL MODE ACTIVE` and the new ceiling-wording phrase; idempotency (no double-inject) and off-set agent skip checks pass
     — **Consumers affected:** none downstream; phase exit evidence
+    — **Done:** tests/test_ponytail_plugin.bats 8/8: marker + ceiling wording + gate sentence + off-empty + old-wording-gone + restart-picks-up + env-wins + merge/BOM/invalid; full suite 542/542; files: tests/test_ponytail_plugin.bats; fixes: test 5 initially asserted same-process session (default resolves at module load) — restructured to two-process restart assertion
 
 ### Phase 2: Installer ships the enforcement plugin
 
@@ -129,3 +135,9 @@
 - **CHANGELOG ownership ambiguous** (release-please format but no workflow grep hit) → 3.2 checks `.github/workflows/` first; manual entry only when no bot owns it.
 - **Isolation guard could flag the new edge type** → 2.5 runs the full suite; if `test_skill_isolation.bats` trips, align the edge naming with the guard's source-of-truth vars rather than loosening the guard.
 - **Plugin copy could clobber a user's existing plugin dir** → 2.3 constrains writes to exact-name artifacts; never bulk-syncs a directory.
+
+---
+
+## Trace
+
+GATE da25d5f tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 1: whole bats suite 542/542 — agents/ + plugins/ touched, so suite-wide beats scoped; no manifest lint/typecheck/build scripts)
