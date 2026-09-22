@@ -2,8 +2,11 @@
 name: pr-merge-workflow-skill
 description: >-
   Post-merge workflow — merges PR, monitors CI, auto-fixes failures, updates
-  JIRA, deletes source branch. Triggers: 'pr merge to [branch]', 'merge the PR',
-  'complete the PR'. Not 'create pr'.
+  JIRA, deletes source branch; promotions between long-lived lanes run a
+  divergence pre-flight (backmerge PR first, then the promote PR). Triggers:
+  'pr merge to [branch]', 'merge the PR', 'complete the PR', 'promote <branch>
+  to <branch>', 'promote to uat', 'backmerge <target> into <source>'. Not
+  'create pr'.
 metadata:
   protocol: autoresearch-opt-in
 category: Framework
@@ -21,6 +24,36 @@ Before executing, confirm:
 - Current branch has an open PR targeting the specified branch
 - PR is in a mergeable state (no conflicts, reviews passed)
 - If not, tell the user what's blocking and stop
+
+## Phase 0: Promotion Pre-flight (long-lived → long-lived merges)
+
+Runs ONLY when the PR's head AND base are both long-lived lanes (the Phase 1
+classifier list — exact, case-sensitive; an unlisted environment-shaped name →
+treat as long-lived or ask). Feature/fix heads skip this phase entirely.
+
+### Divergence check (one API call, no local checkout)
+
+`gh api repos/{owner}/{repo}/compare/{source}...{target}` → read `ahead_by`
+(commits the promotion will carry) and `behind_by` (target-only commits the
+source lacks — fixes that landed directly on the target lane):
+
+- `behind_by == 0` → no backmerge needed; go straight to Phase 1.
+- `ahead_by == 0` and `behind_by == 0` → report "nothing to promote" and stop.
+- `behind_by > 0` → backmerge first (below), then Phase 1.
+
+### Backmerge PR (target → source)
+
+Capture target-only fixes before promoting so both lanes converge:
+
+1. Create the backmerge PR: `gh pr create --head <target> --base <source> --title "chore(backmerge): <target> → <source>" --body "Capture <target>-only fixes before promoting <source> → <target> (compare behind_by=N)."`
+2. Merge with a merge commit (long-lived head): `gh pr merge <number> --merge --delete-branch=false` — never `--squash` (duplicates content under new SHAs) and never `--admin` (bypasses review protection).
+3. Mergeable is `BLOCKED` (conflicts or missing review) → report the blocker and stop. Message convention per `semantic-release-convention-skill` §Promotion Merge Commits.
+4. Watch CI on the source branch (Phase 2) — the backmerge must be green before promoting.
+
+### Two modes
+
+- **Promotion request** ("promote dev to uat", no PR open): full-auto — run the divergence check, backmerge if needed, then create the promotion PR (`chore(promote): <source> → <target>`) and continue into Phase 1.
+- **Merging a specific open PR** whose head and base are both long-lived: run the divergence check; if `behind_by > 0`, confirm ONCE with the user before backmerging — a backmerge mutates that PR's head branch and re-triggers its CI. On decline, merge as-is and note the remaining divergence in the report.
 
 ## Phase 1: Merge the PR
 
