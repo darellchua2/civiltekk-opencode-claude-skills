@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.33.0](https://github.com/darellchua2/opencode-config-template/compare/v9.32.0...v9.33.0) (2026-09-22)
+
+### Features
+
+* **pr-merge:** promote-with-backmerge flow for branch promotions ([#534](https://github.com/darellchua2/opencode-config-template/issues/534)) ([0fa9d6d](https://github.com/darellchua2/opencode-config-template/commit/0fa9d6d20b4fccbee7f78f6a92170f303b76e937)), closes [#532](https://github.com/darellchua2/opencode-config-template/issues/532)
+
 ## [9.32.0](https://github.com/darellchua2/opencode-config-template/compare/v9.31.1...v9.32.0) (2026-09-22)
 
 ### Features
