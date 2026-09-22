@@ -13,20 +13,21 @@ This is a shared skills collection — contributions of skills, agents, docs, an
 Adding a catalog item touches more than its own directory. Work through this checklist:
 
 1. **Sync rules** — read `AGENTS.md` § *Adding Skills or Subagents — Sync Rules*. Adding or removing anything updates `deploy/setup.sh`, `deploy/setup.ps1`, `README.md` (counts and listings), and possibly `opencode_app/README.md`. The counts are guarded by tests; never hand-edit a count without re-deriving it from disk.
-2. **Frontmatter** — follow `AGENTS.md` § *Skill / Agent Frontmatter Contract*: `name` must equal the directory name, `description` 1–1024 chars, `license: Apache-2.0` for new skills, and the `metadata` portability sub-keys where applicable. After any frontmatter change run `node installer/build-registry.mjs` and commit the regenerated `installer/registry.json`.
+2. **Frontmatter** — follow `AGENTS.md` § *Skill / Agent Frontmatter Contract*: `name` must equal the directory name, `description` has a bounded length, `license: Apache-2.0` for new skills, and the `metadata` portability sub-keys where applicable (exact limits live in the contract). After any frontmatter change run `node installer/build-registry.mjs` and commit the regenerated `installer/registry.json`.
 3. **Self-containment** — the Skill Isolation Contract (`AGENTS.md` § *Skill Isolation Contract*) requires every skill directory to be fully self-contained (scripts, schemas, fixtures inside its own tree) because `npx … add <name>` copies exactly one directory. Cross-skill duplication of helpers is intentional; do **not** factor shared code out of skills. `tests/test_skill_isolation.bats` enforces this mechanically.
 4. **Portability** — skills install to multiple harnesses (`--target claude/kimi/kilo/agents`). Write bash snippets with an explicit bash-requirement note (or as `node -e` one-liners) and present harness-specific mechanisms as capability-binding blocks with a portable fallback — see the Portability contract under `AGENTS.md` § *Skill / Agent Frontmatter Contract*.
 
 ## Running the tests
 
 ```bash
-git submodule update --init   # bats-core lives at tests/lib/bats-core
-bats tests/                   # or a subset: bats tests/test_skill_isolation.bats
+git submodule update --init                       # bats-core lives at tests/lib/bats-core
+export PATH="$PWD/tests/lib/bats-core/bin:$PATH"  # same wiring CI uses
+bats tests/                                        # or a subset: bats tests/test_skill_isolation.bats
 ```
 
 The suite runs in CI on every PR. Guards you are most likely to trip:
 
-- **Count drift** — `setup.sh` counts skills/agents dynamically; README count literals are pinned by tests (`test_count_drift.bats`, `test_markitdown_skill.bats`). If a count check fails, re-derive the number from disk — do not edit the test.
+- **Count drift** — `setup.sh` counts skills/agents dynamically (pinned to disk by `test_count_drift.bats`), and README count literals are pinned by tests too (`test_markitdown_skill.bats`, `test_mcp_count_consistency.bats`). If a count check fails, re-derive the number from disk — do not edit the test.
 - **Skill isolation** — banned references between skill trees; see the checklist above.
 - **Portability** — capability-binding and bash-rule conventions.
 
