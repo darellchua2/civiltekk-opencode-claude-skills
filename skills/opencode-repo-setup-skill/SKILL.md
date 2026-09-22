@@ -102,12 +102,13 @@ Merge procedure (MANDATORY when `<repo>/opencode.json` already exists — never 
    const fs = require('fs');
    const base = JSON.parse(fs.readFileSync('opencode.json', 'utf8'));
    const delta = JSON.parse(fs.readFileSync('delta.json', 'utf8'));
-   const merge = (b, d) => { for (const k of Object.keys(d)) b[k] = (b[k] && d[k] && typeof b[k] === 'object' && !Array.isArray(b[k])) ? merge(b[k], d[k]) : d[k]; return b; };
+   const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
+   const merge = (b, d) => { for (const k of Object.keys(d)) b[k] = (isObj(b[k]) && isObj(d[k])) ? merge(b[k], d[k]) : d[k]; return b; };
    fs.writeFileSync('opencode.json.new', JSON.stringify(merge(base, delta), null, 2) + '\n');
    " && mv opencode.json.new opencode.json
    ```
 
-   (`delta.json` = the chosen `{"mcp":{...}}` blob; `*` merges recursively, existing non-conflicting keys survive, delta wins on conflicts — which is exactly the chosen-enable set)
+   (`delta.json` = the chosen `{"mcp":{...}}` blob; `*` merges recursively, existing non-conflicting keys survive, delta wins on conflicts — which is exactly the chosen-enable set; type-conflicting keys replace, matching jq)
 3. Diff-check: `git diff opencode.json` (or plain diff vs a pre-made backup) must show ONLY the added `mcp.*` keys
 4. No jq available? Read the file, hand-merge the `mcp` key into the parsed object, and Write the full merged result — never emit a file missing previously-present keys
 
@@ -133,7 +134,7 @@ npx @colbymchenry/codegraph uninit --force   # remove CodeGraph from the project
 
 Troubleshooting:
 
-- **"Backend: wasm" (5–10x slower)** — install native build tools (`sudo apt install build-essential python3 make`; macOS: `xcode-select --install`), then `npm rebuild better-sqlite3`. Also fixes **"database is locked"**.
+- **"Backend: wasm" (5–10x slower)** — install native build tools (`sudo apt install build-essential python3 make`; macOS: `xcode-select --install`; Windows: WSL, or VS Build Tools then `npm rebuild better-sqlite3`), then `npm rebuild better-sqlite3`. Also fixes **"database is locked"**.
 - **Missing symbols after edits** — wait 2–3s for the watcher, or run `sync` manually.
 - **Large repos slow to index** — add `exclude` globs (`node_modules/**`, `dist/**`, `build/**`, `vendor/**`, `*.min.js`, `*.generated.*`) to `.codegraph/config.json`.
 

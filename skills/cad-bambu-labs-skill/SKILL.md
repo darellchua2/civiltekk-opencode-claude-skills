@@ -100,11 +100,13 @@ the plate MD5, uploads the project to the FTPS root, and publishes
 ```bash
 python scripts/bambu_lan_print.py send \
   --printer a1-mini \
-  --gcode <slicer-export.gcode> \
+  --gcode /path/to/slicer-export.gcode \
   --handoff template-project \
   --template-project /path/to/same-printer-template.gcode.3mf \
   --action upload-start
 ```
+
+`--gcode` is the slicer's export location — any OS path works (temp dir fine).
 
 Execute after review when the user explicitly asked to print or start, or after
 physical confirmation when intent is unclear:
@@ -112,7 +114,7 @@ physical confirmation when intent is unclear:
 ```bash
 python scripts/bambu_lan_print.py send \
   --printer a1-mini \
-  --gcode <slicer-export.gcode> \
+  --gcode /path/to/slicer-export.gcode \
   --handoff template-project \
   --template-project /path/to/same-printer-template.gcode.3mf \
   --action upload-start \

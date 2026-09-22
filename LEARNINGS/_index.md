@@ -1212,3 +1212,21 @@
 - **Scope**: project
 - **Summary**: tick + Done-line each PLAN step in the same commit as its hunks — "code pushed, plan unticked" is an unfinished phase that --gate/--update will re-execute and that AC-verified claims inherit (#512 review)
 - **Date**: 2026-09-22
+
+### Single-sample parity probes miss type-conflict edges
+
+- **Category**: anti-pattern
+- **File**: `anti-patterns/single-sample-parity-probe-misses-type-conflicts.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: parity probes for reimplemented merge logic need type-mismatch fixtures on both sides (obj-vs-array, obj-vs-scalar, …) compared against the reference output — one well-formed sample let a delta-dropping recurse condition ship as "verified" (#513 review)
+- **Date**: 2026-09-22
+
+### Windows winget ImageMagick pairs with `magick`, not `convert`
+
+- **Category**: solution
+- **File**: `solutions/winget-im7-needs-magick-not-convert.md`
+- **Confidence**: high
+- **Scope**: project
+- **Summary**: winget installs IM7 (`magick` entry point); plain `convert` on Windows resolves to System32's FAT→NTFS tool — install rows and usage snippets must be reviewed as a pair (#513 review)
+- **Date**: 2026-09-22

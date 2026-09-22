@@ -92,6 +92,7 @@ Use this workflow when:
   convert -font Courier -pointsize 12 -background white -fill black \
     -border 20 -bordercolor white diagrams/workflow.txt diagrams/workflow.png && rm diagrams/workflow.txt
   ```
+  Windows (ImageMagick 7 via winget): use `magick convert …` — plain `convert` is shadowed by `System32\convert.exe`.
 - Or use `asciio` or other ASCII diagram tools if available
 - Support multiple formats:
   - PNG (default)
