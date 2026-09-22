@@ -161,10 +161,27 @@ async function loadDepMap() {
   return { impliesMcp: (d && d.impliesMcp) || {}, requiresSkills: (d && d.requiresSkills) || {} };
 }
 
+// ─────────────────────── portability warnings (#514) ────────────────────
+// Non-blocking notices when a selected skill is opencode-only (metadata.harness)
+// or platform-limited (metadata.os). Must run AFTER effective-target resolution —
+// in the writers, not resolveSelection (target-free pure resolver shared with the
+// deploy picker and tests), and not cmdAdd (--all bypasses target context).
+const PLATFORM_OS = { darwin: "macos", win32: "windows", linux: "linux" };
+function pushPortabilityWarnings(sel, reg, targets) {
+  const hostOs = PLATFORM_OS[process.platform] || `unmapped-${process.platform}`;
+  for (const name of sel.skills) {
+    const s = reg.skills.find((x) => x.name === name);
+    if (!s) continue;
+    if (s.harness === "opencode" && !targets.includes("opencode"))
+      sel.warnings.push(`portability: ${name} is opencode-only (metadata.harness) — installing for ${targets.join("/")}`);
+    if ((s.os || []).length > 0 && !s.os.includes(hostOs))
+      sel.warnings.push(`portability: ${name} declares os "${s.os.join(", ")}" — this host maps to "${hostOs}"`);
+  }
+}
+
 // ─────────────────────────── selection resolver (Phase 3.1) ─────────────
 // Pure function: input selection -> resolved install set with transitive closure.
-export function resolveSelection({ agents: agentIn = [], skills: skillIn = [], mcps: mcpIn = [], presets = [] }, reg, depMap) {
-  const agentByName = new Map(reg.agents.map((a) => [a.stem, a]));
+export function resolveSelection({ agents: agentIn = [], skills: skillIn = [], mcps: mcpIn = [], presets = [] }, reg, depMap) {  const agentByName = new Map(reg.agents.map((a) => [a.stem, a]));
   const skillByName = new Map(reg.skills.map((s) => [s.name, s]));
   const warnings = [];
 
@@ -362,6 +379,7 @@ export async function writeInstall(sel, opts, reg, depMap) {
   // columns degrade to opencode (note printed by cmdAdd; the preset flow dies
   // on non-opencode --target before reaching here)
   const pTarget = TARGETS[opts.target]?.projectSkillsDir ? opts.target : "opencode";
+  pushPortabilityWarnings(sel, reg, [pTarget]);
   const pCfg = TARGETS[pTarget];
   const ocProject = pTarget === "opencode"; // gates opencode.json / models.json / AGENTS.md
   const ocDir = join(project, ".opencode");
@@ -705,6 +723,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     die(`invalid target '${target}'. Use: ${TARGET_VALUES.filter((t) => t !== "both").join(", ")}, or both.`, 2);
   const doOc = target === "opencode" || target === "both";
   const doClaude = target === "claude" || target === "both";
+  pushPortabilityWarnings(sel, reg, activeTargets(target));
 
   if (dry) {
     const destinations = {};

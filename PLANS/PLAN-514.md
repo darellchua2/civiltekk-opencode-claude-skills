@@ -34,25 +34,25 @@
     — **Consumers affected:** installer OS warning; playwright Windows users get a heads-up (skill remains usable headless).
 ### Phase 2: registry extraction
 
-- [ ] **2.1** `installer/build-registry.mjs` — extend the skill entry (:222-223 area) with `os: (meta.os || "").split(/,\s*/).filter(Boolean)` and `harness: meta.harness || ""`; update the entry-shape doc comments (:14, :30).
+- [x] **2.1** `installer/build-registry.mjs` — extend the skill entry (:222-223 area) with `os: (meta.os || "").split(/,\s*/).filter(Boolean)` and `harness: meta.harness || ""`; update the entry-shape doc comments (:14, :30).
     — **Why:** init.mjs reads registry.json only — this is the sole carrier (Mode R ruling, #512 relay).
     — **Done when:** regenerated registry.json shows `os`/`harness` on exactly the 14 marked skills and `[]`/`""` on the rest.
     — **Consumers affected:** init.mjs warnings (Phase 3).
 
 ### Phase 3: installer warnings
 
-- [ ] **3.1** `installer/init.mjs` — helper pushing into the existing `sel.warnings` bus, called at exactly TWO sites after effective-target resolution: `writeUserScopeInstall` after the target normalization (~:707, harness warn iff `"opencode" ∉ activeTargets(target)` so `both` never warns) and `writeInstall` after `--project` target degradation (~:366). NOT in `resolveSelection` (target-free pure resolver shared with deploy picker + tests) and NOT in cmdAdd (its `--all` path bypasses target context): (a) `skill.harness === "opencode"` and effective target ≠ `opencode` → cross-harness warning; (b) `skill.os.length > 0` and mapped host platform (`darwin→macos`, `win32→windows`, `linux→linux`; unmapped platforms → warn — intentional honesty) not in `skill.os` → OS warning. Non-fatal; prints like existing warnings.
+    — **Done:** extractor extended (os split-to-array, harness string) + entry-shape doc comments updated; regenerated registry.json carries os/harness on exactly the 14 marked skills ([]/"" elsewhere); --check GREEN; files: installer/build-registry.mjs, installer/registry.json; fixes: none- [x] **3.1** `installer/init.mjs` — helper pushing into the existing `sel.warnings` bus, called at exactly TWO sites after effective-target resolution: `writeUserScopeInstall` after the target normalization (~:707, harness warn iff `"opencode" ∉ activeTargets(target)` so `both` never warns) and `writeInstall` after `--project` target degradation (~:366). NOT in `resolveSelection` (target-free pure resolver shared with deploy picker + tests) and NOT in cmdAdd (its `--all` path bypasses target context): (a) `skill.harness === "opencode"` and effective target ≠ `opencode` → cross-harness warning; (b) `skill.os.length > 0` and mapped host platform (`darwin→macos`, `win32→windows`, `linux→linux`; unmapped platforms → warn — intentional honesty) not in `skill.os` → OS warning. Non-fatal; prints like existing warnings.
     — **Why:** honest cross-target installs (#509 epic); warnings mirror the lossy-translation style.
     — **Done when:** dry-run on a Tier A skill with `--target claude` emits the warning; opencode-target installs stay warning-free.
     — **Consumers affected:** installer users.
-- [ ] **3.2** Smoke test BOTH probe shapes under a sandboxed HOME: (a) `--dry-run` (warning in the JSON), and (b) the AC verbatim — the real non-dry `node installer/init.mjs add opencode-v2-migration-skill --target claude` (warning at the user-scope print site). Capture both warning lines in the PLAN.
+    — **Done:** pushPortabilityWarnings helper (PLATFORM_OS map, unmapped platforms warn intentionally) called at the two writer sites post-effective-target resolution — writeInstall [pTarget] and writeUserScopeInstall activeTargets(target) (both never warns); resolveSelection/cmdAdd untouched per plan-review integration ruling; files: installer/init.mjs; fixes: integration point per architecture review- [x] **3.2** Smoke test BOTH probe shapes under a sandboxed HOME: (a) `--dry-run` (warning in the JSON), and (b) the AC verbatim — the real non-dry `node installer/init.mjs add opencode-v2-migration-skill --target claude` (warning at the user-scope print site). Capture both warning lines in the PLAN.
     — **Why:** the ticket AC is observable installer output, not code existence.
     — **Done when:** warning line captured; no files written (dry-run).
     — **Consumers affected:** none (read-only probe).
 
 ### Phase 4: exit gate
 
-- [ ] **4.1** Full gate: bats suite + `node installer/build-registry.mjs --check` (plain runs churn generatedAt — use --check) + `git diff origin/main...HEAD -- installer/registry.json` shows only `os`/`harness` additions + count checks unchanged (34 agents / 146 skills).
+    — **Done:** probes under sandboxed HOME (/tmp/opencode/fakehome): (A) --dry-run --target claude → warning in JSON; (B) AC verbatim real install → warning printed; (C) control opencode-target → 0 warnings; (D) OS branch win32-simulated → correct; files: none (read-only probes); fixes: none- [x] **4.1** Full gate: bats suite + `node installer/build-registry.mjs --check` (plain runs churn generatedAt — use --check) + `git diff origin/main...HEAD -- installer/registry.json` shows only `os`/`harness` additions + count checks unchanged (34 agents / 146 skills).
     — **Why:** frontmatter contract requires committed registry; counts must not drift.
     — **Done when:** suite green; registry diff shape exact; counts unchanged.
     — **Consumers affected:** installer, setup counts, #515 guard (authored against these keys).
@@ -70,3 +70,8 @@
 - *Warning spam on legit installs* → warnings fire only on explicit target/platform mismatch; opencode-target installs unaffected.
 - *Registry shape break* → additive keys only; init.mjs consumers ignore unknown fields today (verified: registry reader maps known keys).
 - *Playwright os too strict* → ticket-issued scope (`linux`); revisit via the os vocabulary if Windows headless use is reported.
+    — **Done:** --check GREEN; full bats 529/529; registry diff = os/harness additions + counts unchanged (34/146); files: none (verification); fixes: none
+## Gate Trace
+
+GATE e23bf4e tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a
+Note: build axis = `build-registry.mjs --check` + regen shape audit (os/harness on exactly 14 skills); lint axis = coverage probes (12+2 frontmatter, 4/4 smoke probes). Later PLAN-only commits are tree-equivalent; CI is the unconditional re-run.
