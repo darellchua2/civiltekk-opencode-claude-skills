@@ -138,7 +138,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    skill defines none of them); the executor commits + pushes per phase and
    writes the gate memo, and the run's last gate — the **ticket exit
    gate** — is full.
-9. **Code review**: `code-review-subagent` has `bash: deny` — **you compute
+9. **Code review**: `code-review-subagent` has `edit: deny` (bash is allowlisted to read-only git, and its cwd is the session checkout, not the worktree) — **you compute
    the diff** (`git diff origin/<base>...feat/<KEY>` and `--stat`) and embed
    it (file list + hunks) in the Task prompt. Fix findings: severity ≥
    Major mandatory; Minor by judgment. **Re-gate after review fixes**: fix
@@ -389,7 +389,8 @@ step pushes it.
 - The main working tree is never checked out on a feat branch.
 - Every PLAN passes the atomicity self-check before commit.
 - Delegation is hub-and-spoke from the primary session (build agent allows
-  `task: {"*": allow}`); bash-denied delegates receive precomputed diffs.
+  `task: {"*": allow}`); delegates whose cwd is the session checkout (not the
+  worktree) receive precomputed diffs.
 - Each worktree gets a CodeGraph index when the main checkout has one
   (skipped with a note when the index would be unignored, the CLI is
   absent, or init fails).

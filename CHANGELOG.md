@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.32.0](https://github.com/darellchua2/opencode-config-template/compare/v9.31.1...v9.32.0) (2026-09-22)
+
+### Features
+
+* **agents:** scoped bash allowlist for code-review-subagent ([#524](https://github.com/darellchua2/opencode-config-template/issues/524)) ([b5d2eee](https://github.com/darellchua2/opencode-config-template/commit/b5d2eeeee619683795d5855e1abecdaae47bc7bb))
+
+### Bug Fixes
+
+* **skills:** Guarantees line — delegates are cwd-restricted, not bash-blind ([#524](https://github.com/darellchua2/opencode-config-template/issues/524)) ([3867c76](https://github.com/darellchua2/opencode-config-template/commit/3867c76a84a0ba4c0ae19461b24294050a53d2b5))
+
+### Documentation
+
+* **agents:** scope pr-workflow gates line to standalone path ([#524](https://github.com/darellchua2/opencode-config-template/issues/524)) ([35448eb](https://github.com/darellchua2/opencode-config-template/commit/35448eb83e0a9549547c772ed4a5031993abf67c))
+* **config:** /run-plan gate claim names tiered gating ([#524](https://github.com/darellchua2/opencode-config-template/issues/524)) ([db96893](https://github.com/darellchua2/opencode-config-template/commit/db96893ba47b82ae7933cc507fd81fed0470564b))
+* **plan:** add PLAN-524.md for [#524](https://github.com/darellchua2/opencode-config-template/issues/524) ([5bf1a84](https://github.com/darellchua2/opencode-config-template/commit/5bf1a84395d83801c6dbc43af5b2bfc276d5747c))
+* **plan:** append merge re-gate memo (9cb899e tier=full) ([a94817e](https://github.com/darellchua2/opencode-config-template/commit/a94817e21b8a5e8167a5910bdd05b0dee230eda0))
+* **plan:** append review-fix re-gate memo (3867c76 tier=full) ([631cff5](https://github.com/darellchua2/opencode-config-template/commit/631cff5e9d7bd98d788f0aeb65b45e9d0e49312f))
+* **plan:** apply [#524](https://github.com/darellchua2/opencode-config-template/issues/524) plan-review findings — README cell, registry --check gate ([39bd5f8](https://github.com/darellchua2/opencode-config-template/commit/39bd5f8e3f079760a3a70a7e1bbb12c4f90681f5))
+* **plan:** trace Phase 1 (b5d2eee) — gate tier=full green ([9228775](https://github.com/darellchua2/opencode-config-template/commit/92287755fb451e7e96b823863e1f30380b32e0b5))
+* **plan:** trace Phase 2 (35448eb) — gate tier=full green ([0c8d9fe](https://github.com/darellchua2/opencode-config-template/commit/0c8d9fe08f452e9606e800b22d1d5a7122328297))
+* **plan:** trace Phase 3 (db96893) — exit gate tier=full green, [#524](https://github.com/darellchua2/opencode-config-template/issues/524) complete ([b32bbef](https://github.com/darellchua2/opencode-config-template/commit/b32bbefee960a9e8843dc36e915a8d27f09d58a4))
+
 ## [9.31.1](https://github.com/darellchua2/opencode-config-template/compare/v9.31.0...v9.31.1) (2026-09-22)
 
 ### Bug Fixes
