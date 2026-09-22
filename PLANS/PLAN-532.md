@@ -55,10 +55,11 @@ Cross-module edges exist (generated registry; script↔doc payload sync) → arc
     — **Done:** Phase 0 inserted (SKILL.md:28-56) — divergence check, backmerge steps, two modes, scope note; diff additions-only in body (2 deletions = old description lines from 2.1); preamble string count 1; no evaluator tokens added; bats test_default_behavior + test_autoresearch_protocol green (169 ok / 0 failed); files: pr-merge-workflow-skill/SKILL.md; fixes: none
 
 ### Phase 3: Worktree pipeline squash pin (worktree-pipeline-skill)
-- [ ] **3.1** Amend the Step 10 CI-gate sentence in `skills/worktree-pipeline-skill/SKILL.md` ("merge when green", line ~175) to pin the merge method: `gh pr merge <num> --squash` for the short-lived `feat/<KEY>` head, citing the `pr-merge-workflow-skill` head-class classifier.
+- [x] **3.1** Amend the Step 10 CI-gate sentence in `skills/worktree-pipeline-skill/SKILL.md` ("merge when green", line ~175) to pin the merge method: `gh pr merge <num> --squash` for the short-lived `feat/<KEY>` head, citing the `pr-merge-workflow-skill` head-class classifier.
     — **Why:** Phase 1's linear-history flip removes the accidental guard that rejected a wrong `--merge` on feat PRs; pinning squash prevents the SHA-divergence harm the classifier exists to stop.
     — **Done when:** Step 10 specifies `--squash` with the classifier citation and no longer leaves the merge method implicit.
     — **Consumers affected:** `/run-worktree-pipeline` Step 10 merge decision; no downstream text depends on the old wording.
+    — **Done:** CI-gate sentence now pins `gh pr merge <num> --squash` with the Phase 1 classifier citation and an explicit never-`--merge` rationale (SKILL.md:175-179); affected suite test_tiered_gating.bats green (23 ok, incl. step10 tier=full citation test); files: worktree-pipeline-skill/SKILL.md; fixes: none
 
 ### Phase 4: Registry regeneration + verification gates (exit gate: full)
 - [ ] **4.1** Run `node installer/build-registry.mjs` from the repo root and stage the regenerated `installer/registry.json` with the phase commit.
