@@ -28,7 +28,7 @@
 // => isolation (curated subset) only holds on a clean slate (no global deploy).
 
 import { readFile, writeFile, mkdir, readdir, rm, cp, copyFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { dirname, join, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -453,6 +453,22 @@ export async function writeInstall(sel, opts, reg, depMap) {
     else plan.skills.push({ name: sname, src, dst });
   }
 
+  // shipsPlugins (#533) — gated like every other project artifact: an existing
+  // non-manifest-owned plugin artifact that differs is a conflict (skipped,
+  // --force overrides the notice), never silently clobbered.
+  const pluginFiles = pluginsForSkills(sel.skills, depMap, opts);
+  const prevPlugins = prevManifest.plugins || [];
+  const gatedPluginFiles = [];
+  for (const name of pluginFiles) {
+    const dst = join(ocDir, "plugins", name);
+    if (existsSync(dst) && !prevPlugins.includes(name)) {
+      const src = join(PLUGINS_SRC, name);
+      const differs = statSync(src).isDirectory() ? await dirDiffers(src, dst) : await filesDiffer(src, dst);
+      if (differs) { plan.conflicts.push({ path: dst, kind: "plugin", name }); continue; }
+    }
+    gatedPluginFiles.push(name);
+  }
+
   // opencode.json conflict
   const ocConflict = ocProject && existsSync(ocFile) && !(prevManifest.configPath === ocFile);
   const manifest = {
@@ -463,7 +479,6 @@ export async function writeInstall(sel, opts, reg, depMap) {
     skills: sel.skills,
     mcps: sel.mcps,
   };
-  const pluginFiles = pluginsForSkills(sel.skills, depMap, opts);
 
   if (dry) {
     process.stdout.write(JSON.stringify({ dryRun: true, project, ...manifest, agents: sel.agents, skills: sel.skills, mcps: sel.mcps, ...(pluginFiles.length ? { plugins: pluginFiles } : {}), warnings: sel.warnings, conflicts: plan.conflicts.map((c) => c.path) }, null, 2) + "\n");
@@ -528,8 +543,10 @@ export async function writeInstall(sel, opts, reg, depMap) {
 
     // shipsPlugins (#533): project-scope plugin dir, auto-loaded at startup
     let shippedPlugins = [];
-    if (pluginFiles.length) shippedPlugins = await shipPluginArtifacts(pluginFiles, join(ocDir, "plugins"));
-    if (shippedPlugins.length) manifest.plugins = shippedPlugins;
+    if (gatedPluginFiles.length) shippedPlugins = await shipPluginArtifacts(gatedPluginFiles, join(ocDir, "plugins"));
+    // union with previously-shipped (Mode R: manifest is the system of record —
+    // a set change that drops ponytail skills must not orphan the record)
+    if (shippedPlugins.length) manifest.plugins = [...new Set([...prevPlugins, ...shippedPlugins])].sort();
   } else if (sel.mcps.length) {
     console.error(`note: MCP servers are configured via opencode.json — skipped for ${pTarget} project installs`);
   }
@@ -1234,7 +1251,9 @@ async function cmdRemove(args, opts) {
   console.log(`removed '${name}' from user scope.`);
   // shipped plugin artifacts (#533) are shared between skills and stay put —
   // they are inert without the skill; remove them manually if fully desired.
-  if ((prev.plugins || []).length) {
+  // Gated on this name actually shipping plugins, so unrelated removals stay quiet.
+  const dm = await loadDepMap();
+  if (dm.shipsPlugins[name] && (prev.plugins || []).length) {
     console.log(`note: shipped plugin artifacts remain (${prev.plugins.join(", ")}).`);
   }
 }
@@ -1370,15 +1389,33 @@ async function cmdUpdate(args, opts) {
     else if (missingTargets === 0) plan.unchanged.push(name);
   }
 
+  // shipsPlugins refresh (#533 review Major 3): re-ship plugin artifacts for
+  // opencode-target skill entries so runtime enforcement never lags the skill
+  // bodies on the documented refresh path. Source set = plugins implied by
+  // opencode-target skills ∪ manifest-recorded plugins (depMap edges can be
+  // renamed between versions; the manifest is the system of record). --no-deps
+  // opts out. cmdUpdate is user-scope by construction → USER_OC/plugins only.
+  // Documented adoption: a pre-#533 manifest has no plugins key — bare update
+  // adopts enforcement for those installs (they never opted out);
+  // `update --no-deps` is the opt-out path.
+  const ocSkills = Object.entries(entries).filter(([, e]) => e.type === "skill" && e.targets?.opencode).map(([n]) => n);
+  const depMap = await loadDepMap();
+  const refreshFiles = [...new Set([...pluginsForSkills(ocSkills, depMap, opts), ...(prev.plugins || [])])]
+    .sort().filter((f) => existsSync(join(PLUGINS_SRC, f)));
+
   if (dry) {
-    process.stdout.write(JSON.stringify({ dryRun: true, scope: "user", legacyUpgraded: upgradedLegacy, ...plan }, null, 2) + "\n");
+    process.stdout.write(JSON.stringify({ dryRun: true, scope: "user", legacyUpgraded: upgradedLegacy, ...plan, ...(refreshFiles.length ? { plugins: refreshFiles } : {}) }, null, 2) + "\n");
     return;
   }
 
-  const manifest = { ...prev, generatedAt: new Date().toISOString(), entries };
+  let shippedPlugins = [];
+  if (refreshFiles.length) shippedPlugins = await shipPluginArtifacts(refreshFiles, join(USER_OC, "plugins"));
+
+  const manifest = { ...prev, generatedAt: new Date().toISOString(), entries, ...(shippedPlugins.length ? { plugins: [...new Set([...(prev.plugins || []), ...shippedPlugins])].sort() } : {}) };
   await writeFile(USER_MANIFEST, JSON.stringify(manifest, null, 2) + "\n", "utf8");
 
   console.log(`update complete: updated ${plan.updated.length} · unchanged ${plan.unchanged.length} · missing ${plan.missing.length}`);
+  if (shippedPlugins.length) console.log(`  plugins: ${shippedPlugins.length} refreshed -> ~/.config/opencode/plugins/`);
   if (plan.registryRemoved.length) console.log(`  registry-removed (present locally): ${plan.registryRemoved.join(", ")}${prune ? "" : " — re-run with --prune to remove"}`);
   if (plan.pruned.length) console.log(`  pruned: ${plan.pruned.join(", ")}`);
   if (plan.missing.length) for (const m of plan.missing) console.log(`  missing: ${m}`);

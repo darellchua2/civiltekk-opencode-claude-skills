@@ -73,6 +73,68 @@ teardown() { rm -rf "$SANDBOX" "$TMP_PROJ"; }
   grep -q '"plugins"' "$TMP_PROJ/.opencode/.opencode-init.manifest.json"
 }
 
+@test "project-scope non-owned differing plugin artifact is a conflict, never clobbered" {
+  mkdir -p "$TMP_PROJ/.opencode/plugins"
+  echo "# team's own attribution file" > "$TMP_PROJ/.opencode/plugins/ATTRIBUTION.md"
+  run $ADD ponytail-debt-skill --yes --project "$TMP_PROJ"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "conflict (skipped, use --force)"
+  # the team's file survived verbatim
+  grep -q "team's own attribution file" "$TMP_PROJ/.opencode/plugins/ATTRIBUTION.md"
+  # the other artifacts still shipped
+  [ -f "$TMP_PROJ/.opencode/plugins/opencode-ponytail-scoped.ts" ]
+}
+
+@test "project-scope manifest-owned plugin artifacts refresh silently (idempotent re-install)" {
+  run $ADD ponytail-debt-skill --yes --project "$TMP_PROJ"
+  [ "$status" -eq 0 ]
+  [ -f "$TMP_PROJ/.opencode/plugins/ATTRIBUTION.md" ]
+  # second install: manifest owns it now → refreshed, no conflict
+  run $ADD ponytail-debt-skill --yes --project "$TMP_PROJ"
+  [ "$status" -eq 0 ]
+  ! echo "$output" | grep -q "conflict (skipped, use --force)"
+}
+
+@test "update re-ships plugin artifacts for opencode-target entries (stale artifact repaired)" {
+  run $ADD ponytail-audit-skill --yes
+  [ "$status" -eq 0 ]
+  [ -f "$SANDBOX/.config/opencode/plugins/ponytail/SKILL.md" ]
+  # simulate a stale artifact (pre-#533 install / old version)
+  rm "$SANDBOX/.config/opencode/plugins/ponytail/SKILL.md"
+  run node "${REPO}/installer/init.mjs" update
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "plugins: .* refreshed"
+  [ -f "$SANDBOX/.config/opencode/plugins/ponytail/SKILL.md" ]
+}
+
+@test "update --dry-run lists would-ship plugins without writing" {
+  run $ADD ponytail-audit-skill --yes
+  [ "$status" -eq 0 ]
+  rm -rf "$SANDBOX/.config/opencode/plugins"
+  run node "${REPO}/installer/init.mjs" update --dry-run
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '"plugins"'
+  [ ! -e "$SANDBOX/.config/opencode/plugins" ]
+}
+
+@test "update --no-deps does not adopt plugin shipping (unrecorded installs stay plugin-free)" {
+  run $ADD ponytail-audit-skill --yes --no-deps
+  [ "$status" -eq 0 ]
+  [ ! -e "$SANDBOX/.config/opencode/plugins" ]
+  run node "${REPO}/installer/init.mjs" update --no-deps
+  [ "$status" -eq 0 ]
+  [ ! -e "$SANDBOX/.config/opencode/plugins" ]
+}
+
+@test "update refreshes manifest-recorded plugin artifacts even with --no-deps (already managed)" {
+  run $ADD ponytail-audit-skill --yes
+  [ "$status" -eq 0 ]
+  rm -rf "$SANDBOX/.config/opencode/plugins"
+  run node "${REPO}/installer/init.mjs" update --no-deps
+  [ "$status" -eq 0 ]
+  [ -f "$SANDBOX/.config/opencode/plugins/ponytail/SKILL.md" ]
+}
+
 @test "project-scope non-opencode target (--project --target kimi) prints notice, ships nothing" {
   run $ADD ponytail-debt-skill --yes --project "$TMP_PROJ" --target kimi
   [ "$status" -eq 0 ]

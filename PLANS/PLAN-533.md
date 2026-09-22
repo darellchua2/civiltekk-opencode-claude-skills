@@ -153,3 +153,12 @@ GATE da25d5f tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 1:
 GATE b0d2836 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 2: whole bats suite 550/550 + registry drift guard — installer is a critical-area anchor)
 
 GATE a83ebc3 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 3 TICKET EXIT GATE: bats 550/550 + registry --check + injection smoke — run-level last gate, full by contract)
+
+### Review-fix round (Step 9, code-review 0 BLOCK / 4 Major / 4 Minor + Mode R round 2)
+
+- **AC #4 amendment (Mode R, authoritative):** "delivers the plugin" governs the installer lifecycle, not just first `add`. `npx update` re-ships plugin artifacts sourced from opencode-target skill entries ∪ manifest-recorded plugins; dry-run reports them; `update --no-deps` blocks adoption only (already-managed artifacts still refresh — update's job); pre-#533 installs are adopted by bare `update`. README documents this.
+- Major 1 fixed: mutable `persistedDefault` shadow + `globalDefault()` — same-process new sessions see `/ponytail default` immediately (test: same-process-pickup).
+- Major 2 fixed: unparseable config backed up as `ponytail-config.json.corrupt-<ts>` before rewrite; atomic tmp+rename write (tests: corrupt-backup).
+- Major 3 fixed: cmdUpdate re-ship + dry-run parity + refreshed-notice (tests: update re-ships / dry-run lists / no-deps adoption semantics).
+- Major 4 fixed: project-scope plugin artifacts conflict-gated like every other project artifact (exists + unowned + differs → conflict, never clobbered); manifest.plugins unions previous records (tests: conflict-never-clobbered, owned-refresh).
+- Minors: atomic write folded into M2; cmdRemove note gated on the removed name actually shipping plugins; project manifest union (with M4); test name de-versioned (census gate now literally zero).

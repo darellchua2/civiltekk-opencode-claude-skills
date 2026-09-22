@@ -70,26 +70,48 @@ function readPersistedDefault(): string | null {
   }
 }
 
+// Mutable shadow of the persisted default: `/ponytail default` must take
+// effect for new sessions in the SAME process, not only after a restart —
+// a load-time const would freeze the value and contradict the command's
+// own confirmation text (code-review #533 Major 1).
+let persistedDefault = readPersistedDefault();
+
+// Resolution order: env var → persisted config file → built-in default.
+function globalDefault(): string {
+  return normalizeMode(process.env.PONYTAIL_DEFAULT_MODE) || persistedDefault || DEFAULT_MODE;
+}
+
 function persistDefaultMode(mode: string): boolean {
   try {
     let cfg: Record<string, unknown> = {};
+    let raw: string | null = null;
     try {
-      cfg = parseConfigJson(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      raw = fs.readFileSync(CONFIG_PATH, 'utf8');
     } catch (_) {
-      // first write — start from an empty object (merge, never clobber other keys)
+      // absent → first write, nothing to preserve
+    }
+    if (raw !== null) {
+      try {
+        cfg = parseConfigJson(raw);
+      } catch (_) {
+        // present but unparseable — back it up before rewriting; never
+        // silently destroy sibling settings we could not read
+        try { fs.copyFileSync(CONFIG_PATH, `${CONFIG_PATH}.corrupt-${Date.now()}`); } catch (_) {}
+        cfg = {};
+      }
     }
     cfg.defaultMode = mode;
     fs.mkdirSync(path.dirname(CONFIG_PATH), { recursive: true });
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2) + '\n');
+    // atomic write (tmp + rename): a crash never leaves a truncated config
+    const tmp = `${CONFIG_PATH}.tmp-${process.pid}`;
+    fs.writeFileSync(tmp, JSON.stringify(cfg, null, 2) + '\n');
+    fs.renameSync(tmp, CONFIG_PATH);
+    persistedDefault = mode; // shadow update — same-process sessions see it
     return true;
   } catch (_) {
     return false;
   }
 }
-
-// Resolution order: env var → persisted config file → built-in default.
-const PONYTAIL_DEFAULT_MODE =
-  normalizeMode(process.env.PONYTAIL_DEFAULT_MODE) || readPersistedDefault() || DEFAULT_MODE;
 
 // Default off-set: agents that should NOT receive runtime Ponytail injection —
 // read-only/research agents (Ponytail N/A), non-coding agents (docs, business,
@@ -142,8 +164,8 @@ function resolveMode(sessionID: any, agent?: string): string {
     const m = normalizeMode(AGENT_MODE_MAP[agent]);
     if (m) return m;
   }
-  // 3. Global default
-  return PONYTAIL_DEFAULT_MODE;
+  // 3. Global default (env var → persisted config → built-in)
+  return globalDefault();
 }
 
 function isInOffSet(agent?: string): boolean {
@@ -190,7 +212,7 @@ export default {
 
       const mode = first ? normalizeMode(first) : null;
       if (mode && inv?.sessionID) sessionMode.set(inv.sessionID, mode);
-      const current = (inv?.sessionID && sessionMode.get(inv.sessionID)) || PONYTAIL_DEFAULT_MODE;
+      const current = (inv?.sessionID && sessionMode.get(inv.sessionID)) || globalDefault();
       await submit(
         `You are running under ponytail at level "${current}". ` +
         'If the user gave a level, confirm the switch in one line. ' +

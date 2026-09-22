@@ -62,7 +62,7 @@ teardown() { rm -rf "$SANDBOX"; }
   [ "$output" = "[]" ]
 }
 
-@test "old v4.8.4 marker wording is gone from the injected ruleset" {
+@test "old generic marker wording is gone from the injected ruleset" {
   run node -e "const m=require('${CJS}');process.stdout.write(m.getPonytailInstructions('full'))"
   [ "$status" -eq 0 ]
   ! echo "$output" | grep -q 'ponytail: this exists'
@@ -130,6 +130,43 @@ console.log("OK merge-bom-invalid");
 '
   [ "$status" -eq 0 ]
   echo "$output" | grep -q "OK merge-bom-invalid"
+}
+
+@test "same-process new sessions see the persisted default immediately (no restart needed)" {
+  run_plugin "$SANDBOX" '
+const cmd = cmds.find((c) => c.name === "ponytail");
+// session s1 sets the default; session s2 (SAME process, after the write) injects lite
+await cmd.execute({ prompt: { text: "default lite" }, sessionID: "s1", delivery: {} });
+const system = [];
+await hooks.context({ sessionID: "s2", agent: undefined, system });
+if (!system[0] || !system[0].text.startsWith("PONYTAIL MODE ACTIVE — level: lite")) {
+  console.log("FAIL injected=" + (system[0] && system[0].text.slice(0, 40)));
+  process.exit(1);
+}
+console.log("OK same-process-pickup");
+'
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "OK same-process-pickup"
+}
+
+@test "unparseable config is backed up before rewrite (.corrupt-* aside), new config valid" {
+  mkdir -p "${SANDBOX}/.local/share/opencode"
+  printf 'not json at all {{{' > "${SANDBOX}/.local/share/opencode/ponytail-config.json"
+  run_plugin "$SANDBOX" '
+const cmd = cmds.find((c) => c.name === "ponytail");
+await cmd.execute({ prompt: { text: "default ultra" }, sessionID: "s1", delivery: {} });
+const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));
+if (cfg.defaultMode !== "ultra") { console.log("FAIL defaultMode=" + cfg.defaultMode); process.exit(1); }
+const dir = req("path").dirname(cfgPath);
+const backups = fs.readdirSync(dir).filter((f) => f.startsWith("ponytail-config.json.corrupt-"));
+if (backups.length !== 1) { console.log("FAIL backups=" + backups.length); process.exit(1); }
+if (!fs.readFileSync(req("path").join(dir, backups[0]), "utf8").includes("not json")) {
+  console.log("FAIL backup content mismatch"); process.exit(1);
+}
+console.log("OK corrupt-backup");
+'
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "OK corrupt-backup"
 }
 
 @test "default-mode resolution falls back to full with no env var and no config file" {
