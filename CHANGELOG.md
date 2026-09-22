@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.30.2](https://github.com/darellchua2/opencode-config-template/compare/v9.30.1...v9.30.2) (2026-09-22)
+
+### Bug Fixes
+
+* **skills:** implement Phase 1 — PowerShell env variant + node jq alternative ([f501f70](https://github.com/darellchua2/opencode-config-template/commit/f501f701522509b1f0a4c9c252000c8e707bedd1))
+* **skills:** implement Phases 2-4 — OS variants, install rows, bash declarations ([0f0e352](https://github.com/darellchua2/opencode-config-template/commit/0f0e352571f7c830d2d993ab5cff3c661e999df2))
+* **skills:** review fixes — merge type-parity, Windows rows, magick note ([fd59ed6](https://github.com/darellchua2/opencode-config-template/commit/fd59ed64ef7e22f0d60e341eb04c0b8783c64608))
+
+### Documentation
+
+* **plan:** add PLAN-512.md for [#512](https://github.com/darellchua2/opencode-config-template/issues/512) ([c41fc88](https://github.com/darellchua2/opencode-config-template/commit/c41fc88eda77c4f1432b5d17fafd63c2dbf58df0))
+* **plan:** add PLAN-513.md for [#513](https://github.com/darellchua2/opencode-config-template/issues/513) ([9643f4e](https://github.com/darellchua2/opencode-config-template/commit/9643f4e54af46badfab7b666ce0c34ec29372cea))
+* **plan:** gate-cite equivalence note ([aa6826a](https://github.com/darellchua2/opencode-config-template/commit/aa6826a907cf44ddefa312029a5c516acec9d99c))
+* **plan:** re-gate memo on final content SHA ([781bb9d](https://github.com/darellchua2/opencode-config-template/commit/781bb9dd8553467dd809dbc102215a2305d9b982))
+* **plan:** trace Phase 5 — exit gate full green ([7c68f91](https://github.com/darellchua2/opencode-config-template/commit/7c68f9182be6ba14d35dd9f61bcd0ee558ba45b5))
+* **skills:** implement Phase 1 — question-tool harness bindings ([727eeb2](https://github.com/darellchua2/opencode-config-template/commit/727eeb2208f2646d88f0c6e011952d3e5fe723e9))
+* **skills:** implement Phase 2 — background-exec harness bindings ([29b56d4](https://github.com/darellchua2/opencode-config-template/commit/29b56d4e11559b834756a1bf957383292bbb4911))
+* **skills:** implement Phase 3 — zai credential-source harness bindings ([863fefe](https://github.com/darellchua2/opencode-config-template/commit/863fefeec8c91676c28d2aeaf40640d2764ca63e))
+* **skills:** implement Phase 4 — subagent-delegation harness bindings ([99b78bf](https://github.com/darellchua2/opencode-config-template/commit/99b78bf129fda620a46cf379bc9d631a1a9cc430))
+* **skills:** review fixes — normalize Other/none token, fix plan-execution fallback ([f6842c3](https://github.com/darellchua2/opencode-config-template/commit/f6842c38fe90f4f200a0466372ba4c9334aceac9))
+
 ## [9.30.1](https://github.com/darellchua2/opencode-config-template/compare/v9.30.0...v9.30.1) (2026-09-21)
 
 ### Bug Fixes
