@@ -17,25 +17,27 @@
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `research/`, `docs/` | — | none (grep-verified: zero refs in tests/live files) | low |
+| `research/`, `docs/` | — | two stale doc pointers in living plugin READMEs (fixed in 2.2) | low |
 | `LEARNINGS/` content | — | learnings autoinject plugin (runtime dir scan, not git); no bats test depends on the dir | low |
 | `.gitignore` | LEARNINGS skeleton (Phase 1 order) | git tracking only | low |
 | `deploy/setup.sh` (name refs in help/comments) | — | bats: parse_arguments, init, deploy_delegate, test_count_drift (source it / grep its banner); opencode-setup bin | med — functional script; verify `bash -n` + bats subset |
 | `installer/build-site.mjs` (repo-name/URL refs) | — | release.yml pages job (functional URL output) | med — `node --check` |
-| `installer/templates/api-quality/{README.md,api-quality-rules.mjs}` | — | installed into downstream repos | low |
+| `installer/templates/api-quality/{README.md,api-quality-rules.mjs,pre-commit-redocly,redocly.yaml}` | — | installed into downstream repos; pre-commit-redocly is `/bin/sh` → joins `bash -n` | low |
+| `opencode_app/Dockerfile` (OCI `title` + `source` labels, :33/:35) | — | image registries + GitHub repo↔image linkage (machine-read metadata) | med — label edit, build-arg unaffected |
 | `agents/opencode-tooling-subagent.md`, 3 SKILL.md files (name refs) | — | per-skill npx installs (doc text only) | low |
 | `restart-opencode-docker.sh` (comment) | — | maintainer redeploy flow | low |
+| `plugins/README.md`, `plugins/opencode-learnings-autoinject.README.md` (stale `research/` pointers) | Phase 1 deletion (2.2 follows 1.1) | humans reading plugin docs | low |
 | `AGENTS.md` (Repository Purpose npx refs) | rename sweep (Phase 2) | repo agents/contributors | low |
-| `README.md` | rename sweep FIRST (single edit pass over renamed text) | humans; no bats test greps README name/count literals (verified: test_count_drift targets setup.sh/ps1 only) | low |
+| `README.md` | rename sweep FIRST (single edit pass over renamed text) | `test_markitdown_skill.bats` (:102 "N skill director(y|ies)" == disk; :110 "Configuration (N)" == registry.json) and `test_mcp_count_consistency.bats` (:39 "ships N MCP server entries" == mcp.servers count) — **README literals ARE test-consumed**; also `opencode_app/README.md` watch-clause (:97 same skill-count assertion) if Phase 3 touches it | med — rework may rephrase pinned literals; 3.3 done-when pins them |
 
 ## Implementation Phases
 
 ### Phase 1: Cleanup & LEARNINGS skeleton
 
 - [ ] **1.1** `git rm -r research/ docs/` in the worktree
-    — **Why:** unreferenced internal artifacts shipped as if product (grep-verified zero live references)
+    — **Why:** unreferenced internal artifacts shipped as if product (grep-verified: only stale doc pointers remain, fixed in 2.2)
     — **Done when:** `test ! -d research && test ! -d docs` in the worktree; deletions staged
-    — **Consumers affected:** none
+    — **Consumers affected:** none (living pointers fixed in 2.2)
 - [ ] **1.2** Reduce `LEARNINGS/` to skeleton: `git rm` all `LEARNINGS/**/*.md` EXCEPT `_index.md`; keep `patterns/ decisions/ solutions/ conventions/ anti-patterns/` dirs via their `.gitkeep` files
     — **Why:** 156 internal dev-memory entries are not product for a shared collection; skeleton preserves the documented shape
     — **Done when:** `git ls-files LEARNINGS | grep -v '\.gitkeep$' | grep -v '_index.md$'` outputs nothing
@@ -49,17 +51,21 @@
     — **Done when:** `git log -1 --format=%s` shows the message; working tree clean
     — **Consumers affected:** none
 
-### Phase 2: Rename sweep (opencode-config-template → civiltekk-opencode-claude-skills)
+### Phase 2: Rename sweep (opencode-config-template → civiltekk-opencode-claude-skills) + pointer fixes
 
-- [ ] **2.1** Replace every `opencode-config-template` occurrence in the 12 live files: README.md, AGENTS.md, deploy/setup.sh, installer/build-site.mjs, installer/templates/api-quality/README.md, installer/templates/api-quality/api-quality-rules.mjs, agents/opencode-tooling-subagent.md, skills/markitdown-mcp-skill/SKILL.md, skills/pptx-template-modifier-skill/SKILL.md, skills/worktree-pipeline-skill/SKILL.md, restart-opencode-docker.sh — CHANGELOG.md and PLANS/ stay untouched (history; GitHub redirects resolve)
-    — **Why:** shipped-forward text must carry the new repo path; npx commands and Pages URL are functional strings
+- [ ] **2.1** Replace every `opencode-config-template` occurrence in the 14 grep-derived live files: README.md, AGENTS.md, deploy/setup.sh, installer/build-site.mjs, installer/templates/api-quality/README.md, installer/templates/api-quality/api-quality-rules.mjs, installer/templates/api-quality/pre-commit-redocly, installer/templates/api-quality/redocly.yaml, opencode_app/Dockerfile (OCI `org.opencontainers.image.title` + `.source` labels), agents/opencode-tooling-subagent.md, skills/markitdown-mcp-skill/SKILL.md, skills/pptx-template-modifier-skill/SKILL.md, skills/worktree-pipeline-skill/SKILL.md, restart-opencode-docker.sh — CHANGELOG.md and PLANS/ stay untouched (history; GitHub redirects resolve)
+    — **Why:** shipped-forward text must carry the new repo path; npx commands, Pages URL, and OCI source labels are functional strings
     — **Done when:** `grep -rn "opencode-config-template" --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=_archived .` in the worktree matches only CHANGELOG.md and PLANS/*
-    — **Consumers affected:** npx remote installs, Pages catalog URL, setup.sh help text
-- [ ] **2.2** Syntax-check touched executables: `bash -n deploy/setup.sh restart-opencode-docker.sh` and `node --check installer/build-site.mjs installer/templates/api-quality/api-quality-rules.mjs`
+    — **Consumers affected:** npx remote installs, Pages catalog URL, setup.sh help text, image registries
+- [ ] **2.2** Fix the two stale `research/` pointers left by 1.1: `plugins/README.md` (drop `research/` from the historical-records policy list) and `plugins/opencode-learnings-autoinject.README.md` (dead `research/ponytail-load-fix.md` link → one-clause inline summary of the .ts-not-.mjs rationale, or a git-history pointer)
+    — **Why:** living docs must not point at deleted paths; history pointers belong to the records, not to them
+    — **Done when:** `grep -rn "research/" plugins/*.md plugins/*.README.md 2>/dev/null` empty in the worktree
+    — **Consumers affected:** humans reading plugin docs
+- [ ] **2.3** Syntax-check touched executables: `bash -n deploy/setup.sh restart-opencode-docker.sh installer/templates/api-quality/pre-commit-redocly` and `node --check installer/build-site.mjs installer/templates/api-quality/api-quality-rules.mjs`
     — **Why:** sweep touches functional scripts; prove no breakage before content rework stacks on top
     — **Done when:** both commands exit 0
-    — **Consumers affected:** opencode-setup bin, pages job
-- [ ] **2.3** Commit Phase 2 (`chore(rebrand): sweep opencode-config-template → civiltekk-opencode-claude-skills (12 live files)`)
+    — **Consumers affected:** opencode-setup bin, pages job, downstream pre-commit hook
+- [ ] **2.4** Commit Phase 2 (`chore(rebrand): sweep opencode-config-template → civiltekk-opencode-claude-skills (14 live files + 2 pointer fixes)`)
     — **Why:** mechanical rename isolated from editorial rework for reviewable diff
     — **Done when:** commit exists; tree clean
     — **Consumers affected:** none new
@@ -69,15 +75,15 @@
 - [ ] **3.1** Restructure README top matter: title "CivilTekk OpenCode & Claude Skills"; purpose-first intro (personal dev skills collection shared for single-skill use; OpenCode v2-native + multi-harness targets claude/agents/kimi/kilo); "Daily-driver commands" table for /create-ticket, /run-worktree-pipeline, /run-plan, /goal with note that slash commands ship with full deploys (single-skill installs get skills via natural-language triggers only); simplified install (three paths: one skill / full deploy / project preset + `--target` table + Docker one-liner); updated directory tree (no research/, no docs/, LEARNINGS as skeleton); Docker section declaring `opencode_app/` purpose (self-hosted browser endpoint of the whole setup); Support section linking `.github/ISSUE_TEMPLATE` bug/feature forms
     — **Why:** the agreed positioning — visitors see what this is and how to grab one skill in one command
     — **Done when:** all seven elements present in the rendered README top matter; no old title remains
-    — **Consumers affected:** humans (first impression); nothing mechanical
+    — **Consumers affected:** humans; `opencode_app/README.md` NOT edited (watch-clause: its skill-count literal stays valid untouched)
 - [ ] **3.2** Collapse deep reference into `<details><summary>` blocks: setup flag tables, MCP servers + provider packs + skill profiles, model resolution/tiers, plugins (vibeguard/ponytail/auto-continue/question-repair/learnings), skill categories + agents tables, LSP, knowledge persistence, CodeGraph, testing recipes, portability
     — **Why:** keep one entry file without link sprawl; agreed alternative to docs/ (which Phase 1 deletes)
-    — **Done when:** every deep section renders inside a collapsed details block; no content dropped (moved, not deleted — historical count narration may compress)
-    — **Consumers affected:** humans
-- [ ] **3.3** Repair accuracy defects: fix broken `PLAN.md` root link (→ `PLANS/`), re-derive counts (`ls skills/ | grep -v _archived | wc -l` = 146, `ls agents/*.md | wc -l` = 34), Pages URL `darellchua2.github.io/civiltekk-opencode-claude-skills`, replace count-history narration with current numbers
-    — **Why:** stale counts and dead links erode trust in a shared repo
-    — **Done when:** counts match disk; `grep -n "PLAN.md](PLAN.md" README.md` empty; Pages URL carries new name
-    — **Consumers affected:** humans
+    — **Done when:** every deep section renders inside a collapsed details block; no content dropped (moved, not deleted — historical count narration may compress); `<details>` wrapping keeps text greppable so bats assertions keep matching
+    — **Consumers affected:** humans; test_markitdown_skill + test_mcp_count_consistency (greps read markdown source — wrapping is safe, rephrasing is not)
+- [ ] **3.3** Repair accuracy defects: fix broken `PLAN.md` root link (→ `PLANS/`), re-derive counts (`ls skills/ | grep -v _archived | wc -l` = 146, `ls agents/*.md | wc -l` = 34), Pages URL `darellchua2.github.io/civiltekk-opencode-claude-skills`, replace count-history narration with current numbers. **Pinned phrasings (test-consumed — survive verbatim, counts derived at execution time):** "N skill director(y|ies)" where N = disk count; "Configuration (N)" where N = `installer/registry.json` Configuration-category length; "ships N MCP server entries" where N = `opencode_app/opencode.json` mcp.servers count. A deliberate rephrase updates the consuming bats assertion in the same commit.
+    — **Why:** stale counts and dead links erode trust; the pinned literals are CI contracts
+    — **Done when:** counts match disk; `grep -n "PLAN.md](PLAN.md" README.md` empty; Pages URL carries new name; `bats tests/test_markitdown_skill.bats tests/test_mcp_count_consistency.bats` green on the worktree
+    — **Consumers affected:** humans; both bats files
 - [ ] **3.4** Commit Phase 3 (`docs(readme): rework for shared-collection positioning under CivilTekk OpenCode & Claude Skills`)
     — **Why:** editorial change isolated from mechanical sweep
     — **Done when:** commit exists; tree clean
@@ -85,8 +91,8 @@
 
 ### Phase 4: Verification (ticket exit gate — full tier)
 
-- [ ] **4.1** Run gates: (a) grep gate from 2.1; (b) `bash -n deploy/setup.sh restart-opencode-docker.sh`; (c) `node --check installer/build-site.mjs installer/templates/api-quality/api-quality-rules.mjs installer/init.mjs`; (d) bats subset covering swept surfaces: `tests/test_count_drift.bats tests/test_skill_isolation.bats tests/init.bats` (bats at `tests/lib/bats-core/bin/bats`)
-    — **Why:** ticket AC requires mechanical proof; these are the guards that consume the touched files
+- [ ] **4.1** Run gates: (a) grep gate from 2.1; (b) `bash -n deploy/setup.sh restart-opencode-docker.sh installer/templates/api-quality/pre-commit-redocly`; (c) `node --check installer/build-site.mjs installer/templates/api-quality/api-quality-rules.mjs installer/init.mjs`; (d) bats set covering swept + reworked surfaces: `tests/test_count_drift.bats tests/test_skill_isolation.bats tests/init.bats tests/test_markitdown_skill.bats tests/test_mcp_count_consistency.bats` (`bats` resolves on PATH)
+    — **Why:** ticket AC requires mechanical proof; this is the complete set of guards that consume the touched files (README literals included)
     — **Done when:** all four green; failures fixed before push
     — **Consumers affected:** pipeline gate memo
 - [ ] **4.2** Write the gate memo into this PLAN's trace block with `tier=full` and final SHA; tick all AC boxes
@@ -98,8 +104,9 @@
 
 - **Preserving local LEARNINGS memory on the maintainer machine:** the merge deletes tracked `LEARNINGS/**/*.md` from disk on the next `git pull` in the MAIN checkout. Before pulling the merge there, run `cp -r LEARNINGS /tmp/LEARNINGS-backup`, pull, then `cp -rn /tmp/LEARNINGS-backup/* LEARNINGS/` — restored files are untracked (gitignored) and the autoinject plugin keeps seeing them. Content also survives in git history.
 - package.json bin names (`opencode-setup`, `opencode-init`, `opencode-skill`) stay generic — commands, not branding.
-- `skills/_archived/` is the legacy exception — NOT counted in the 146 and NOT part of this rework.
-- Step 2.1 exclusion list for the grep gate: `.git/`, `node_modules/`, `skills/_archived/` (if it contains old-name prose it is history, like PLANS/), `CHANGELOG.md`, `PLANS/`.
+- `skills/_archived/` is the legacy exception — NOT counted in the 146 and NOT part of this rework (grep-gate exclusion, verified clean of old-name hits).
+- Step 2.1 exclusion list for the grep gate: `.git/`, `node_modules/`, `skills/_archived/`, `CHANGELOG.md`, `PLANS/` (ticket comment documents this scope).
+- Review-round learnings (2 evidence bumps + 1 new anti-pattern) are captured at pipeline Step 9 per the worktree-capture rule — deferred there because Phase 1 untracks LEARNINGS content.
 
 ## Dependencies
 
@@ -108,7 +115,8 @@ None — no blocked-by tickets. All hard pipeline deps satisfied (plan-execution
 ## Risks & Mitigation
 
 - **setup.sh sweep breaks deploy** — mitigated by `bash -n` + bats subset (init/parse_arguments/deploy_delegate source it).
-- **README rework drops content during details-collapse** — mitigated by "moved, not deleted" rule in 3.2 and code-review pass in Step 9.
+- **README rework rephrases pinned literals** — mitigated by 3.3 pins with derived counts + both consuming bats in 4.1(d); deliberate rephrase = same-commit assertion update.
+- **README details-collapse drops content** — mitigated by "moved, not deleted" rule in 3.2 and code-review pass in Step 9.
 - **Losing maintainer LEARNINGS on merge** — mitigated by Technical Notes restore procedure; content in git history regardless.
 - **Old external links (issues, forks, blog posts) break** — GitHub redirects renamed repos; acceptable residual.
 
