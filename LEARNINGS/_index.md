@@ -32,6 +32,23 @@
 - **Scope**: project
 - **Summary**: Copy CI's setup lines (PATH export, env) into runnable doc snippets — bats lives off-PATH at tests/lib/bats-core/bin; bare `bats` fails on clean machines (#539).
 
+
+### Tracked LEARNINGS entries need gitignore negations
+
+- **Category**: conventions
+- **File**: `LEARNINGS/conventions/tracked-learnings-entries-need-gitignore-negations.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: Publish entries via `!` negation lines, never `git add -f` (#544 vs #542 divergence); keep full File: path prefix in index rows.
+
+### Line-pinned incident learnings drift after the fix lands
+
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/line-pinned-incident-learnings-drift-after-fix-lands.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: Pin the fixed lines as exemplar or drop line pins for pre-fix states — pins to pre-fix lines go false when fix+entry ship together (#539/#542).
+
 <!-- Entries are appended here automatically when new learnings are saved -->
 
 ### Re-vendor version-string census
