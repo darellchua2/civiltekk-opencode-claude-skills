@@ -381,15 +381,6 @@
 ### Plugin pickers filtering by filename prefix drop companion files the plugin needs
 
 - **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/plugin-picker-prefix-filter-drops-companions.md`
-- **Confidence**: 0.8
-- **Scope**: project
-- **Date**: 2026-09-21
-- **Summary**: The #473 picker offered `plugins/opencode-*` items; selecting opencode-vibeguard.ts copied the plugin but not `plugins/vibeguard.config.json` — which the plugin documents as fail-open (missing config ⇒ no masking). The picker path shipped an inert security plugin while the blanket deploy_plugins path (whole-dir copy) shipped it correctly.
-
-### Provenance pins need ≥2 direct choices; equivalence pins need non-empty selections
-
-- **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/provenance-pin-single-source-false-green.md`
 - **Confidence**: 0.85
 - **Scope**: project
@@ -433,15 +424,6 @@
 - **Summary**: `local dry_args=(); … "${dry_args[@]}"` under `set -o nounset`: bash < 4.4 (macOS stock /bin/bash 3.2.57) treats the expansion of an EMPTY declared array as unbound — real (non-dry) `--select` runs crash on macOS while dry-run (non-empty) and Linux CI (bash 5) stay green.
 
 ### Tests that execute setup.sh end-to-end need a mktemp HOME, not just source-pins
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/unsandboxed-bats-run-deploys-into-real-home.md`
-- **Confidence**: high
-- **Scope**: project
-- **Date**: 2026-09-21
-- **Summary**: `run bash "$SETUP_SH" -A` in test_subcommands.bats ran unsandboxed: even a "no-op" flag falls through to the headless skills-only default, which performs a real deploy into the developer's live ~/.config/opencode — including cleanup_old_backups pruning genuine backups to 5.
-
-### `${XDG_DATA_HOME:-…}` punches through HOME-only test sandboxes
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/xdg-data-home-punches-through-home-sandboxes.md`
@@ -570,15 +552,6 @@
 ### Env-prefix sandboxing of globals a sourced script reassigns is clobbered
 
 - **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/bats-source-sandbox-clobbered-globals.md`
-- **Confidence**: 0.95
-- **Scope**: project
-- **Date**: 2026-09-20
-- **Summary**: A bats pin ran `REPO_DIR="$d/repo" bash -c "source deploy/setup.sh; … setup_local_llm_env"`, expecting the sandboxed repo dir. setup.sh:70 unconditionally reassigns `REPO_DIR` from `SCRIPT_DIR` at source time — the env prefix was dead on arrival. Consequences stacked three ways: the dry pin went vacuously green (asserted on a file nothing wrote), the real-run "positive control" rewrote the develop
-
-### `${VAR:+word}` gates on non-emptiness, not truth — banned on boolean strings
-
-- **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/colon-plus-on-boolean-string-flags.md`
 - **Confidence**: 0.95
 - **Scope**: project
@@ -640,15 +613,6 @@
 - **Summary**: A review fix added two fail-loudly branches to the #468 pin checker (non-object preset entry, missing `.primary`). Their correctness was proven by a manual one-off run; the committed fixture still exercised only the membership branch — so both new branches were silently deletable while the suite stayed green.
 
 ### Negated assertions are errexit-exempt — they can never fail a bats test
-
-- **Category**: anti-pattern
-- **File**: `LEARNINGS/anti-patterns/negated-assertions-errexit-exempt.md`
-- **Confidence**: 0.9
-- **Scope**: project
-- **Date**: 2026-09-20
-- **Summary**: A bats test line `! grep -q '^PATTERN' file` (asserting absence) passed even though the file DID contain the pattern — the gate was a no-op and the false green hid a vacuous sandbox.
-
-### node -e argv has no script-name slot — slice(2) shifts args silently
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/node-e-argv-has-no-script-name-slot.md`

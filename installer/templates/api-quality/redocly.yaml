@@ -1,4 +1,4 @@
-# Redocly authoring-quality ruleset (template) — from opencode-config-template (#320)
+# Redocly authoring-quality ruleset (template) — from civiltekk-opencode-claude-skills (#320)
 #
 # Copy this file to YOUR repo root as `redocly.yaml`, alongside `api-quality-rules.mjs`.
 # Complements the soft prompt-level gate (#319) with deterministic linting.

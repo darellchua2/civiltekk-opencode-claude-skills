@@ -24,7 +24,7 @@ A missing `SKILL_DIR` export fails loud (`KeyError`) by design.
 
 > **Prerequisite skill:** `pptx-generate-slide-skill` — my output is rendered
 > by its fill engine (`ppt_builder.generate_ppt_from_data`). Install it too:
-> `npx github:darellchua2/opencode-config-template add pptx-generate-slide-skill`.
+> `npx github:darellchua2/civiltekk-opencode-claude-skills add pptx-generate-slide-skill`.
 > This handoff is an intentional, allowlisted cross-skill dependency (#437);
 > it is the only one in this catalog.
 

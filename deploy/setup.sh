@@ -3,7 +3,7 @@
 ################################################################################
 # OpenCode Configuration Setup Script
 #
-# Copyright 2026 OpenCode Configuration Template Contributors
+# Copyright 2026 CivilTekk OpenCode & Claude Skills Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -4812,7 +4812,7 @@ setup_opencode_init_symlink() {
         *) log_warn "${user_bin} is not on your PATH. Add it to your shell rc to use opencode-init:" \
            && echo "    export PATH=\"${user_bin}:\$PATH\"" >&2 ;;
     esac
-    log_info "Tip: individual skills/agents can also be installed via: npx github:darellchua2/opencode-config-template add <name>"
+    log_info "Tip: individual skills/agents can also be installed via: npx github:darellchua2/civiltekk-opencode-claude-skills add <name>"
 }
 
 # Setup the opencode-setup symlink (full-deploy entrypoint shim).

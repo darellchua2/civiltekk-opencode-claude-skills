@@ -34,7 +34,7 @@ If any requirement is unmet, MCP tool calls return connection errors. Fall back 
 
 ## opencode.json Configuration
 
-The markitdown MCP server ships as opt-in (`disabled: true`) per [#262](https://github.com/darellchua2/opencode-config-template/issues/262). To enable:
+The markitdown MCP server ships as opt-in (`disabled: true`) per [#262](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/262). To enable:
 
 ```json
 {

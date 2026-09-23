@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.35.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.34.0...v9.35.0) (2026-09-22)
+
+### Features
+
+* **docs:** rebrand repo + rework README for shared skills collection ([#536](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/536)) ([#538](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/538)) ([8927b7a](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/8927b7a3ae3a15dd475e3d94bb75b21283c71ca1)), closes [#full-setup-reference](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/full-setup-reference)
+
 ## [9.34.0](https://github.com/darellchua2/opencode-config-template/compare/v9.33.0...v9.34.0) (2026-09-22)
 
 ### Features

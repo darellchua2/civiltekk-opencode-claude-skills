@@ -15,7 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = dirname(__dirname);
 const REGISTRY = join(REPO, "installer/registry.json");
 const OUT_DIR = join(REPO, "docs");
-const GH_BASE = "https://github.com/darellchua2/opencode-config-template/blob/main";
+const GH_BASE = "https://github.com/darellchua2/civiltekk-opencode-claude-skills/blob/main";
 
 function esc(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -51,7 +51,7 @@ function renderHtml(reg) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>opencode-config-template — Skill & Agent Catalog</title>
+<title>civiltekk-opencode-claude-skills — Skill & Agent Catalog</title>
 <style>
   :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #7d8590; --accent: #2f81f7; --accent2: #a371f7; }
   * { box-sizing: border-box; }
@@ -85,8 +85,8 @@ function renderHtml(reg) {
 </head>
 <body>
 <header>
-  <h1>opencode-config-template Catalog</h1>
-  <p>${reg.agents.length} agents &middot; ${reg.skills.length} skills &middot; <code>npx github:darellchua2/opencode-config-template add &lt;name&gt;</code></p>
+  <h1>civiltekk-opencode-claude-skills Catalog</h1>
+  <p>${reg.agents.length} agents &middot; ${reg.skills.length} skills &middot; <code>npx github:darellchua2/civiltekk-opencode-claude-skills add &lt;name&gt;</code></p>
   <input type="search" id="search" placeholder="Search skills and agents…" autocomplete="off">
   <div class="pills" id="pills">
         <button class="pill active" data-cat="*">all</button>

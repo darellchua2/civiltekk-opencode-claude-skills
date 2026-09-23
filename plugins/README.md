@@ -27,7 +27,7 @@ Rules:
    texts for the vendored code; dropping it would ship MIT code without its
    license). Deferred from #456 by decision; until then "never auto-deployed"
    is by convention, not enforcement.
-5. Historical records (`LEARNINGS/`, `PLANS/`, `research/`) keep old paths —
+5. Historical records (`LEARNINGS/`, `PLANS/`) keep old paths —
    they are never rewritten.
 
 MIT attributions for vendored code: see [ATTRIBUTION.md](ATTRIBUTION.md).
