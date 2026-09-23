@@ -15,6 +15,23 @@
 
 ## Entries
 
+
+### By-reference docs mechanize no-duplication with sentinel greps
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/by-reference-docs-mechanize-no-duplication-with-sentinel-greps.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: No-duplication ACs get sentinel greps (table-header rows, zero ^| lines), heading-existence greps per citation, and test -f per file link — prose-only checks are unenforceable (#539).
+
+### Runnable doc snippets must mirror CI's invocation
+
+- **Category**: conventions
+- **File**: `LEARNINGS/conventions/docs-runnable-snippets-must-match-ci-invocation.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Copy CI's setup lines (PATH export, env) into runnable doc snippets — bats lives off-PATH at tests/lib/bats-core/bin; bare `bats` fails on clean machines (#539).
+
 <!-- Entries are appended here automatically when new learnings are saved -->
 
 ### Re-vendor version-string census

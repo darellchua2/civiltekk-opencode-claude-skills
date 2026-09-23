@@ -36,3 +36,5 @@ docs/registry.json
 # Local knowledge persistence (maintainer memory) — see AGENTS.md §Project Learnings
 LEARNINGS/**/*.md
 !LEARNINGS/_index.md
+!LEARNINGS/patterns/by-reference-docs-mechanize-no-duplication-with-sentinel-greps.md
+!LEARNINGS/conventions/docs-runnable-snippets-must-match-ci-invocation.md
