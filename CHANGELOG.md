@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.36.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.36.0...v9.36.1) (2026-09-23)
+
+### Bug Fixes
+
+* commit and push ([c03261b](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/c03261be600efa7c97c1c292fb674bcd97170675))
+
 ## [9.36.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.35.0...v9.36.0) (2026-09-23)
 
 ### Features
