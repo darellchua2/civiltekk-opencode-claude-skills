@@ -30,6 +30,8 @@ Cross-module node: the scanners have consumers in two modules (`deploy/tui.mjs` 
 <!-- Gate trace
 GATE e8e2845 tier=light lint=- typecheck=- build=- unit=t e2e=-
 GATE 232504a tier=light lint=- typecheck=- build=- unit=t e2e=-
+GATE cd8c780 tier=light lint=- typecheck=- build=- unit=t e2e=-
+GATE cd8c780 tier=full lint=- typecheck=- build=t unit=t e2e=-
 -->
 
 ### Phase 1: Shared scanners (foundation)
@@ -84,10 +86,11 @@ GATE 232504a tier=light lint=- typecheck=- build=- unit=t e2e=-
     — **Done:** wiring pin uses the direct-invocation harness (source → SELECT_ITEMS=true → build_plan) with static menu-line + case-arm greps — pty variant replaced per the arch-review-sanctioned fallback (3 hangs observed); positives (4 picker steps) AND negatives (blanket agents/plugins absent) asserted. files: tests/test_select_items.bats; fixes: none
 
 ### Phase 4: Verification gate
-- [ ] **4.1** Run the affected suites (`bats tests/test_select_items.bats tests/test_ships_plugins.bats tests/test_deploy_delegate.bats tests/test_plan_executor.bats`), then the full `bats tests/` suite; fix anything red before proceeding.
+- [x] **4.1** Run the affected suites (`bats tests/test_select_items.bats tests/test_ships_plugins.bats tests/test_deploy_delegate.bats tests/test_plan_executor.bats`), then the full `bats tests/` suite; fix anything red before proceeding.
     — **Why:** `test_deploy_delegate.bats` pins first-occurrence line order in `setup.sh` — the strongest regression risk of Phases 2; the full suite catches cross-file drift (count pins, portability guard).
     — **Done when:** full suite exits 0; the ticket exit gate memo line `GATE <sha> tier=full` is recorded for the final SHA.
     — **Consumers affected:** Step 9 review and Step 10 PR citation (both consume the gate memo).
+    — **Done:** full tier green — registry drift OK (34/146), mjs syntax (incl. changed deploy-plan-items.mjs + tui.mjs), package.json, tarball guard, and every tests/*.bats file (SUITE RC:0). files: none (verification); fixes: gate-harness only — my `set -o pipefail` SIGPIPE'd `grep -q` in the tarball guard (141); CI runs the guard without pipefail, gate re-run CI-identical
 
 ## Technical Notes
 - Keep all `setup.sh` edits inside existing function bodies (`dump_catalog`, `apply_selected_packs_extras`, `main` menu block) — do not reorder or insert new top-level functions, to preserve `deploy_delegate.bats` line-order pins.
