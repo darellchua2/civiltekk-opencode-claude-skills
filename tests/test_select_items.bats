@@ -193,16 +193,21 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
 
 @test "list_items_dump_lists_real_packs_and_plugins" {
   # #537 headline gap: dump_catalog previously hardcoded empty packs/plugins
-  # arrays — the catalog told users plugins were not installable.
-  run bash -c "./deploy/setup.sh --list-items 2>/dev/null | sed -n '/^{/,/^}/p'" </dev/null
+  # arrays — the catalog told users plugins were not installable. Sandboxed
+  # HOME: end-to-end setup.sh runs touch ~/.opencode-setup.log via
+  # init_logging — never the developer's real home
+  # (unsandboxed-bats-run-deploys-into-real-home).
+  local d; d="$(mktemp -d)"
+  run bash -c "export HOME='$d'; ./deploy/setup.sh --list-items 2>/dev/null | sed -n '/^{/,/^}/p'" </dev/null
   [ "$status" -eq 0 ]
   local counts
   counts=$(echo "$output" | node -e 'let d="";process.stdin.on("data",(c)=>d+=c).on("end",()=>{const p=JSON.parse(d);if(!p.packs.includes("autodesk")||p.packs.some((x)=>x.includes("README")))process.exit(3);console.log(p.packs.length+"/"+p.plugins.length)})')
   [[ "$counts" == "5/5" ]]
   # cwd-independence (arch review WARN): node -e import() resolves relative
   # specifiers against process cwd — the module path must be argv-absolute.
-  run bash -c "cd /tmp && '$PWD/deploy/setup.sh' --list-items 2>/dev/null | grep -c '\"autodesk\"'" </dev/null
+  run bash -c "export HOME='$d'; cd /tmp && '$PWD/deploy/setup.sh' --list-items 2>/dev/null | grep -c '\"autodesk\"'" </dev/null
   [[ "$output" == "1" ]]
+  rm -rf "$d"
 }
 
 @test "plugin_selection_deploys_companions_from_dependency_map" {
@@ -214,13 +219,16 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
   run bash -c "source '$SETUP_SH' >/dev/null 2>&1
            CONFIG_DIR='$d/config'; SELECT_PLAN_FILE='$d/plan-ponytail.json'
            apply_selected_packs_extras >/dev/null 2>&1
+           apply_selected_packs_extras >/dev/null 2>&1
            find '$d/config/plugins' -mindepth 1 2>/dev/null | sort" </dev/null
   [ "$status" -eq 0 ]
   [[ "$output" == *"opencode-ponytail-scoped.ts"* ]]
   [[ "$output" == *"ponytail/SKILL.md"* ]]
   [[ "$output" == *"ponytail/instructions.cjs"* ]]
   [[ "$output" == *"ATTRIBUTION.md"* ]]
-  # Idempotency: the re-run must not nest ponytail/ponytail (rm-first dir copy).
+  # Idempotency pin needs its TWO invocations (re-run-pin-single-invocation-
+  # vacuous): without rm-first, the second apply nests plugins/ponytail/ponytail
+  # and this count becomes 1.
   local nested
   nested=$(find "$d/config/plugins/ponytail" -mindepth 1 -type d | wc -l | tr -d ' ')
   [ "$nested" = "0" ]
@@ -236,18 +244,24 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
 
 @test "plugin_companions_cover_ships_plugins_facts" {
   # Cross-surface pin (arch review Major): pluginCompanions is the ONE
-  # declarative companion home — every artifact the skill->plugin edge
-  # (shipsPlugins) declares beyond the plugin itself must appear in the
-  # picker path's companion map, or the two deploy paths drift.
+  # declarative companion home — checked PER shipsPlugins edge (each edge's
+  # artifacts ⊆ that edge's plugin's companions), so a future second
+  # plugin-bearing edge is judged against its own key, not ponytail's.
   node -e '
     const m = JSON.parse(require("fs").readFileSync("installer/dependency-map.json", "utf8"));
     const pc = m.pluginCompanions || {};
-    const declared = new Set();
-    for (const arts of Object.values(m.shipsPlugins || {})) {
-      for (const a of arts) if (a !== "opencode-ponytail-scoped.ts") declared.add(a);
+    const edges = Object.entries(m.shipsPlugins || {});
+    if (!edges.length) throw new Error("shipsPlugins empty - cross-surface pin vacuous");
+    for (const [skill, arts] of edges) {
+      const plugin = arts.find((a) => a.endsWith(".ts"));
+      if (!plugin) throw new Error("shipsPlugins edge without a .ts plugin: " + skill);
+      const comps = pc[plugin];
+      if (!comps) throw new Error("pluginCompanions missing key " + plugin + " (edge " + skill + ")");
+      for (const a of arts) {
+        if (a === plugin) continue;
+        if (!comps.includes(a)) throw new Error("pluginCompanions[" + plugin + "] missing " + a + " (edge " + skill + ")");
+      }
     }
-    const pony = pc["opencode-ponytail-scoped.ts"] || [];
-    for (const a of declared) if (!pony.includes(a)) throw new Error("pluginCompanions missing shipsPlugins artifact: " + a);
     if (!(pc["opencode-vibeguard-v2.ts"] || []).includes("vibeguard.config.json")) {
       throw new Error("vibeguard.config.json missing from pluginCompanions");
     }
@@ -274,10 +288,14 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
   arm=$(sed -n '/^[[:space:]]*6)$/,/;;/p' "$SETUP_SH")
   [[ "$arm" == *"SELECT_ITEMS=true"* ]]
   local d; d="$(mktemp -d)"
-  run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1; SELECT_ITEMS=true; build_plan; printf '%s\n' \"\${PLAN_STEPS[@]}\""
+  run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1; SELECT_ITEMS=true; build_plan; printf '%s\n' \"\${PLAN_STEPS[@]}\" > '$d/steps.txt'"
+  grep -q 'select-items|Select items to deploy' "$d/steps.txt"
+  grep -q 'deploy-selected-skills' "$d/steps.txt"
+  # Negatives as run+status checks — standalone `! cmd` lines are errexit-
+  # exempt and cannot fail a bats test (negated-assertions-errexit-exempt).
+  run grep -q '|Deploy agents|' "$d/steps.txt"
+  [ "$status" -eq 1 ]
+  run grep -q '|Deploy plugins|' "$d/steps.txt"
+  [ "$status" -eq 1 ]
   rm -rf "$d"
-  echo "$output" | grep -q 'select-items|Select items to deploy'
-  echo "$output" | grep -q 'deploy-selected-skills'
-  ! echo "$output" | grep -q '|Deploy agents|'
-  ! echo "$output" | grep -q '|Deploy plugins|'
 }

@@ -1351,3 +1351,33 @@
 - **Scope**: project
 - **Summary**: GitHub `compare/{BASE}...{HEAD}` returns ahead_by = HEAD-side commits, behind_by = BASE-side commits; #532's Phase 0 labeled them backwards under `{source}...{target}` while in-repo LEARNINGS held the correct empirical direction — flows keyed on these fields must state the operand order and be checked against a known-divergence example (#532 code review BLOCK)
 - **Date**: 2026-09-22
+
+- **File**: `anti-patterns/companion-lookup-fail-open-consumes-plan.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: In consume-once deploy functions, derived-artifact lookups (node/jq/CLI) must fail closed — a silent lookup failure skips artifacts AND the plan file is then deleted, converting a transient error into a permanently broken deploy (#537 code review)
+- **Date**: 2026-09-23
+
+- **File**: `anti-patterns/re-run-pin-single-invocation-vacuous.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: An idempotency assertion over N invocations is vacuous unless the test performs N invocations — `find | wc -l = 0` after one apply cannot detect removal of an rm-first line (#537 code review)
+- **Date**: 2026-09-23
+
+- **File**: `patterns/plugin-companions-declarative-single-home.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Plugin companion artifacts live in dependency-map.json `pluginCompanions` (trailing slash = dir), consumed by the picker path fail-closed and pinned by no-hardcode + per-edge cross-surface tests — next companion-bearing plugin edits the map, never setup.sh (#537)
+- **Date**: 2026-09-23
+
+- **File**: `solutions/node-e-dynamic-import-resolves-against-cwd.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: `import("./rel.mjs")` inside `node -e` resolves against process.cwd — scripts that run from any cwd (setup.sh PATH shim) must import via pathToFileURL over an argv-passed absolute path, pinned by a second-cwd test (#537)
+- **Date**: 2026-09-23
+
+- **File**: `anti-patterns/grep-q-under-pipefail-sigpipes-upstream.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: `grep -q` in a pipeline under `set -o pipefail` SIGPIPEs the upstream writer — pipeline exits 141 and `&&` chains break while the identical line is green in CI under plain `bash -e`; "CI green, 141 locally" on a guard line is this pattern first (#537 exit gate)
+- **Date**: 2026-09-23

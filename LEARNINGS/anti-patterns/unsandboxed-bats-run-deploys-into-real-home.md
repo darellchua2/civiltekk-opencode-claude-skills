@@ -17,3 +17,10 @@ cleanup_old_backups pruning genuine backups to 5.
 
 Any test invoking setup.sh end-to-end (not merely sourcing a function) must
 export a mktemp HOME first. Source-pin tests are safe; execution tests are not.
+
+## Evidence
+
+- #537 (review round 1): the new `--list-items` tests ran the script with the
+  developer's real HOME — `init_logging` (setup.sh:387-398) mkdirs/touches
+  `~/.opencode-setup.log` on every run. Neighboring tests all sandboxed;
+  the newest ones were the outlier. Fixed with `export HOME=mktemp` in both.

@@ -24,3 +24,10 @@ Assert absence with `run grep -q …` followed by `[ "$status" -eq 1 ]`, or an
 explicit `if grep -q …; then return 1; fi`. Same family as
 `bats-and-chain-assertions-mask-nonfinal-links`: anything that blunts
 errexit (chaining, negation) turns an assertion line into a comment.
+
+## Evidence
+
+- #537 (review round 1): the new `menu_option_six_routes_to_picker_path` pin
+  shipped with `! echo "$output" | grep -q '|Deploy agents|'` negatives — the
+  ticket's core "picker replaces blanket deploy" guarantee was unenforced.
+  Fixed to `run grep -q … ; [ "$status" -eq 1 ]` against a steps file.

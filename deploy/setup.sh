@@ -4087,13 +4087,24 @@ apply_selected_packs_extras() {
             # Trailing-slash entries are whole directories (shipsPlugins
             # semantics); rm-first keeps re-runs idempotent (cp -r into an
             # existing dir would nest a duplicate tree).
-            for comp in $(node -e '
+            # Fail-closed lookup (#537 review): a broken dependency-map must
+            # fail the run, never silently skip companions beside the
+            # consume-once plan deletion. Assignment on its own line — `local`
+            # would mask the exit status.
+            local comps
+            comps=$(node -e '
                 const m = require(process.argv[1]).pluginCompanions || {};
                 console.log((m[process.argv[2]] || []).join(" "));
-            ' "${REPO_DIR}/installer/dependency-map.json" "$pname"); do
+            ' "${REPO_DIR}/installer/dependency-map.json" "$pname" 2>/dev/null) || { log_warn "companion lookup failed for ${pname} (dependency-map.json unreadable?) - plugin may deploy broken"; failed=1; continue; }
+            for comp in $comps; do
+                # Hardening (#537 review): repo-trusted JSON today — still
+                # refuse to rm/cp entries with spaces or traversal.
+                case "$comp" in
+                    *\ *|*..*) log_warn "refusing suspicious companion entry: ${comp}"; failed=1; continue ;;
+                esac
                 case "$comp" in
                     */)
-                        run_cmd rm -rf "${CONFIG_DIR}/plugins/${comp%/}"
+                        run_cmd rm -rf "${CONFIG_DIR}/plugins/${comp%/}" || { failed=1; continue; }
                         run_cmd cp -r "${REPO_DIR}/plugins/${comp%/}" "${CONFIG_DIR}/plugins/${comp%/}" || { failed=1; }
                         ;;
                     *)
@@ -4128,7 +4139,7 @@ dump_catalog() {
             out.packs = scanPackNames(process.argv[3]).sort();
             out.plugins = scanPluginNames(process.argv[4]).sort();
             console.log(JSON.stringify(out, null, 2));
-        });
+        }).catch((e) => { console.error(e && e.message ? e.message : e); process.exit(1); });
     ' "${REPO_DIR}/installer/registry.json" "${REPO_DIR}/installer/deploy-plan-items.mjs" "${REPO_DIR}/deploy/packs" "${REPO_DIR}/plugins"
 }
 

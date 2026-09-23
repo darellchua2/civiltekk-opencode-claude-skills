@@ -5,12 +5,12 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] `./deploy/setup.sh --list-items` prints the real packs (autodesk, markitdown, nextjs, docling, chrome-devtools) and the 5 `opencode-*.ts` plugins
-- [ ] The plugins group and `--print-plan --defaults` list the same 5 `.ts` plugins; the README is offered in neither
-- [ ] Selecting `opencode-ponytail-scoped.ts` deploys the `.ts` + `ponytail/` (SKILL.md, instructions.cjs) + `ATTRIBUTION.md`
-- [ ] Selecting `opencode-vibeguard-v2.ts` still copies `vibeguard.config.json`
-- [ ] Menu option 6 routes to the picker path; `--select` behavior unchanged
-- [ ] `bats tests/test_select_items.bats tests/test_ships_plugins.bats tests/test_deploy_delegate.bats` pass; full suite green
+- [x] `./deploy/setup.sh --list-items` prints the real packs (autodesk, markitdown, nextjs, docling, chrome-devtools) and the 5 `opencode-*.ts` plugins
+- [x] The plugins group and `--print-plan --defaults` list the same 5 `.ts` plugins; the README is offered in neither
+- [x] Selecting `opencode-ponytail-scoped.ts` deploys the `.ts` + `ponytail/` (SKILL.md, instructions.cjs) + `ATTRIBUTION.md`
+- [x] Selecting `opencode-vibeguard-v2.ts` still copies `vibeguard.config.json`
+- [x] Menu option 6 routes to the picker path; `--select` behavior unchanged
+- [x] `bats tests/test_select_items.bats tests/test_ships_plugins.bats tests/test_deploy_delegate.bats` pass; full suite green
 
 ## Dependency & Consumer Map
 
