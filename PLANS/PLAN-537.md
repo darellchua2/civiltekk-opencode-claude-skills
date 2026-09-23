@@ -110,3 +110,5 @@ None — single ticket, no `blocked-by:` refs.
 | `node -e` dynamic-import resolves against process cwd | Module path built from argv-passed absolute `${REPO_DIR}` via `pathToFileURL` (step 2.1); Done-when runs from a second cwd |
 | Pseudo-TTY test flaky in CI | `script -qec` is util-linux standard on ubuntu runners; if unstable, keep the wiring covered by a direct function-invocation test instead (fallback decided in review, not silently) |
 | Companion knowledge drifts between picker path and manifest path | Single declarative home: `dependency-map.json` `pluginCompanions` (step 2.2); cross-surface pin in test 3.3 |
+
+GATE 4ee48c3 tier=full lint=- typecheck=- build=t unit=t e2e=- (re-gate after origin/main merge)
