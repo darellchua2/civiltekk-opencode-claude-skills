@@ -4081,11 +4081,37 @@ apply_selected_packs_extras() {
         run_cmd mkdir -p "${CONFIG_DIR}/plugins"
         for pname in $(node -e 'const p=require(process.argv[1]); console.log((p.plugins||[]).join(" "))' "$SELECT_PLAN_FILE" 2>/dev/null); do
             run_cmd cp -r "${REPO_DIR}/plugins/${pname}" "${CONFIG_DIR}/plugins/${pname}" || { failed=1; continue; }
-            # Companion files the plugin fail-opens without (#473 review): the
-            # vibeguard plugin is inert without its config (no masking).
-            if [ "$pname" = "opencode-vibeguard-v2.ts" ] && [ -f "${REPO_DIR}/plugins/vibeguard.config.json" ]; then
-                run_cmd cp "${REPO_DIR}/plugins/vibeguard.config.json" "${CONFIG_DIR}/plugins/vibeguard.config.json"
-            fi
+            # Companion artifacts come from dependency-map.json pluginCompanions
+            # (#537): one declarative home shared with the manifest path —
+            # never fork plugin companion knowledge into shell case arms.
+            # Trailing-slash entries are whole directories (shipsPlugins
+            # semantics); rm-first keeps re-runs idempotent (cp -r into an
+            # existing dir would nest a duplicate tree).
+            # Fail-closed lookup (#537 review): a broken dependency-map must
+            # fail the run, never silently skip companions beside the
+            # consume-once plan deletion. Assignment on its own line — `local`
+            # would mask the exit status.
+            local comps
+            comps=$(node -e '
+                const m = require(process.argv[1]).pluginCompanions || {};
+                console.log((m[process.argv[2]] || []).join(" "));
+            ' "${REPO_DIR}/installer/dependency-map.json" "$pname" 2>/dev/null) || { log_warn "companion lookup failed for ${pname} (dependency-map.json unreadable?) - plugin may deploy broken"; failed=1; continue; }
+            for comp in $comps; do
+                # Hardening (#537 review): repo-trusted JSON today — still
+                # refuse to rm/cp entries with spaces or traversal.
+                case "$comp" in
+                    *\ *|*..*) log_warn "refusing suspicious companion entry: ${comp}"; failed=1; continue ;;
+                esac
+                case "$comp" in
+                    */)
+                        run_cmd rm -rf "${CONFIG_DIR}/plugins/${comp%/}" || { failed=1; continue; }
+                        run_cmd cp -r "${REPO_DIR}/plugins/${comp%/}" "${CONFIG_DIR}/plugins/${comp%/}" || { failed=1; }
+                        ;;
+                    *)
+                        run_cmd cp "${REPO_DIR}/plugins/${comp}" "${CONFIG_DIR}/plugins/${comp}" || { failed=1; }
+                        ;;
+                esac
+            done
         done
     fi
     # Consume-once (B2): the plan is spent only after a SUCCESSFUL deployment —
@@ -4098,13 +4124,23 @@ apply_selected_packs_extras() {
 }
 
 dump_catalog() {
+    # Packs/plugins come from the shared scanners (deploy-plan-items.mjs,
+    # #537) — never hardcode empty arrays here again. Module path is argv-
+    # passed ABSOLUTE (pathToFileURL): node -e import() resolves relative
+    # specifiers against the process cwd, and setup.sh runs from any cwd
+    # via the opencode-setup PATH shim.
     node -e '
-        const r = require(process.argv[1]);
-        const out = { skills: {}, agents: {}, packs: [], plugins: [], extras: ["local-llm", "vllm"] };
-        for (const s of r.skills) { (out.skills[s.category || "Uncategorized"] ||= []).push(s.name); }
-        for (const a of r.agents) { (out.agents[a.tier || "unassigned"] ||= []).push(a.stem); }
-        console.log(JSON.stringify(out, null, 2));
-    ' "${REPO_DIR}/installer/registry.json"
+        const { pathToFileURL } = require("node:url");
+        const registry = require(process.argv[1]);
+        import(pathToFileURL(process.argv[2]).href).then(({ scanPackNames, scanPluginNames }) => {
+            const out = { skills: {}, agents: {}, packs: [], plugins: [], extras: ["local-llm", "vllm"] };
+            for (const s of registry.skills) { (out.skills[s.category || "Uncategorized"] ||= []).push(s.name); }
+            for (const a of registry.agents) { (out.agents[a.tier || "unassigned"] ||= []).push(a.stem); }
+            out.packs = scanPackNames(process.argv[3]).sort();
+            out.plugins = scanPluginNames(process.argv[4]).sort();
+            console.log(JSON.stringify(out, null, 2));
+        }).catch((e) => { console.error(e && e.message ? e.message : e); process.exit(1); });
+    ' "${REPO_DIR}/installer/registry.json" "${REPO_DIR}/installer/deploy-plan-items.mjs" "${REPO_DIR}/deploy/packs" "${REPO_DIR}/plugins"
 }
 
 save_user_preset() {
@@ -4880,6 +4916,7 @@ main() {
             echo "  3) Full setup (API keys, Node.js, OpenCode)"
             echo "  4) Update OpenCode CLI only"
             echo "  5) Install PeonPing (sound notifications)"
+            echo "  6) Select items to deploy (skills / agents / packs / plugins)"
             echo ""
 
             local setup_option
@@ -4908,6 +4945,11 @@ main() {
                     echo ""
                     log_info "PeonPing Sound Notifications"
                     PEONPING_ONLY=true
+                    ;;
+                6)
+                    echo ""
+                    log_info "Select items to deploy (skills / agents / packs / plugins)"
+                    SELECT_ITEMS=true
                     ;;
                 *)
                     log_warn "Invalid option. Running full setup..."

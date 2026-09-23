@@ -43,8 +43,8 @@ const parsed = parseArgs(process.argv.slice(3));
 //   print-plan (--print-plan + item flags: headless, zero TTY reads)
 // All three emit the SAME selection-plan JSON (equivalence is test-pinned).
 
-import { buildInventory, buildSelectionPlan, EXTRA_ITEMS } from "../installer/deploy-plan-items.mjs";
-import { readFileSync, readdirSync } from "node:fs";
+import { buildInventory, buildSelectionPlan, EXTRA_ITEMS, scanPackNames, scanPluginNames } from "../installer/deploy-plan-items.mjs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -53,26 +53,11 @@ function loadPickerData() {
   const registry = JSON.parse(readFileSync(join(INIT_DIR, "registry.json"), "utf8"));
   const depMap = JSON.parse(readFileSync(join(INIT_DIR, "dependency-map.json"), "utf8"));
   const packsDir = join(dirname(fileURLToPath(import.meta.url)), "packs");
-  const packNames = [];
-  try {
-    for (const f of readDirSyncCompat(packsDir)) {
-      const m = f.match(/^pack-(.+)\.json$/);
-      if (m) packNames.push(m[1]);
-    }
-  } catch { /* no packs dir → no packs */ }
+  const packNames = scanPackNames(packsDir);
   const pluginsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "plugins");
-  const pluginNames = [];
-  try {
-    for (const f of readDirSyncCompat(pluginsDir)) {
-      if (f.startsWith("opencode-")) pluginNames.push(f);
-    }
-  } catch { /* no plugins dir */ }
+  const pluginNames = scanPluginNames(pluginsDir);
   const inventory = buildInventory({ registry, packNames, pluginNames });
-  return { registry, depMap, inventory };
-}
-
-function readDirSyncCompat(dir) {
-  return readdirSync(dir);
+  return { registry, depMap, inventory, packNames, pluginNames };
 }
 
 function planFromFlags(parsed) {
@@ -86,15 +71,9 @@ function planFromFlags(parsed) {
       const profiles = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "skill-profiles.json"), "utf8"));
       lean = profiles.lean || profiles.leanSkills || [];
     } catch { /* no profile file — empty lean list */ }
-    const packsDir = join(dirname(fileURLToPath(import.meta.url)), "packs");
-    const pluginsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "plugins");
-    const packNames = [];
-    try { for (const f of readdirSync(packsDir)) { const m2 = f.match(/^pack-(.+)\.json$/); if (m2) packNames.push(m2[1]); } } catch {}
-    const pluginNames = [];
-    // .ts only: companion files (vibeguard.config.json) are copied alongside
-    // their plugin at consumption, not offered as selectable items.
-    try { for (const f of readdirSync(pluginsDir)) if (f.startsWith("opencode-") && f.endsWith(".ts")) pluginNames.push(f); } catch {}
-    const { registry, depMap } = loadPickerData();
+    // Scanners come from loadPickerData (shared scanPackNames/scanPluginNames)
+    // — defaults and the interactive inventory can never drift again (#537).
+    const { registry, depMap, packNames, pluginNames } = loadPickerData();
     const allAgents = registry.agents.map((a) => a.stem);
     const plan = buildSelectionPlan({ choices: { skills: lean, agents: allAgents, packs: packNames, plugins: pluginNames, extras: [] }, registry, depMap });
     return { skills: plan.skills.map((s) => s.name), agents: plan.agents.map((a) => a.name), packs: plan.packs, plugins: plan.plugins, extras: [] };
