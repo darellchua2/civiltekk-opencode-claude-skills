@@ -6,10 +6,10 @@
 
 ## Acceptance Criteria
 
-- [ ] Both dead references fixed (§ Subagents at :329; §Knowledge Persistence at :346); no new dead references introduced
-- [ ] Mechanical sweep: grep every `AGENTS.md §` ref in README; each cited name matches a real AGENTS.md heading
-- [ ] Pinned literals untouched ("146 skill directories", "**Configuration** (2)", "ships 8 MCP server entries"); skill/agent counts 146/34 unchanged
-- [ ] README-consumer bats set green (test_markitdown_skill, test_mcp_count_consistency, test_count_drift, test_pack_permissions)
+- [x] Both dead references fixed (§ Subagents at :329; §Knowledge Persistence at :346); no new dead references introduced
+- [x] Mechanical sweep: grep every `AGENTS.md §` ref in README; each cited name matches a real AGENTS.md heading
+- [x] Pinned literals untouched ("146 skill directories", "**Configuration** (2)", "ships 8 MCP server entries"); skill/agent counts 146/34 unchanged
+- [x] README-consumer bats set green (test_markitdown_skill, test_mcp_count_consistency, test_count_drift, test_pack_permissions)
 
 ## Dependency & Consumer Map
 
@@ -22,20 +22,23 @@
 
 ### Phase 1: Fix both references + full exit gate
 
-- [ ] **1.1** Rewrite the two sentences in the worktree README:
+- [x] **1.1** Rewrite the two sentences in the worktree README:
   - `:329` — replace `Full table with per-agent skills and delegation: `AGENTS.md` § Subagents.` with a truthful pointer: the trigger surface is each agent's `description` frontmatter in `agents/*.md`; per-class model assignments and delegation guidance: `AGENTS.md` § Subagent Model Tiering. (Heading exists: AGENTS.md:42 "Subagent Model Tiering (v2.0)".)
   - `:346` — replace `` `AGENTS.md` §Knowledge Persistence `` with `` `AGENTS.md` § Project Learnings `` (heading exists: AGENTS.md:120; its body carries exactly the v2 watch-list sentence).
     — **Why:** the ticket's entire deliverable — two dead pointers become truthful, resolving references
     — **Done when:** both lines edited; `grep -c '§ Subagents\b\|§Knowledge Persistence' README.md` = 0; new refs read `§ Subagent Model Tiering` and `§ Project Learnings`
     — **Consumers affected:** humans following the pointers
-- [ ] **1.2** Mechanical sweep + full exit gate: (a) every `AGENTS.md § <name>` ref in README — extract each § name and require EXACTLY ONE AGENTS.md heading starting with it (uniqueness matters: "Subagent" alone would prefix-match two headings; 4 refs expected, all content-matched, line numbers not asserted); (b) pinned literals via bats-mirrored regexes = `146 skill directories` / `**Configuration** (2)` / `ships 8 MCP server entries`; (c) counts: `ls skills/ | grep -vc _archived` = 146, `ls agents/*.md | wc -l` = 34; (d) `bats tests/test_markitdown_skill.bats tests/test_mcp_count_consistency.bats tests/test_count_drift.bats tests/test_pack_permissions.bats tests/test_skill_isolation.bats` green (grep-census README consumers = markitdown, mcp_count, pack_permissions, skill_isolation; count_drift rides as the count gate); (e) `git diff origin/main -- README.md` touches exactly the two sentences
+    — **Done:** both sentences rewritten; dead forms 0; new refs § Subagent Model Tiering + § Project Learnings; committed f61f368
+- [x] **1.2** Mechanical sweep + full exit gate: (a) every `AGENTS.md § <name>` ref in README — extract each § name and require EXACTLY ONE AGENTS.md heading starting with it (uniqueness matters: "Subagent" alone would prefix-match two headings; 4 refs expected, all content-matched, line numbers not asserted); (b) pinned literals via bats-mirrored regexes = `146 skill directories` / `**Configuration** (2)` / `ships 8 MCP server entries`; (c) counts: `ls skills/ | grep -vc _archived` = 146, `ls agents/*.md | wc -l` = 34; (d) `bats tests/test_markitdown_skill.bats tests/test_mcp_count_consistency.bats tests/test_count_drift.bats tests/test_pack_permissions.bats tests/test_skill_isolation.bats` green (grep-census README consumers = markitdown, mcp_count, pack_permissions, skill_isolation; count_drift rides as the count gate); (e) `git diff origin/main -- README.md` touches exactly the two sentences
     — **Why:** AC requires mechanical proof; the bats set is the grep-census-complete README consumer set plus the count gate
     — **Done when:** all green; any failure fixed before push
     — **Consumers affected:** pipeline gate memo
-- [ ] **1.3** Commit (`docs(readme): retarget two dead AGENTS.md section references`), write the `tier=full` gate memo into the Trace block, tick ACs, push
+    — **Done:** gate green: unique-prefix sweep 3/3 names (4 occurrences), literals 146/**Configuration** (2)/ships 8, counts 146/34, bats 5 files 37 tests exit 0, diff -2/+2
+- [x] **1.3** Commit (`docs(readme): retarget two dead AGENTS.md section references`), write the `tier=full` gate memo into the Trace block, tick ACs, push
     — **Why:** PR citation requires a green tier=full memo on the pushed SHA
     — **Done when:** memo on pushed SHA; PLAN fully ticked
     — **Consumers affected:** pr-workflow citation
+    — **Done:** tier=full memo on f61f368; all AC ticked
 
 ## Technical Notes
 
@@ -55,4 +58,4 @@ None. Hard pipeline deps satisfied (plan-execution-skill, code-review-subagent, 
 
 | Phase | Gate | Result | Notes |
 |-------|------|--------|-------|
-| — | — | — | executor appends per-phase rows; final `tier=full` memo line required |
+| 1 | full (bats 5 files/37 tests + unique-prefix sweep + literals + counts + diff shape) | green | GATE f61f368 tier=full lint=t(bats) typecheck=- build=- unit=t(37/37) e2e=n.a |
