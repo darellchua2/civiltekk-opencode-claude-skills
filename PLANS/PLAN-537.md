@@ -28,7 +28,7 @@ Cross-module node: the scanners have consumers in two modules (`deploy/tui.mjs` 
 ## Implementation Phases
 
 <!-- Gate trace
-GATE <phase-1-sha> tier=light lint=- typecheck=- build=- unit=t e2e=-
+GATE e8e2845 tier=light lint=- typecheck=- build=- unit=t e2e=-
 -->
 
 ### Phase 1: Shared scanners (foundation)
@@ -44,18 +44,21 @@ GATE <phase-1-sha> tier=light lint=- typecheck=- build=- unit=t e2e=-
     — **Done:** both paths consume the shared scanners; `readDirSyncCompat` helper and unused `readdirSync` import removed; defaults probe shows exactly the 5 `.ts` plugins. files: deploy/tui.mjs; fixes: none
 
 ### Phase 2: Truthful catalog, safe plugin picks, menu entry
-- [ ] **2.1** Rewrite `dump_catalog` in `deploy/setup.sh` to import the shared scanners via dynamic `import()` inside the existing `node` one-liner, with the module path built from an argv-passed absolute `${REPO_DIR}` through `pathToFileURL` (never a relative specifier — `node -e` `import()` resolves against the process cwd, and `setup.sh` runs from any cwd via the `opencode-setup` PATH shim).
+- [x] **2.1** Rewrite `dump_catalog` in `deploy/setup.sh` to import the shared scanners via dynamic `import()` inside the existing `node` one-liner, with the module path built from an argv-passed absolute `${REPO_DIR}` through `pathToFileURL` (never a relative specifier — `node -e` `import()` resolves against the process cwd, and `setup.sh` runs from any cwd via the `opencode-setup` PATH shim).
     — **Why:** `--list-items` currently hardcodes `packs: []` / `plugins: []`, telling users plugins are not installable — the ticket's headline gap.
     — **Done when:** `./deploy/setup.sh --list-items` output lists all 5 pack names and all 5 `opencode-*.ts` plugins, verified from the repo root AND from a different cwd (e.g. `cd /tmp` first).
     — **Consumers affected:** `--list-items` CLI output only.
-- [ ] **2.2** Add a `pluginCompanions` map to `installer/dependency-map.json` (plugin file name → companion artifacts; seed with `opencode-vibeguard-v2.ts` → `vibeguard.config.json` and `opencode-ponytail-scoped.ts` → `ponytail/` + `ATTRIBUTION.md`, matching the existing `shipsPlugins` facts) and have `apply_selected_packs_extras` consume it through the function's existing `node` idiom instead of a hardcoded bash `case`.
+    — **Done:** dump_catalog imports the scanners via pathToFileURL(argv); 5 packs + 5 plugins listed from repo root and from /tmp. files: deploy/setup.sh; fixes: none
+- [x] **2.2** Add a `pluginCompanions` map to `installer/dependency-map.json` (plugin file name → companion artifacts; seed with `opencode-vibeguard-v2.ts` → `vibeguard.config.json` and `opencode-ponytail-scoped.ts` → `ponytail/` + `ATTRIBUTION.md`, matching the existing `shipsPlugins` facts) and have `apply_selected_packs_extras` consume it through the function's existing `node` idiom instead of a hardcoded bash `case`.
     — **Why:** a bash `case` would fork companion knowledge `dependency-map.json` already declares (`shipsPlugins`) — the next companion-bearing plugin would then work on one install path and arrive broken on the other (arch review Major); the declarative map keeps the picker cp path and the manifest `shipPluginArtifacts` path single-sourced.
     — **Done when:** a sandboxed deploy of a pre-seeded plan containing only `opencode-ponytail-scoped.ts` produces `opencode-ponytail-scoped.ts`, `ponytail/SKILL.md`, `ponytail/instructions.cjs`, and `ATTRIBUTION.md` in the plugin dir; no plugin file name is hardcoded in `apply_selected_packs_extras` (grep-verifiable).
     — **Consumers affected:** `--select` plugin deploy correctness; no change for skills/agents/packs/extras paths.
-- [ ] **2.3** Add Setup Mode menu option `6) Select items to deploy (skills / agents / packs / plugins)` that sets `SELECT_ITEMS=true` in `main()`.
+    — **Done:** pluginCompanions added to dependency-map.json ($comment documented); consumption via node lookup; sandbox run produced exactly the 4 artifacts and rm-first kept the second apply non-nested; zero hardcoded plugin names in the function. files: installer/dependency-map.json, deploy/setup.sh; fixes: none
+- [x] **2.3** Add Setup Mode menu option `6) Select items to deploy (skills / agents / packs / plugins)` that sets `SELECT_ITEMS=true` in `main()`.
     — **Why:** `--select` is flag-only; the default interactive menu gives no path to plugins/subagents — the discoverability gap.
     — **Done when:** a pseudo-TTY (`script -qec`) run of the menu choosing option 6 logs the picker plan steps (`select-items`, `deploy-selected-skills`, …) and no blanket agents/plugins step.
     — **Consumers affected:** interactive menu only; flags `--select`, `--quick`, etc. unchanged.
+    — **Done:** menu echo + case arm added; routing verified via direct-invocation harness (source → SELECT_ITEMS=true → build_plan emits the 4 picker steps, blanket agents/plugins steps absent). Deviation (sanctioned): the pty variant of the Done-when hung 3× on the full path's interactive prompts — the arch review's pre-authorized fallback (direct function-invocation wiring test) replaces it; option 6's only logic is the flag assignment, which the harness proves deterministically. files: deploy/setup.sh; fixes: none
 
 ### Phase 3: Test coverage
 - [ ] **3.1** Extend `tests/test_select_items.bats`: pin the plugin filter (inventory and `--print-plan --defaults` both list exactly the 5 `.ts` plugins, README absent from both).
