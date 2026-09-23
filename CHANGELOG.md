@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.36.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.35.0...v9.36.0) (2026-09-23)
+
+### Features
+
+* **picker:** truthful --list-items catalog, map-driven plugin companions, menu option 6 ([#544](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/544)) ([b34e8e0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/b34e8e0633ca2e2e60c938f8a2d40dc7ed8c41fb)), closes [#537](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/537) [#537](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/537)
+
+### Documentation
+
+* **contributing:** add CONTRIBUTING.md for shared-repo contributors ([#539](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/539)) ([#540](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/540)) ([ba8b3d1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/ba8b3d16c0873735c634670f453bb5512dc48648))
+* **readme:** retarget two dead AGENTS.md section references ([#541](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/541)) ([#543](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/543)) ([11e87b2](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/11e87b283bcb49dbc0af34aa4a62cb3d0f41bff1))
+
 ## [9.35.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.34.0...v9.35.0) (2026-09-22)
 
 ### Features
