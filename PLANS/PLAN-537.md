@@ -32,6 +32,7 @@ GATE e8e2845 tier=light lint=- typecheck=- build=- unit=t e2e=-
 GATE 232504a tier=light lint=- typecheck=- build=- unit=t e2e=-
 GATE cd8c780 tier=light lint=- typecheck=- build=- unit=t e2e=-
 GATE cd8c780 tier=full lint=- typecheck=- build=t unit=t e2e=-
+GATE 8b054a5 tier=full lint=- typecheck=- build=t unit=t e2e=- (re-gate after review fixes)
 -->
 
 ### Phase 1: Shared scanners (foundation)
