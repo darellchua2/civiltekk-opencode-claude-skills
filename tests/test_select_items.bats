@@ -167,3 +167,117 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
     });
   '
 }
+
+# ───────────────────────── #537 pins ─────────────────────────
+
+@test "plugin_inventory_and_defaults_agree_on_loadable_ts_plugins" {
+  # #537: the README doc must never be selectable, and the interactive
+  # inventory must agree with the --defaults filter (single scanPluginNames
+  # source — the old code drifted 6-vs-5 between the two paths).
+  node -e '
+    import("./installer/deploy-plan-items.mjs").then((m) => {
+      const names = m.scanPluginNames("plugins");
+      if (names.length !== 5) throw new Error("expected 5 .ts plugins, got " + names.length);
+      for (const n of names) if (!n.endsWith(".ts")) throw new Error("non-.ts selectable: " + n);
+      if (names.some((n) => n.includes("README"))) throw new Error("README offered as a plugin");
+    });
+  '
+  run node deploy/tui.mjs select-items --print-plan --defaults
+  [ "$status" -eq 0 ]
+  local count
+  count=$(echo "$output" | node -e 'let d="";process.stdin.on("data",(c)=>d+=c).on("end",()=>{const p=JSON.parse(d);if(p.plugins.some((x)=>x.includes("README")))process.exit(3);console.log(p.plugins.length)})')
+  [ "$count" = "5" ]
+  [[ "$output" == *"opencode-ponytail-scoped.ts"* ]]
+  [[ "$output" != *"README"* ]]
+}
+
+@test "list_items_dump_lists_real_packs_and_plugins" {
+  # #537 headline gap: dump_catalog previously hardcoded empty packs/plugins
+  # arrays — the catalog told users plugins were not installable.
+  run bash -c "./deploy/setup.sh --list-items 2>/dev/null | sed -n '/^{/,/^}/p'" </dev/null
+  [ "$status" -eq 0 ]
+  local counts
+  counts=$(echo "$output" | node -e 'let d="";process.stdin.on("data",(c)=>d+=c).on("end",()=>{const p=JSON.parse(d);if(!p.packs.includes("autodesk")||p.packs.some((x)=>x.includes("README")))process.exit(3);console.log(p.packs.length+"/"+p.plugins.length)})')
+  [[ "$counts" == "5/5" ]]
+  # cwd-independence (arch review WARN): node -e import() resolves relative
+  # specifiers against process cwd — the module path must be argv-absolute.
+  run bash -c "cd /tmp && '$PWD/deploy/setup.sh' --list-items 2>/dev/null | grep -c '\"autodesk\"'" </dev/null
+  [[ "$output" == "1" ]]
+}
+
+@test "plugin_selection_deploys_companions_from_dependency_map" {
+  # #537: picking the ponytail wrapper alone must land its companions — the
+  # plugin is inert without ponytail/instructions.cjs — and vibeguard must
+  # keep arming its config. Sources: dependency-map.json pluginCompanions.
+  local d; d="$(mktemp -d)"
+  printf '%s' '{"skills":[],"agents":[],"mcps":[],"packs":[],"plugins":["opencode-ponytail-scoped.ts"],"extras":[],"warnings":[]}' > "$d/plan-ponytail.json"
+  run bash -c "source '$SETUP_SH' >/dev/null 2>&1
+           CONFIG_DIR='$d/config'; SELECT_PLAN_FILE='$d/plan-ponytail.json'
+           apply_selected_packs_extras >/dev/null 2>&1
+           find '$d/config/plugins' -mindepth 1 2>/dev/null | sort" </dev/null
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"opencode-ponytail-scoped.ts"* ]]
+  [[ "$output" == *"ponytail/SKILL.md"* ]]
+  [[ "$output" == *"ponytail/instructions.cjs"* ]]
+  [[ "$output" == *"ATTRIBUTION.md"* ]]
+  # Idempotency: the re-run must not nest ponytail/ponytail (rm-first dir copy).
+  local nested
+  nested=$(find "$d/config/plugins/ponytail" -mindepth 1 -type d | wc -l | tr -d ' ')
+  [ "$nested" = "0" ]
+  printf '%s' '{"skills":[],"agents":[],"mcps":[],"packs":[],"plugins":["opencode-vibeguard-v2.ts"],"extras":[],"warnings":[]}' > "$d/plan-vibeguard.json"
+  run bash -c "source '$SETUP_SH' >/dev/null 2>&1
+           CONFIG_DIR='$d/config2'; SELECT_PLAN_FILE='$d/plan-vibeguard.json'
+           apply_selected_packs_extras >/dev/null 2>&1
+           find '$d/config2/plugins' -mindepth 1 2>/dev/null | sort" </dev/null
+  [[ "$output" == *"opencode-vibeguard-v2.ts"* ]]
+  [[ "$output" == *"vibeguard.config.json"* ]]
+  rm -rf "$d"
+}
+
+@test "plugin_companions_cover_ships_plugins_facts" {
+  # Cross-surface pin (arch review Major): pluginCompanions is the ONE
+  # declarative companion home — every artifact the skill->plugin edge
+  # (shipsPlugins) declares beyond the plugin itself must appear in the
+  # picker path's companion map, or the two deploy paths drift.
+  node -e '
+    const m = JSON.parse(require("fs").readFileSync("installer/dependency-map.json", "utf8"));
+    const pc = m.pluginCompanions || {};
+    const declared = new Set();
+    for (const arts of Object.values(m.shipsPlugins || {})) {
+      for (const a of arts) if (a !== "opencode-ponytail-scoped.ts") declared.add(a);
+    }
+    const pony = pc["opencode-ponytail-scoped.ts"] || [];
+    for (const a of declared) if (!pony.includes(a)) throw new Error("pluginCompanions missing shipsPlugins artifact: " + a);
+    if (!(pc["opencode-vibeguard-v2.ts"] || []).includes("vibeguard.config.json")) {
+      throw new Error("vibeguard.config.json missing from pluginCompanions");
+    }
+  '
+}
+
+@test "apply_selected_packs_extras_hardcodes_no_plugin_names" {
+  # The bash-case fork the arch review rejected: companion knowledge lives in
+  # dependency-map.json, never in shell arms.
+  local body
+  body=$(sed -n "/^apply_selected_packs_extras()/,/^}/p" "$SETUP_SH")
+  [[ "$body" != *"opencode-vibeguard"* ]]
+  [[ "$body" != *"opencode-ponytail"* ]]
+  [[ "$body" == *"pluginCompanions"* ]]
+}
+
+@test "menu_option_six_routes_to_picker_path" {
+  # #537 discoverability: the interactive menu gains the picker. Direct
+  # invocation harness (source → flag → build_plan) because a pty run of the
+  # full path hangs on its interactive prompts — the fallback the arch
+  # review pre-authorized. Option 6's only logic is the flag assignment.
+  grep -q '6) Select items to deploy' "$SETUP_SH"
+  local arm
+  arm=$(sed -n '/^[[:space:]]*6)$/,/;;/p' "$SETUP_SH")
+  [[ "$arm" == *"SELECT_ITEMS=true"* ]]
+  local d; d="$(mktemp -d)"
+  run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1; SELECT_ITEMS=true; build_plan; printf '%s\n' \"\${PLAN_STEPS[@]}\""
+  rm -rf "$d"
+  echo "$output" | grep -q 'select-items|Select items to deploy'
+  echo "$output" | grep -q 'deploy-selected-skills'
+  ! echo "$output" | grep -q '|Deploy agents|'
+  ! echo "$output" | grep -q '|Deploy plugins|'
+}

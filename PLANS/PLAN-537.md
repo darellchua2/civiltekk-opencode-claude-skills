@@ -29,6 +29,7 @@ Cross-module node: the scanners have consumers in two modules (`deploy/tui.mjs` 
 
 <!-- Gate trace
 GATE e8e2845 tier=light lint=- typecheck=- build=- unit=t e2e=-
+GATE 232504a tier=light lint=- typecheck=- build=- unit=t e2e=-
 -->
 
 ### Phase 1: Shared scanners (foundation)
@@ -61,22 +62,26 @@ GATE e8e2845 tier=light lint=- typecheck=- build=- unit=t e2e=-
     — **Done:** menu echo + case arm added; routing verified via direct-invocation harness (source → SELECT_ITEMS=true → build_plan emits the 4 picker steps, blanket agents/plugins steps absent). Deviation (sanctioned): the pty variant of the Done-when hung 3× on the full path's interactive prompts — the arch review's pre-authorized fallback (direct function-invocation wiring test) replaces it; option 6's only logic is the flag assignment, which the harness proves deterministically. files: deploy/setup.sh; fixes: none
 
 ### Phase 3: Test coverage
-- [ ] **3.1** Extend `tests/test_select_items.bats`: pin the plugin filter (inventory and `--print-plan --defaults` both list exactly the 5 `.ts` plugins, README absent from both).
+- [x] **3.1** Extend `tests/test_select_items.bats`: pin the plugin filter (inventory and `--print-plan --defaults` both list exactly the 5 `.ts` plugins, README absent from both).
     — **Why:** the README-in-inventory bug and the defaults drift are exactly the regression class this AC forbids.
     — **Done when:** new assertions pass and existing pins (determinism, driver equivalence, MCP_TO_PACK) stay green.
     — **Consumers affected:** none (test-only).
-- [ ] **3.2** Add a bats test that `--list-items` prints non-empty `packs` and `plugins` arrays with the expected counts.
+    — **Done:** scanner pin (5 `.ts`, no README) + defaults-agreement pin added; all 19 tests green. files: tests/test_select_items.bats; fixes: none
+- [x] **3.2** Add a bats test that `--list-items` prints non-empty `packs` and `plugins` arrays with the expected counts.
     — **Why:** the catalog dump was the lying surface; pin it so it cannot silently regress to empty arrays.
     — **Done when:** the test fails on the pre-change behavior (empty arrays) and passes post-change.
     — **Consumers affected:** none (test-only).
-- [ ] **3.3** Add a bats test for plugin selection deploy: pre-seed a plan with only `opencode-ponytail-scoped.ts` (and a second case with only `opencode-vibeguard-v2.ts`), run the deploy in a sandbox `HOME`, assert the companion artifact sets land; include a cross-surface pin asserting `pluginCompanions["opencode-ponytail-scoped.ts"]` covers the artifacts `dependency-map.json` `shipsPlugins` already declares.
+    — **Done:** count pin 5/5 + autodesk presence + cwd-independence run from /tmp. files: tests/test_select_items.bats; fixes: JSON extraction sed range `/^{/,$p` → `/^{/,/^}/` (trailing mode-completion log line broke JSON.parse — gate fix 1)
+- [x] **3.3** Add a bats test for plugin selection deploy: pre-seed a plan with only `opencode-ponytail-scoped.ts` (and a second case with only `opencode-vibeguard-v2.ts`), run the deploy in a sandbox `HOME`, assert the companion artifact sets land; include a cross-surface pin asserting `pluginCompanions["opencode-ponytail-scoped.ts"]` covers the artifacts `dependency-map.json` `shipsPlugins` already declares.
     — **Why:** companion-copy correctness is the AC with real data-loss shape (a broken plugin in the user's config); the cross-surface pin keeps the declarative map from drifting against the manifest path's expectations.
     — **Done when:** both sandbox runs produce exactly the artifact sets from AC 3/4, and the cross-surface assertion passes against the live `dependency-map.json`.
     — **Consumers affected:** none (test-only).
-- [ ] **3.4** Add a bats test for menu option 6 wiring using `script -qec` (pseudo-TTY), asserting the picker plan steps are logged.
+    — **Done:** ponytail sandbox run asserts the 4 artifacts + non-nested re-run; vibeguard run asserts config companion; cross-surface and no-hardcode pins added. files: tests/test_select_items.bats; fixes: none
+- [x] **3.4** Add a bats test for menu option 6 wiring using `script -qec` (pseudo-TTY), asserting the picker plan steps are logged.
     — **Why:** the menu change is the only user-facing routing change; without a pin it can silently revert.
     — **Done when:** the test passes on this branch; on main it would fail (option absent).
     — **Consumers affected:** none (test-only).
+    — **Done:** wiring pin uses the direct-invocation harness (source → SELECT_ITEMS=true → build_plan) with static menu-line + case-arm greps — pty variant replaced per the arch-review-sanctioned fallback (3 hangs observed); positives (4 picker steps) AND negatives (blanket agents/plugins absent) asserted. files: tests/test_select_items.bats; fixes: none
 
 ### Phase 4: Verification gate
 - [ ] **4.1** Run the affected suites (`bats tests/test_select_items.bats tests/test_ships_plugins.bats tests/test_deploy_delegate.bats tests/test_plan_executor.bats`), then the full `bats tests/` suite; fix anything red before proceeding.
