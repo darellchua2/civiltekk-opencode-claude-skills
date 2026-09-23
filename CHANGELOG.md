@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.36.2](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.36.1...v9.36.2) (2026-09-23)
+
+### Bug Fixes
+
+* docs ([b151e1b](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/b151e1b47a4a98a9e78a4d1bb822075eb313a4dc))
+
+### Documentation
+
+* **learnings:** publish two new entries to the tracked index ([#542](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/542)) ([#545](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/545)) ([da16d54](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/da16d54ded0bc4fe77f9bfd9b054747f558d0fb1)), closes [#539](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/539)
+
 ## [9.36.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.36.0...v9.36.1) (2026-09-23)
 
 ### Bug Fixes
