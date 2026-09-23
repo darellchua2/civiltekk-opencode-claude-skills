@@ -326,7 +326,7 @@ Browse live: the [GitHub Pages catalog](https://darellchua2.github.io/civiltekk-
 | **opencode-tooling / opencode-v2-migration subagents** | Skills/agents/rules creation + doc sync; v1→v2 migration execution |
 | **startup-founder / startup-ceo / office-document routers** | Business operations routing hubs |
 
-Some subagents recognize natural-language triggers (e.g. "create pr", "pitch deck", "design review", "PowerPoint"). Full table with per-agent skills and delegation: `AGENTS.md` § Subagents.
+Some subagents recognize natural-language triggers (e.g. "create pr", "pitch deck", "design review", "PowerPoint") — the trigger surface is each agent's `description` frontmatter in `agents/*.md`; per-class model assignments and delegation guidance: `AGENTS.md` § Subagent Model Tiering.
 
 **Subagent nesting:** `opencode_app/opencode.json` sets `subagent_depth: 3` (opencode default is 1) — required for the autoresearch delegation chains. Each level multiplies token cost; lower to 2 for tighter runs.
 
@@ -343,7 +343,7 @@ Skills like `continuous-learning` persist knowledge across sessions:
 | `LEARNINGS/` in target projects | Curated, git-committed | Patterns, ADRs, anti-patterns, solutions, conventions |
 | `~/.config/opencode/learnings/` | User-level, cross-project | Personal preferences and patterns |
 
-The `memory` tool's V1 plugin has no v2 release — `LEARNINGS/*.md` + the auto-inject plugin + `AGENTS.md` discovery is the memory layer (watch-list for v2-compatible re-adds in `AGENTS.md` §Knowledge Persistence).
+The `memory` tool's V1 plugin has no v2 release — `LEARNINGS/*.md` + the auto-inject plugin + `AGENTS.md` discovery is the memory layer (watch-list for v2-compatible re-adds in `AGENTS.md` § Project Learnings).
 
 **How it works:** `setup.sh` creates `~/.config/opencode/learnings/` at user level; `continuous-learning` auto-provisions `LEARNINGS/` in target projects; review agents save findings as report content; agents discover learnings via the auto-injected manifest + explicit file reads. In this repo, `LEARNINGS/` ships as an empty skeleton — locally-written entries are gitignored (maintainer memory stays local).
 </details>
