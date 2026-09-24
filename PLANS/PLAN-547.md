@@ -72,6 +72,10 @@ Thin map: prose-only skill change; no cross-module code consumers. Architecture 
 
 None — single contained ticket, no `blocked-by:`.
 
+## Progress Log
+
+- 2026-09-25 — Code review (Step 9): 0 Critical / 0 Major / 4 Minor; merge-semantics + builtin-ID claims verified against live v2 docs. All 4 minors fixed (global-scope sweep at intro/Step 3 lead, hand-merge fallback keys, Governance no-URL pledge exemption, absent-global-file precondition). Review-fix commit applies these; post-merge full gate re-run follows (memo appended below).
+
 ## Risks & Mitigation
 
 - **Skill description drifts past the 50-word house cap** → word-count check is an explicit Done-when in 1.1; registry build fails loud if frontmatter breaks.

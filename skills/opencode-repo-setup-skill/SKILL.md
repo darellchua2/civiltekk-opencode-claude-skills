@@ -19,7 +19,7 @@ I am the **interactive frontend for per-project MCP enablement**. The global dep
 
 1. **Detect** — scan the repo for setup signals
 2. **Ask** — present a question-tool menu of opt-in servers + extras
-3. **Write** — merge-write ONLY the delta into `<repo>/opencode.json`
+3. **Write** — merge-write ONLY the delta into `<repo>/opencode.json` (Global-scope model pins instead target `~/.config/opencode/opencode.json`, backup-then-merge)
 4. **Init** — optionally run `codegraph init -i`
 5. **Report** — enabled set, estimated token cost, revert instructions
 
@@ -72,7 +72,7 @@ One multi-select question + one yes/no per extra. Options are built from the det
 
 ## Step 3 — Write (merge-write, delta-only)
 
-Target: `<repo>/opencode.json`. Create if absent; **never clobber existing keys** — deep-merge at the top level manually (read file, add only the chosen `mcp.servers.<server>` entries). Keep the file comment-free JSON.
+Target: `<repo>/opencode.json` (Global-scope model pins: `~/.config/opencode/opencode.json`). Create if absent; **never clobber existing keys** — deep-merge at the top level manually (read file, add only the chosen `mcp.servers.<server>` entries). Keep the file comment-free JSON.
 
 Typical delta (FULL entry — mandatory):
 
@@ -103,7 +103,7 @@ Agent model-pin delta (model-pin extra accepted):
 Rules:
 - **Full entries only**: v2 replaces `mcp.servers.<name>` **atomically** across config layers — a bare `{"disabled": false}` stub erases the global transport and yields an inert server. Copy `type`/`command`/`environment` from the global `~/.config/opencode/opencode.json` definition and set `disabled: false` (Atlassian OAuth flows via `mcp-remote`; see caveats)
 - **Model-only agent entries are safe** (the atomicity rule does NOT apply): v2 merges agent definitions across config layers — scalars replace, permission rules append — so `agents.explore.model` preserves the global entry's permissions. Valid IDs: `explore`, `general`, `title`, `summary`, `compaction`. Never write `build`/`plan` pins.
-- **Global target** (model pins with Global scope): back up first — `cp ~/.config/opencode/opencode.json ~/.config/opencode/opencode.json.bak-$(date +%Y%m%d_%H%M%S)` — then run the same merge procedure against the global file. This backup is mandatory and MUST be reported in Step 5.
+- **Global target** (model pins with Global scope): back up first — `cp ~/.config/opencode/opencode.json ~/.config/opencode/opencode.json.bak-$(date +%Y%m%d_%H%M%S)` — then run the same merge procedure against the global file. This backup is mandatory and MUST be reported in Step 5. Absent global file → skip the backup (nothing to preserve) and create the file fresh with the merged result.
 - If the file exists, preserve every other key verbatim (byte-stable elsewhere; pretty-print 2-space)
 - Never write `disabled: true` to disable something globally enabled — the project layer is for opting IN
 
@@ -131,7 +131,7 @@ Merge procedure (MANDATORY when `<repo>/opencode.json` already exists — never 
 
    (`delta.json` = the chosen blob — `{"mcp":{...}}` for server enables, `{"agents":{...}}` for model pins; `*` merges recursively, existing non-conflicting keys survive, delta wins on conflicts — which is exactly the chosen-enable set; type-conflicting keys replace, matching jq)
 3. Diff-check: `git diff opencode.json` (or plain diff vs a pre-made backup) must show ONLY the added `mcp.*` / `agents.*` keys (whichever the accepted extras produced). For a Global-scope pin write, diff against the `.bak-<timestamp>` file instead of git.
-4. No jq available? Read the file, hand-merge the `mcp` key into the parsed object, and Write the full merged result — never emit a file missing previously-present keys
+4. No jq available? Read the file, hand-merge the `mcp` / `agents` keys into the parsed object, and Write the full merged result — never emit a file missing previously-present keys
 
 Also in Step 1 detection: ALWAYS `cat <repo>/opencode.json` when present and show its current keys to the user before Step 2, so the menu reflects what is already enabled.
 
@@ -204,4 +204,4 @@ State exactly:
 | Builtin agent IDs + agent-definition merge semantics (`model` pin safety) | opencode v2 agents docs — https://opencode.ai/v2/docs/agents |
 | CodeGraph init | CodeGraph server's own MCP instructions + this skill's Step 4 / Rule blocks |
 
-This skill deliberately contains no server versions, URLs beyond Atlassian REST constants, or token costs beyond the estimates above — refresh from the configurator repo's README MCP table when drifting.
+This skill deliberately contains no server versions, no model IDs, and no token costs beyond the estimates above — refresh from the configurator repo's README MCP table when drifting. Doc citations (Atlassian REST constants, the opencode v2 agents docs) are references, not inventory.
