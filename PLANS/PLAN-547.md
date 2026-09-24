@@ -6,13 +6,13 @@
 
 ## Acceptance Criteria
 
-- [ ] AC1 — Step 2 offers the builtin-model-pin extra with group multi-select + scope choice (project recommended / global)
-- [ ] AC2 — Free-form model string validated (contains `/`); no model IDs hardcoded in the skill
-- [ ] AC3 — Project write merges `agents.<id>.model` via the existing merge procedure; existing keys preserved — diff-check wording covers `agents.*` alongside `mcp.*`
-- [ ] AC4 — Global option backs up `~/.config/opencode/opencode.json` before merging
-- [ ] AC5 — Step 5 report lists the pins + revert instructions; notes hidden agents stay non-selectable
-- [ ] AC6 — Frontmatter `description` gains trigger phrases (stays ≤50 words); `node installer/build-registry.mjs` run and `registry.json` committed
-- [ ] AC7 — Skills test suite passes (SKILL.md-only change; isolation contract unaffected)
+- [x] AC1 — Step 2 offers the builtin-model-pin extra with group multi-select + scope choice (project recommended / global)
+- [x] AC2 — Free-form model string validated (contains `/`); no model IDs hardcoded in the skill
+- [x] AC3 — Project write merges `agents.<id>.model` via the existing merge procedure; existing keys preserved — diff-check wording covers `agents.*` alongside `mcp.*`
+- [x] AC4 — Global option backs up `~/.config/opencode/opencode.json` before merging
+- [x] AC5 — Step 5 report lists the pins + revert instructions; notes hidden agents stay non-selectable
+- [x] AC6 — Frontmatter `description` gains trigger phrases (stays ≤50 words); `node installer/build-registry.mjs` run and `registry.json` committed
+- [x] AC7 — Skills test suite passes (SKILL.md-only change; isolation contract unaffected)
 
 ## Dependency & Consumer Map
 
