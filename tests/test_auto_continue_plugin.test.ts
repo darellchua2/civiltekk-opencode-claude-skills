@@ -53,6 +53,8 @@ test('normalizeConfig: defaults', () => {
     throttleMs: 10000,
     baseBackoffMs: 1000,
     maxBackoffMs: 8000,
+    stallMs: 900000,
+    sweepMs: 30000,
     debug: false,
   });
 });
@@ -63,16 +65,25 @@ test('normalizeConfig: env overrides and invalid-value fallbacks', () => {
     OPENCODE_AUTO_CONTINUE_MESSAGE: 'resume',
     OPENCODE_AUTO_CONTINUE_MAX_CONSECUTIVE: '3',
     OPENCODE_AUTO_CONTINUE_THROTTLE_MS: '500',
+    OPENCODE_AUTO_CONTINUE_STALL_MS: '60000',
+    OPENCODE_AUTO_CONTINUE_SWEEP_MS: '2000',
     OPENCODE_AUTO_CONTINUE_DEBUG: '1',
   });
   assert.equal(cfg.enabled, false);
   assert.equal(cfg.message, 'resume');
   assert.equal(cfg.maxConsecutive, 3);
   assert.equal(cfg.throttleMs, 500);
+  assert.equal(cfg.stallMs, 60000);
+  assert.equal(cfg.sweepMs, 2000);
   assert.equal(cfg.debug, true);
   // invalid values fall back, never crash
   assert.equal(normalizeConfig({ OPENCODE_AUTO_CONTINUE_MAX_CONSECUTIVE: 'abc' }).maxConsecutive, 5);
   assert.equal(normalizeConfig({ OPENCODE_AUTO_CONTINUE_MAX_CONSECUTIVE: '-2' }).maxConsecutive, 5);
+  assert.equal(normalizeConfig({ OPENCODE_AUTO_CONTINUE_STALL_MS: 'abc' }).stallMs, 900000);
+  assert.equal(normalizeConfig({ OPENCODE_AUTO_CONTINUE_STALL_MS: '-5' }).stallMs, 900000);
+  // 0 is legal for stallMs (disables the watchdog), never for sweepMs
+  assert.equal(normalizeConfig({ OPENCODE_AUTO_CONTINUE_STALL_MS: '0' }).stallMs, 0);
+  assert.equal(normalizeConfig({ OPENCODE_AUTO_CONTINUE_SWEEP_MS: '0' }).sweepMs, 30000);
 });
 
 test('pattern lists ship the documented defaults', () => {
@@ -122,7 +133,7 @@ class FakeBus {
 
 async function makePlugin(
   env: Record<string, string>,
-  opts: { hostile?: boolean; getStatus?: () => string; hostileEchoDelayMs?: number } = {},
+  opts: { hostile?: boolean; getStatus?: () => string; hostileEchoDelayMs?: number; onAbort?: (sessionID: string) => void; echoInterruptedOnAbort?: boolean } = {},
 ) {
   const saved = { ...process.env };
   for (const k of Object.keys(env)) delete process.env[k]; // no inherited leakage
@@ -130,6 +141,7 @@ async function makePlugin(
   delete process.env.OPENCODE_AUTO_CONTINUE_DEBUG; // silence spy needs this guaranteed
   const bus = new FakeBus();
   const prompts: Array<{ sessionID: string; text: string; at: number }> = [];
+  const aborts: string[] = [];
   let logCalls = 0;
   let promptHook: ((event: any) => void) | undefined;
   const ctx = {
@@ -141,6 +153,13 @@ async function makePlugin(
         // hostile fake: a real server may fire the prompt hook for our own send
         if (opts.hostile) promptHook?.({ sessionID: input.sessionID, prompt: { text: input.text } });
         prompts.push({ sessionID: input.sessionID, text: input.text, at: Date.now() });
+      },
+      abort: async (input: any) => {
+        aborts.push(input.sessionID);
+        // a real server echoes the kill back as an interrupted event, often
+        // followed by a MessageAbortedError — neither may latch ESC
+        if (opts.echoInterruptedOnAbort) bus.push({ type: 'session.interrupted', properties: { sessionID: input.sessionID } });
+        opts.onAbort?.(input.sessionID);
       },
       hook: async (_name: string, fn: (event: any) => void) => {
         promptHook = fn;
@@ -169,6 +188,7 @@ async function makePlugin(
     ctx,
     bus,
     prompts,
+    aborts,
     logCalls: () => logCalls,
     teardown,
     error,
@@ -377,6 +397,144 @@ test('runtime: own-send guard does not swallow a real user message in another se
     h.error('read ECONNRESET', SID_B);
     h.idle(SID_B);
     await waitFor(() => h.prompts.some((p) => p.sessionID === SID_B), 'B sends after its real user message');
+  } finally {
+    await h.teardown();
+  }
+});
+
+// ── busy-stall watchdog ───────────────────────────────────────────────────────
+
+const WATCHDOG_ENV = {
+  OPENCODE_AUTO_CONTINUE_STALL_MS: '50',
+  OPENCODE_AUTO_CONTINUE_SWEEP_MS: '20',
+  OPENCODE_AUTO_CONTINUE_BASE_BACKOFF_MS: '10',
+  OPENCODE_AUTO_CONTINUE_THROTTLE_MS: '10',
+};
+
+test('watchdog: silent busy session is aborted and auto-continued', async () => {
+  let busy = true;
+  const h = await makePlugin(WATCHDOG_ENV, {
+    getStatus: () => (busy ? 'busy' : 'idle'),
+    onAbort: () => {
+      busy = false; // the kill lands: session drops to idle
+    },
+  });
+  try {
+    h.idle(); // seed tracking with fresh activity
+    await sleep(150); // go stale past the 50ms window; sweeps fire every 20ms
+    await waitFor(() => h.aborts.length === 1, 'stalled session aborted');
+    await waitFor(() => h.prompts.length === 1, 'continue sent after the abort');
+    assert.equal(h.prompts[0].sessionID, SID);
+    assert.equal(h.prompts[0].text, 'continue');
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('watchdog: fresh event activity prevents abort until activity stops', async () => {
+  let busy = true;
+  const h = await makePlugin(WATCHDOG_ENV, {
+    getStatus: () => (busy ? 'busy' : 'idle'),
+    onAbort: () => {
+      busy = false;
+    },
+  });
+  try {
+    h.idle();
+    const keepAlive = setInterval(() => h.idle(), 15); // constant fresh activity
+    await sleep(150);
+    assert.equal(h.aborts.length, 0, 'an event-active session must never be aborted');
+    clearInterval(keepAlive);
+    await waitFor(() => h.aborts.length === 1, 'abort once activity goes stale');
+    await waitFor(() => h.prompts.length === 1, 'recovery continue after the abort');
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('watchdog: stale activity with an idle status is never aborted', async () => {
+  const h = await makePlugin(WATCHDOG_ENV, { getStatus: () => 'idle' });
+  try {
+    h.idle();
+    await sleep(150);
+    assert.equal(h.aborts.length, 0, 'idle sessions must not be aborted');
+    assert.equal(h.prompts.length, 0);
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('watchdog: STALL_MS=0 disables the sweep entirely', async () => {
+  const h = await makePlugin(
+    { ...WATCHDOG_ENV, OPENCODE_AUTO_CONTINUE_STALL_MS: '0' },
+    { getStatus: () => 'busy' },
+  );
+  try {
+    h.idle();
+    await sleep(150);
+    assert.equal(h.aborts.length, 0, 'watchdog must be off');
+    assert.equal(h.prompts.length, 0);
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('watchdog: ESC-latched session is never aborted', async () => {
+  const h = await makePlugin(WATCHDOG_ENV, { getStatus: () => 'busy' });
+  try {
+    h.interrupted(); // the user pressed ESC — hands off
+    h.idle();
+    await sleep(150);
+    assert.equal(h.aborts.length, 0, 'no abort behind an ESC latch');
+    assert.equal(h.prompts.length, 0);
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('watchdog: consecutive cap reached blocks stall recovery', async () => {
+  let busy = false;
+  const h = await makePlugin(
+    { ...WATCHDOG_ENV, OPENCODE_AUTO_CONTINUE_MAX_CONSECUTIVE: '1' },
+    {
+      getStatus: () => (busy ? 'busy' : 'idle'),
+      onAbort: () => {
+        busy = false;
+      },
+    },
+  );
+  try {
+    h.error('400 bad request');
+    h.idle();
+    await waitFor(() => h.prompts.length === 1, 'error-path attempt burns the cap');
+    busy = true; // re-stall the session
+    h.idle(); // refresh activity
+    await sleep(150); // go stale; the sweep must skip — cap is spent
+    assert.equal(h.aborts.length, 0, 'no abort once the consecutive cap is spent');
+    assert.equal(h.prompts.length, 1);
+  } finally {
+    await h.teardown();
+  }
+});
+
+test('watchdog: own-abort interrupted echo does not latch ESC or kill recovery', async () => {
+  let busy = true;
+  const h = await makePlugin(WATCHDOG_ENV, {
+    getStatus: () => (busy ? 'busy' : 'idle'),
+    onAbort: () => {
+      busy = false;
+    },
+    echoInterruptedOnAbort: true, // server echoes the kill as session.interrupted
+  });
+  try {
+    h.idle();
+    await sleep(150);
+    await waitFor(() => h.aborts.length === 1, 'abort fired');
+    await waitFor(() => h.prompts.length === 1, 'recovery continue survives the echo');
+    // the latch must NOT be on: a later transient error still retries
+    h.error('read ECONNRESET');
+    h.idle();
+    await waitFor(() => h.prompts.length === 2, 'later error still retries — no ESC latch');
   } finally {
     await h.teardown();
   }
