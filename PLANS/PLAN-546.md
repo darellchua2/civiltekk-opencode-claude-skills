@@ -55,10 +55,11 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done:** 155 lines (≤170); frontmatter lines 1-11 byte-identical to origin/main (diff clean); preamble exactly 1; Iteration Protocol heading + iteration-safety citation present; files: skills/frontend-design-skill/SKILL.md; fixes: none
 
 ### Phase 2: Sync uiux-review-skill axis 13
-- [ ] **2.1** Expand axis 13 in `skills/uiux-review-skill/SKILL.md` with the same expanded tell set (terracotta accent, SaaS-card kit, template chrome, default-hero composition tell), preserving the cluster structure and the axis-13 Minor/NOTE severity disposition
+- [x] **2.1** Expand axis 13 in `skills/uiux-review-skill/SKILL.md` with the same expanded tell set (terracotta accent, SaaS-card kit, template chrome, default-hero composition tell), preserving the cluster structure and the axis-13 Minor/NOTE severity disposition
     — **Why:** frontend-design-skill's table header claims sync with axis 13; `uiux-reviewer-subagent` detects AI clusters through this skill, so the reviewer inherits the new tells only if it lands here
     — **Done when:** axis 13 greps for the same new tell markers as Phase 1's table; both tables list the same clusters
     — **Consumers affected:** `uiux-reviewer-subagent` (review output), the file's attribution table (unchanged license line)
+    — **Done:** axis 13 expanded from 3 to 6 clusters (A gained `#F4F1EA` + terracotta `#D97757`; B gained vermilion + tinted near-black; C gained zero-radius; new D SaaS-card kit, E template chrome, F default hero); brief-request exception line added; disposition paragraph preserved; all Phase-1 markers grep in axis 13 ("middle-dot" normalized for exact parity); files: skills/uiux-review-skill/SKILL.md; fixes: none
 
 ### Phase 3: Add react-best-practices-skill
 - [ ] **3.1** Verify the Vercel upstream license (fetch LICENSE from vercel-labs/agent-skills) and record it in the new skill's provenance comment
@@ -140,4 +141,5 @@ None — no `blocked-by:` tickets.
 
 ```
 GATE 552a720 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 1 — 6/6 frontend-design-scoped tests in test_default_behavior + test_autoresearch_protocol; lint/typecheck/build unconfigured in repo
+GATE 501f9f5 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 2 — test_portability green (full suite); axis-13 marker parity verified
 ```
