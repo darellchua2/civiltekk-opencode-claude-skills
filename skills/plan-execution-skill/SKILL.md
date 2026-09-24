@@ -45,7 +45,7 @@ All modes parse the same structure:
 
 **Step 2 — Execute:** (1) surface consumers before mutating; (2) group related steps; (3) delegate — tests → `testing-subagent`, docs → `documentation-subagent`; refactor/clean and build/deploy → directly (`code-review-subagent` is read-only — review only, not implementation); (4) verify each step's `Done when` before `[x]`.
 
-**Step 3 — Auto-update per phase:** when all phase tasks complete + acceptance criteria met + tests pass → run the `--update` mode (checkboxes + semantic commit), confirm applied, next phase.
+**Step 3 — Tick per phase, commit once at the end:** when all phase tasks complete + acceptance criteria met + tests pass → tick checkboxes + write Done lines in the PLAN (working tree only — no commit), confirm applied, next phase. At end of run, land the single trailing tick commit: `git add "$PLAN_FILE" && git commit -m "docs(plan): tick ${PLAN_FILE##*/} — run complete"` — the only `docs(plan)` commit a `--soft` run produces.
 
 **Step 4 — Final validation:** `grep "## Acceptance Criteria" -A 20 "$PLAN_FILE" | grep "^- \[ \]"` — empty → done; else list remaining criteria.
 
@@ -91,11 +91,11 @@ Run e2e ONLY IF both: Playwright configured (`playwright.config.*` + `@playwrigh
 — **Done:** <one-line work summary>; files: <files>; fixes: <fixes applied or "none">
 ```
 
-Rules: `fixes:` MUST list every gate fix for that step; one logical line; only tick `[x]` when `Done when` is objectively satisfied AND the gate passed; note deliberate deviations. A completed phase leaves zero unchecked boxes (`grep -n "^- \[ \]" <PLAN>` within it → empty). Optional hash-trace: two commits (code → hash → checkboxes+Done lines → `docs(plan): trace Phase N (<hash>)`).
+Rules: `fixes:` MUST list every gate fix for that step; one logical line; only tick `[x]` when `Done when` is objectively satisfied AND the gate passed; note deliberate deviations. A completed phase leaves zero unchecked boxes (`grep -n "^- \[ \]" <PLAN>` within it → empty).
 
 ### Commit + push
 
-`git add <phase files> PLANS/PLAN-*.md` → `git commit -m "<type>(<scope>): implement Phase N — <summary>" -m "Plan: <file>. Gate: … green. Trace: per-step Done lines."` → `git push`. Conventions per `git-semantic-commits-skill`; project commitlint overrides; never mix style-only with logic. Push rejected (non-FF) → stop and ask, never force-push.
+`git add <phase files> PLANS/PLAN-*.md` → `git commit -m "<type>(<scope>): implement Phase N — <summary>" -m "Plan: <file>. Gate: … green. Trace: per-step Done lines."` → `git push`. PLAN ticks, Done lines, and gate memos ride inside this one atomic commit — a standalone `docs(plan)` commit mid-run is never allowed. Conventions per `git-semantic-commits-skill`; project commitlint overrides; never mix style-only with logic. Push rejected (non-FF) → stop and ask, never force-push.
 
 ### Final validation
 
@@ -140,7 +140,7 @@ Gate red after 3 attempts → report + ask · phase/fix budget hit → HALT `[go
    3. Preserve all other content exactly
    4. **Preserve the atomic-step rationale triple verbatim** — when flipping a `**N.M**` step's checkbox, never strip or rewrite its `**Why:**` / `**Done when:**` / `**Consumers affected:**` lines. Change only `[ ]` → `[x]`.
 5. **Add a progress note** for significant milestones (`## Progress Log` with date + summary + files changed).
-6. **Commit**: `git add "$PLAN_FILE" && git commit -m "docs(plan): update ${PLAN_FILE##*/} with current progress"`.
+6. **Commit — standalone only**: `git add "$PLAN_FILE" && git commit -m "docs(plan): update ${PLAN_FILE##*/} with current progress"`. Invoked as a subroutine (from `--soft` Step 3 or `--gate` 4f), skip this commit — sync checkboxes only; the caller owns PLAN commits (`--gate` 4f folds them into the phase's atomic commit; `--soft` defers them to its single end-of-run tick commit).
 
 ### Malformed-step flag primitive
 

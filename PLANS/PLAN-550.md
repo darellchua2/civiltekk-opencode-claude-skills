@@ -5,10 +5,10 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] "Optional hash-trace: two commits" sentence removed from plan-execution-skill
-- [ ] `--gate` 4f explicitly forbids standalone `docs(plan)` commits mid-run
-- [ ] `--soft` Step 3 defers PLAN commits to a single end-of-run tick commit
-- [ ] `--update` commits only on standalone invocation (sync-only as subroutine)
+- [x] "Optional hash-trace: two commits" sentence removed from plan-execution-skill
+- [x] `--gate` 4f explicitly forbids standalone `docs(plan)` commits mid-run
+- [x] `--soft` Step 3 defers PLAN commits to a single end-of-run tick commit
+- [x] `--update` commits only on standalone invocation (sync-only as subroutine)
 - [ ] worktree-pipeline Step 9 folds re-ticks into existing commits
 - [ ] Guarantees section documents the no-tick-commit rule
 - [ ] `grep -rn "hash-trace" skills/ tests/` returns empty; no frontmatter changes (no registry regen)
@@ -27,22 +27,26 @@ _Before writing steps, list each touched file/module and who consumes it._
 _Every step MUST be atomic and carry rationale. Reject any step missing a "Why"._
 
 ### Phase 1: plan-execution-skill — fold ticks into work commits; defer --soft ticks to ticket end
-- [ ] **1.1** Remove the "Optional hash-trace: two commits" sentence from §Traceability
+- [x] **1.1** Remove the "Optional hash-trace: two commits" sentence from §Traceability
     — **Why:** it is the only documented source of standalone per-phase tick commits in `--gate` mode
     — **Done when:** `grep -c "hash-trace" skills/plan-execution-skill/SKILL.md` returns 0
     — **Consumers affected:** `--gate` executors that used the two-commit trace variant
-- [ ] **1.2** Amend §Commit + push (4f) so PLAN ticks ride inside the phase's atomic commit and a standalone `docs(plan)` commit mid-run is named a violation
+    — **Done:** sentence removed; files: skills/plan-execution-skill/SKILL.md; fixes: none
+- [x] **1.2** Amend §Commit + push (4f) so PLAN ticks ride inside the phase's atomic commit and a standalone `docs(plan)` commit mid-run is named a violation
     — **Why:** makes the no-tick-commit rule explicit at the only place `--gate` commits
     — **Done when:** the section states PLAN updates commit together with phase files and contains an explicit "never" prohibition on a standalone `docs(plan)` commit mid-run
     — **Consumers affected:** `--gate` executors; worktree-pipeline-skill Step 8
-- [ ] **1.3** Rewrite `--soft` Step 3 to tick checkboxes and write Done lines in the working tree with no commit, deferring all PLAN updates to one trailing `docs(plan): tick` commit at end of run
+    — **Done:** 4f states ticks/Done lines/memos ride the atomic commit and standalone docs(plan) mid-run is "never allowed"; files: skills/plan-execution-skill/SKILL.md; fixes: none
+- [x] **1.3** Rewrite `--soft` Step 3 to tick checkboxes and write Done lines in the working tree with no commit, deferring all PLAN updates to one trailing `docs(plan): tick` commit at end of run
     — **Why:** `--soft` has no auto-commit cadence; invoking `--update` per phase manufactured a `docs(plan)` commit per phase
     — **Done when:** Step 3 text says no commit per phase and names the single end-of-run tick commit
     — **Consumers affected:** `--soft` interactive runs
-- [ ] **1.4** Add the subroutine rule to `--update`: invoked from `--soft`/`--gate` it syncs checkboxes only and skips its step-6 commit; standalone use keeps the commit
+    — **Done:** Step 3 retitled "Tick per phase, commit once at the end" with the exact trailing-commit command; files: skills/plan-execution-skill/SKILL.md; fixes: none
+- [x] **1.4** Add the subroutine rule to `--update`: invoked from `--soft`/`--gate` it syncs checkboxes only and skips its step-6 commit; standalone use keeps the commit
     — **Why:** `--update` is reusable by both modes; without a caller-aware rule the per-phase commit returns via the side door
     — **Done when:** the `--update` workflow shows a commit-suppression condition tied to invocation context
     — **Consumers affected:** worktree-pipeline-skill Step 8; `--soft` Step 3 callers
+    — **Done:** step 6 retitled "Commit — standalone only" with the subroutine suppression and caller-ownership note; files: skills/plan-execution-skill/SKILL.md; fixes: none
 
 ### Phase 2: worktree-pipeline-skill — orchestrator-side fold + guarantee
 - [ ] **2.1** Amend Step 9 so post-exit-gate PLAN re-ticks fold into the review-fix commit or the `chore(learnings)` commit, never their own commit
@@ -74,3 +78,5 @@ None — standalone prose-contract change.
 
 ## Gate memos
 _(gate memos appended here by /run-plan --gate)_
+
+GATE ccac64d tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
