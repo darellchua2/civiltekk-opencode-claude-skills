@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.40.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.39.0...v9.40.0) (2026-09-24)
+
+### Features
+
+* **auto-continue:** add busy-stall watchdog for silent hung sessions ([55fd5e5](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/55fd5e5d33d33484966ea15b132189f5a4d49e19))
+
+### Documentation
+
+* **research:** add agent tooling research report ([9a04ef7](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/9a04ef7ef0ab278d82b6b376d0f7cac4d962b0a5))
+
 ## [9.39.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.38.0...v9.39.0) (2026-09-24)
 
 ### Features
