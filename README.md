@@ -2,7 +2,7 @@
 
 A personal software-development skills collection — the agents, skills, and pipeline tooling I use daily — shared so you can take **a single skill** or adopt **the whole stack**.
 
-- **146 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
+- **147 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
 - **Same skills install to other harnesses**: Claude Code, Kimi Code, Kilo Code, and the cross-tool `~/.agents/` standard (Agent Skills open format)
 - A **robust application-development pipeline**: ticket → PLAN → gated execution → review → merged PR, driven by a handful of slash commands
 
@@ -64,7 +64,7 @@ Provider swap (Z.AI default): `./deploy/setup.sh --provider anthropic|openai|ope
 
 ### 3. Per-project subset — presets
 
-Not every project needs 34 agents + 146 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
+Not every project needs 34 agents + 147 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
 
 ```bash
 opencode-init --list categories                              # introspect (JSON)
@@ -98,7 +98,7 @@ See [Docker: run the whole setup in a browser](#docker-run-the-whole-setup-in-a-
 
 ```
 civiltekk-opencode-claude-skills/
-├── skills/                      # 146 skill directories (source of truth)
+├── skills/                      # 147 skill directories (source of truth)
 ├── agents/                      # 34 subagent .md files (source of truth)
 ├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings, auto-continue, question-repair)
 │   └── vibeguard.config.json    # Secret-masking regex patterns
@@ -233,7 +233,7 @@ docker compose build --build-arg OPENCODE_PACKS=autodesk,markitdown   # Docker b
 
 Default state of every pack is **OFF**. Design history: [issue #268](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/268).
 
-**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (70 primary-visible skills + deny-all, ~3.2k tokens saved); subagents are profile-immune and all 146 skills stay on disk:
+**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (70 primary-visible skills + deny-all, ~3.2k tokens saved); subagents are profile-immune and all 147 skills stay on disk:
 
 ```bash
 ./deploy/setup.sh                     # default: lean
@@ -270,9 +270,9 @@ Attribution: `plugins/ATTRIBUTION.md`; skill-level attributions in `THIRD_PARTY_
 </details>
 
 <details>
-<summary><strong>Skill catalog — 146 skills by category</strong></summary>
+<summary><strong>Skill catalog — 147 skills by category</strong></summary>
 
-Current count: **146** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills archived under `skills/_archived/`).
+Current count: **147** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills archived under `skills/_archived/`).
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
@@ -280,7 +280,7 @@ Current count: **146** (history: 123 after the BT-142 pptx migration → consoli
 | **Presentation** (3) | pptx-generate-slide-skill, pptx-generate-template-skill, pptx-template-modifier-skill | Template-driven PowerPoint generation — extract, fill, extend |
 | **Office Utilities** (2) | ooxml-editing-skill, office-thumbnail-skill | Generic Office OOXML surgical edits and visual thumbnail/conversion |
 | **Language-Specific** (6) | python-pytest-creator, language-linting, changelog-python-cliff, python-backend-skill, python-packaging-skill, fastapi-pydantic-orm-patterns-skill | Language-specific test, linting (Ruff/ESLint/Checkstyle/dotnet format), project scaffolding, packaging, and backend patterns |
-| **Framework-Specific** (10) | nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-hooks-antipatterns-skill, react-render-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment |
+| **Framework-Specific** (11) | nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-best-practices-skill, react-hooks-antipatterns-skill, react-render-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment |
 | **Frontend Animation** (8) | gsap-core, gsap-timeline, gsap-scrolltrigger, gsap-plugins, gsap-utils, gsap-react, gsap-frameworks, gsap-performance | GSAP web-animation guidance — tweens/easing/stagger, timeline sequencing, ScrollTrigger, plugins, utils helpers, React (`useGSAP`) and Vue/Svelte integration, performance. Vendored from official greensock/gsap-skills (MIT) |
 | **OpenCode Meta** (6) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, opencode-repo-setup, documentation-consistency-skill, opencode-v2-migration | Agent and skill creation/maintenance, documentation consistency auditing, per-repo MCP/project-config setup, v1→v2 migration detect/triage |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |

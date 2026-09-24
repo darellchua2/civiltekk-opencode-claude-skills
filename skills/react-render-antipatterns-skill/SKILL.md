@@ -30,6 +30,7 @@ Use this skill when:
 ## Related Skills
 
 - **react-hooks-antipatterns-skill**: Peer — covers hook lifecycle anti-patterns (stale state, StrictMode double-execution, useCallback/useMemo traps). This skill covers render-time anti-patterns.
+- **react-best-practices-skill**: Peer — performance best practices (waterfalls, bundle size, re-renders, rendering). This skill covers render-time correctness.
 - **accessibility-a11y-skill**: ARIA patterns for dynamic error banners. This skill handles React render correctness.
 - **frontend-design-skill**: UI aesthetics and layout. This skill handles runtime correctness.
 - **uiux-review-skill**: Visual/UX review of rendered output. This skill handles the code-level anti-patterns that cause render bugs.

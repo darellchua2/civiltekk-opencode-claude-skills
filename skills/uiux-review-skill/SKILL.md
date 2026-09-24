@@ -236,28 +236,44 @@ Each heuristic mapped to concrete DOM/CSS checks.
 
 ### Axis 13: Anti-Default AI Design Detection (Gap-Fill — sourced from anthropics/skills/frontend-design, Apache 2.0)
 
-Flag the three "generic AI design clusters" that signal unmodified AI output. None are inherently wrong — but their presence without intentional variation suggests the UI was generated and not designed.
+Flag the six "generic AI design clusters" that signal unmodified AI output. None are inherently wrong — but their presence without intentional variation suggests the UI was generated and not designed. An explicit brief request for the look is a valid brand reason — note it in the finding rather than flagging it as a defect.
 
 #### Cluster A — Cream + Serif
-- Background: warm cream / off-white (`#fdfcf7`, `#faf8f1` family)
+- Background: warm cream / off-white (`#fdfcf7`, `#faf8f1`, `#F4F1EA` family)
 - Type: serif headlines (Playfair Display, EB Garamond, Cormorant)
 - Body: clean sans-serif
+- Accent: terracotta / warm clay (`#D97757` — an AI vendor's own interaction color)
 - Visual signal: editorial / boutique aesthetic
 - **Flag if**: combo used without obvious brand reason
 
-#### Cluster B — Dark + Acid Green / Violet
-- Background: near-black or very dark navy
-- Accent: neon/acid green (`#00ff88`, `#22c55e` family) or electric violet (`#8b5cf6`, `#a855f7`)
+#### Cluster B — Dark + Acid Green / Vermilion / Violet
+- Background: near-black or tinted near-black (`#0B0B0B`, `#111`)
+- Accent: neon/acid green (`#00ff88`, `#22c55e` family), vermilion, or electric violet (`#8b5cf6`, `#a855f7`)
 - Type: geometric sans-serif (Inter, Geist)
 - Monospace accents for "tech" feel
 - **Flag if**: tech aesthetic without warmth or brand differentiation
 
 #### Cluster C — Broadsheet / Newspaper
 - Layout: multi-column grid, dense text blocks
-- Heavy horizontal rules between sections
+- Heavy horizontal rules, zero border-radius
 - Serif type, often Times-like
 - Justified text alignment
 - **Flag if**: news metaphor doesn't match product purpose
+
+#### Cluster D — SaaS-card kit
+- Content chopped into identical rounded cards, one border-radius on everything regardless of hierarchy
+- Same soft shadow (`rgba(0,0,0,.1)`) under each card; gradient washes as decoration
+- **Flag if**: hierarchy flattened into uniform tiles without a card-metaphor reason
+
+#### Cluster E — Template chrome
+- ALL-CAPS tracked eyebrow labels above every heading
+- Meta strings joined with middle-dot separators (`A · B · C`); labels built as `WORD — fragment` with a spaced em dash
+- Monospace for small data labels; `→` appended to link and button text
+- **Flag if**: chrome appears regardless of subject — decoration instead of encoded information
+
+#### Cluster F — Default hero
+- Opening move: big number + small label + supporting stats + gradient accent
+- **Flag if**: the hero recites this template instead of opening with the subject's most characteristic element
 
 **Disposition**: findings under axis 13 are typically Minor (NOTE) unless the AI-cluster aesthetic actively harms usability. Phrase findings as observations, not blockers: "UI follows the dark+acid-green cluster (axis 13B) — consider whether this aligns with brand intent or is unmodified AI output."
 
