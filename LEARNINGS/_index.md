@@ -1379,3 +1379,48 @@
 - **Scope**: project
 - **Summary**: `grep -q` in a pipeline under `set -o pipefail` SIGPIPEs the upstream writer — pipeline exits 141 and `&&` chains break while the identical line is green in CI under plain `bash -e`; "CI green, 141 locally" on a guard line is this pattern first (#537 exit gate)
 - **Date**: 2026-09-23
+
+### PLAN exit gates must cover the pinned-content suites of rewritten files
+
+- **Category**: anti-patterns
+- **File**: `anti-patterns/plan-exit-gate-narrower-than-pinned-consumers.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: A PLAN rewriting a file pinned by bats suites must map those suites AND run them in its exit gate — ticket-named suites are a lower bound; PLAN-546 could pass every named gate with the pinned preamble already deleted (#546 plan review)
+- **Date**: 2026-09-24
+
+### Element-list merge PLANs drop every upstream section the list fails to name
+
+- **Category**: anti-patterns
+- **File**: `anti-patterns/plan-element-lists-drop-unnamed-upstream-sections.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: Merge PLANs that enumerate upstream guidance as a named element list silently drop unnamed sections and the AC shares the blind spot; require a per-section delta table (section → step or "dropped: why") before authoring steps (#546 plan review)
+- **Date**: 2026-09-24
+
+### Replacement edits need removal assertions plus unique positive sentinels
+
+- **Category**: anti-patterns
+- **File**: `anti-patterns/replacement-edits-need-removal-assertions.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: Done-when for a replacement must positively grep a unique new marker (fails pre-edit) AND negatively grep the old text at known locations; "orchestrated" was already green on the line being replaced (#546 plan review)
+- **Date**: 2026-09-24
+
+### Re-pointing a provenance citation to a different repo silently invalidates the license claim
+
+- **Category**: anti-patterns
+- **File**: `anti-patterns/provenance-repoint-swaps-repo-keeps-license-label.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: Mirrors of the same content live under different licenses — #546 cited anthropics/claude-code (all-rights-reserved) while keeping the Apache-2.0 label that only holds for anthropics/skills' per-skill LICENSE.txt; re-verify license against the newly cited repo whenever a provenance comment changes repos (#546 code review)
+- **Date**: 2026-09-24
+
+### Skill-count restating surfaces exceed what count-drift tests cover
+
+- **Category**: conventions
+- **File**: `conventions/count-restating-surfaces-exceed-drift-test-coverage.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: test_count_drift pins README + deploy scripts but not opencode_app/README.md, which went stale at 146 in #546; on inventory changes grep all sibling docs for count patterns, or derive from registry.json (#546 code review)
+- **Date**: 2026-09-24

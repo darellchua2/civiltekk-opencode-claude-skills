@@ -38,3 +38,8 @@ LEARNINGS/**/*.md
 !LEARNINGS/_index.md
 !LEARNINGS/patterns/by-reference-docs-mechanize-no-duplication-with-sentinel-greps.md
 !LEARNINGS/conventions/docs-runnable-snippets-must-match-ci-invocation.md
+!LEARNINGS/anti-patterns/plan-exit-gate-narrower-than-pinned-consumers.md
+!LEARNINGS/anti-patterns/plan-element-lists-drop-unnamed-upstream-sections.md
+!LEARNINGS/anti-patterns/replacement-edits-need-removal-assertions.md
+!LEARNINGS/anti-patterns/provenance-repoint-swaps-repo-keeps-license-label.md
+!LEARNINGS/conventions/count-restating-surfaces-exceed-drift-test-coverage.md

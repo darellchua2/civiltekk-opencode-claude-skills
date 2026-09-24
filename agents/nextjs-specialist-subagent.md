@@ -52,6 +52,9 @@ permissions:
     resource: react-render-antipatterns-skill
     effect: allow
   - action: skill
+    resource: react-best-practices-skill
+    effect: allow
+  - action: skill
     resource: nextjs-devtools-mcp-skill
     effect: allow
   - action: skill

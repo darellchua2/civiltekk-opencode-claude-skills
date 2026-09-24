@@ -35,6 +35,7 @@ Use this skill when:
 - **react-render-antipatterns-skill**: Peer — covers render-time anti-patterns (fragment keys, JSON.parse in handlers, visibility toggle inconsistencies, theme-driven design). This skill covers hook lifecycle anti-patterns.
 - **typescript-dry-principle-skill**: Duplicate type definitions and status mappings (redistributed from original skill).
 - **performance-optimization-skill**: Module-scope cache leaks (redistributed from original skill).
+- **react-best-practices-skill**: Peer — performance best practices (waterfalls, bundle size, re-renders, rendering). This skill covers hook-lifecycle correctness.
 
 ---
 
