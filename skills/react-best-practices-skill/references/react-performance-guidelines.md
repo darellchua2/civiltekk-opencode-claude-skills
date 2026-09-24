@@ -1,6 +1,6 @@
 # React Performance Guidelines
 
-Rule-by-rule catalog for `react-best-practices-skill` — 39 rules in 8 impact-ranked categories. Paraphrased guidance; snippets are minimal idioms. See SKILL.md provenance for sourcing.
+Rule-by-rule catalog for `react-best-practices-skill` — 43 rules in 8 impact-ranked categories. Paraphrased guidance; snippets are minimal idioms. See SKILL.md provenance for sourcing.
 
 ## 1. Eliminating waterfalls (CRITICAL)
 

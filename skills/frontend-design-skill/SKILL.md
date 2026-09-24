@@ -10,7 +10,7 @@ metadata:
 category: Framework
 ---
 
-<!-- Provenance (#546): adapted from anthropics/claude-code plugins/frontend-design SKILL.md (Apache-2.0) — expanded AI-tell calibration, subject-matter grounding, hero rule, motion restraint, plan-first gate, copy guidance, quality floor. Deliberately not carried: type-treatment-as-active-element elaboration, broadsheet zero-radius detail (covered by cluster C). -->
+<!-- Provenance (#546): adapted from anthropics/skills, path skills/frontend-design (Apache-2.0 — see that path's bundled LICENSE.txt); content discovered via the anthropics/claude-code plugins mirror, which carries no open license. Expanded: AI-tell calibration, subject-matter grounding, hero rule, motion restraint, plan-first gate, copy guidance, quality floor. Deliberately not carried: type-treatment-as-active-element elaboration, broadsheet zero-radius detail (covered by cluster C). -->
 
 ## What I do
 

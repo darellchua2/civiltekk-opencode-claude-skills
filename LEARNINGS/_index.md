@@ -1406,3 +1406,21 @@
 - **Scope**: project
 - **Summary**: Done-when for a replacement must positively grep a unique new marker (fails pre-edit) AND negatively grep the old text at known locations; "orchestrated" was already green on the line being replaced (#546 plan review)
 - **Date**: 2026-09-24
+
+### Re-pointing a provenance citation to a different repo silently invalidates the license claim
+
+- **Category**: anti-patterns
+- **File**: `anti-patterns/provenance-repoint-swaps-repo-keeps-license-label.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: Mirrors of the same content live under different licenses — #546 cited anthropics/claude-code (all-rights-reserved) while keeping the Apache-2.0 label that only holds for anthropics/skills' per-skill LICENSE.txt; re-verify license against the newly cited repo whenever a provenance comment changes repos (#546 code review)
+- **Date**: 2026-09-24
+
+### Skill-count restating surfaces exceed what count-drift tests cover
+
+- **Category**: conventions
+- **File**: `conventions/count-restating-surfaces-exceed-drift-test-coverage.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: test_count_drift pins README + deploy scripts but not opencode_app/README.md, which went stale at 146 in #546; on inventory changes grep all sibling docs for count patterns, or derive from registry.json (#546 code review)
+- **Date**: 2026-09-24
