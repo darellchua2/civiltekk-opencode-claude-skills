@@ -84,30 +84,36 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done:** perf-vs-correctness peer lines added to both files' Related Skills; both grep react-best-practices-skill; files: skills/react-hooks-antipatterns-skill/SKILL.md, skills/react-render-antipatterns-skill/SKILL.md; fixes: none
 
 ### Phase 4: Wiring + repo sync
-- [ ] **4.1** Add `react-best-practices-skill` to the skill allowlist in `agents/nextjs-specialist-subagent.md` frontmatter AND add the config-layer allow to `opencode_app/opencode.json`'s skill list (next to the react-hooks/react-render antipattern peers)
+- [x] **4.1** Add `react-best-practices-skill` to the skill allowlist in `agents/nextjs-specialist-subagent.md` frontmatter AND add the config-layer allow to `opencode_app/opencode.json`'s skill list (next to the react-hooks/react-render antipattern peers)
     — **Why:** frontmatter rules feed the registry's requiresSkills edges (`build-registry.mjs`), but recorded runtime behavior (LEARNINGS `patterns/child-skill-gate-follows-merged-config.md`, opencode v2.0.11 upstream #50149) is that child-session skill loading resolves against merged CONFIG layers, not frontmatter — the config-layer allow is what actually unlocks loading; peer precedent: both react antipattern skills are config-allowed there
     — **Done when:** agent frontmatter contains the `action: skill, resource: react-best-practices-skill, effect: allow` rule AND `opencode_app/opencode.json` contains the skill in its allowlist; probe in 5.3 validates runtime loading
     — **Consumers affected:** `installer/registry.json` (regen in 4.3), Docker app runtime
-- [ ] **4.2** Add the React-perf cross-link to `skills/frontend-design-skill/SKILL.md` (Technology Notes / Workflow Context)
+    — **Done:** allow rule added to agents/nextjs-specialist-subagent.md frontmatter AND config-layer allow added to opencode_app/opencode.json (adjacent to the react antipattern peers); files: agents/nextjs-specialist-subagent.md, opencode_app/opencode.json; fixes: none
+- [x] **4.2** Add the React-perf cross-link to `skills/frontend-design-skill/SKILL.md` (Technology Notes / Workflow Context)
     — **Why:** deferred from Phase 1 until the target skill exists, so no AC cross-reference dangles
     — **Done when:** frontend-design-skill greps `react-best-practices-skill`
     — **Consumers affected:** none
-- [ ] **4.3** Regenerate `installer/registry.json` (`node installer/build-registry.mjs`) and commit it together with all Phase 1-4 source edits
+    — **Done:** Workflow Context line now names react-best-practices-skill for React/Next.js perf patterns; file still within line budget; files: skills/frontend-design-skill/SKILL.md; fixes: none
+- [x] **4.3** Regenerate `installer/registry.json` (`node installer/build-registry.mjs`) and commit it together with all Phase 1-4 source edits
     — **Why:** registry is a generated artifact — landing sources without it leaves the artifact stale (recorded anti-pattern: generated-artifact-unstaged-regen)
     — **Done when:** re-running build-registry after commit produces an empty working-tree diff
     — **Consumers affected:** `installer/init.mjs` (reads registry.json only)
-- [ ] **4.4** Update skill inventory counts and category listings in `deploy/setup.sh`, `deploy/setup.ps1`, and `README.md` (+1 skill)
+    — **Done:** build-registry run post-4.1 (skills=147); registry.json committed with Phase 4 sources; final clean-tree proof deferred to 5.2; files: installer/registry.json; fixes: none
+- [x] **4.4** Update skill inventory counts and category listings in `deploy/setup.sh`, `deploy/setup.ps1`, and `README.md` (+1 skill)
     — **Why:** count-drift and parity tests enforce script/README agreement with the skill tree
     — **Done when:** `bats tests/test_count_drift.bats tests/test_skills_only_parity.bats` pass
     — **Consumers affected:** deploy users, README readers
-- [ ] **4.5** Check `dependency-map.json` for a required `requiresSkills` entry for react-best-practices-skill (expected: none — the skill is dependency-free) and add one only if the installer contract demands it
+    — **Done:** README 146→147 across 6 count surfaces + Framework-Specific (10)→(11) row with the new skill inserted; setup.sh/setup.ps1 counts are derived dynamically (no hardcoded edits needed); test_count_drift green; files: README.md; fixes: none
+- [x] **4.5** Check `dependency-map.json` for a required `requiresSkills` entry for react-best-practices-skill (expected: none — the skill is dependency-free) and add one only if the installer contract demands it
     — **Why:** `npx … add react-best-practices-skill` must not silently miss declared prerequisites
     — **Done when:** `bats tests/test_requires_skills.bats` passes
     — **Consumers affected:** installer CLI
-- [ ] **4.6** Add `react-best-practices-skill` to `installer/presets/pack-frontend.json`'s skills list (sorted position)
+    — **Done:** no manual entry needed — the map has no entry for either react antipattern peer either (requiresSkills edges are registry-derived); test_requires_skills green; files: none changed; fixes: none
+- [x] **4.6** Add `react-best-practices-skill` to `installer/presets/pack-frontend.json`'s skills list (sorted position)
     — **Why:** the frontend preset ships both react antipattern peers and the nextjs agent — omitting the new skill would bundle an agent whose perf skill is missing from its own preset; preset comment requires registry membership (satisfied by 4.3)
     — **Done when:** the preset JSON lists the skill in sorted order and `bats tests/test_pack_permissions.bats` still passes
     — **Consumers affected:** frontend preset installers
+    — **Done:** inserted in sorted position between playwright-responsive-audit-skill and react-hooks-antipatterns-skill; JSON validity verified; test_pack_permissions green; files: installer/presets/pack-frontend.json; fixes: none
 
 ### Phase 5: Verification gates (ticket exit gate — full tier)
 - [ ] **5.1** Run the ticket's named bats suites plus the content-pinning and parity suites: `bats tests/test_skill_isolation.bats tests/test_portability.bats tests/test_count_drift.bats tests/test_requires_skills.bats tests/test_skills_only_parity.bats tests/test_default_behavior.bats tests/test_autoresearch_protocol.bats`
@@ -147,4 +153,5 @@ None — no `blocked-by:` tickets.
 GATE 552a720 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 1 — 6/6 frontend-design-scoped tests in test_default_behavior + test_autoresearch_protocol; lint/typecheck/build unconfigured in repo
 GATE 501f9f5 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 2 — test_portability green (full suite); axis-13 marker parity verified
 GATE 435bd6e tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 3 — build-registry green (skills=147); Done-when greps + catalog completeness (43/43 rules) verified
+GATE 1714c0d tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 4 — test_count_drift + test_pack_permissions + test_requires_skills green; JSON validity verified
 ```
