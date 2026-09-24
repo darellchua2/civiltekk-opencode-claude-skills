@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.39.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.38.0...v9.39.0) (2026-09-24)
+
+### Features
+
+* **skills:** end per-phase PLAN tick commits in run-plan + pipeline ([#551](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/551)) ([d01a292](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/d01a292637d84fd8d4f4cc30b5738c57a2d8dff9)), closes [#550](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/550)
+
 ## [9.38.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.37.0...v9.38.0) (2026-09-24)
 
 ### Features
