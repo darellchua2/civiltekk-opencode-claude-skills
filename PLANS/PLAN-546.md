@@ -5,14 +5,14 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] frontend-design-skill: expanded tell table (terracotta `#D97757`, SaaS-card kit, template chrome: ALL-CAPS eyebrows, middle-dot meta `A · B · C`, `WORD — fragment` labels, `#0B0B0B`/`#111`, mono data labels, trailing `→`), subject-matter grounding, typography anti-tells (<80-char lines, single-word headline accent ban, ≤2 families), numbering-only-for-sequences rule, stricter motion rule, plan-first anti-generic gate, CSS specificity gotcha, Copy section — file ≤ ~170 lines
-- [ ] uiux-review-skill axis 13 synced with the expanded tell list
-- [ ] react-best-practices-skill: self-contained, frontmatter conforms (name = dirname, ≤50-word description, Apache-2.0, `compatibility: opencode`, category)
-- [ ] nextjs-specialist-subagent frontmatter allows react-best-practices-skill
-- [ ] Cross-links added in frontend-design-skill + both react antipattern skills
-- [ ] `registry.json` regenerated and committed; no count drift in setup.sh/setup.ps1/README
-- [ ] bats pass: test_skill_isolation, test_portability, test_count_drift, test_requires_skills
-- [ ] Provenance comments cite both upstreams with licenses (Anthropic Apache-2.0; Vercel license verified during implementation)
+- [x] frontend-design-skill: expanded tell table (terracotta `#D97757`, SaaS-card kit, template chrome: ALL-CAPS eyebrows, middle-dot meta `A · B · C`, `WORD — fragment` labels, `#0B0B0B`/`#111`, mono data labels, trailing `→`), subject-matter grounding, typography anti-tells (<80-char lines, single-word headline accent ban, ≤2 families), numbering-only-for-sequences rule, stricter motion rule, plan-first anti-generic gate, CSS specificity gotcha, Copy section — file ≤ ~170 lines
+- [x] uiux-review-skill axis 13 synced with the expanded tell list
+- [x] react-best-practices-skill: self-contained, frontmatter conforms (name = dirname, ≤50-word description, Apache-2.0, `compatibility: opencode`, category)
+- [x] nextjs-specialist-subagent frontmatter allows react-best-practices-skill
+- [x] Cross-links added in frontend-design-skill + both react antipattern skills
+- [x] `registry.json` regenerated and committed; no count drift in setup.sh/setup.ps1/README
+- [x] bats pass: test_skill_isolation, test_portability, test_count_drift, test_requires_skills
+- [x] Provenance comments cite both upstreams with licenses (Anthropic Apache-2.0; Vercel license verified during implementation)
 
 > Clarification (review ruling, 2026-09-24, recorded as a comment on #546): AC8's "cite both upstreams" means each derived file cites its own source — frontend-design-skill cites Anthropic (Apache-2.0), react-best-practices-skill cites Vercel (license verified in step 3.1). No touched file cites an upstream it did not derive from.
 
