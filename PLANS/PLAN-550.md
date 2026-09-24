@@ -9,8 +9,8 @@
 - [x] `--gate` 4f explicitly forbids standalone `docs(plan)` commits mid-run
 - [x] `--soft` Step 3 defers PLAN commits to a single end-of-run tick commit
 - [x] `--update` commits only on standalone invocation (sync-only as subroutine)
-- [ ] worktree-pipeline Step 9 folds re-ticks into existing commits
-- [ ] Guarantees section documents the no-tick-commit rule
+- [x] worktree-pipeline Step 9 folds re-ticks into existing commits
+- [x] Guarantees section documents the no-tick-commit rule
 - [ ] `grep -rn "hash-trace" skills/ tests/` returns empty; no frontmatter changes (no registry regen)
 
 ## Dependency & Consumer Map
@@ -49,14 +49,16 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done:** step 6 retitled "Commit — standalone only" with the subroutine suppression and caller-ownership note; files: skills/plan-execution-skill/SKILL.md; fixes: none
 
 ### Phase 2: worktree-pipeline-skill — orchestrator-side fold + guarantee
-- [ ] **2.1** Amend Step 9 so post-exit-gate PLAN re-ticks fold into the review-fix commit or the `chore(learnings)` commit, never their own commit
+- [x] **2.1** Amend Step 9 so post-exit-gate PLAN re-ticks fold into the review-fix commit or the `chore(learnings)` commit, never their own commit
     — **Why:** review fixes are the only post-run-plan mutation that could re-tick the PLAN
     — **Done when:** Step 9 text names folding re-ticks into the existing fix/learnings commit
     — **Consumers affected:** pipeline review-fix loops; PR reviewers
-- [ ] **2.2** Add a Guarantees bullet: no standalone tick/progress commits at any step; squash merge keeps PLAN noise out of release notes
+    — **Done:** LEARNINGS block extended — re-ticks (gate-memo append, Done-line updates) fold into the review-fix/learnings commit; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **2.2** Add a Guarantees bullet: no standalone tick/progress commits at any step; squash merge keeps PLAN noise out of release notes
     — **Why:** Guarantees is the skill's enforced-behavior summary audited by reviewers and users
     — **Done when:** the Guarantees section contains the no-tick-commit bullet
     — **Consumers affected:** pipeline users auditing release notes
+    — **Done:** Guarantees bullet added citing Step 8 phase-commit folding, Step 9 review-fix folding, and the squash-merge shield; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
 
 ### Phase 3: verification sweep
 - [ ] **3.1** Grep sweep: `hash-trace` absent repo-wide, new rule sentences present in both skills, `tests/test_plan_executor.bats` + `tests/test_portability.bats` green
@@ -80,3 +82,4 @@ None — standalone prose-contract change.
 _(gate memos appended here by /run-plan --gate)_
 
 GATE ccac64d tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 4277e02 tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
