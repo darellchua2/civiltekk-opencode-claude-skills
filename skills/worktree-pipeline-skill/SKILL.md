@@ -154,7 +154,9 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    already exists; suffix `-2` on a genuine distinct-entry collision),
    append its `_index.md` entry, and commit them with the review-fix
    commit — or a dedicated `chore(learnings)` commit when the review
-   found nothing to fix.
+   found nothing to fix. Any PLAN re-ticks from review fixes (gate-memo
+   append, Done-line updates) fold into that same review-fix/learnings
+   commit — never their own `docs(plan)` commit.
    **Bounded loop: max 2
    fix-and-re-review iterations** — exhaustion → halt per §Failure Policy.
 10. **PR + cleanup**: `pr-workflow-subagent` creates the PR **target
@@ -388,6 +390,9 @@ step pushes it.
 - Every ticket re-validated against latest `origin/<base>` before execution.
 - The main working tree is never checked out on a feat branch.
 - Every PLAN passes the atomicity self-check before commit.
+- No standalone tick/progress commits at any step — PLAN updates ride the
+  phase's atomic commit (Step 8) or fold into the review-fix commit
+  (Step 9); the squash merge keeps PLAN noise out of release notes.
 - Delegation is hub-and-spoke from the primary session (build agent allows
   `task: {"*": allow}`); delegates whose cwd is the session checkout (not the
   worktree) receive precomputed diffs.
