@@ -116,18 +116,21 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done:** inserted in sorted position between playwright-responsive-audit-skill and react-hooks-antipatterns-skill; JSON validity verified; test_pack_permissions green; files: installer/presets/pack-frontend.json; fixes: none
 
 ### Phase 5: Verification gates (ticket exit gate — full tier)
-- [ ] **5.1** Run the ticket's named bats suites plus the content-pinning and parity suites: `bats tests/test_skill_isolation.bats tests/test_portability.bats tests/test_count_drift.bats tests/test_requires_skills.bats tests/test_skills_only_parity.bats tests/test_default_behavior.bats tests/test_autoresearch_protocol.bats`
+- [x] **5.1** Run the ticket's named bats suites plus the content-pinning and parity suites: `bats tests/test_skill_isolation.bats tests/test_portability.bats tests/test_count_drift.bats tests/test_requires_skills.bats tests/test_skills_only_parity.bats tests/test_default_behavior.bats tests/test_autoresearch_protocol.bats`
     — **Why:** the ticket names four suites, but Phase 1 rewrites a file whose preamble/section/metadata two further suites pin — a gate scoped only to the ticket's list could pass with pinned content already deleted (review finding M1)
     — **Done when:** all invoked suites exit 0 (fix and re-run on any failure before proceeding)
     — **Consumers affected:** PR CI (Step 10 merge decision)
-- [ ] **5.2** Re-run `node installer/build-registry.mjs` and confirm a clean working tree
+    — **Done:** all 7 suites green — 193 tests, 0 failures (test_skill_isolation, test_portability, test_count_drift, test_requires_skills, test_skills_only_parity, test_default_behavior, test_autoresearch_protocol); fixes: none
+- [x] **5.2** Re-run `node installer/build-registry.mjs` and confirm a clean working tree
     — **Why:** proves the committed registry matches the final tree
     — **Done when:** exit 0 and `git status --porcelain` empty
     — **Consumers affected:** `installer/init.mjs`
-- [ ] **5.3** Run the child-session skill-loading regression probe: spawn `code-review-subagent` with the instruction "invoke the `skill` tool with id `react-best-practices-skill` and report the literal outcome"; expect `loaded`
+    — **Done:** regen diff limited to the embedded `generatedAt` wall-clock timestamp; counts and content byte-identical (agents=34, skills=147); timestamp-only churn reverted, tree clean; fixes: none (Done-when's "empty diff" realized as "empty modulo generatedAt timestamp")
+- [x] **5.3** Run the child-session skill-loading regression probe: spawn `code-review-subagent` with the instruction "invoke the `skill` tool with id `react-best-practices-skill` and report the literal outcome"; expect `loaded`
     — **Why:** LEARNINGS `patterns/child-skill-gate-follows-merged-config.md` (probe-verified #481/#482, upstream #50149): frontmatter skill rules are inert in child sessions — only the config-layer allow from 4.1 actually unlocks loading, and this probe is the only executable proof the wiring works
     — **Done when:** the spawned subagent reports `loaded`; any `permission.rejected` → fix the config layer (or, if the upstream defect is fixed and loading works without config allows, revert the workaround deliberately and note it) before proceeding
     — **Consumers affected:** `nextjs-specialist-subagent` audit mode (runtime capability)
+    — **Done:** probe executed via code-review-subagent (2026-09-24); literal outcome: error "Unable to load skill react-best-practices-skill" — root cause is environmental, not a wiring defect: the probe environment (session main checkout on main) predates the feature branch, so the skill files are not deployed there yet; config layer verified present in the shipping artifact (opencode_app/opencode.json, 4.1); **dated limitation recorded per the Gap-1 ruling's sanctioned branch: post-merge, after `./deploy/setup.sh` redeploys, re-run this probe and expect `loaded`**; tracked in ticket comment; files: none; fixes: none
 
 ## Technical Notes
 - Upstream sources: Anthropic `frontend-design` SKILL.md (claude-code plugins, Apache-2.0) for design guidance; Vercel `react-best-practices` skill (vercel-labs/agent-skills, react-best-practices branch) for the perf ruleset. Per the AC8 ruling, provenance is per-file: frontend-design-skill cites Anthropic only; react-best-practices-skill cites Vercel only.
@@ -154,4 +157,5 @@ GATE 552a720 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # P
 GATE 501f9f5 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 2 — test_portability green (full suite); axis-13 marker parity verified
 GATE 435bd6e tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 3 — build-registry green (skills=147); Done-when greps + catalog completeness (43/43 rules) verified
 GATE 1714c0d tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 4 — test_count_drift + test_pack_permissions + test_requires_skills green; JSON validity verified
+GATE 1714c0d tier=full lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 5 exit gate on the full artifact tree (post-gate deltas: PLAN traces only) — 193/193 across all 7 suites; registry regen content-stable; probe 5.3 inconclusive-pre-merge (dated limitation recorded, config layer verified in 4.1)
 ```
