@@ -62,22 +62,26 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done:** axis 13 expanded from 3 to 6 clusters (A gained `#F4F1EA` + terracotta `#D97757`; B gained vermilion + tinted near-black; C gained zero-radius; new D SaaS-card kit, E template chrome, F default hero); brief-request exception line added; disposition paragraph preserved; all Phase-1 markers grep in axis 13 ("middle-dot" normalized for exact parity); files: skills/uiux-review-skill/SKILL.md; fixes: none
 
 ### Phase 3: Add react-best-practices-skill
-- [ ] **3.1** Verify the Vercel upstream license (fetch LICENSE from vercel-labs/agent-skills) and record it in the new skill's provenance comment
+- [x] **3.1** Verify the Vercel upstream license (fetch LICENSE from vercel-labs/agent-skills) and record it in the new skill's provenance comment
     — **Why:** the acceptance criterion requires license verification during implementation, before any upstream content lands
     — **Done when:** license statement fetched and cited in the provenance comment of the skill files
     — **Consumers affected:** none (gate for 3.2/3.3)
-- [ ] **3.2** Create `skills/react-best-practices-skill/SKILL.md` (priority table, quick reference, when-to-apply) with contract-conformant frontmatter (name = dirname, ≤50-word description with trigger phrases, Apache-2.0, `compatibility: opencode`, category `Framework-Specific`), a Vercel provenance comment per 3.1, and reference paths pointing only at this skill's single `references/` file — no upstream `references/rules/` directory structure
+    — **Done:** license verified via GitHub API — repo `license: None`, no LICENSE file on branch; recorded in provenance as "license: none found (verified 2026-09-24)"; content adapted per house inspiration-only precedent (rules paraphrased, self-written snippets, no verbatim upstream text); files: skills/react-best-practices-skill/SKILL.md; fixes: none
+- [x] **3.2** Create `skills/react-best-practices-skill/SKILL.md` (priority table, quick reference, when-to-apply) with contract-conformant frontmatter (name = dirname, ≤50-word description with trigger phrases, Apache-2.0, `compatibility: opencode`, category `Framework-Specific`), a Vercel provenance comment per 3.1, and reference paths pointing only at this skill's single `references/` file — no upstream `references/rules/` directory structure
     — **Why:** the ticket's solution item 3 — 40+ perf rules need a standalone self-contained home, not a bloat section in the design skill; upstream splits references into a directory we deliberately flatten, and stale upstream paths would dangle
     — **Done when:** file exists, contains no `references/rules/` path strings, and `node installer/build-registry.mjs` exits 0 with the new skill registered
     — **Consumers affected:** `agents/nextjs-specialist-subagent.md` (4.1), react antipattern skills (3.4), preset + config surfaces (4.6)
-- [ ] **3.3** Create `skills/react-best-practices-skill/references/react-performance-guidelines.md` with the full categorized ruleset (8 categories with code examples)
+    — **Done:** SKILL.md created (frontmatter contract-conformant, category Framework-Specific, provenance with license finding, zero references/rules path strings); build-registry exits 0, skills=147; files: skills/react-best-practices-skill/SKILL.md, installer/registry.json; fixes: rule count corrected 39→43
+- [x] **3.3** Create `skills/react-best-practices-skill/references/react-performance-guidelines.md` with the full categorized ruleset (8 categories with code examples)
     — **Why:** SKILL.md stays a quick reference; the skill-isolation contract requires all content inside the skill's own tree
     — **Done when:** file exists inside the skill dir and SKILL.md references it
     — **Consumers affected:** none (self-contained)
-- [ ] **3.4** Add Related Skills cross-links to `skills/react-hooks-antipatterns-skill/SKILL.md` and `skills/react-render-antipatterns-skill/SKILL.md` pointing at react-best-practices-skill (perf best-practices vs correctness antipatterns peer split)
+    — **Done:** full catalog written — all 43 upstream rules covered across 8 categories, paraphrased with minimal self-written idioms; SKILL.md links it; files: skills/react-best-practices-skill/references/react-performance-guidelines.md; fixes: none
+- [x] **3.4** Add Related Skills cross-links to `skills/react-hooks-antipatterns-skill/SKILL.md` and `skills/react-render-antipatterns-skill/SKILL.md` pointing at react-best-practices-skill (perf best-practices vs correctness antipatterns peer split)
     — **Why:** discoverability; these peers already cross-reference each other
     — **Done when:** both files grep `react-best-practices-skill`
     — **Consumers affected:** none beyond readers (frontmatter untouched)
+    — **Done:** perf-vs-correctness peer lines added to both files' Related Skills; both grep react-best-practices-skill; files: skills/react-hooks-antipatterns-skill/SKILL.md, skills/react-render-antipatterns-skill/SKILL.md; fixes: none
 
 ### Phase 4: Wiring + repo sync
 - [ ] **4.1** Add `react-best-practices-skill` to the skill allowlist in `agents/nextjs-specialist-subagent.md` frontmatter AND add the config-layer allow to `opencode_app/opencode.json`'s skill list (next to the react-hooks/react-render antipattern peers)
@@ -142,4 +146,5 @@ None — no `blocked-by:` tickets.
 ```
 GATE 552a720 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 1 — 6/6 frontend-design-scoped tests in test_default_behavior + test_autoresearch_protocol; lint/typecheck/build unconfigured in repo
 GATE 501f9f5 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 2 — test_portability green (full suite); axis-13 marker parity verified
+GATE 435bd6e tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a.  # Phase 3 — build-registry green (skills=147); Done-when greps + catalog completeness (43/43 rules) verified
 ```
