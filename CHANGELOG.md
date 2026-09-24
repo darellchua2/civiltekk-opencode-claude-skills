@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.38.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.37.0...v9.38.0) (2026-09-24)
+
+### Features
+
+* **skills:** builtin agent model pin option in repo-setup skill ([#547](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/547)) ([#549](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/549)) ([cb6f77e](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/cb6f77ee2277c65039ff50e6e896682cd820a73d))
+
 ## [9.37.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.36.2...v9.37.0) (2026-09-24)
 
 ### Features
