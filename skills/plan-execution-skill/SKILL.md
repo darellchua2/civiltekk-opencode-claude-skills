@@ -25,8 +25,8 @@ I execute PLAN.md files phase-by-phase in one of three modes. Pick the mode from
 | Invocation | Mode | Behavior |
 |------------|------|----------|
 | `/run-plan PLAN-*.md`, `/goal "load plan-execution-skill and implement PLAN-*.md"`, "fully implement the plan", "run the plan end-to-end", "automation loop" | `--gate` (default for `/run-plan`) | Hard verification gate between phases: implement, gate, bounded fix-on-fail, tick + `— Done:` traceability, one atomic commit + push per phase |
-| "execute plan", "implement plan phases" (interactive) | `--soft` | Sequential phase execution with delegation and progress ticks — no hard gate, no auto-commit |
-| "update plan", "sync plan", "update PLAN.md", "mark plan progress" | `--update` | Detect the branch's PLAN and sync checkboxes to actual progress; commit |
+| "execute plan", "implement plan phases" (interactive) | `--soft` | Sequential phase execution with delegation and progress ticks — no hard gate; ticks land as one trailing end-of-run `docs(plan)` commit |
+| "update plan", "sync plan", "update PLAN.md", "mark plan progress" | `--update` | Detect the branch's PLAN and sync checkboxes to actual progress; commit (standalone use only) |
 
 ## Shared PLAN contract
 
@@ -140,7 +140,7 @@ Gate red after 3 attempts → report + ask · phase/fix budget hit → HALT `[go
    3. Preserve all other content exactly
    4. **Preserve the atomic-step rationale triple verbatim** — when flipping a `**N.M**` step's checkbox, never strip or rewrite its `**Why:**` / `**Done when:**` / `**Consumers affected:**` lines. Change only `[ ]` → `[x]`.
 5. **Add a progress note** for significant milestones (`## Progress Log` with date + summary + files changed).
-6. **Commit — standalone only**: `git add "$PLAN_FILE" && git commit -m "docs(plan): update ${PLAN_FILE##*/} with current progress"`. Invoked as a subroutine (from `--soft` Step 3 or `--gate` 4f), skip this commit — sync checkboxes only; the caller owns PLAN commits (`--gate` 4f folds them into the phase's atomic commit; `--soft` defers them to its single end-of-run tick commit).
+6. **Commit — standalone only**: `git add "$PLAN_FILE" && git commit -m "docs(plan): update ${PLAN_FILE##*/} with current progress"`. Subroutine = invoked by run-plan/pipeline machinery as an internal step of a run in progress (keyed to that run context, never to a caller list) — skip this commit and sync checkboxes only; the run owns PLAN commits (`--gate` 4f folds them into the phase's atomic commit; `--soft` defers them to its single end-of-run tick commit). Every other invocation class — direct user triggers and agents' end-of-workflow syncs — is standalone and keeps the commit.
 
 ### Malformed-step flag primitive
 

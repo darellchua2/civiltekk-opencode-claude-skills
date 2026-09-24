@@ -85,3 +85,8 @@ _(gate memos appended here by /run-plan --gate)_
 GATE ccac64d tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 4277e02 tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
 GATE f543640 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 25e940a tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a
+
+## Review round 1 (code-review-subagent)
+
+0 Critical / 2 Major / 4 Minor. Fixed (in review-fix commit): Major 1 — Modes-table `--soft` row "no auto-commit" contradicted the new trailing tick commit under the line-23 supremacy clause → row now names the single end-of-run commit; Major 2 — `--update` step 6's caller enumeration was dead in the same diff (per Mode R relay ruling B: context-keyed definition, agent end-of-workflow syncs stay standalone) → replaced with a run-context signal, never a caller list; Minor 1 — `--update` Modes-table row now reads "commit (standalone use only)". Skipped by judgment: Minor 2 (AC placement — substance met in §Commit + push), Minor 3 (documentation-consistency pointer — out of diff), Minor 4 (file-level bash note — file-wide convention, portability guard green). Requirements Gaps relayed to requirements-specialist Mode R and resolved: agent wording (pr-workflow/tdd/testing) ruled OUT of scope, accurate as written. LEARNINGS: 1 new anti-pattern (`enumerated-subroutine-callers-go-stale.md`); 2 reviewer dedup bumps void on this branch (target files absent at base).

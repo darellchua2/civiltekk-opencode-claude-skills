@@ -1424,3 +1424,12 @@
 - **Scope**: project
 - **Summary**: test_count_drift pins README + deploy scripts but not opencode_app/README.md, which went stale at 146 in #546; on inventory changes grep all sibling docs for count patterns, or derive from registry.json (#546 code review)
 - **Date**: 2026-09-24
+
+### Enumerated subroutine callers go stale in the same commit that rots them
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/enumerated-subroutine-callers-go-stale.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: Defining an invocation class by listing callers ("from Step 3 or 4f") rots in the very diff that rewires those callers — #550's `--update` step 6 named two dead sites while three real ones went unlisted. Key invocation classes to run-context signals (run in progress vs standalone), and grep agent/skill callers repo-wide at contract-change time instead of enumerating.
+- **Date**: 2026-09-25
