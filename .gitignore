@@ -43,3 +43,7 @@ LEARNINGS/**/*.md
 !LEARNINGS/anti-patterns/replacement-edits-need-removal-assertions.md
 !LEARNINGS/anti-patterns/provenance-repoint-swaps-repo-keeps-license-label.md
 !LEARNINGS/conventions/count-restating-surfaces-exceed-drift-test-coverage.md
+
+# Generated research-report artifacts (regenerate from docs/opencode-agent-tooling-research-2026-09-24.md)
+docs/OpenCode-Agent-Tooling-Research-2026-09-24.docx
+docs/OpenCode-Agent-Tooling-Research-2026-09-24.interactive.html
