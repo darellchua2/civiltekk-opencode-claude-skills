@@ -11,7 +11,7 @@
 - [x] `--update` commits only on standalone invocation (sync-only as subroutine)
 - [x] worktree-pipeline Step 9 folds re-ticks into existing commits
 - [x] Guarantees section documents the no-tick-commit rule
-- [ ] `grep -rn "hash-trace" skills/ tests/` returns empty; no frontmatter changes (no registry regen)
+- [x] `grep -rn "hash-trace" skills/ tests/` returns empty; no frontmatter changes (no registry regen)
 
 ## Dependency & Consumer Map
 
@@ -61,10 +61,11 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done:** Guarantees bullet added citing Step 8 phase-commit folding, Step 9 review-fix folding, and the squash-merge shield; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
 
 ### Phase 3: verification sweep
-- [ ] **3.1** Grep sweep: `hash-trace` absent repo-wide, new rule sentences present in both skills, `tests/test_plan_executor.bats` + `tests/test_portability.bats` green
+- [x] **3.1** Grep sweep: `hash-trace` absent repo-wide, new rule sentences present in both skills, `tests/test_plan_executor.bats` + `tests/test_portability.bats` green
     — **Why:** the ticket's final AC couples text removal with test greenness
     — **Done when:** `grep -rn "hash-trace" skills/ tests/` returns nothing and both bats files pass
     — **Consumers affected:** CI; skill consumers
+    — **Done:** hash-trace sweep empty repo-wide; 4 new rule sentences confirmed (2 per skill); frontmatter diff empty (no registry regen); full bats suite 564 ok / 0 failed; files: PLANS/PLAN-550.md (verification only); fixes: none
 
 ## Technical Notes
 - Markdown-only edits; no SKILL.md frontmatter keys change → `node installer/build-registry.mjs` regen not required (registry.json derives from frontmatter).
@@ -83,3 +84,4 @@ _(gate memos appended here by /run-plan --gate)_
 
 GATE ccac64d tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 4277e02 tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
+GATE f543640 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a
