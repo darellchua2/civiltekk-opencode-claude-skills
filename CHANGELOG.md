@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.37.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.36.2...v9.37.0) (2026-09-24)
+
+### Features
+
+* **skills:** upgrade frontend-design-skill, add react-best-practices-skill ([#546](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/546)) ([#548](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/548)) ([fb46ed8](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/fb46ed8042586baffb253159b83cd0e2953ad3eb))
+
 ## [9.36.2](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.36.1...v9.36.2) (2026-09-23)
 
 ### Bug Fixes
