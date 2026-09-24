@@ -50,14 +50,16 @@ Thin map: prose-only skill change; no cross-module code consumers. Architecture 
 
 ### Phase 2: Registry + verification
 
-- [ ] **2.1** Run `node installer/build-registry.mjs` in the worktree and stage the regenerated `registry.json`
+- [x] **2.1** Run `node installer/build-registry.mjs` in the worktree and stage the regenerated `installer/registry.json`
     — **Why:** AC6 + house rule (any frontmatter change requires registry regen + commit); the registry is the installer's source of skill metadata.
     — **Done when:** `git diff registry.json` shows only the opencode-repo-setup-skill description change; `installer/init.mjs` still parses the registry (build script exits 0).
     — **Consumers affected:** `installer/init.mjs`, `deploy/setup.sh` banner counts.
-- [ ] **2.2** Run the skills test suite subset (skill isolation + frontmatter/registry guards) and fix any failure attributable to this change
+    — **Done:** build script exited 0 (agents=34, skills=146); `git diff installer/registry.json` shows exactly 2 lines — `generatedAt` + the opencode-repo-setup-skill description. files: installer/registry.json; fixes: none
+- [x] **2.2** Run the skills test suite subset (skill isolation + frontmatter/registry guards) and fix any failure attributable to this change
     — **Why:** AC7; the guard tests mechanically enforce the isolation contract and frontmatter rules the edit must not break.
     — **Done when:** `bats tests/test_skill_isolation.bats` (and any frontmatter/registry guard test present) exits 0, or failures are proven pre-existing on `origin/main`.
     — **Consumers affected:** CI (PR checks in Step 10).
+    — **Done:** `bats tests/test_skill_isolation.bats tests/test_requires_skills.bats tests/test_skills_only_parity.bats` → 14/14 ok. files: none; fixes: none
 
 ## Technical Notes
 
