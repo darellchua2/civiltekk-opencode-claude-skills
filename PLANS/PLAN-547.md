@@ -75,6 +75,7 @@ None — single contained ticket, no `blocked-by:`.
 ## Progress Log
 
 - 2026-09-25 — Code review (Step 9): 0 Critical / 0 Major / 4 Minor; merge-semantics + builtin-ID claims verified against live v2 docs. All 4 minors fixed (global-scope sweep at intro/Step 3 lead, hand-merge fallback keys, Governance no-URL pledge exemption, absent-global-file precondition). Review-fix commit applies these; post-merge full gate re-run follows (memo appended below).
+- 2026-09-25 — Merged origin/main (+2: new skill, registry regen skills 146→147, description parity held). Post-fix full re-gate on final tree: `GATE 59127be tier=full lint=n.a typecheck=n.a build=t registry-build+parity unit=t(14/14) e2e=n.a` — green.
 
 ## Risks & Mitigation
 
