@@ -497,6 +497,11 @@
         },
         {
             "action": "skill",
+            "resource": "react-best-practices-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
             "resource": "react-hooks-antipatterns-skill",
             "effect": "allow"
         },

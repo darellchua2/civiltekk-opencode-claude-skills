@@ -138,7 +138,7 @@ responsive-audit-subagent   ← mechanical responsive fixes (Playwright)
 accessibility-a11y-skill    ← deep WCAG audit
 ```
 
-Typical sequences: quick build (this → self-review → ship) · production (all stages) · refresh (uiux-review first → apply fixes → re-review). React/Next.js builds additionally load `react-hooks-antipatterns-skill` / `react-render-antipatterns-skill` as runtime guardrails.
+Typical sequences: quick build (this → self-review → ship) · production (all stages) · refresh (uiux-review first → apply fixes → re-review). React/Next.js builds additionally load `react-hooks-antipatterns-skill` / `react-render-antipatterns-skill` as runtime guardrails and `react-best-practices-skill` for performance patterns (waterfalls, bundle size, re-renders).
 
 > **Removal note (2026-09-19, #409):** capability list, Design Thinking prose, verbose step restatements, Best Practices, and Related Skills table were dropped. **#546:** expanded per the provenance comment above; kept frontmatter, pin-protected Iteration Protocol, and pipeline intact.
 
