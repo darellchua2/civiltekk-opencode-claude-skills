@@ -103,7 +103,7 @@ RUN node /app/installer/resolve-models.mjs \
 
 # Provider packs (#268): set mcp.servers.<server>.disabled:false + append
 # permissions-array allow rules ({action:"<ns>*",resource:"*",effect:"allow"});
-# named packs (comma-separated, e.g. --build-arg OPENCODE_PACKS=autodesk).
+# named packs (comma-separated, e.g. --build-arg OPENCODE_PACKS=markitdown).
 # Runs AFTER resolve-models so it merges into the resolved /app/opencode.json.
 # Empty OPENCODE_PACKS is a true no-op (merge-packs.mjs exits 0, writes nothing).
 RUN if [ -n "$OPENCODE_PACKS" ]; then \

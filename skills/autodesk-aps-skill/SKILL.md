@@ -30,7 +30,7 @@ Docs: aps.autodesk.com (developer portal + per-API guides), tutorials at aps.aut
 
 ## MCP servers (house wiring)
 
-Not shipped in base config — enable wholesale: `./deploy/setup.sh --enable-pack autodesk` (Docker: `--build-arg OPENCODE_PACKS=autodesk`; requires `AUTODESK_API_KEY`). Servers (beta): `autodesk-revit`, `autodesk-model-data`, `autodesk-fusion`, `autodesk-help` — all `type: remote`, `url: https://mcp.autodesk.com/<name>/v1`, header `Authorization: Bearer {env:AUTODESK_API_KEY}`, `disabled: true` until the pack flips them. Beta access: feedback.autodesk.com/enter.
+No Autodesk MCP pack ships with this repo (**official-only policy** — the former `mcp.autodesk.com` endpoints do not resolve). Use the Autodesk Platform Services REST APIs directly via this skill: OAuth, Data Management, Model Derivative, Viewer, Design Automation, Webhooks. If an official Autodesk MCP server becomes available and its connection details are verified from Autodesk's own documentation, install it per those docs.
 
 ## Desktop add-ins (Revit / Fusion 360 / AutoCAD)
 

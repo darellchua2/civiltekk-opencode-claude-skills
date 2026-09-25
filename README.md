@@ -220,15 +220,16 @@ Globally: set `"disabled": false` in `~/.config/opencode/opencode.json`, or use 
 
 | Pack | Servers enabled | Requires |
 |------|----------------|----------|
-| `autodesk` | adds autodesk-revit, autodesk-model-data, autodesk-fusion, autodesk-help | `AUTODESK_API_KEY` |
 | `markitdown` | markitdown | Python server (auto-installed by setup.sh) |
 | `docling` | docling | Python + `docling-mcp[local]` (~3-4 GB) |
 | `nextjs` | next-devtools | A running Next.js dev server |
 | `chrome-devtools` | chrome-devtools | Chrome stable (telemetry + CrUX pre-disabled) |
 
+> **Autodesk MCP policy (official-only):** no Autodesk MCP pack ships. The former pack pointed at `mcp.autodesk.com` endpoints that do not resolve. Autodesk MCP may only be re-admitted once an **official** Autodesk MCP server's connection details are verifiable from Autodesk's own documentation — the archived `autodesk-platform-services/aps-mcp-server-nodejs` sample (clone-based, archived 2026-05) does not qualify. Until then, use the Autodesk Platform Services REST APIs via `autodesk-aps-skill`.
+
 ```bash
-./deploy/setup.sh --enable-pack autodesk,markitdown   # multiple packs, comma-separated
-docker compose build --build-arg OPENCODE_PACKS=autodesk,markitdown   # Docker build-time
+./deploy/setup.sh --enable-pack markitdown,docling   # multiple packs, comma-separated
+docker compose build --build-arg OPENCODE_PACKS=markitdown,docling   # Docker build-time
 ```
 
 Default state of every pack is **OFF**. Design history: [issue #268](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/268).

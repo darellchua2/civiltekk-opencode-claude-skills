@@ -69,17 +69,6 @@ actual_mcp_count() {
   python3 -c "import json; d=json.load(open('${CONFIG}')); assert 'mermaid' not in d['mcp']['servers'], 'mermaid MCP must be removed (inline blocks + mmdc)'; assert d['mcp']['servers']['zai-web-search']['disabled'] is False, 'zai-web-search must be present and enabled (GIT-336)'"
 }
 
-@test "mcp_count_autodesk_not_shipped" {
-  # GIT-333 — the 4 autodesk servers are pack-only (deploy/packs/pack-autodesk.json
-  # carries full definitions); they must NOT appear in the base config.
-  python3 -c "
-import json
-d = json.load(open('${CONFIG}'))['mcp']['servers']
-for k in ('autodesk-revit','autodesk-model-data','autodesk-fusion','autodesk-help'):
-    assert k not in d, f'{k} must be pack-only'
-"
-}
-
 @test "mcp_count_auto_start_is_three" {
   # Three auto-start servers: codegraph, zai-web-reader, zai-web-search (GIT-336).
   # atlassian is opt-in (Phase 6); zai-vision-mcp removed (GIT-364);
