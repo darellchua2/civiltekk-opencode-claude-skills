@@ -17,6 +17,7 @@
 ## Gate Trace
 
 GATE 226f082 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE ce272bf tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 
 
 ## Dependency & Consumer Map
@@ -58,7 +59,7 @@ All TARGETS consumers live inside the installer module (single `init.mjs`) plus 
 
 ### Phase 2: Agent guidance flip (opencode-tooling-subagent)
 
-- [ ] **2.1** In `agents/opencode-tooling-subagent.md`, change project-level skill guidance to `.agents/skills/<name>/SKILL.md` as the default (Step 0 regular-project bullet L109, File Locations table L147, Proactive Suggestions L218 + L244), keeping `.opencode/skills/` documented as the explicit opencode-only override on user request; agents (subagent files) remain `.opencode/agents/` everywhere.
+- [x] **2.1** In `agents/opencode-tooling-subagent.md`, change project-level skill guidance to `.agents/skills/<name>/SKILL.md` as the default (Step 0 regular-project bullet L109, File Locations table L147, Proactive Suggestions L218 + L244), keeping `.opencode/skills/` documented as the explicit opencode-only override on user request; agents (subagent files) remain `.opencode/agents/` everywhere.
     — **Why:** The subagent's system prompt is the second "force to opencode" surface — headless creation must land skills where pi + OpenCode both read them unless explicitly told otherwise.
     — **Done when:** `grep -n '.agents/skills' agents/opencode-tooling-subagent.md` shows the default in all four sites; no line instructs `.opencode/skills/` as the unqualified default; frontmatter untouched (no registry rebuild needed).
     — **Consumers affected:** every delegation to opencode-tooling-subagent; `deploy/setup.sh` copy (redeploy picks it up).
@@ -66,10 +67,11 @@ All TARGETS consumers live inside the installer module (single `init.mjs`) plus 
 
 ### Phase 3: Repo docs sync
 
-- [ ] **3.1** Update root `AGENTS.md` Repository Purpose bullet 3 (L10) and `README.md` L50 (`--project` note) to document: project-scope skills install to `.agents/skills/` (Agent Skills standard dir natively read by OpenCode v2 and pi; pi additionally requires project trust); `.opencode/` keeps agents, `opencode.json`, manifests; `.opencode/skills/` remains a valid explicit location.
+- [x] **3.1** Update root `AGENTS.md` Repository Purpose bullet 3 (L10) and `README.md` L50 (`--project` note) to document: project-scope skills install to `.agents/skills/` (Agent Skills standard dir natively read by OpenCode v2 and pi; pi additionally requires project trust); `.opencode/` keeps agents, `opencode.json`, manifests; `.opencode/skills/` remains a valid explicit location.
     — **Why:** Repo docs are the sync-rule surfaces (Adding Skills/Sync Rules table) — behavior changed, so prose must match or the documentation-consistency guard flags drift.
     — **Done when:** both files mention `.agents/skills/` as the project default; no remaining sentence claims `--project` installs skills into `./.opencode/`.
     — **Consumers affected:** contributors, `npx` users reading README.
+    — **Done:** AGENTS.md bullet 3 and README §1 both document agents/config in `./.opencode/` + skills in `./.agents/skills/` (OpenCode + pi dual-read, `.opencode/skills/` as valid explicit location); files: AGENTS.md, README.md; fixes: none
 
 ### Phase 4: Full verification gate (ticket exit gate)
 

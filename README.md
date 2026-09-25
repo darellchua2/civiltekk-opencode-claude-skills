@@ -47,7 +47,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills remove solid-principles-
 | `kilo` | `~/.config/kilo/agent/` + `~/.kilo/skills/` (user) · `.kilo/` (project) | Kilo Code native dirs; additive `permission:`-map translation |
 | `both` | opencode + Claude Code paths | Agents install to opencode only |
 
-`--project` installs into `./.opencode/` (full-service config generation) instead of user scope. `--no-deps` skips declared skill prerequisites.
+`--project` installs into `./.opencode/` (agents, `opencode.json`, manifests — full-service config generation) with skills going to `./.agents/skills/` (Agent Skills standard dir natively discovered by OpenCode and pi) instead of user scope. `--no-deps` skips declared skill prerequisites.
 
 ### 2. Full deploy — the whole stack
 
