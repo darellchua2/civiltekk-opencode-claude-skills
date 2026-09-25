@@ -101,3 +101,13 @@ The preset/init flow does NOT gain auto (existing die-on-non-opencode contract p
 
 - **Dispatch loop double-writes for project scope** (detected [opencode, claude] both downgrading): mitigated by dedupe on effective project target before looping.
 - **Machine-state dependence in tests**: mitigated by the suite's HOME sandbox — probes only see the sandbox.
+
+## Review Fixes (Step 9 — pre-review gate fix)
+
+- **Pre-existing flake surfaced by the exit gate (fixed)**: `plugin_inventory_and_defaults_agree_on_loadable_ts_plugins` failed locally on `origin/main` too (red at da660bc — pre-#562) while green in CI: `tui.mjs`'s unconditional `process.exit(0)` truncated `--print-plan`'s 22KB stdout at the 8KB pipe boundary (async pipe write vs file sync flush). Root-cause fix: drain stdout (`write("", cb)`) before the explicit exit. Execution-probed 3×; full suite 575 ok / 0 not ok.
+
+## Gate Trace
+
+GATE 8aabcd1 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 829c4e4 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 274d2b0 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
