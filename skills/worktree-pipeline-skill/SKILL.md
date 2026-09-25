@@ -191,7 +191,17 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    commit — never their own `docs(plan)` commit.
    **Bounded loop: max 2
    fix-and-re-review iterations** — exhaustion → halt per §Failure Policy.
-10. **PR + cleanup**: `pr-workflow-subagent` creates the PR **target
+10. **PR + merge watching** — split: 10a foreground, 10b background.
+    **10a — PR creation (foreground).** First the **authoritative overlap
+    re-check** (the §6f early leg is advisory only): `comm -12` of
+    `git diff --name-only origin/<base>...feat/<KEY>` against each earlier
+    in-run ticket's still-open PR diff (per repo) — non-empty → hold ticket
+    N pre-PR (worktree kept); auto-resume on that PR's merge notification:
+    rebase, re-run the full gate (the SHA changes), then create the PR. A PR
+    that would show merge conflicts because an earlier in-run PR merged
+    inside the 6e→10a window (stale base) classifies the same way —
+    overlap-hold, never a failed ticket. Clear → `pr-workflow-subagent`
+    creates the PR **target
     `<base>`** — the Task prompt MUST state gates are green by citing the
     final `GATE <short-sha> tier=full` memo line for the pushed SHA from the PLAN
     trace block (that citation IS the pipeline-mode gate memo per
@@ -204,21 +214,45 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
     below is the merge decision. The Task
     prompt MUST instruct it to include `Closes <TICKET_ID>`
     in the PR body (keep the `#` — `Closes #366`, not `Closes 366`; must
-    predate the merge).
-    **CI gate**: `timeout 1800 gh pr checks <num> --watch` (GNU coreutils;
-    macOS: `gtimeout`) — 30-minute timeout; merge when green with
-    `gh pr merge <num> --squash` — the `feat/<KEY>` head is short-lived, so
-    squash is the classifier verdict (`pr-merge-workflow-skill` Phase 1
-    head-class rule).
-    Zero configured checks (exits non-zero with "no checks reported") → merge
-    directly with a "no CI configured" note. JIRA tickets: after merge,
-    ensure exactly one `jira-status-updater` transition to Done —
-    pr-workflow-subagent's Task ends at PR creation, so this is yours:
-    check the ticket status first, transition only if still open. Then
-    `git worktree remove <root>/<KEY>`,
-    delete the remote branch, and `git fetch` in the main checkout
-    (**fetch-only** — never `pull` in the user's main worktree; uncommitted
-    state may conflict). Advance to the next ticket.
+    predate the merge). On PR creation the orchestrator **advances to the
+    next implementable ticket** — it does NOT wait for CI (Step 1 execution
+    model).
+    **10b — merge watcher (background).** Spawn a background shell (harness
+    binding below) that: `timeout 1800 gh pr checks <num> --watch` (GNU
+    coreutils; macOS: `gtimeout`) — 30-minute timeout; merge only when green
+    with `gh pr merge <num> --squash` — the `feat/<KEY>` head is
+    short-lived, so squash is the classifier verdict
+    (`pr-merge-workflow-skill` Phase 1 head-class rule); capture the merge
+    SHA via `gh pr view <num> --json mergeCommit`; report the outcome to the
+    main session (merge SHA on success; the failing check names on red).
+    Zero configured checks (exits non-zero with "no checks reported") →
+    merge directly with a "no CI configured" note. Red or
+    pending-at-timeout → report and stop. The watcher performs **gh-side
+    operations only** — watch → merge → SHA capture → report; it performs
+    **no local git mutations** (worktree/ref mutations are the main
+    session's, below, keeping them serialized away from concurrent
+    `git worktree add` calls).
+    **Notification handling** — main session, at step/ticket boundaries
+    only (never mid-Task: a Step 8 run-plan or Step 9 review may run many
+    minutes), in arrival order, each notification exactly once. On a merge
+    notification: report the merge SHA, then run the cleanup the watcher
+    must not — `git worktree remove <root>/<KEY>`, delete the remote
+    branch, and `git fetch` in the main checkout (**fetch-only** — never
+    `pull` in the user's main worktree; uncommitted state may conflict);
+    JIRA tickets: ensure exactly one `jira-status-updater` transition to
+    Done — check the ticket status first, transition only if still open. On
+    a red notification: the fix is queued for the next boundary (immediate
+    if idle), bounded at **2 fix-and-re-watch rounds per ticket**; red-fix
+    pushes ride Step 9's re-gate rule — run the **full** gate once on the
+    fixed tree and append its green `tier=full` memo for the new final SHA
+    before re-watch (the 10a citation names the final pushed SHA).
+    Harness binding (§Portability contract) for the background mechanism:
+    - OpenCode: background shell (`background: true`) with completion
+      notification.
+    - Claude Code: background Bash (run_in_background).
+    - Other/none: foreground `timeout 1800 gh pr checks <num> --watch`
+      before advancing (the pre-#560 behavior).
+    Requires bash (git-bash/WSL on Windows).
 
 ## PLAN Authoring (Step 6 detail)
 
