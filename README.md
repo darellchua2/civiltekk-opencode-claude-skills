@@ -280,7 +280,7 @@ Attribution: `plugins/ATTRIBUTION.md`; skill-level attributions in `THIRD_PARTY_
 <details>
 <summary><strong>Skill catalog — 149 skills by category</strong></summary>
 
-Current count: **149** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills archived under `skills/_archived/`).
+Current count: **149** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563).
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|

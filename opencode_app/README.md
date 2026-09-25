@@ -103,7 +103,7 @@ User-space equivalent: `./deploy/setup.sh --enable-pack <csv>` (see root `README
 
 - Container runs as non-root `opencode` user
 - No secrets baked into the image — API keys injected at runtime via entrypoint
-- The root `.dockerignore` (build context is the repo root) excludes `.env`, `_archived/`, and dev files
+- The root `.dockerignore` (build context is the repo root) excludes `.env` and dev files
 - Health check: `GET /api/health` every 30s (V2 endpoint; `/global/health` was V1-only and now returns the web-app shell)
 
 ### Secret Masking (vibeguard)

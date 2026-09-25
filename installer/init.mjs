@@ -96,7 +96,7 @@ function parseArgs(argv) {
       if (BOOL_FLAGS.has(key)) opts[key] = true;
       else {
         const next = argv[i + 1];
-        if (next === undefined || next.startsWith("--")) opts[key] = true;
+        if (next === undefined || next.startsWith("--") || next === "-g") opts[key] = true;
         else { opts[key] = next; i++; }
       }
     } else {
@@ -1494,6 +1494,8 @@ async function main() {
   // no install inputs and no read mode -> help
   const hasInstallInput = opts.preset || opts.agents || opts.skills || opts.mcps || opts.prune;
   if (!hasInstallInput && !opts.help) { printHelp(); return; }
+  if (opts.global)
+    console.error("note: -g applies to 'add' only; the preset flow is project-scoped (installs under the --project dir).");
 
   // prune-only mode
   if (opts.prune && !opts.preset && !opts.agents && !opts.skills) {
@@ -1530,6 +1532,8 @@ async function main() {
     const interactive = await runInteractive(reg, depMap, opts);
     if (!interactive) return; // user cancelled
     Object.assign(opts, interactive.opts);
+    if (opts.global && opts.project)
+      die("cannot combine --global with --project (user scope is already the default; drop -g)", 2);
     // re-resolve with the gathered inputs
     const sel2 = resolveSelection({
       presets: toList(opts.preset),

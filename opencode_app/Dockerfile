@@ -75,8 +75,7 @@ ARG OPENCODE_PROVIDER=""
 ARG OPENCODE_PACKS=""
 COPY opencode_app/ /app/
 # Content lives at the repo root (skills/, agents/, plugins/) and lands in the
-# runtime-discovery location /app/.opencode/. The root .dockerignore keeps
-# skills/_archived/ out of this context.
+# runtime-discovery location /app/.opencode/.
 COPY skills/ /app/.opencode/skills/
 COPY agents/ /app/.opencode/agents/
 COPY plugins/ /app/.opencode/plugins/

@@ -428,25 +428,24 @@ log_warn() { log "WARNING" "$@"; }
 log_error() { log "ERROR" "$@"; }
 log_success() { log "SUCCESS" "$@"; }
 
-# Count active SKILL.md files in a directory, excluding _archived (matches
-# the deploy's rsync --exclude='_archived'). Used by banners/status listings
+# Count active SKILL.md files in a directory. Used by banners/status listings
 # so skill counts can never drift from disk. BT-157.
 count_skills() {
     [ -d "$1" ] || { echo 0; return; }
-    find "$1" -type f -name "SKILL.md" -not -path "*/_archived/*" 2>/dev/null | wc -l
+    find "$1" -type f -name "SKILL.md" 2>/dev/null | wc -l
 }
 
 count_agents() {
     [ -d "$1" ] || { echo 0; return; }
-    find "$1" -maxdepth 1 -type f -name "*.md" -not -path "*/_archived/*" 2>/dev/null | wc -l
+    find "$1" -maxdepth 1 -type f -name "*.md" 2>/dev/null | wc -l
 }
 
-# Auto-derive per-category counts from skill frontmatter (category: field),
-# excluding _archived. Drift-proof replacement for the hand-maintained listings.
+# Auto-derive per-category counts from skill frontmatter (category: field).
+# Drift-proof replacement for the hand-maintained listings.
 # Prints "Category (N)" lines sorted by count desc. BT-157.
 print_skill_categories() {
     [ -d "$1" ] || return
-    find "$1" -type f -name "SKILL.md" -not -path "*/_archived/*" -exec grep -hE '^[[:space:]]*category:' {} + 2>/dev/null \
+    find "$1" -type f -name "SKILL.md" -exec grep -hE '^[[:space:]]*category:' {} + 2>/dev/null \
         | sed -E 's/^[[:space:]]*category:[[:space:]]*//' \
         | sort | uniq -c | sort -rn \
         | while read -r n c; do [ -n "$c" ] && echo "    - ${c} (${n})"; done
@@ -3501,14 +3500,14 @@ deploy_plugins() {
         run_cmd rm -f "$PLUGINS_DEST_DIR/$legacy"
     done
 
-    # Copy each plugin subdirectory (skip dotfiles, _archived, node_modules).
+    # Copy each plugin subdirectory (skip dotfiles, node_modules).
     local count=0
     for item in "${PLUGINS_SRC_DIR}"/*; do
         [ -e "$item" ] || continue  # robust against empty glob
         local name
         name=$(basename "$item")
         case "$name" in
-            .*|_archived|node_modules) continue ;;
+            .*|node_modules) continue ;;
         esac
         run_cmd cp -r "$item" "${PLUGINS_DEST_DIR}/"
         count=$((count + 1))

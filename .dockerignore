@@ -34,5 +34,3 @@ tests/
 *.pyc
 __pycache__/
 
-# Archived skills (keep image small)
-skills/_archived/

@@ -28,8 +28,8 @@ lean_keys() {
 
 # #486: skill-allow resources in an opencode.json must resolve to a SKILL.md dir
 # on SOME surface — root skills/ (deployable) ∪ opencode_app/.opencode/skills/
-# (Docker-app project surface). Raw readdir is NOT enough: skills/_archived is
-# a legacy non-skill dir, so membership is tested by SKILL.md presence.
+# (Docker-app project surface). Raw readdir is NOT enough, so membership is
+# tested by SKILL.md presence.
 dead_allows() { # $1 = opencode.json path; prints allow resources matching no surface
     node -e "
 const fs=require('fs');

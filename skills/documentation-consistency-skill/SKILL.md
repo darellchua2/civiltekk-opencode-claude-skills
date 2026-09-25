@@ -32,7 +32,7 @@ After adding/removing skills or agents; before PR; after bulk changes; during pl
 
 ## Category 1 — Cross-file count sync
 
-Actual: `ls -d skills/*/ | grep -v _archived | grep -v scripts | wc -l` (agents: `ls agents/*.md | wc -l`). Must match every reference:
+Actual: `ls -d skills/*/ | grep -v scripts | wc -l` (agents: `ls agents/*.md | wc -l`). Must match every reference:
 
 | File | Pattern |
 |------|---------|
