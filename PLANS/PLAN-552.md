@@ -7,7 +7,7 @@
 ## Acceptance Criteria
 - [ ] `--enable-pack playwright` / `alpha-vantage` / `nanobanana` each merges its pack into the deployed config: server flips enabled + permissions allow rule present
 - [ ] All three servers ship `disabled: true` by default — plain deploys enable nothing
-- [ ] Each local server entry sets `timeout: 30000`
+- [ ] Each local server entry sets `timeout: {"catalog": 30000}` (v2 object form; no `execution` key)
 - [ ] `--enable-pack` validation, help text, and banners list all 7 packs (4 existing + 3 new)
 - [ ] `bash -n deploy/setup.sh` passes; test_pack_permissions, test_mcp_count_consistency, test_select_items, test_subcommands, test_setup_ps1_vars green
 - [ ] README packs table documents the 3 new packs incl. required env vars (`ALPHA_VANTAGE_API_KEY`, `GEMINI_API_KEY`); README MCP-entry count updated (8 → 11)
@@ -28,9 +28,9 @@ Consumer-map note: pack files have cross-module consumers (setup.sh validation, 
 ## Implementation Phases
 
 ### Phase 1: Config entries + pack partials
-- [ ] **1.1** Add 3 `mcp.servers` entries to `opencode_app/opencode.json`: `playwright` (local, `npx -y @playwright/mcp@latest`, timeout 30000), `alpha-vantage` (remote `https://mcp.alphavantage.co/mcp`, `oauth: false`, header `Authorization: Bearer {env:ALPHA_VANTAGE_API_KEY}`), `nanobanana` (local, `npx -y nanobanana-mcp-server@latest`, environment `GEMINI_API_KEY: {env:GEMINI_API_KEY}`, timeout 30000) — all `disabled: true`
+- [ ] **1.1** Add 3 `mcp.servers` entries to `opencode_app/opencode.json`: `playwright` (local, `npx -y @playwright/mcp@latest`, timeout 30000), `alpha-vantage` (remote `https://mcp.alphavantage.co/mcp`, headers `Authorization: Bearer {env:ALPHA_VANTAGE_API_KEY}`, no `oauth` key — matches the shipped zai remote shape), `nanobanana` (local, `npx -y nanobanana-mcp-server@latest`, environment `GEMINI_API_KEY: {env:GEMINI_API_KEY}`) — all `disabled: true`; the two locals carry `"timeout": {"catalog": 30000}` (v2 object; scalar is v1 — plan-review Major 1, relay round 1 ruling; no `execution` key so tool calls keep the 12h default)
     — **Why:** the servers must exist in the base config before any pack can flip them; disabled-by-default keeps plain deploys unchanged (AC #2).
-    — **Done when:** `python3 -c` count of mcp.servers = 11 and each new entry has `disabled: true` (+ timeout on locals).
+    — **Done when:** `python3 -c` count of mcp.servers = 11; each new entry `disabled: true`; `timeout.catalog == 30000` on both locals; confirmatory probe: temp-enable playwright in a scratch config copy, `opencode mcp list` connects with no config diagnostic, then revert.
     — **Consumers affected:** opencode runtime (zero change — disabled), mcp-count test, README count.
 - [ ] **1.2** Create `deploy/packs/pack-playwright.json` on the pack-chrome-devtools shape: `$comment` + `mcp.servers.playwright.disabled: false` + `permissions [{action: "playwright*", resource: "*", effect: "allow"}]`
     — **Why:** the pack is the only enablement path (#268 model); merge-packs deep-merges exactly this shape.
@@ -46,17 +46,22 @@ Consumer-map note: pack files have cross-module consumers (setup.sh validation, 
     — **Consumers affected:** same as 1.2.
 
 ### Phase 2: Deploy script + docs sync
-- [ ] **2.1** Extend every pack-name string in `deploy/setup.sh` with the 3 new names: L364 comment, L620-621 help CSV, L937 error CSV, L2727 summary echo, banner "Available but disabled" block (~L748-756, add 3 server lines incl. env-var notes), `print_summary` opt-in block (~L4660s), L4760 next-steps line
+- [ ] **2.1** Extend every pack-name string in `deploy/setup.sh` with the 3 new names: L364 comment, L620-621 help CSV, L937 error CSV, L2726-2727 summary echo lines (both carry the catalog — plan-review Minor), banner "Available but disabled" block (~L748-756, add 3 server lines incl. env-var notes), `print_summary` opt-in block (~L4660s), L4760 next-steps line
     — **Why:** help/validation text must match the packs dir or `--enable-pack` UX lies; the error CSV feeds the fail-fast message (AC #4).
     — **Done when:** `grep -c playwright deploy/setup.sh` ≥ 7 sites touched; every CSV reads `markitdown, nextjs, docling, chrome-devtools, playwright, alpha-vantage, nanobanana` in some stable order used consistently.
     — **Consumers affected:** CLI users; test_select_items (Phase 3).
-- [ ] **2.2** `README.md`: add 3 packs-table rows (env vars in Requires column); update L201 "ships 8 MCP server entries" → 11
+- [ ] **2.2** `README.md`: add 3 packs-table rows (env vars in Requires column); update L201 "ships 8 MCP server entries" → 11; update the L209 prose catalog ("The remaining 5 ship disabled..." + enumeration) to 8 with the 3 new names
     — **Why:** the count line is hard-pinned by `mcp_count_opencode_json_is_consistent_across_docs`; the table is the user-facing env-var contract (AC #6).
     — **Done when:** README count grep matches 11 and the table has 7 rows.
     — **Consumers affected:** docs readers, mcp-count test.
-- [ ] **2.3** `opencode_app/README.md`: add 3 rows to the Docker packs table (`(1)` server each; alpha-vantage/nanobanana note their env var)
-    — **Why:** Docker deployers enable packs via build-arg and need the same key documentation.
-    — **Done when:** table shows 7 packs, `grep playwright opencode_app/README.md` matches.
+- [ ] **2.3** `opencode_app/README.md`: add 3 rows to the Docker packs table (`(1)` server each; alpha-vantage/nanobanana note their env var); update the L70 opt-in server enumeration and the L77 `# Available packs:` compose comment
+    — **Why:** Docker deployers enable packs via build-arg and need the same key documentation; L70/L77 are catalog restatements the review caught outside the digit sweep (plan-review Major 2).
+    — **Done when:** table shows 7 packs; L70 and L77 name all 7/8 surfaces they enumerate; `grep -c playwright opencode_app/README.md` ≥ 3.
+    — **Consumers affected:** Docker deploy path.
+- [ ] **2.4** `skills/opencode-repo-setup-skill/SKILL.md` L59-63: extend the interactive MCP-opt-in list with the 3 new servers
+    — **Why:** the repo-setup skill is the per-project enablement UX; leaving it at 5 servers makes the new packs invisible to the users most likely to want them (plan-review Major 2).
+    — **Done when:** the option list enumerates all 8 opt-in servers; `grep -c playwright skills/opencode-repo-setup-skill/SKILL.md` ≥ 1.
+    — **Consumers affected:** repo-setup skill users (LLM + human).
     — **Consumers affected:** Docker deploy path.
 
 ### Phase 3: Test pins
@@ -82,9 +87,9 @@ Consumer-map note: pack files have cross-module consumers (setup.sh validation, 
 - timeout: 30000 rationale: OpenCode default 5000 ms tool-fetch can lose the race against a cold npx download on first enable.
 
 ## Dependencies
-None (no blocked-by tickets). Builds on #553's cleaned pack surface (merged a5b864a).
+None (no blocked-by tickets). Builds on #554's cleaned pack surface (merged as a5b864a; PLAN previously misattributed this to #553 — corrected per plan review). Landing strategy: the implementation lands as ONE atomic commit (config + packs + docs + test pins together) — per-phase commits would leave count pins red mid-branch (plan-review Minor).
 
 ## Risks & Mitigation
 - *Upstream package name/flag drift* (`@playwright/mcp`, `nanobanana-mcp-server`) → mitigation: `npm view <name> version` during Phase 1; if a name misses, correct the entry before the gate rather than shipping a dead command.
-- *mcp-count hidden pins* beyond README (other docs stating a server total) → mitigation: `grep -rn "MCP server" README.md opencode_app/ | grep -E "[0-9]+"` sweep before the gate.
+- *catalog restatements beyond digit-countable pins* → mitigation: sweep by catalog NAME, not counts — `git grep -nE "markitdown.*docling|Available packs|opt-in" README.md opencode_app/ skills/ MIGRATION.md` — and reconcile every hit against the 7-pack/11-server truth (count-restating-surfaces convention, review-bumped). Accepted residual: MIGRATION.md:305 autodesk example is pre-existing staleness from #554, not #552's blast radius — noted on that ticket.
 - *Remote MCP OAuth handshake* on alpha-vantage may ignore static headers → mitigation: documented as pilot-verify note in README row; pack still ships disabled so a wrong header costs nothing until opted in.
