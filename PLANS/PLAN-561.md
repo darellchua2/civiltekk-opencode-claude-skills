@@ -6,13 +6,16 @@
 
 ## Acceptance Criteria
 
-- [ ] `add <skill> --project` (default target) writes `.agents/skills/<name>/`; OpenCode discovers it natively
-- [ ] `--target agents --project` skills land verbatim in `.agents/skills/` (via the opencode row); agent files still downgrade to `.opencode/agents/`
-- [ ] `--target kimi --project` still writes `.kimi-code/skills/`
+- [x] `add <skill> --project` (default target) writes `.agents/skills/<name>/`; OpenCode discovers it natively
+- [x] `--target agents --project` skills land verbatim in `.agents/skills/` (via the opencode row); agent files still downgrade to `.opencode/agents/`
+- [x] `--target kimi --project` still writes `.kimi-code/skills/`
 - [ ] Subagent doc names `.agents/skills/` as default, `.opencode/skills/` as explicit override
 - [ ] Bats suites pass: init, agents_target, claude_target, kimi_target, test_portability
 - [ ] `AGENTS.md` + `README.md` updated; no `.opencode/skills` literals introduced into `skills/**/SKILL.md`
-- [ ] Help text + installer summary reflect `.agents/skills/`
+- [x] Help text + installer summary reflect `.agents/skills/`
+
+## Gate Trace
+
 
 ## Dependency & Consumer Map
 
@@ -30,22 +33,26 @@ All TARGETS consumers live inside the installer module (single `init.mjs`) plus 
 
 ### Phase 1: Installer flip + pinned test expectations
 
-- [ ] **1.1** Flip `TARGETS.opencode.projectSkillsDir` from `".opencode/skills"` to `".agents/skills"` in `installer/init.mjs` (L74), and replace the hardcoded literal in the generated-AGENTS.md summary line (L661, `` `${sel.skills.length} skills (see \`.opencode/skills/\`).` ``) with the resolved `projectSkillsDir` (thread the in-scope config variable; keep the sentence shape). Also update the file-header comments (L5, L19) that describe project writes as `<project>/.opencode/`.
+- [x] **1.1** Flip `TARGETS.opencode.projectSkillsDir` from `".opencode/skills"` to `".agents/skills"` in `installer/init.mjs` (L74), and replace the hardcoded literal in the generated-AGENTS.md summary line (L661, `` `${sel.skills.length} skills (see \`.opencode/skills/\`).` ``) with the resolved `projectSkillsDir` (thread the in-scope config variable; keep the sentence shape). Also update the file-header comments (L5, L19) that describe project writes as `<project>/.opencode/`.
     — **Why:** This single cell is the SINGLE SITE (PLAN-453 gate) driving `add --project`, preset installs, and the claude/agents downgrade path; fixing it once relocates every project-scope skill write. OpenCode v2 natively discovers `.agents/skills/`, so nothing is lost for opencode-only users.
     — **Done when:** `grep -n '"\.agents/skills"' installer/init.mjs` shows the TARGETS row; `grep -n 'opencode/skills' installer/init.mjs` no longer matches L74 or L661; `node --check installer/init.mjs` (or `node -e "import(...)"`) parses clean.
     — **Consumers affected:** project install/update/remove paths, downgrade note (unchanged text — claude/agents rows still lack `projectSkillsDir`), generated project AGENTS.md line.
+    — **Done:** TARGETS.opencode.projectSkillsDir → `".agents/skills"`; generated-AGENTS.md summary now interpolates `TARGETS.opencode.projectSkillsDir`; header comments (L5–10, L19) describe the split layout; files: installer/init.mjs; fixes: none
 - [ ] **1.2** Update help text (L1573 `install to project .opencode/ (full config)`, L1604 `Project scope (--project): writes .opencode/{agents,skills}/ ...`) to state agents/config stay in `.opencode/` while skills go to `.agents/skills/` (discovered by OpenCode + pi).
     — **Why:** The `--help` SCOPE section is the contract users read; leaving it stale inverts the documented behavior (learned-pattern: command-description parallel restatements drift when only the source is fixed).
     — **Done when:** `node installer/init.mjs --help` prints `.agents/skills` in the Project scope line and no help line claims project skills land in `.opencode/`.
     — **Consumers affected:** CLI users; any doc quoting help output.
+    — **Done:** USAGE add-line reads `install to project (agents/config .opencode/, skills .agents/skills/)`; SCOPE Project-scope paragraph rewritten around the split layout; files: installer/init.mjs; fixes: none
 - [ ] **1.3** Update the four pinned project-scope test literals to `.agents/skills`: `tests/init.bats:82` (preset skill count dir), `tests/agents_target.bats:124` + `tests/claude_target.bats:118` + `tests/kimi_target.bats:114` (downgrade tests — the `has no project destination` note assertions and `[ ! -e "${HOME}/.agents" ]` / `${HOME}/.claude/agents` negatives stay as-is).
     — **Why:** These tests pin installer behavior; after 1.1 they fail until expectations move. The downgrade tests must keep asserting the note and the user-scope negatives — only the project dir literal changes.
     — **Done when:** `grep -rn 'TMP_PROJ/.opencode/skills\|TMP_PROJ/.opencode/skills' tests/` returns nothing while the four files still reference `$TMP_PROJ/.agents/skills/` in those assertions; user-scope `$HOME/.config/opencode/skills` assertions untouched.
     — **Consumers affected:** CI gate for every later phase.
+    — **Done:** four project-scope literals moved to `$TMP_PROJ/.agents/skills/` (init.bats, agents_target.bats, claude_target.bats, kimi_target.bats); `has no project destination` note assertions and user-scope negatives untouched; files: tests/init.bats, tests/agents_target.bats, tests/claude_target.bats, tests/kimi_target.bats; fixes: none
 - [ ] **1.4** Run the targeted gate: `bats tests/init.bats tests/agents_target.bats tests/claude_target.bats tests/kimi_target.bats`.
     — **Why:** Proves the flip behaviorally before docs/doc guidance layers on top (verification gate: tests on logic changes).
     — **Done when:** all four suites exit 0.
     — **Consumers affected:** Phases 2–4 gates.
+    — **Done:** `bats tests/init.bats tests/agents_target.bats tests/claude_target.bats tests/kimi_target.bats` → 64 ok / 0 not ok, exit 0; files: none; fixes: none
 
 ### Phase 2: Agent guidance flip (opencode-tooling-subagent)
 

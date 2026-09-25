@@ -2,9 +2,11 @@
 // installer/init.mjs — opencode-init
 //
 // Project-scoped selective installer. Copies a curated subset of this repo's
-// agents + skills into a target project's .opencode/ and writes a project
-// opencode.json configuring that subset. Driven by flags (LLM/CI, primary) or
-// an interactive TUI (humans, secondary). Zero external dependencies.
+// agents into a target project's .opencode/ and skills into the project's
+// .agents/skills/ (Agent Skills standard dir — discovered by OpenCode and pi),
+// writing a project opencode.json configuring that subset. Driven by flags
+// (LLM/CI, primary) or an interactive TUI (humans, secondary). Zero external
+// dependencies.
 //
 // Read modes (pure, no writes):
 //   opencode-init --list agents [--category X]     # JSON of agents
@@ -16,7 +18,7 @@
 //   opencode-init --expand <preset>                # full resolved install set
 //   opencode-init --help
 //
-// Install (writes to <project>/.opencode/ + <project>/.opencode/opencode.json):
+// Install (writes <project>/.opencode/{agents,opencode.json} + <project>/.agents/skills/):
 //   opencode-init --project ./myapp --preset review --yes
 //   opencode-init --project . --agents code-review-subagent --mcps codegraph --yes
 //   opencode-init ... --dry-run        # print manifest, write nothing
@@ -71,7 +73,7 @@ const USER_KILO_SKILLS = join(os.homedir(), ".kilo/skills");
 // resolve via TARGETS, never inline constants (PLAN-453 structural gate).
 // Project-scope dest columns deferred to #454 (PLAN-453 Technical Notes).
 const TARGETS = {
-  opencode: { agentsDir: USER_AGENTS, skillsDir: USER_SKILLS, projectAgentsDir: ".opencode/agents", projectSkillsDir: ".opencode/skills", agentMode: "model-injected", skillMode: "verbatim" },
+  opencode: { agentsDir: USER_AGENTS, skillsDir: USER_SKILLS, projectAgentsDir: ".opencode/agents", projectSkillsDir: ".agents/skills", agentMode: "model-injected", skillMode: "verbatim" },
   claude: { agentsDir: USER_CLAUDE_AGENTS, skillsDir: USER_CLAUDE_SKILLS, agentMode: "claude-translate", skillMode: "model-strip" }, // #457: agents install translated
   agents: { agentsDir: USER_AGENTS_SHARED, skillsDir: USER_SKILLS_SHARED, agentMode: "verbatim", skillMode: "verbatim" },
   kimi: { agentsDir: USER_KIMI_AGENTS, skillsDir: USER_KIMI_SKILLS, projectAgentsDir: ".kimi-code/agents", projectSkillsDir: ".kimi-code/skills", agentMode: "kimi-translate", skillMode: "verbatim" },
@@ -658,7 +660,7 @@ function generateAgentsMd(sel, reg) {
   }
   lines.push("");
   lines.push("## Installed skills");
-  lines.push(`${sel.skills.length} skills (see \`.opencode/skills/\`).`);
+  lines.push(`${sel.skills.length} skills (see \`${TARGETS.opencode.projectSkillsDir}/\`).`);
   lines.push("");
   lines.push("## MCP servers");
   if (sel.mcps.length) for (const m of sel.mcps) lines.push(`- ${m}`);
@@ -1570,7 +1572,7 @@ function printHelp() {
 
 USAGE
   opencode-skill add <name>                    install a skill or agent (USER scope)
-  opencode-skill add <name> --project [dir]    install to project .opencode/ (full config)
+  opencode-skill add <name> --project [dir]    install to project (agents/config .opencode/, skills .agents/skills/)
   opencode-skill add --all --yes               install the full catalog (user scope)
   opencode-skill update [--prune]              re-copy manifest entries whose source changed
   opencode-skill remove <name>                 remove a user-scope install
@@ -1601,7 +1603,9 @@ SCOPE
   Claude target (--target claude): agents now install too — ~/.claude/agents/ with
   a tools/disallowedTools allowlist translated from permissions (lossy — unmapped
   rules dropped with a warning; #457).
-  Project scope (--project): writes .opencode/{agents,skills}/ + opencode.json + models.json + AGENTS.md.
+  Project scope (--project): writes agents + opencode.json + models.json + AGENTS.md
+  under .opencode/; skills go to .agents/skills/ (Agent Skills standard dir,
+  natively discovered by OpenCode and pi).
 
 FLAGS
   --project [dir]      project scope (default: cwd). Without 'add', takes a <dir> value.

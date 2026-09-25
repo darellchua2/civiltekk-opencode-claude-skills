@@ -79,7 +79,7 @@ teardown() { rm -rf "$TMP_PROJ"; }
   run $INIT --project "$TMP_PROJ" --preset review --yes
   [ "$status" -eq 0 ]
   agent_files=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
-  skill_dirs=$(ls "$TMP_PROJ/.opencode/skills/" | wc -l)
+  skill_dirs=$(ls "$TMP_PROJ/.agents/skills/" | wc -l)
   [ "$agent_files" -eq 4 ]
   [ "$skill_dirs" -eq 31 ]
 }
