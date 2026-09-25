@@ -8,9 +8,9 @@
 
 - [x] `add <skill> -g` and `add <skill> --global` install user scope identically to the default; `-g --project` exits non-zero naming the conflict
 - [x] `--help` documents `-g, --global`
-- [ ] `skills/_archived/` removed from the working tree
-- [ ] Census: zero remaining references to the 6 removed skill names (README, AGENTS.md, dependency-map.json, deploy-plan-items.mjs, registry.json, tests)
-- [ ] Isolation guard: the `_archived` legacy exception retired from `tests/test_skill_isolation.bats` — the `_`-prefix ban becomes unconditional
+- [x] `skills/_archived/` removed from the working tree
+- [x] Census: zero remaining references to the 6 removed skill names (README, AGENTS.md, dependency-map.json, deploy-plan-items.mjs, registry.json, tests)
+- [x] Isolation guard: the `_archived` legacy exception retired from `tests/test_skill_isolation.bats` — the `_`-prefix ban becomes unconditional
 - [ ] `node installer/build-registry.mjs` regenerates cleanly (commit `registry.json` if it changes); portability guard stays green
 - [ ] Full `bats tests/` green
 
@@ -52,30 +52,36 @@
 
 ### Phase 2: `_archived` deletion + census cleanup
 
-- [ ] **2.1** `git rm -r skills/_archived`; then run `node installer/build-registry.mjs` and confirm `git diff --stat installer/registry.json` is empty (census proved the registry already excludes `_archived`; if it is NOT empty, commit the regenerated registry and note the count delta).
+- [x] **2.1** `git rm -r skills/_archived`; then run `node installer/build-registry.mjs` and confirm `git diff --stat installer/registry.json` is empty (census proved the registry already excludes `_archived`; if it is NOT empty, commit the regenerated registry and note the count delta).
     — **Why:** the deletion is the ticket's core fix — the npx-skills walker offered 6 retired skills as a "catalog level".
     — **Done when:** `skills/_archived` absent from the tree; registry.json unchanged (or regenerated + committed with explanation).
     — **Consumers affected:** ecosystem consumers (`npx skills add`); nothing internal (all tooling already excluded `_archived`).
-- [ ] **2.2** Trim the dead house-reference in `skills/docstring-generator-skill/SKILL.md` L22: remove `python-docstring-generator` from the "House references" list (the other three names are live skills).
+    — **Done:** skills/_archived removed (git rm); build-registry zero-diff verified (only generatedAt churn — reverted); files: skills/_archived/**; fixes: none
+- [x] **2.2** Trim the dead house-reference in `skills/docstring-generator-skill/SKILL.md` L22: remove `python-docstring-generator` from the "House references" list (the other three names are live skills).
     — **Why:** census AC — a shipped skill must not point at a deleted one.
     — **Done when:** `grep -rn 'python-docstring-generator' skills/` returns nothing.
     — **Consumers affected:** docstring-generator-skill readers.
-- [ ] **2.3** Retire the isolation-guard exception: delete the `parts[1].startswith("_")` walker filter (+ its comment) at `tests/test_skill_isolation.bats:144`, and rewrite the `skill_isolation_no_new_underscore_prefixed_shared_dirs` test (:193–197) to assert `ls skills/ | grep '^_'` finds nothing (drop `grep -v -x '_archived'` and the legacy-allowlist comment).
+    — **Done:** python-docstring-generator dropped from the House references list; files: skills/docstring-generator-skill/SKILL.md; fixes: none
+- [x] **2.3** Retire the isolation-guard exception: delete the `parts[1].startswith("_")` walker filter (+ its comment) at `tests/test_skill_isolation.bats:144`, and rewrite the `skill_isolation_no_new_underscore_prefixed_shared_dirs` test (:193–197) to assert `ls skills/ | grep '^_'` finds nothing (drop `grep -v -x '_archived'` and the legacy-allowlist comment).
     — **Why:** with `_archived` gone the exception is dead weight; the ban becomes unconditional per the ticket.
     — **Done when:** the rewritten test passes; `grep -n "_archived" tests/test_skill_isolation.bats` returns nothing.
     — **Consumers affected:** CI.
-- [ ] **2.4** Root `AGENTS.md` §Skill Isolation Contract: replace "`_archived` is the only legacy exception" with the unconditional ban (and drop the parenthetical naming it).
+    — **Done:** walker `_`-filter removed; allowlist test rewritten to unconditional ban; files: tests/test_skill_isolation.bats; fixes: none
+- [x] **2.4** Root `AGENTS.md` §Skill Isolation Contract: replace "`_archived` is the only legacy exception" with the unconditional ban (and drop the parenthetical naming it).
     — **Why:** the prose grants an exception that no longer exists — documentation-consistency drift.
     — **Done when:** `grep -n "_archived" AGENTS.md` returns nothing.
     — **Consumers affected:** contributors.
-- [ ] **2.5** Census sweep: `grep -rn` for all 6 removed names across `*.md`, `*.json`, `*.bats`, `*.mjs` (excluding LEARNINGS history) → zero hits.
+    — **Done:** isolation-contract sentence updated to unconditional ban; files: AGENTS.md; fixes: none
+- [x] **2.5** Census sweep: `grep -rn` for all 6 removed names across `*.md`, `*.json`, `*.bats`, `*.mjs` (excluding LEARNINGS history) → zero hits.
     — **Why:** the ticket's census AC — deleted skills must leave no dangling references.
     — **Done when:** the grep is empty; README/AGENTS/dependency-map/deploy-plan-items/registry/tests all clean.
     — **Consumers affected:** none (verification step).
-- [ ] **2.6** Gate: `bats tests/test_skill_isolation.bats tests/init.bats` green.
+    — **Done:** grep across md/json/bats/mjs/sh/ps1 → zero hits outside LEARNINGS history and this PLAN; files: none; fixes: none
+- [x] **2.6** Gate: `bats tests/test_skill_isolation.bats tests/init.bats` green.
     — **Why:** the guard rewrite and the flag work are the phase's behavioral surface.
     — **Done when:** exit 0.
     — **Consumers affected:** Phase 3 gate.
+    — **Done:** bats test_skill_isolation + init → 39 ok / 0 not ok, exit 0; files: none; fixes: none
 
 ### Phase 3: README note + full exit gate
 
