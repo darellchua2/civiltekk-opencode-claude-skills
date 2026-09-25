@@ -126,4 +126,4 @@ GATE 274d2b0 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 ## Gate Trace (review-fix round)
 
 GATE 274d2b0 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
-GATE <review-fix-sha> tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE df804f2 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
