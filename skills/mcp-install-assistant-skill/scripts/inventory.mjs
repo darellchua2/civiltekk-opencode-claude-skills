@@ -51,7 +51,8 @@ function mergeServers(base, overlay) {
 }
 
 function envKeys(server) {
-  return [...new Set((JSON.stringify(server).match(/\{env:([A-Z0-9_]+)\}/g) || [])
+  const { $comment, ...doc } = server; // $comment prose may cite {env:X} examples — not real refs
+  return [...new Set((JSON.stringify(doc).match(/\{env:([A-Z0-9_]+)\}/g) || [])
     .map((s) => s.replace(/\{env:|\}/g, "")))];
 }
 
@@ -95,8 +96,16 @@ function main() {
       process.exit(1);
     }
     servers = globalCfg.mcp?.servers ?? {};
-    const overlayCfg = process.env.OPENCODE_CONFIG ? loadIf(process.env.OPENCODE_CONFIG) : null;
-    if (overlayCfg) servers = mergeServers(servers, overlayCfg.mcp?.servers);
+    if (process.env.OPENCODE_CONFIG) {
+      const overlayCfg = loadIf(process.env.OPENCODE_CONFIG);
+      if (!overlayCfg) {
+        // Explicit user override layer: a set-but-unreadable var must never
+        // silently degrade to global-only states (wrong enable decisions).
+        console.error(`OPENCODE_CONFIG is set but unreadable: ${process.env.OPENCODE_CONFIG}`);
+        process.exit(1);
+      }
+      servers = mergeServers(servers, overlayCfg.mcp?.servers);
+    }
     if (projectArg) {
       const proj = loadIf(resolve(projectArg));
       if (!proj) { console.error(`Unreadable project config: ${projectArg}`); process.exit(1); }
@@ -104,6 +113,12 @@ function main() {
     }
   }
 
+  if (demo) {
+    // Hermetic: judge demo keys against a fixed env, not the ambient one,
+    // so the documented self-check behaves identically on every machine.
+    process.env.ZAI_API_KEY = "demo-set";
+    delete process.env.ALPHA_VANTAGE_API_KEY;
+  }
   const rows = Object.entries(servers).map(([n, s]) => row(n, s))
     .sort((a, b) => Number(b.enabled) - Number(a.enabled) || a.name.localeCompare(b.name));
 

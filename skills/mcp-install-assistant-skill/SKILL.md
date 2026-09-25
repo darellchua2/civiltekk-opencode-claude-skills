@@ -83,7 +83,7 @@ cause), and report the exact gap — do not iterate blind edits on config.
 
 Interactive prompts to the user during selection.
 - OpenCode: `question` tool (one question, 2-4 options, multiple allowed)
-- Claude Code: `AskUserPreference`-style multiple-choice prompt
+- Claude Code: `AskUserQuestion` multiple-choice tool
 - Other/none: number the options in a plain reply and wait for the user's pick
 
 Requires bash (git-bash/WSL on Windows) for the enable/verify shell steps; the
@@ -106,5 +106,6 @@ node "<this-skill-dir>/scripts/inventory.mjs" --demo
 ```
 
 Runs the inventory against a built-in 3-server fixture (includes one server
-with an unset `{env:...}` key) and must flag the missing key as a precheck
-warning. No external paths needed.
+with an `{env:...}` key treated as unset — the demo pins its own env, so the
+result is identical on every machine) and must flag the missing key as a
+precheck warning. No external paths needed.

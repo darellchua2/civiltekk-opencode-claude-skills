@@ -1496,3 +1496,48 @@
 - **Scope**: project
 - **Summary**: v2 timeout is object-shaped (scalar = v1); catalog default is already 30s so catalog:30000 no-ops, cold-npx risk is startup. Pin object form; buy headroom via timeout.startup (#552 arch review + code review)
 - **Date**: 2026-09-25
+
+### Count sweep keyed to expected delta, not current literal
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/count-sweep-keyed-to-expected-delta-not-current-literal.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: PLAN-556's sweep grepped 148 while live totals read 147 — it would have green-lit leaving every stale total untouched. Run the sweep pattern before writing the plan; key to the pattern class, not the expected delta (#556 plan review)
+- **Date**: 2026-09-25
+
+### Array grows without its count pin — fix forward
+
+- **Category**: solutions
+- **File**: `LEARNINGS/solutions/array-grows-without-its-count-pin.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: Base commit grew lean to 71 without bumping the bats pins (main red); next touching ticket bumps to the post-change value (72) in one edit. Derive pins from arrays longer term (#556 arch review)
+- **Date**: 2026-09-25
+
+### opencode v2 config precedence and JSONC
+
+- **Category**: solutions
+- **File**: `LEARNINGS/solutions/opencode-v2-config-precedence-and-jsonc.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: remote < global < OPENCODE_CONFIG < project, merge per key; OPENCODE_CONFIG set-but-unreadable must exit, not silently drop (wrong enable decisions); v2 supports JSONC (#556 code review)
+- **Date**: 2026-09-25
+
+### Self-check fixtures must be env-hermetic
+
+- **Category**: solutions
+- **File**: `LEARNINGS/solutions/self-check-fixtures-must-be-env-hermetic.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: --demo judged keys against ambient env, so the documented invariant flipped on machines with the key set. Demo mode pins its own env; fixtures never depend on ambient environment (#556 code review)
+- **Date**: 2026-09-25
+
+### Portability bindings name verified tools
+
+- **Category**: conventions
+- **File**: `LEARNINGS/conventions/portability-bindings-name-verified-tools.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: "AskUserPreference" shipped instead of the real `AskUserQuestion` — binding rows are API claims; verify tool names against harness docs (#556 code review)
+- **Date**: 2026-09-25

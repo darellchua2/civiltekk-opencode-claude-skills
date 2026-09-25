@@ -104,3 +104,6 @@ None (no blocked-by tickets). Builds on #552's pack catalog and #554's cleaned s
 - Registry regen: content-idempotent modulo generatedAt (3 consecutive runs, hash-compared sans timestamp line); skill present, agents=34, skills=149
 - Sync surfaces: 6 files carry the skill name (SKILL.md, registry.json, skill-profiles.json, opencode.json, README.md, opencode_app/README.md)
 - Sweep: zero stale 147/148/70 totals outside the keep-listed dated research doc
+- Code review fixes re-gated: OPENCODE_CONFIG set-but-unreadable now exits 1 (was silent wrong states); --demo hermetic (pins its own env); $comment excluded from env extraction; AskUserQuestion name corrected
+
+GATE bcbff03+fix tier=full lint=t typecheck=n.a. build=n.a. unit=t e2e=n.a.
