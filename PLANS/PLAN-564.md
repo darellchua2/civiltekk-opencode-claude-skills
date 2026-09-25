@@ -6,9 +6,9 @@
 
 ## Acceptance Criteria
 
-- [ ] `add <skill> --target auto --yes` installs to every harness whose config dir exists; none detected → non-zero exit naming the explicit `--target` values
-- [ ] `--dry-run --target auto` previews without writing and lists resolved targets
-- [ ] Explicit `--target <t>` overrides auto; `auto` combines with `--project` only for targets that have project destinations (downgrade note preserved)
+- [x] `add <skill> --target auto --yes` installs to every harness whose config dir exists; none detected → non-zero exit naming the explicit `--target` values
+- [x] `--dry-run --target auto` previews without writing and lists resolved targets
+- [x] Explicit `--target <t>` overrides auto; `auto` combines with `--project` only for targets that have project destinations (downgrade note preserved)
 - [ ] `-y`, `-p`, `rm`, and `list <what>` all work as aliases of their long forms
 - [ ] `--help` documents every new flag/alias + the two divergence notes
 - [ ] New tests per item; full `bats tests/` green
@@ -29,22 +29,26 @@ The preset/init flow does NOT gain auto (existing die-on-non-opencode contract p
 
 ### Phase 1: `--target auto`
 
-- [ ] **1.1** In `installer/init.mjs`: add `AUTO_TARGET_PROBES` (opencode → `USER_OC`; agents → `~/.agents`; claude → `$CLAUDE_CONFIG_DIR` or `~/.claude`; kimi → `~/.kimi-code`; kilo → `~/.config/kilo` or `~/.kilo`) + `detectInstalledHarnesses()` (ordered keys, `existsSync` filter); add an `add`-only dispatch branch in `main()` before `cmdAdd`: resolve detected set → empty dies (exit 2) naming the searched dirs and the explicit `--target` values; print `--target auto: detected <set>` to stderr; loop `cmdAdd` once per resolved target — for project scope, dedupe through each target's project resolution first (agents/claude downgrade → opencode, so unique effective targets only); `--dry-run` flows through unchanged.
+- [x] **1.1** In `installer/init.mjs`: add `AUTO_TARGET_PROBES` (opencode → `USER_OC`; agents → `~/.agents`; claude → `$CLAUDE_CONFIG_DIR` or `~/.claude`; kimi → `~/.kimi-code`; kilo → `~/.config/kilo` or `~/.kilo`) + `detectInstalledHarnesses()` (ordered keys, `existsSync` filter); add an `add`-only dispatch branch in `main()` before `cmdAdd`: resolve detected set → empty dies (exit 2) naming the searched dirs and the explicit `--target` values; print `--target auto: detected <set>` to stderr; loop `cmdAdd` once per resolved target — for project scope, dedupe through each target's project resolution first (agents/claude downgrade → opencode, so unique effective targets only); `--dry-run` flows through unchanged.
     — **Why:** this is the npx-skills `detectInstalledAgents()` equivalent — the only genuine feature gap from the parity pass (#564).
     — **Done when:** `node --check` passes; sandboxed `HOME` with only `~/.agents` present: `add tdd-workflow-skill --target auto --yes` installs to `~/.agents/skills/`; empty `HOME`: exits 2 naming searched dirs.
     — **Consumers affected:** `add` (user + project scope); preset flow explicitly excluded (dies via its existing non-opencode target check if forced).
-- [ ] **1.2** Help text: `--target` FLAGS line gains `auto (detect installed harnesses)`; USAGE block notes auto.
+    — **Done:** AUTO_TARGET_PROBES (config-root probes, CLAUDE_CONFIG_DIR honored) + detectInstalledHarnesses() + add-only dispatch loop with project dedupe on effective target; empty detection dies exit 2 naming searched dirs; files: installer/init.mjs; fixes: agents probe corrected from subdir constants to the ~/.agents root
+- [x] **1.2** Help text: `--target` FLAGS line gains `auto (detect installed harnesses)`; USAGE block notes auto.
     — **Done when:** `--help` prints the auto mention.
     — **Why:** undocumented accepted values are drift bait.
     — **Consumers affected:** CLI users.
-- [ ] **1.3** Tests in `tests/init.bats`: (a) empty sandboxed HOME → `--target auto` exits non-zero with "no harness config directories detected"; (b) `mkdir -p $HOME/.agents` → `add tdd-workflow-skill --target auto --yes` → `~/.agents/skills/tdd-workflow-skill` exists; (c) `mkdir -p $HOME/.agents $HOME/.claude` → `add tdd-workflow-skill --project "$TMP_PROJ" --target auto --yes` → project dir exists exactly once (dedupe: both downgrade to opencode project), no user-scope writes.
+    — **Done:** --target FLAGS line now lists auto (detect installed harnesses); files: installer/init.mjs; fixes: none
+- [x] **1.3** Tests in `tests/init.bats`: (a) empty sandboxed HOME → `--target auto` exits non-zero with "no harness config directories detected"; (b) `mkdir -p $HOME/.agents` → `add tdd-workflow-skill --target auto --yes` → `~/.agents/skills/tdd-workflow-skill` exists; (c) `mkdir -p $HOME/.agents $HOME/.claude` → `add tdd-workflow-skill --project "$TMP_PROJ" --target auto --yes` → project dir exists exactly once (dedupe: both downgrade to opencode project), no user-scope writes.
     — **Done when:** the three tests pass.
     — **Why:** detection is machine-state-dependent — sandboxed HOME makes it deterministic.
     — **Consumers affected:** CI gates.
-- [ ] **1.4** Gate: `bats tests/init.bats` green.
+    — **Done:** three tests: none-detected exit 2, detected-agents install, project dedupe (no user-scope writes); files: tests/init.bats; fixes: none
+- [x] **1.4** Gate: `bats tests/init.bats` green.
     — **Done when:** exit 0.
     — **Why:** behavioral proof before alias work stacks.
     — **Consumers affected:** Phases 2–3 gates.
+    — **Done:** bats tests/init.bats → 37 ok / 0 not ok, exit 0; files: none; fixes: agents probe (above)
 
 ### Phase 2: short flags + command aliases
 

@@ -83,6 +83,19 @@ const TARGETS = {
 const TARGET_VALUES = [...Object.keys(TARGETS), "both"];
 const activeTargets = (target) => (target === "both" ? ["opencode", "claude"] : [target]);
 
+// --target auto (#564): probe each target's user-scope config root — mirrors
+// npx skills' detectInstalledAgents() (config-root existence checks).
+const AUTO_TARGET_PROBES = {
+  opencode: () => existsSync(USER_OC),
+  agents: () => existsSync(join(os.homedir(), ".agents")),
+  claude: () => existsSync(process.env.CLAUDE_CONFIG_DIR?.trim() || USER_CLAUDE_SKILLS.replace(/\/skills$/, "")),
+  kimi: () => existsSync(USER_KIMI_AGENTS.replace(/\/agents$/, "")),
+  kilo: () => existsSync(USER_KILO_AGENTS.replace(/\/agent$/, "")) || existsSync(USER_KILO_SKILLS.replace(/\/skills$/, "")),
+};
+function detectInstalledHarnesses() {
+  return Object.keys(AUTO_TARGET_PROBES).filter((t) => AUTO_TARGET_PROBES[t]());
+}
+
 // ─────────────────────────── arg parsing ────────────────────────────────
 const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps", "global"]);
 function parseArgs(argv) {
@@ -1482,6 +1495,23 @@ async function main() {
   const depMap = await loadDepMap();
 
   // verb dispatch: add / remove (npx UX surface)
+  if (opts.rest[0] === "add" && opts.target === "auto") {
+    // #564: --target auto resolves to the set of installed harnesses, then
+    // runs the normal per-target flow once each. Project scope dedupes on the
+    // EFFECTIVE project target (agents/claude downgrade to opencode).
+    const found = detectInstalledHarnesses();
+    if (!found.length)
+      die("'--target auto': no harness config directories detected. Searched: ~/.config/opencode, ~/.agents, ~/.claude, ~/.kimi-code, ~/.config/kilo — install a harness first, or pass --target <opencode|claude|agents|kimi|kilo>.", 2);
+    console.error(`--target auto: detected ${found.join(", ")}`);
+    let targets = found;
+    if (opts.project) {
+      targets = [...new Set(found.map((t) => (TARGETS[t].projectSkillsDir ? t : "opencode")))];
+    }
+    for (const t of targets) {
+      await cmdAdd(opts.rest.slice(1), { ...opts, target: t }, reg, depMap);
+    }
+    return;
+  }
   if (opts.rest[0] === "add") { await cmdAdd(opts.rest.slice(1), opts, reg, depMap); return; }
   if (opts.rest[0] === "update") { await cmdUpdate(opts.rest.slice(1), opts); return; }
   if (opts.rest[0] === "remove") { await cmdRemove(opts.rest.slice(1), opts); return; }
@@ -1663,7 +1693,7 @@ FLAGS
   --prune              remove opencode-init-owned entries absent from the new set
   --permit             (user scope) backup opencode.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
-  --target <t>         (add) install target: opencode (default), claude, agents (shared ~/.agents/), kimi, kilo, or both (--format is a deprecated alias)
+  --target <t>         (add) install target: opencode (default), auto (detect installed harnesses), claude, agents (shared ~/.agents/), kimi, kilo, or both (--format is a deprecated alias)
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and

@@ -345,3 +345,32 @@ EOC
   [ "$status" -ne 0 ]
   echo "$output" | grep -q "cannot combine --global with --project"
 }
+
+@test "--target auto with no harnesses detected exits non-zero (#564)" {
+  export HOME="$TMP_PROJ/empty-home"
+  mkdir -p "$HOME"
+  run $INIT add tdd-workflow-skill --target auto --yes
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q "no harness config directories detected"
+}
+
+@test "--target auto installs to detected harnesses only (#564)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME/.agents"
+  run $INIT add tdd-workflow-skill --target auto --yes
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "detected agents"
+  [ -d "${HOME}/.agents/skills/tdd-workflow-skill" ]
+  [ ! -e "${HOME}/.config/opencode/skills/tdd-workflow-skill" ]
+}
+
+@test "--target auto --project dedupes downgraded targets (#564)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME/.agents" "$HOME/.claude"
+  run $INIT add tdd-workflow-skill --project "$TMP_PROJ" --target auto --yes
+  [ "$status" -eq 0 ]
+  [ -d "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
+  # agents+claude both downgrade to the opencode project target — one install
+  [ ! -e "${HOME}/.agents/skills/tdd-workflow-skill" ]
+  [ ! -e "${HOME}/.claude/skills/tdd-workflow-skill" ]
+}
