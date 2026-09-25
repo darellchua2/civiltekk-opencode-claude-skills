@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.41.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.40.0...v9.41.0) (2026-09-25)
+
+### Features
+
+* **mcp:** add self-installing provider packs — playwright, alpha-vantage, nanobanana ([#555](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/555)) ([19b6124](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/19b6124c27510e0b2572466a69bad2977c467b80)), closes [#552](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/552) [#268](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/268)
+
 ## [9.40.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.39.0...v9.40.0) (2026-09-24)
 
 ### Features
