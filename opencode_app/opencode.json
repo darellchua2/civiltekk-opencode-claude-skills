@@ -107,6 +107,11 @@
         },
         {
             "action": "skill",
+            "resource": "dev-uat-promotion-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
             "resource": "git-semantic-commits-skill",
             "effect": "allow"
         },
