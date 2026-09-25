@@ -86,15 +86,18 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 
 ## Steps 2-10 — per ticket (in order)
 
-2. **Sync + branch**: `git fetch origin <base>`. **Merged-ticket skip**:
+2. **Sync + branch** (all git/gh run in the ticket's repo — `git -C <repo>`
+   and `gh ... -R <owner/name>` for foreign repos; session repo unchanged):
+   `git fetch origin <base>`. **Merged-ticket check**:
    `gh pr list --state merged --head feat/<KEY>` non-empty → the ticket is
    already merged; report the skip with a note and advance to the next
    ticket. Otherwise cut `git branch feat/<KEY> origin/<base>`. If the
-   branch or worktree already
-   exists (mid-pipeline failure leftovers), report state and ask:
-   prune / resume / refuse — never clobber silently.
-3. **Ticket fetch/create**: existing ref → fetch its description
-   (`gh issue view` / JIRA). JIRA access follows the **MCP Availability
+   branch or worktree already exists (mid-pipeline failure leftovers OR a
+   held ticket resuming), report state and ask: prune / resume / refuse —
+   never clobber silently; **resume** is the held path (Step 1): rebase
+   `feat/<KEY>` onto the updated `origin/<base>` and continue at Step 7.
+3. **Ticket fetch/create**: existing ref → fetch its description (`gh issue
+   view [-R <owner/name>]` / JIRA). JIRA access follows the **MCP Availability
    Guard** (policy: `jira-git-integration-skill` §MCP Availability Guard):
    `atlassian_*` tools present → use them; absent → REST fallback
    via API token; headless → degrade with a clear report. New work → create the
@@ -105,18 +108,20 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    (NOT `$(git rev-parse --show-toplevel)` — that nests when invoked from a
    worktree). Create `git worktree add <root>/<KEY> feat/<KEY>` — **always,
    even when the ticket is in this repo**. `<root>` is
-   `$WORKTREE_PIPELINE_ROOT` when set, else `<main-repo>/../worktrees/`.
+   `$WORKTREE_PIPELINE_ROOT` when set (session repo), else
+   `<ticket-repo>/../worktrees/` — derived from the ticket's repo, so
+   `repo/KEY` tickets get a worktree root beside their own checkout.
    Pre-flight `git worktree list` for stale `<KEY>` entries.
-   **CodeGraph index (conditional)**: iff `<main-repo>/.codegraph` exists,
-   run `git -C <root>/<KEY> check-ignore -q .codegraph/` first — exit 0
+   **CodeGraph index (conditional)**: iff the ticket repo's checkout has
+   `.codegraph`, run `git -C <root>/<KEY> check-ignore -q .codegraph/` first — exit 0
    (ignored on the ticket branch) → run `npx @colbymchenry/codegraph init -i`
    **inside the new worktree** (before Step 5; 5–60s, index gitignored);
    exit 1 → skip init entirely with a one-line note (".codegraph/ not
    ignored in target repo — skipping init to keep commits clean") and
    continue on the rg/grep fallback (any other `check-ignore` exit →
    treat as the same soft-skip path); CLI absent or init failure → one-line
-   soft-skip note and continue on rg/grep. No `.codegraph/` in the main
-   checkout → skip silently. Never write ignore entries (tracked
+   soft-skip note and continue on rg/grep. No `.codegraph/` in the ticket
+   repo's checkout → skip silently. Never write ignore entries (tracked
    `.gitignore` edits stage into per-phase commits; per-worktree
    `info/exclude` is not honored by linked worktrees). Never symlink the
    main checkout's `.codegraph/` into the worktree — the index reflects the

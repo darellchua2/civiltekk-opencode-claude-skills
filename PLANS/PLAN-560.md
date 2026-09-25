@@ -56,14 +56,16 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done:** dry-run bullet prints merged/held-on-blocked-by/held-on-overlap predictions + watcher plans + per-repo branch/worktree names; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
 
 ### Phase 2: Steps 2–4 — per-repo context threading
-- [ ] **2.1** Thread the ticket's resolved repo through Steps 2–3: the merged-PR check, branch cut, and ticket fetch run against the ticket's repo (`git -C <repo>`, `gh ... -R <owner/name>` for foreign repos; session repo unchanged); the held-resume path rides the existing prune/resume/refuse ask with resume defined as rebase onto the updated base.
+- [x] **2.1** Thread the ticket's resolved repo through Steps 2–3: the merged-PR check, branch cut, and ticket fetch run against the ticket's repo (`git -C <repo>`, `gh ... -R <owner/name>` for foreign repos; session repo unchanged); the held-resume path rides the existing prune/resume/refuse ask with resume defined as rebase onto the updated base.
     — **Why:** Cross-repo tickets must hit their own repo's git remote and issue tracker, and a resumed held ticket must not clobber prior work (AC #4, #6).
     — **Done when:** Steps 2 and 3 name the repo-scoped commands; the resume semantics of 1.2 are operationalized in Step 2's leftover-ask rule.
     — **Consumers affected:** Step 4 worktree creation consumes the same resolved repo and branch.
-- [ ] **2.2** Make the Step 4 worktree root per-repo: `<ticket-repo>/../worktrees/` (or `$WORKTREE_PIPELINE_ROOT` for the session repo, unchanged); the CodeGraph conditional is evaluated against the ticket's repo checkout.
+    — **Done:** Step 2 header scopes git/gh per repo, resume defined in the leftover ask; Step 3 gains `gh -R` form; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **2.2** Make the Step 4 worktree root per-repo: `<ticket-repo>/../worktrees/` (or `$WORKTREE_PIPELINE_ROOT` for the session repo, unchanged); the CodeGraph conditional is evaluated against the ticket's repo checkout.
     — **Why:** A foreign repo's worktree must branch from that repo's storage layout, not the session repo's (AC #6).
     — **Done when:** Step 4 derives `<root>` from the ticket's repo; existing `$WORKTREE_PIPELINE_ROOT` and CodeGraph rules otherwise unchanged.
     — **Consumers affected:** Step 10 cleanup (Phase 4) removes from the same per-repo root.
+    — **Done:** Step 4 root per ticket repo + CodeGraph conditional per ticket repo; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
 
 ### Phase 3: Step 6e→7 boundary — overlap guard
 - [ ] **3.1** Insert the overlap guard's early leg between the PLAN push (6e) and plan review (Step 7): while any earlier in-run ticket still has an open PR, intersect that PR's branch diff with THIS ticket's PLAN Dependency & Consumer Map touch-set (the map 6d just validated); a non-empty intersection holds ticket N — worktree kept, auto-resume on that PR's merge notification (rebase, re-run the full gate since the SHA changes, continue at Step 7). Advisory default: an empty or missing Consumer Map skips the early leg — worst case is a late hold at the 10a authoritative check (new step 4.2), never a wrong merge.
