@@ -571,6 +571,11 @@
             "effect": "allow"
         },
         {
+            "action": "skill",
+            "resource": "mcp-install-assistant-skill",
+            "effect": "allow"
+        },
+        {
             "action": "codegraph*",
             "resource": "*",
             "effect": "allow"
