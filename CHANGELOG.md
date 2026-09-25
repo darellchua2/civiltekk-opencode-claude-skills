@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.44.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.43.0...v9.44.0) (2026-09-25)
+
+### Features
+
+* npx-skills parity — -g alias and _archived skills removal ([#565](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/565)) ([2e1defb](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/2e1defb6073eacfdd6890fae55b94127200e8020)), closes [#563](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/563) [#563](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/563)
+
 ## [9.43.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.42.1...v9.43.0) (2026-09-25)
 
 ### Features
