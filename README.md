@@ -41,6 +41,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills remove solid-principles-
 | Target | Destination | Notes |
 |--------|-------------|-------|
 | `opencode` (default) | `~/.config/opencode/{skills,agents}/` | Full opencode compat (model injection, strict-allowlist detection) |
+| `auto` | all detected harness config roots | Probes `~/.config/opencode`, `~/.agents`, `~/.claude`, `~/.kimi-code`, `~/.config/kilo` — installs to every hit (`add` only; none found → error) |
 | `claude` | `~/.claude/skills/` · agents `~/.claude/agents/` | Skills verbatim (`model:` stripped); agents get additive `tools:`/`disallowedTools:` translation |
 | `agents` | `~/.agents/{skills,agents}/` | Cross-tool shared dir — read by Kimi Code and pi; verbatim copies |
 | `kimi` | `~/.kimi-code/{skills,agents}/` (user) · `.kimi-code/` (project) | Kimi Code native dirs; additive frontmatter translation |
@@ -49,7 +50,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills remove solid-principles-
 
 `--project` installs into `./.opencode/` (agents, `opencode.json`, manifests — full-service config generation) with skills going to `./.agents/skills/` (Agent Skills standard dir natively discovered by OpenCode and pi) instead of user scope. `--no-deps` skips declared skill prerequisites.
 
-The catalog is also consumable via the ecosystem CLI: `npx skills add darellchua2/civiltekk-opencode-claude-skills` (skills only — project default, `-g` for global; no dependency resolution or agent installs).
+The catalog is also consumable via the ecosystem CLI: `npx skills add darellchua2/civiltekk-opencode-claude-skills` (skills only — project default, `-g` for global; no dependency resolution or agent installs). This installer mirrors its ergonomics: `-g`, `-y`, `-p`, `rm`, `list`, and `--target auto` all work; two divergences are deliberate — user scope is the default (not project), and installs are per-target copies (not symlinks) because targets apply model/permission translations.
 
 ### 2. Full deploy — the whole stack
 

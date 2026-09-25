@@ -111,3 +111,19 @@ The preset/init flow does NOT gain auto (existing die-on-non-opencode contract p
 GATE 8aabcd1 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 829c4e4 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 274d2b0 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+
+## Review Fixes (Step 9)
+
+- **Major (fixed)**: auto-probe self-inflation — the opencode probe read `~/.config/opencode`, which the installer creates (manifest dir) on every user-scope add for ANY target; first auto run permanently added opencode to detections. Fix: content-aware probe (`dirHasContent(USER_OC, ".skill-manifest.json")`); regression test pins install(claude)→auto resolving claude only.
+- **Minor (fixed)**: `-g/-y/-p` literals deduped into one `SHORT_FLAGS` map feeding both the alias arms and the value-eat guard.
+- **Minor (fixed)**: README target table gains an `auto` row; the npx-parity paragraph names the new aliases and the two divergences.
+- **Minor (fixed, documented)**: `--target auto --dry-run` multi-target stdout contract = NDJSON (one doc per resolved target), documented in help; the reviewer-recommended single-aggregated-doc shape is deferred (would refactor `writeUserScopeInstall`'s print path — disproportionate for a new contract with no consumers). Follow-up pile: aggregation + `add <name> --project --prune` ignore bug (#563 follow-up).
+- **Minor (noted, not fixed)**: `list foo` error says `--list: unknown kind` (alias context lost — cosmetic); tui catch-path has no drain (not observed).
+- **Requirements Gap resolution**: adopted the documented-NDJSON contract above; aggregation deferred with rationale (deviation from the reviewer's recommended answer, recorded here).
+- **Re-gate**: full `bats tests/` on the fixed tree → 576 ok / 0 not ok, exit 0 (adds the self-inflate regression test).
+- **LEARNINGS**: `anti-patterns/auto-detect-probe-reads-self-created-signal.md` + `solutions/process-exit-truncates-async-pipe-writes-drain-first.md`.
+
+## Gate Trace (review-fix round)
+
+GATE 274d2b0 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE <review-fix-sha> tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a

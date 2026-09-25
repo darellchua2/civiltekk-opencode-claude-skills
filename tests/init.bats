@@ -411,3 +411,18 @@ EOC
   [ "$status" -ne 0 ]
   echo "$output" | grep -q "specify a category"
 }
+
+@test "--target auto does not self-inflate from the installer's own manifest dir (#564 review)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME/.claude"
+  # a claude-target install creates ~/.config/opencode/ for its manifest —
+  # the auto probe must not read that synthetic signal as "opencode installed"
+  run $INIT add tdd-workflow-skill --target claude --yes
+  [ "$status" -eq 0 ]
+  [ -d "${HOME}/.config/opencode" ]
+  run $INIT add solid-principles-skill --target auto --yes
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "detected claude"
+  [ ! -e "${HOME}/.config/opencode/skills/solid-principles-skill" ]
+  [ -d "${HOME}/.claude/skills/solid-principles-skill" ]
+}

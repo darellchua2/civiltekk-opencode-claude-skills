@@ -30,7 +30,7 @@
 // => isolation (curated subset) only holds on a clean slate (no global deploy).
 
 import { readFile, writeFile, mkdir, readdir, rm, cp, copyFile } from "node:fs/promises";
-import { existsSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -85,8 +85,19 @@ const activeTargets = (target) => (target === "both" ? ["opencode", "claude"] : 
 
 // --target auto (#564): probe each target's user-scope config root — mirrors
 // npx skills' detectInstalledAgents() (config-root existence checks).
+// opencode probe is CONTENT-aware: the installer itself creates ~/.config/opencode
+// (manifest dir) on every user-scope add — for ANY target — so the bare root
+// existing is a signal this tool can synthesize as a side effect (probe would
+// self-inflate; #564 review). Only real content counts.
+function dirHasContent(dir, ignore) {
+  try {
+    return readdirSync(dir).some((f) => f !== ignore);
+  } catch {
+    return false;
+  }
+}
 const AUTO_TARGET_PROBES = {
-  opencode: () => existsSync(USER_OC),
+  opencode: () => existsSync(USER_OC) && dirHasContent(USER_OC, ".skill-manifest.json"),
   agents: () => existsSync(join(os.homedir(), ".agents")),
   claude: () => existsSync(process.env.CLAUDE_CONFIG_DIR?.trim() || USER_CLAUDE_SKILLS.replace(/\/skills$/, "")),
   kimi: () => existsSync(USER_KIMI_AGENTS.replace(/\/agents$/, "")),
@@ -98,20 +109,22 @@ function detectInstalledHarnesses() {
 
 // ─────────────────────────── arg parsing ────────────────────────────────
 const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps", "global"]);
+// Single home for the short-flag set: the alias arms AND the value-eat guard
+// both consume this list — a fourth short updates one place or it gets eaten
+// as a flag value (#564 review).
+const SHORT_FLAGS = { "-g": "global", "-y": "yes", "-p": "project" };
 function parseArgs(argv) {
   const opts = { rest: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--") { opts.rest.push(...argv.slice(i + 1)); break; }
-    if (a === "-g") { opts.global = true; continue; } // npx-skills alias for user scope (the default)
-    if (a === "-y") { opts.yes = true; continue; }    // npx-skills alias for --yes
-    if (a === "-p") { opts.project = true; continue; } // npx-skills alias for --project (cwd default)
+    if (SHORT_FLAGS[a]) { opts[SHORT_FLAGS[a]] = true; continue; } // npx-skills short aliases
     if (a.startsWith("--")) {
       const key = a.slice(2).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
       if (BOOL_FLAGS.has(key)) opts[key] = true;
       else {
         const next = argv[i + 1];
-        if (next === undefined || next.startsWith("--") || next === "-g" || next === "-y" || next === "-p") opts[key] = true;
+        if (next === undefined || next.startsWith("--") || SHORT_FLAGS[next]) opts[key] = true;
         else { opts[key] = next; i++; }
       }
     } else {
@@ -1691,7 +1704,8 @@ SCOPE
   npx-skills divergences (deliberate): the scope default is USER here (npx
   skills defaults to project — use --project/-p), and installs are per-target
   COPIES (npx skills symlinks) because targets apply model/permission
-  translations.
+  translations. Multi-target --target auto --dry-run emits one JSON document
+  per resolved target, newline-separated (NDJSON); single-target stays one doc.
 
 FLAGS
   -g, --global         user scope (default) — explicit npx-skills-compatible alias; cannot combine with --project
