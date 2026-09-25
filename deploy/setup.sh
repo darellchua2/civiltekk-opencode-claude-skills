@@ -361,7 +361,7 @@ MODELS_ONLY=false        # --models-only (provider + resolve only)
 FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
-ENABLE_PACK=""           # --enable-pack <csv> (provider packs: markitdown,nextjs,docling,chrome-devtools)
+ENABLE_PACK=""           # --enable-pack <csv> (provider packs: markitdown,nextjs,docling,chrome-devtools,playwright,alpha-vantage,nanobanana)
 SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary-visible skills per deploy/skill-profiles.json; full = the shipped opencode.json skill set)
 ENABLE_LOCAL_LLM=false   # --enable-local-llm (gemma-4-E4B via llama.cpp, requires NVIDIA GPU)
 ENABLE_VLLM=false        # --enable-vllm (vLLM Docker server, requires >12GB VRAM)
@@ -617,7 +617,7 @@ USAGE:
     --enable-pack <csv>   Enable provider pack(s) — flips mcp.servers.<server>.disabled
                           and appends v2 permissions-array allow rules for the
                           named packs. Available
-                          packs: markitdown, nextjs, docling, chrome-devtools
+                          packs: markitdown, nextjs, docling, chrome-devtools, playwright, alpha-vantage, nanobanana
                           (comma-separated, e.g. --enable-pack markitdown,docling).
                           No-op if omitted; default state of every pack is OFF.
 
@@ -751,6 +751,9 @@ USAGE:
       docling            Layout-aware document extraction (heavy ~3-4 GB)
       chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
                           (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
+      playwright         Logged-in web automation via accessibility snapshots (Microsoft, Apache-2.0)
+      alpha-vantage      Market/macro/commodities data with cited figures (remote; needs ALPHA_VANTAGE_API_KEY)
+      nanobanana         Google Nano Banana image generation: 4K, multi-reference editing (needs GEMINI_API_KEY)
 
     SKILLS ($(count_skills "${REPO_DIR}/skills")):
 
@@ -934,7 +937,7 @@ parse_arguments() {
                 # Accept any value including "" (empty = no-op, handled by
                 # merge-packs.mjs). Only error if no following token at all.
                 if [ $# -lt 2 ]; then
-                    log_error "--enable-pack requires an argument (csv: markitdown,nextjs,docling,chrome-devtools)"
+                    log_error "--enable-pack requires an argument (csv: markitdown,nextjs,docling,chrome-devtools,playwright,alpha-vantage,nanobanana)"
                     exit 1
                 fi
                 ENABLE_PACK="$2"
@@ -2723,8 +2726,8 @@ setup_config() {
              echo "✓ Configured MCP servers:"
              echo "    Auto-start: codegraph, web-reader, web-search"
               echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
-              echo "    Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
-              echo "    Enable a group with: ./setup.sh --enable-pack <markitdown|nextjs|docling|chrome-devtools>"
+              echo "    Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools, playwright, alpha-vantage, nanobanana"
+              echo "    Enable a group with: ./setup.sh --enable-pack <markitdown|nextjs|docling|chrome-devtools|playwright|alpha-vantage|nanobanana>"
             echo ""
         else
             log_error "opencode.json source not found: ${SOURCE_CONFIG}"
@@ -4665,6 +4668,9 @@ print_summary() {
          echo "    - markitdown - Document-to-Markdown (upstream markitdown-mcp), opt-in"
          echo "    - docling - Layout-aware document extraction, opt-in (~3-4 GB)"
          echo "    - chrome-devtools - Live Chrome automation, opt-in"
+         echo "    - playwright - Logged-in web automation, opt-in"
+         echo "    - alpha-vantage - Market/macro data (needs ALPHA_VANTAGE_API_KEY), opt-in"
+         echo "    - nanobanana - Nano Banana image generation (needs GEMINI_API_KEY), opt-in"
 
     # Secret masking
     if [ -f "${CONFIG_DIR}/vibeguard.config.json" ]; then
@@ -4757,7 +4763,7 @@ print_next_steps() {
      echo ""
      echo "  Auto-start: codegraph, web-reader, web-search"
       echo "  Opt-in per-project: atlassian"
-     echo "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools"
+     echo "  Opt-in global packs: next-devtools, markitdown, docling, chrome-devtools, playwright, alpha-vantage, nanobanana"
     echo ""
     echo "  Auth: opencode mcp auth atlassian / opencode mcp auth github"
     echo ""

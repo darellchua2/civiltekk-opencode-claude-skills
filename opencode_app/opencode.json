@@ -835,6 +835,36 @@
                     "CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS": "1"
                 },
                 "disabled": true
+            },
+            "playwright": {
+                "type": "local",
+                "command": [
+                    "npx",
+                    "-y",
+                    "@playwright/mcp@latest"
+                ],
+                "disabled": true
+            },
+            "alpha-vantage": {
+                "type": "remote",
+                "url": "https://mcp.alphavantage.co/mcp",
+                "oauth": false,
+                "headers": {
+                    "Authorization": "Bearer {env:ALPHA_VANTAGE_API_KEY}"
+                },
+                "disabled": true
+            },
+            "nanobanana": {
+                "type": "local",
+                "command": [
+                    "npx",
+                    "-y",
+                    "@mindstone/mcp-server-nano-banana@latest"
+                ],
+                "environment": {
+                    "GEMINI_API_KEY": "{env:GEMINI_API_KEY}"
+                },
+                "disabled": true
             }
         }
     },

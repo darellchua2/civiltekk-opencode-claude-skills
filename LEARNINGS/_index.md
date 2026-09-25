@@ -1422,7 +1422,7 @@
 - **File**: `conventions/count-restating-surfaces-exceed-drift-test-coverage.md`
 - **Confidence**: 0.7
 - **Scope**: project
-- **Summary**: test_count_drift pins README + deploy scripts but not opencode_app/README.md, which went stale at 146 in #546; on inventory changes grep all sibling docs for count patterns, or derive from registry.json (#546 code review)
+- **Summary**: test_count_drift pins README + deploy scripts but not opencode_app/README.md (stale at 146 in #546); #552 added pack catalogs restated in prose (README "remaining N", app-README Available-packs comment, repo-setup SKILL.md) that no count test covers — on inventory changes grep sibling docs for the catalog NAMES (`rg -n 'markitdown.*docling|Available packs|opt-in'`), or derive from disk (#546 + #552 reviews; confidence 0.7→0.75)
 - **Date**: 2026-09-24
 
 ### Enumerated subroutine callers go stale in the same commit that rots them
@@ -1459,4 +1459,40 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Summary**: All three pack consumers dir-scan (merge-packs, scanPackNames, validate_enable_pack) so deleting pack-autodesk.json was a pure data change — fail-fast text and counts rebuilt themselves, proven by execution. Replicate for opt-in feature groups; never hardcode membership in consumers (#553 arch review + code review)
+- **Date**: 2026-09-25
+
+### Relay ruling on external schema lands unverified
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/relay-ruling-external-schema-unverified.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Round-1 relay ruling ("oauth:false undocumented in v2") flowed into shipped config against docs that document it verbatim with static-Bearer as the canonical case — reversed in round 2 after live doc fetch. Rule: external-schema rulings get one official-docs fetch before landing in config or ACs (#552)
+- **Date**: 2026-09-25
+
+### Plan-mandated registry check skipped, unrecorded
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/plan-mandated-registry-check-skipped.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: PLAN mandated an npm-name check; outcome unrecorded, name 404s, dead launcher shipped behind all-green structural gates. Rule: verification steps belong in the exit gate with recorded output — unrecorded = didn't happen (#552)
+- **Date**: 2026-09-25
+
+### Dir-derived pack catalogs absorb additions
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/dir-derived-pack-catalogs-absorb-additions.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: 3-pack addition touched 2 count literals because catalogs are dir-derived; the catalog-name sweep caught the prose restatements. Derive listings from disk, sweep by name (#552)
+- **Date**: 2026-09-25
+
+### v2 per-server MCP timeout object shape — and catalog:30000 is a no-op
+
+- **Category**: solutions
+- **File**: `LEARNINGS/solutions/v2-mcp-server-timeout-object-shape.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: v2 timeout is object-shaped (scalar = v1); catalog default is already 30s so catalog:30000 no-ops, cold-npx risk is startup. Pin object form; buy headroom via timeout.startup (#552 arch review + code review)
 - **Date**: 2026-09-25

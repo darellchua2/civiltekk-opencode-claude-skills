@@ -202,7 +202,7 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
   [ "$status" -eq 0 ]
   local counts
   counts=$(echo "$output" | node -e 'let d="";process.stdin.on("data",(c)=>d+=c).on("end",()=>{const p=JSON.parse(d);if(!p.packs.includes("docling")||p.packs.some((x)=>x.includes("README")))process.exit(3);console.log(p.packs.length+"/"+p.plugins.length)})')
-  [[ "$counts" == "4/5" ]]
+  [[ "$counts" == "7/5" ]]
   # cwd-independence (arch review WARN): node -e import() resolves relative
   # specifiers against process cwd — the module path must be argv-absolute.
   run bash -c "export HOME='$d'; cd /tmp && '$PWD/deploy/setup.sh' --list-items 2>/dev/null | grep -c '\"docling\"'" </dev/null
