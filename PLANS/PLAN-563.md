@@ -111,3 +111,20 @@ None (no `blocked-by:`).
 
 - **Count-pinned tests** (skill_profiles union guard, init.bats preset counts): the deleted tree only removed already-excluded dirs — full gate catches any surprise; fix forward in the same phase.
 - **build-registry drift**: Step 2.1 verifies the zero-diff assumption instead of trusting the census.
+
+## Review Fixes (Step 9)
+
+- **Major 1 (fixed)**: `--project -g` (swapped order) bypassed the conflict guard — the value-flag branch consumed `-g` as the project-dir value (execution-probed by the reviewer: installed into a junk `./-g`). Fix: value branch refuses `-g` (`|| next === "-g"`); the conflict test now pins BOTH orders.
+- **Major 2 (fixed)**: the new `-g` alias test wrote to the developer's real `~/.config/opencode/` — sandboxed `HOME` to `$TMP_PROJ/home`, matching the file's sibling pattern.
+- **Major 3 (fixed)**: `_archived` path sweep completed — ~15 surviving path references removed/reworded (.dockerignore, deploy/setup.sh count/category/plugin filters, opencode_app Dockerfile + README, documentation-consistency-skill recipe, README history → past tense, 5 test files). Kept: `deploy_delegate.bats:74` (reintroduction pin) and the isolation test's retirement comment.
+- **Minor 1 (fixed)**: TUI `Object.assign(opts, …)` could set `project` after the main() guard — re-check added post-assign.
+- **Minor 2 / Requirements Gap (fixed, reviewer-recommended answer)**: preset flow prints a `-g` notice ("applies to 'add' only; preset flow is project-scoped"); remove/update stay silent (truthful no-ops — both user-scope-only).
+- **LEARNINGS**: `LEARNINGS/anti-patterns/flag-conflict-guard-vs-value-flag-parser.md` (guard completeness vs parser token handling + opts-mutation timeline).
+- **Re-gate**: full `bats tests/` on the fixed tree → 569 ok / 0 not ok, exit 0.
+
+## Gate Trace
+
+GATE 8baf945 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE c94f36e tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 444cf54 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+
