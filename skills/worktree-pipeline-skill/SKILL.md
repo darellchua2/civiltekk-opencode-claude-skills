@@ -450,22 +450,35 @@ missing Consumer Map skips the early leg — worst case is a late hold at the
 
 ## Failure Policy
 
-- **Halt triggers**: the executor's `[goal:blocked]` terminal marker
-  (Step 8), review-fix exhaustion after 2 iterations (Step 9), CI red —
-  any concluded failing check, or still pending at the 30-minute timeout
-  (Step 10), or PR creation failure.
+- **Halt triggers**: the executor's `[goal:blocked]` terminal marker on the
+  active ticket (Step 8), review-fix exhaustion after 2 iterations (Step 9),
+  PR creation failure (Step 10a), or watcher exhaustion — 2
+  fix-and-re-watch rounds without a green watch (Step 10b). CI red is
+  **not** a run-level abort: a red or timed-out watcher fails that ticket
+  only.
 - **Keep the scene**: the failed ticket's worktree + `feat/<KEY>` branch
   stay in place for inspection (Step 2's prune/resume/refuse ask handles
-  clean reruns).
-- **Abort remaining tickets** — no override; per-ticket status report.
+  clean reruns); a red watcher never cleans up.
+- **Tickets in flight when a ticket fails**: independent tickets proceed;
+  dependent (held) tickets stay held and are reported **deferred** at run
+  end. A `[goal:blocked]` on the active ticket pauses the implementation
+  lane — background watchers keep running and notifications keep draining
+  at boundaries.
+- **Final report waits** for outstanding watchers (each bounded by the
+  30-minute cap plus up to 2 red-fix rounds) before the Return Contract.
 - **Return Contract semantics**: `partial` for any halt after a ticket has
-  started; `failed` is reserved for pre-execution failures (invalid base
-  branch, zero tickets resolved, missing hard dependency from Step 1's
-  preflight).
+  started OR any failed-red ticket; `success` allows deferred-held tickets
+  (listed under Issues); `failed` is reserved for pre-execution failures
+  (invalid base branch, zero tickets resolved, missing hard dependency from
+  Step 1's preflight, unresolvable foreign repo).
 
 ## Guarantees
 
-- Sequential execution across tickets; one worktree live per ticket.
+- One active implementation at a time; any number of background merge
+  watchers. A ticket's worktree lives until its PR resolves — merge →
+  cleaned up by the main session's notification handler; red → kept for
+  fixes. Every merge is green-only; the watcher performs no local git
+  mutations.
 - Every ticket re-validated against latest `origin/<base>` before execution.
 - The main working tree is never checked out on a feat branch.
 - Every PLAN passes the atomicity self-check before commit.
@@ -481,7 +494,9 @@ missing Consumer Map skips the early leg — worst case is a late hold at the
 
 ## Return Contract
 
-**Status:** success | partial | failed
-**Output:** per ticket — PR URL + merge SHA; one line each
+**Status:** success | partial | failed — deferred-held tickets alone do not
+downgrade to `partial`; any failed-red ticket does
+**Output:** per ticket — PR URL + merge SHA (watcher-reported) + final state
+(merged / failed-red / deferred-held); one line each
 **Summary:** 2-3 sentences max
-**Issues:** blockers, skipped (`blocked-by:`) tickets, or "None"
+**Issues:** blockers, held/deferred tickets, red-watcher outcomes, or "None"

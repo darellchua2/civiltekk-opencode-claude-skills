@@ -107,22 +107,23 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     - Other/none: foreground `gh pr checks --watch` before advancing (today's behavior)
 
 ### Phase 5: Failure Policy, Guarantees, Return Contract
-- [ ] **5.1** Rewrite the Failure Policy halt triggers: remove "CI red — any concluded failing check, or still pending at the 30-minute timeout" as a run-level abort; halt triggers become the executor's `[goal:blocked]` on the active ticket, review-fix exhaustion (Step 9), PR creation failure, and watcher exhaustion (2 fix-and-re-watch rounds); a red or timed-out watcher fails that ticket only — scene kept, independent tickets proceed, dependent tickets stay held and are reported deferred.
+- [x] **5.1** Rewrite the Failure Policy halt triggers: remove "CI red — any concluded failing check, or still pending at the 30-minute timeout" as a run-level abort; halt triggers become the executor's `[goal:blocked]` on the active ticket, review-fix exhaustion (Step 9), PR creation failure, and watcher exhaustion (2 fix-and-re-watch rounds); a red or timed-out watcher fails that ticket only — scene kept, independent tickets proceed, dependent tickets stay held and are reported deferred.
     — **Why:** One minor red check must not kill the remaining run — this is the abort-rule change the ticket names (AC #3).
     — **Done when:** The Failure Policy lists the new halt triggers, contains no run-level CI-red abort, and defines the per-ticket red-watcher outcome.
     — **Consumers affected:** Return Contract semantics (5.3); held/deferred reporting.
-- [ ] **5.2** Update the Guarantees: replace "Sequential execution across tickets; one worktree live per ticket" with: one active implementation at a time; any number of background merge watchers; a ticket's worktree lives until its PR resolves (merge → cleaned up by the main session's notification handler; red → kept for fixes); every merge is green-only; the watcher performs no local git mutations.
+- [x] **5.2** Update the Guarantees: replace "Sequential execution across tickets; one worktree live per ticket" with: one active implementation at a time; any number of background merge watchers; a ticket's worktree lives until its PR resolves (merge → cleaned up by the main session's notification handler; red → kept for fixes); every merge is green-only; the watcher performs no local git mutations.
     — **Why:** The guarantees section is the contract readers trust — it must describe the new concurrency truthfully (AC #1, #2).
     — **Done when:** The guarantees bullet list states the new concurrency model and no longer claims one-live-worktree sequential execution.
     — **Consumers affected:** none (documentation-of-contract).
-- [ ] **5.3** Update the Return Contract: Output = per ticket — PR URL + merge SHA (watcher-reported) + final state (merged / failed-red / deferred-held); Issues gains held and deferred tickets, red-watcher outcomes, and notes that the final report waits for outstanding watchers (each watcher bounded by the 30-minute cap plus up to 2 red-fix-and-re-watch rounds). Deferred-only remainder (no failures) reports run Status `success` with deferred tickets under Issues; any failed-red ticket → `partial` (Requirements answer #3).
+- [x] **5.3** Update the Return Contract: Output = per ticket — PR URL + merge SHA (watcher-reported) + final state (merged / failed-red / deferred-held); Issues gains held and deferred tickets, red-watcher outcomes, and notes that the final report waits for outstanding watchers (each watcher bounded by the 30-minute cap plus up to 2 red-fix-and-re-watch rounds). Deferred-only remainder (no failures) reports run Status `success` with deferred tickets under Issues; any failed-red ticket → `partial` (Requirements answer #3).
     — **Why:** Callers need the per-ticket terminal state of a run whose tickets now resolve asynchronously (AC #2, #3).
     — **Done when:** The Return Contract names watcher-reported merge SHAs and the held/deferred/red outcome vocabulary.
     — **Consumers affected:** none (reporting surface).
-- [ ] **5.4** Run the scoped guard suite `bats tests/test_portability.bats tests/test_tiered_gating.bats tests/test_skill_isolation.bats` in the worktree after the last content edit and fix any phrasing the assertions flag.
+- [x] **5.4** Run the scoped guard suite `bats tests/test_portability.bats tests/test_tiered_gating.bats tests/test_skill_isolation.bats` in the worktree after the last content edit and fix any phrasing the assertions flag.
     — **Why:** Fail-fast on the mechanical constraints (phrase preservation, fallback row, isolation) — and per the done-when-gate-escapes-its-phase rule, the final-state sweep belongs after the last edit, not inside Phase 4 (review NOTE #7).
     — **Done when:** All three bats files exit 0 in the worktree.
     — **Consumers affected:** none (verification-only step).
+    — **Done:** Scoped sweep 33/33 after final edits; full exit gate tier=full — `bats tests/` 565/565, `node installer/build-registry.mjs --check` registry OK (no drift); files: none (verification-only); fixes: none
 
 ## Technical Notes
 
@@ -136,6 +137,21 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 ## Dependencies
 
 None external — single-ticket run, no `blocked-by:`.
+
+## Gate Trace
+GATE 3ff1202 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: tiered_gating+portability+skill_isolation, 33 ok) e2e=n.a
+GATE c9b1223 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: tiered_gating+portability+skill_isolation, 33 ok) e2e=n.a
+GATE 64d54c0 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: tiered_gating+portability+skill_isolation, 33 ok) e2e=n.a
+GATE e04f8ad tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: tiered_gating+portability+skill_isolation, 33 ok) e2e=n.a
+
+## Plan-Review Adjudications (architecture review + Mode R relay, 2026-09-25)
+- **Overlap guard vacuous at 6e→7 (BLOCK, fixed):** the branch diff at that boundary holds only the PLAN commit — early leg re-scoped to the PLAN Consumer-Map touch-set (advisory, empty-map fallback), authoritative `comm -12` moved to 10a pre-PR (step 4.2).
+- **Watcher mutation race (WARN, fixed):** watcher is gh-only; worktree removal/branch delete/fetch moved to the main session's notification handler — no background git mutations racing `git worktree add`.
+- **Advance trigger (WARN, fixed):** ship = 10a PR creation (owner-stated "PR is up"); merge gates only held/overlap tickets.
+- **Red-fix re-gate (WARN, fixed):** watcher fix rounds inherit Step 9's re-gate-once rule — full gate + fresh `tier=full` memo before re-watch.
+- **Notification boundaries (WARN, fixed):** drain at step/ticket boundaries only, never mid-Task, arrival order, exactly-once.
+- **Stale-base conflict window (re-review NOTE, fixed):** PR conflicts after an earlier in-run merge classify as overlap-hold, not ticket failure.
+- Mode R confirmed all 5 recommended answers; new gap (empty Consumer Map defusing the early leg) resolved with the advisory-fallback default.
 
 ## Risks & Mitigation
 
