@@ -9,15 +9,16 @@
 - [x] `add <skill> --project` (default target) writes `.agents/skills/<name>/`; OpenCode discovers it natively
 - [x] `--target agents --project` skills land verbatim in `.agents/skills/` (via the opencode row); agent files still downgrade to `.opencode/agents/`
 - [x] `--target kimi --project` still writes `.kimi-code/skills/`
-- [ ] Subagent doc names `.agents/skills/` as default, `.opencode/skills/` as explicit override
-- [ ] Bats suites pass: init, agents_target, claude_target, kimi_target, test_portability
-- [ ] `AGENTS.md` + `README.md` updated; no `.opencode/skills` literals introduced into `skills/**/SKILL.md`
+- [x] Subagent doc names `.agents/skills/` as default, `.opencode/skills/` as explicit override
+- [x] Bats suites pass: init, agents_target, claude_target, kimi_target, test_portability
+- [x] `AGENTS.md` + `README.md` updated; no `.opencode/skills` literals introduced into `skills/**/SKILL.md`
 - [x] Help text + installer summary reflect `.agents/skills/`
 
 ## Gate Trace
 
 GATE 226f082 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 GATE ce272bf tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 601f678 tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 
 
 ## Dependency & Consumer Map
@@ -75,10 +76,11 @@ All TARGETS consumers live inside the installer module (single `init.mjs`) plus 
 
 ### Phase 4: Full verification gate (ticket exit gate)
 
-- [ ] **4.1** Run the full suite: `bats tests/` (includes `test_portability.bats` — must confirm zero `.opencode/skills` literals in `skills/**/SKILL.md` — and `test_skill_isolation.bats`, which scans agent docs).
+- [x] **4.1** Run the full suite: `bats tests/` (includes `test_portability.bats` — must confirm zero `.opencode/skills` literals in `skills/**/SKILL.md` — and `test_skill_isolation.bats`, which scans agent docs).
     — **Why:** Exit gate is full tier per verification-loop-skill; the isolation and portability guards sweep the exact files this ticket edits.
     — **Done when:** full `bats tests/` exits 0; gate memo `GATE <short-sha> tier=full` recorded in the PLAN trace.
     — **Consumers affected:** Step 9 review citation and Step 10 PR gate citation.
+    — **Done:** `bats tests/` → 565 ok / 0 not ok, exit 0 (portability + isolation guards included and green); files: none; fixes: none
 
 ## Technical Notes
 
