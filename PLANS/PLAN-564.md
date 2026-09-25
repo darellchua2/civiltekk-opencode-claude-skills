@@ -11,7 +11,7 @@
 - [x] Explicit `--target <t>` overrides auto; `auto` combines with `--project` only for targets that have project destinations (downgrade note preserved)
 - [x] `-y`, `-p`, `rm`, and `list <what>` all work as aliases of their long forms
 - [x] `--help` documents every new flag/alias + the two divergence notes
-- [ ] New tests per item; full `bats tests/` green
+- [x] New tests per item; full `bats tests/` green
 
 ## Dependency & Consumer Map
 
@@ -80,10 +80,11 @@ The preset/init flow does NOT gain auto (existing die-on-non-opencode contract p
 
 ### Phase 3: Full exit gate
 
-- [ ] **3.1** Full `bats tests/` (target suites exercise the parser/dispatch on every path).
+- [x] **3.1** Full `bats tests/` (target suites exercise the parser/dispatch on every path).
     — **Why:** ticket exit gate — full tier; parseArgs/dispatch changes touch every invocation.
     — **Done when:** exit 0; `GATE <short-sha> tier=full` in the trace.
     — **Consumers affected:** Step 9/10 citations.
+    — **Done:** bats tests/ → 575 ok / 0 not ok, exit 0 — after fixing a pre-existing pipe-truncation flake in deploy/tui.mjs (process.exit cut --print-plan's 22KB stdout at the 8KB pipe boundary; added a stdout drain before the explicit exit; execution-probed 3× and select-items suite 19 ok); files: deploy/tui.mjs; fixes: tui stdout drain (pre-existing flake, green-in-CI red-locally)
 
 ## Technical Notes
 
