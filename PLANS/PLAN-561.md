@@ -14,6 +14,14 @@
 - [x] `AGENTS.md` + `README.md` updated; no `.opencode/skills` literals introduced into `skills/**/SKILL.md`
 - [x] Help text + installer summary reflect `.agents/skills/`
 
+## Review Fixes (Step 9)
+
+- **Major (fixed)**: pre-flip project installs orphaned `.opencode/skills/` copies on re-add/prune — manifest stores names, lifecycle flows recompute paths from the flipped row. Fix: `legacyProjectSkillsDirs: [".opencode/skills"]` column on the opencode TARGETS row + `sweepLegacySkillCopies()` wired into `writeInstall` (prev-owned ∩ re-installed) and `doPrune` (prev-owned ∩ pruned); claim-only-what-we-writes preserved. Tests: update-migrates + prune-sweeps (`tests/init.bats` 31/32).
+- **Requirements Gap (resolved from primary sources, no relay round needed)**: OpenCode v2 docs (fetched 2026-09-25) list both `.opencode/skills/` and `.agents/skills/` as project discovery locations and require unique names across locations (precedence undefined → duplicates must not coexist — exactly what the sweep enforces). pi docs: both `.pi/skills/` and `.agents/skills/` scanned; name collision = diagnostic, first-loaded wins. Both harnesses natively discover `.agents/skills/` — premise confirmed.
+- **Minor (noted, not fixed)**: `generateAgentsMd` reads the opencode row without target context — contract-safe via its single oc-gated caller; threading `pCfg` is speculative until a second caller exists.
+- **Pre-existing, out of scope (follow-up candidate)**: `add <name> --project --prune` silently ignores `--prune` (`cmdAdd` routes straight to `writeInstall`; only the preset flow and prune-only mode prune) while `writeInstall` rewrites the manifest, dropping unselected entries — dirs then outlive their manifest claims. Unchanged by this diff; report as follow-up ticket.
+- **Re-gate**: full `bats tests/` on the fixed tree → 567 ok / 0 not ok, exit 0.
+
 ## Gate Trace
 
 GATE 226f082 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
@@ -42,17 +50,17 @@ All TARGETS consumers live inside the installer module (single `init.mjs`) plus 
     — **Done when:** `grep -n '"\.agents/skills"' installer/init.mjs` shows the TARGETS row; `grep -n 'opencode/skills' installer/init.mjs` no longer matches L74 or L661; `node --check installer/init.mjs` (or `node -e "import(...)"`) parses clean.
     — **Consumers affected:** project install/update/remove paths, downgrade note (unchanged text — claude/agents rows still lack `projectSkillsDir`), generated project AGENTS.md line.
     — **Done:** TARGETS.opencode.projectSkillsDir → `".agents/skills"`; generated-AGENTS.md summary now interpolates `TARGETS.opencode.projectSkillsDir`; header comments (L5–10, L19) describe the split layout; files: installer/init.mjs; fixes: none
-- [ ] **1.2** Update help text (L1573 `install to project .opencode/ (full config)`, L1604 `Project scope (--project): writes .opencode/{agents,skills}/ ...`) to state agents/config stay in `.opencode/` while skills go to `.agents/skills/` (discovered by OpenCode + pi).
+- [x] **1.2** Update help text (L1573 `install to project .opencode/ (full config)`, L1604 `Project scope (--project): writes .opencode/{agents,skills}/ ...`) to state agents/config stay in `.opencode/` while skills go to `.agents/skills/` (discovered by OpenCode + pi).
     — **Why:** The `--help` SCOPE section is the contract users read; leaving it stale inverts the documented behavior (learned-pattern: command-description parallel restatements drift when only the source is fixed).
     — **Done when:** `node installer/init.mjs --help` prints `.agents/skills` in the Project scope line and no help line claims project skills land in `.opencode/`.
     — **Consumers affected:** CLI users; any doc quoting help output.
     — **Done:** USAGE add-line reads `install to project (agents/config .opencode/, skills .agents/skills/)`; SCOPE Project-scope paragraph rewritten around the split layout; files: installer/init.mjs; fixes: none
-- [ ] **1.3** Update the four pinned project-scope test literals to `.agents/skills`: `tests/init.bats:82` (preset skill count dir), `tests/agents_target.bats:124` + `tests/claude_target.bats:118` + `tests/kimi_target.bats:114` (downgrade tests — the `has no project destination` note assertions and `[ ! -e "${HOME}/.agents" ]` / `${HOME}/.claude/agents` negatives stay as-is).
+- [x] **1.3** Update the four pinned project-scope test literals to `.agents/skills`: `tests/init.bats:82` (preset skill count dir), `tests/agents_target.bats:124` + `tests/claude_target.bats:118` + `tests/kimi_target.bats:114` (downgrade tests — the `has no project destination` note assertions and `[ ! -e "${HOME}/.agents" ]` / `${HOME}/.claude/agents` negatives stay as-is).
     — **Why:** These tests pin installer behavior; after 1.1 they fail until expectations move. The downgrade tests must keep asserting the note and the user-scope negatives — only the project dir literal changes.
     — **Done when:** `grep -rn 'TMP_PROJ/.opencode/skills\|TMP_PROJ/.opencode/skills' tests/` returns nothing while the four files still reference `$TMP_PROJ/.agents/skills/` in those assertions; user-scope `$HOME/.config/opencode/skills` assertions untouched.
     — **Consumers affected:** CI gate for every later phase.
     — **Done:** four project-scope literals moved to `$TMP_PROJ/.agents/skills/` (init.bats, agents_target.bats, claude_target.bats, kimi_target.bats); `has no project destination` note assertions and user-scope negatives untouched; files: tests/init.bats, tests/agents_target.bats, tests/claude_target.bats, tests/kimi_target.bats; fixes: none
-- [ ] **1.4** Run the targeted gate: `bats tests/init.bats tests/agents_target.bats tests/claude_target.bats tests/kimi_target.bats`.
+- [x] **1.4** Run the targeted gate: `bats tests/init.bats tests/agents_target.bats tests/claude_target.bats tests/kimi_target.bats`.
     — **Why:** Proves the flip behaviorally before docs/doc guidance layers on top (verification gate: tests on logic changes).
     — **Done when:** all four suites exit 0.
     — **Consumers affected:** Phases 2–4 gates.

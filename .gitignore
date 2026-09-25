@@ -37,6 +37,7 @@ docs/registry.json
 LEARNINGS/**/*.md
 !LEARNINGS/_index.md
 !LEARNINGS/patterns/by-reference-docs-mechanize-no-duplication-with-sentinel-greps.md
+!LEARNINGS/patterns/dest-flip-legacy-sweep.md
 !LEARNINGS/conventions/docs-runnable-snippets-must-match-ci-invocation.md
 !LEARNINGS/anti-patterns/plan-exit-gate-narrower-than-pinned-consumers.md
 !LEARNINGS/anti-patterns/plan-element-lists-drop-unnamed-upstream-sections.md

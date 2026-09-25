@@ -73,7 +73,7 @@ const USER_KILO_SKILLS = join(os.homedir(), ".kilo/skills");
 // resolve via TARGETS, never inline constants (PLAN-453 structural gate).
 // Project-scope dest columns deferred to #454 (PLAN-453 Technical Notes).
 const TARGETS = {
-  opencode: { agentsDir: USER_AGENTS, skillsDir: USER_SKILLS, projectAgentsDir: ".opencode/agents", projectSkillsDir: ".agents/skills", agentMode: "model-injected", skillMode: "verbatim" },
+  opencode: { agentsDir: USER_AGENTS, skillsDir: USER_SKILLS, projectAgentsDir: ".opencode/agents", projectSkillsDir: ".agents/skills", legacyProjectSkillsDirs: [".opencode/skills"], agentMode: "model-injected", skillMode: "verbatim" },
   claude: { agentsDir: USER_CLAUDE_AGENTS, skillsDir: USER_CLAUDE_SKILLS, agentMode: "claude-translate", skillMode: "model-strip" }, // #457: agents install translated
   agents: { agentsDir: USER_AGENTS_SHARED, skillsDir: USER_SKILLS_SHARED, agentMode: "verbatim", skillMode: "verbatim" },
   kimi: { agentsDir: USER_KIMI_AGENTS, skillsDir: USER_KIMI_SKILLS, projectAgentsDir: ".kimi-code/agents", projectSkillsDir: ".kimi-code/skills", agentMode: "kimi-translate", skillMode: "verbatim" },
@@ -434,6 +434,18 @@ export async function writeInstall(sel, opts, reg, depMap) {
   // existing manifest (for prune + idempotency)
   const prevManifest = (await readJsonMaybe(manifestFile)) || { agents: [], skills: [] };
 
+  // #561: supersede pre-flip copies of prev-owned skills being (re)installed —
+  // the fresh write below lands in the current projectSkillsDir; without the
+  // sweep the old-dir copy stays live (both dirs are discovered)
+  if (!dry) {
+    const migrated = await sweepLegacySkillCopies(
+      project, pCfg,
+      (prevManifest.skills || []).filter((n) => sel.skills.includes(n)),
+      "install",
+    );
+    for (const m of migrated) console.error(`  - ${m}`);
+  }
+
   // collect write plan
   const plan = { agents: [], skills: [], conflicts: [] };
   for (const stem of sel.agents) {
@@ -673,6 +685,27 @@ function generateAgentsMd(sel, reg) {
   return lines.join("\n");
 }
 
+// ── Legacy-dir sweep (#561 review fix): the project manifest stores skill
+// NAMES, so a destination flip (e.g. .opencode/skills → .agents/skills)
+// recomputes every lifecycle path from the current TARGETS row and would
+// silently orphan pre-flip copies — both dirs stay discovered (OpenCode
+// unions skills across locations; pi scans .agents/skills too). Only
+// prev-manifest-owned names being (re)installed or pruned are swept;
+// anything this tool didn't write is never touched.
+async function sweepLegacySkillCopies(project, pCfg, names, mode) {
+  const swept = [];
+  for (const legacyDir of pCfg.legacyProjectSkillsDirs || []) {
+    for (const sname of names) {
+      const d = join(project, legacyDir, sname);
+      if (existsSync(d)) {
+        await rm(d, { recursive: true, force: true });
+        swept.push(mode === "prune" ? `skills/${sname}/ (legacy ${legacyDir}/)` : `skills/${sname}/ migrated from ${legacyDir}/`);
+      }
+    }
+  }
+  return swept;
+}
+
 // Phase 3.7: prune manifest-owned entries not in the new set
 export async function doPrune(sel, opts) {
   const project = resolve(opts.project || process.cwd());
@@ -701,6 +734,7 @@ export async function doPrune(sel, opts) {
     const d = join(skillsDir, sname);
     if (existsSync(d)) { await rm(d, { recursive: true, force: true }); removed.push(`skills/${sname}/`); }
   }
+  removed.push(...await sweepLegacySkillCopies(project, pCfg, (prev.skills || []).filter((n) => !keep.skills.has(n)), "prune"));
   console.log(`pruned ${removed.length} previously-installed entries not in the new set:`);
   for (const r of removed) console.log(`  - ${r}`);
   if (!removed.length) console.log("  (nothing to prune)");
