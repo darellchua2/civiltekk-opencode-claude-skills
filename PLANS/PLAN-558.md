@@ -28,7 +28,7 @@ Cross-module note: architecture review completed (2026-09-25) — rc chain verif
     — **Why:** the flip-only contract presumes the base definition exists; flipping into a definition-less config creates an inert v2 stub that silently does nothing (the #558 live failure) — fail-closed beats silent success.
     — **Done when:** merging a flip-only pack into a config lacking the server definition exits nonzero with the message and the target file is byte-unchanged; merging into a config WITH the definition exits 0.
     — **Consumers affected:** setup.sh CLI (error propagates), Docker builds (unaffected — fresh config), both bats files.
-    — **Done:** guard inserted in the per-pack loop before the mcp deepMerge; pinned message verbatim; predicate: missing/non-object entry or empty command+url fails; die before the single L224 write; files: deploy/merge-packs.mjs; fixes: none
+    — **Done:** guard inserted in the per-pack loop before the mcp deepMerge; pinned message verbatim; predicate: missing/non-object entry or empty command+url fails; die before the single final write (merge-packs.mjs:238); files: deploy/merge-packs.mjs; fixes: none
 - [x] **1.2** `tests/test_pack_permissions.bats`: (a) NEW test — flip-only pack + target lacking the server → nonzero exit, message matches /no full definition/, target file byte-unchanged; (b) NEW test — same pack + target WITH the full definition → exit 0, disabled flipped; (c) AMEND `pack_merge_preserves_unrelated_permission_rules` (:94-118) — give its minimal fixture a full markitdown definition (mirroring :74) or the new guard kills it; (d) one-line hardening in the shape test: pack server fragments' key set ⊆ {disabled} (keeps the predicate's flip-only assumption enforced) — 1.1 + 1.2 land in ONE commit (guard + its fixture mirror are coupled: fail-closed-guard-couples-cross-file-edits)
     — **Why:** AC #1/#4 — the mechanical enforcement of both branches.
     — **Done when:** both tests pass in the Phase 2 gate.
@@ -76,3 +76,7 @@ None (no blocked-by tickets).
 - AC #1 behavioral proof: flip into definition-less target → exit 1, pinned message verbatim, target byte-unchanged (cmp)
 - AC #2/#3: flip with full definition → exit 0 + flip applied (both the new test and the amended fixture prove the pass branch)
 - README troubleshooting line present at README.md:231 with dry-run clause
+
+- Code review: APPROVE, 0 Critical / 0 Major / 3 cosmetic NOTEs (double error: prefix, strict-direction shape-test note, this anchor). Gate stands.
+
+GATE 236a533 tier=full lint=t typecheck=n.a. build=n.a. unit=t e2e=n.a.
