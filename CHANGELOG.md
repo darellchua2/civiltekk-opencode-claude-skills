@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.42.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.42.0...v9.42.1) (2026-09-25)
+
+### Bug Fixes
+
+* **mcp:** merge-packs fails loud on stale-config stub flips ([#559](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/559)) ([99d54b6](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/99d54b69b3e30ac942729fd9d99431086a2ed907)), closes [#558](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/558) [#558](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/558)
+
 ## [9.42.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.41.0...v9.42.0) (2026-09-25)
 
 ### Features
