@@ -324,3 +324,19 @@ EOC
   [ ! -e "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
   [ ! -e "$TMP_PROJ/.opencode/skills/tdd-workflow-skill" ]
 }
+
+@test "add -g/--global installs user scope (npx-skills alias, #563)" {
+  run $INIT add tdd-workflow-skill -g --yes
+  [ "$status" -eq 0 ]
+  [ -d "${HOME}/.config/opencode/skills/tdd-workflow-skill" ]
+  run $INIT add solid-principles-skill --global --yes
+  [ "$status" -eq 0 ]
+  [ -d "${HOME}/.config/opencode/skills/solid-principles-skill" ]
+}
+
+@test "add -g --project conflicts and exits non-zero (#563)" {
+  run $INIT add tdd-workflow-skill -g --project "$TMP_PROJ" --yes
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q "cannot combine --global with --project"
+  [ ! -d "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
+}

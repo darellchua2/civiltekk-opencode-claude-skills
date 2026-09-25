@@ -84,12 +84,13 @@ const TARGET_VALUES = [...Object.keys(TARGETS), "both"];
 const activeTargets = (target) => (target === "both" ? ["opencode", "claude"] : [target]);
 
 // ─────────────────────────── arg parsing ────────────────────────────────
-const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps"]);
+const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps", "global"]);
 function parseArgs(argv) {
   const opts = { rest: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--") { opts.rest.push(...argv.slice(i + 1)); break; }
+    if (a === "-g") { opts.global = true; continue; } // npx-skills alias for user scope (the default)
     if (a.startsWith("--")) {
       const key = a.slice(2).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
       if (BOOL_FLAGS.has(key)) opts[key] = true;
@@ -1473,6 +1474,8 @@ async function cmdUpdate(args, opts) {
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) { printHelp(); return; }
+  if (opts.global && opts.project)
+    die("cannot combine --global with --project (user scope is already the default; drop -g)", 2);
 
   const reg = await loadRegistry();
   reg.__presets = await loadPresets();
@@ -1642,6 +1645,7 @@ SCOPE
   natively discovered by OpenCode and pi).
 
 FLAGS
+  -g, --global         user scope (default) — explicit npx-skills-compatible alias; cannot combine with --project
   --project [dir]      project scope (default: cwd). Without 'add', takes a <dir> value.
   --preset <csv>       preset name(s): core review frontend backend docs devops business research cad
   --agents <csv>       agent stem(s)

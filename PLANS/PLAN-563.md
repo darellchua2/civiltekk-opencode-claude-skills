@@ -6,8 +6,8 @@
 
 ## Acceptance Criteria
 
-- [ ] `add <skill> -g` and `add <skill> --global` install user scope identically to the default; `-g --project` exits non-zero naming the conflict
-- [ ] `--help` documents `-g, --global`
+- [x] `add <skill> -g` and `add <skill> --global` install user scope identically to the default; `-g --project` exits non-zero naming the conflict
+- [x] `--help` documents `-g, --global`
 - [ ] `skills/_archived/` removed from the working tree
 - [ ] Census: zero remaining references to the 6 removed skill names (README, AGENTS.md, dependency-map.json, deploy-plan-items.mjs, registry.json, tests)
 - [ ] Isolation guard: the `_archived` legacy exception retired from `tests/test_skill_isolation.bats` — the `_`-prefix ban becomes unconditional
@@ -29,22 +29,26 @@
 
 ### Phase 1: `-g/--global` alias (installer)
 
-- [ ] **1.1** In `installer/init.mjs`: add `global` to `BOOL_FLAGS`; add an explicit `-g` case in `parseArgs` mapping to `opts.global = true` (single-dash tokens otherwise fall into positionals and die as an unknown name); add one guard in `main()` right after `build_plan`: `opts.global && opts.project` → `die("cannot combine --global with --project (user scope is the default; drop -g)", 2)` — one site covering the add and preset/init flows.
+- [x] **1.1** In `installer/init.mjs`: add `global` to `BOOL_FLAGS`; add an explicit `-g` case in `parseArgs` mapping to `opts.global = true` (single-dash tokens otherwise fall into positionals and die as an unknown name); add one guard in `main()` right after `build_plan`: `opts.global && opts.project` → `die("cannot combine --global with --project (user scope is the default; drop -g)", 2)` — one site covering the add and preset/init flows.
     — **Why:** `-g` is the npx-skills global-scope muscle memory; today it falls into positionals and dies as `'-g' not found`. The guard prevents a contradictory scope request from silently meaning "project".
     — **Done when:** `node --check installer/init.mjs` passes; `node installer/init.mjs add tdd-workflow-skill -g --project /tmp/x --yes` exits 2 printing "cannot combine --global"; `add --global` alone parses (no name error).
     — **Consumers affected:** every `add`/preset invocation path (guard), none otherwise.
-- [ ] **1.2** Help text: FLAGS section gains `-g, --global` ("user scope (default) — explicit npx-skills-compatible alias; cannot combine with --project"); SCOPE section unchanged (user scope already documented as default).
+    — **Done:** BOOL_FLAGS + `-g` case + main() conflict guard ("cannot combine --global with --project", exit 2); files: installer/init.mjs; fixes: none
+- [x] **1.2** Help text: FLAGS section gains `-g, --global` ("user scope (default) — explicit npx-skills-compatible alias; cannot combine with --project"); SCOPE section unchanged (user scope already documented as default).
     — **Why:** undocumented accepted flags are drift bait (learned-pattern: help restatements drift when only the source is fixed).
     — **Done when:** `node installer/init.mjs --help` prints the `-g, --global` line.
     — **Consumers affected:** CLI users.
-- [ ] **1.3** Tests in `tests/init.bats`: (a) `add tdd-workflow-skill -g --yes` (sandboxed HOME) → user-scope dir exists; (b) `add solid-principles-skill --global --yes` → same; (c) `add tdd-workflow-skill -g --project "$TMP_PROJ" --yes` → non-zero + "cannot combine --global" in output.
+    — **Done:** FLAGS entry `-g, --global` printed by --help; files: installer/init.mjs; fixes: none
+- [x] **1.3** Tests in `tests/init.bats`: (a) `add tdd-workflow-skill -g --yes` (sandboxed HOME) → user-scope dir exists; (b) `add solid-principles-skill --global --yes` → same; (c) `add tdd-workflow-skill -g --project "$TMP_PROJ" --yes` → non-zero + "cannot combine --global" in output.
     — **Why:** pins the alias behavior and the guard; the sandboxed-HOME pattern already established in this suite.
     — **Done when:** the three new tests pass.
     — **Consumers affected:** CI gate for later phases.
-- [ ] **1.4** Gate: `bats tests/init.bats` green (light tier: affected suite).
+    — **Done:** two tests added (alias install with both spellings; conflict non-zero + message); files: tests/init.bats; fixes: none
+- [x] **1.4** Gate: `bats tests/init.bats` green (light tier: affected suite).
     — **Why:** behavioral proof before docs/deletion phases stack on top.
     — **Done when:** exit 0.
     — **Consumers affected:** Phases 2–3 gates.
+    — **Done:** bats tests/init.bats → 34 ok / 0 not ok, exit 0; files: none; fixes: none
 
 ### Phase 2: `_archived` deletion + census cleanup
 
