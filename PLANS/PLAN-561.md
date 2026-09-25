@@ -16,6 +16,8 @@
 
 ## Gate Trace
 
+GATE 226f082 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+
 
 ## Dependency & Consumer Map
 
@@ -60,6 +62,7 @@ All TARGETS consumers live inside the installer module (single `init.mjs`) plus 
     — **Why:** The subagent's system prompt is the second "force to opencode" surface — headless creation must land skills where pi + OpenCode both read them unless explicitly told otherwise.
     — **Done when:** `grep -n '.agents/skills' agents/opencode-tooling-subagent.md` shows the default in all four sites; no line instructs `.opencode/skills/` as the unqualified default; frontmatter untouched (no registry rebuild needed).
     — **Consumers affected:** every delegation to opencode-tooling-subagent; `deploy/setup.sh` copy (redeploy picks it up).
+    — **Done:** Step 0 bullet, File Locations Skills row, and both Proactive-Suggestion checks now default project skills to `.agents/skills/` with `.opencode/skills/` as the explicit opencode-only override; agents stay `.opencode/agents/`; frontmatter untouched; files: agents/opencode-tooling-subagent.md; fixes: none
 
 ### Phase 3: Repo docs sync
 
