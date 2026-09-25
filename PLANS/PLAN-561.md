@@ -27,6 +27,7 @@
 GATE 226f082 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 GATE ce272bf tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 601f678 tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
+GATE 790a655 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 
 
 ## Dependency & Consumer Map
