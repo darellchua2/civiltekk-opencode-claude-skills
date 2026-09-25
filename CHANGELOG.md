@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.45.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.44.0...v9.45.0) (2026-09-25)
+
+### Features
+
+* **installer:** --target auto + npx-skills CLI aliases ([#566](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/566)) ([2cace4b](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/2cace4b24a927b55875ef2281dd51633a1113990)), closes [#564](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/564) [#564](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/564)
+
 ## [9.44.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.43.0...v9.44.0) (2026-09-25)
 
 ### Features
