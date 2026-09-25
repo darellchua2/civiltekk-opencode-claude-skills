@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.42.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.41.0...v9.42.0) (2026-09-25)
+
+### Features
+
+* **skills:** add dev-uat-promotion-skill for batch dev-to-uat promotion ([c6d3a7e](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/c6d3a7eb4170e0a682ca8135d043f9dc0befd112))
+* **skills:** add mcp-install-assistant-skill — guided MCP installer ([#557](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/557)) ([4a96754](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/4a96754a723f1a5f69b84aafaac92fca8cac1736)), closes [#556](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/556) [#556](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/556)
+
 ## [9.41.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.40.0...v9.41.0) (2026-09-25)
 
 ### Features
