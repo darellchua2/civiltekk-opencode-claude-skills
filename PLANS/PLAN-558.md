@@ -15,41 +15,43 @@
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `deploy/merge-packs.mjs` merge loop (L174-198) | — | `deploy/setup.sh` (rc propagation, L3339), `opencode_app/Dockerfile` RUN (build fails red on nonzero — fresh config there never trips), `tests/test_pack_permissions.bats`, `tests/test_docling_skill.bats` | med |
+| `deploy/merge-packs.mjs` merge loop (L174-198) | — | `deploy/setup.sh` hard-fail rc path (`deploy_agents` critical → exit 1), `deploy/setup.sh:4067` `--select` soft-fail call site (warns + returns 0 by #473 contract — exit-0-with-stderr accepted there), `--dry-run` preview merge (setup.sh:3317-3331 — now exits 1 on stale configs, accepted), `opencode_app/Dockerfile` RUN (fresh config never trips), `tests/test_pack_permissions.bats`, `tests/test_docling_skill.bats` | med |
 | `tests/test_pack_permissions.bats` (hosts merge-packs behavior tests) | 1.1 | CI | low |
 | `README.md` troubleshooting | 1.1 behavior final | docs readers | low |
 
-Cross-module note: merge-packs has consumers beyond itself (setup.sh rc path, Docker build, 2 test files) → architecture review selected; no frontend → uiux not selected. `die()` before the end-of-run write = no partial-write risk (write is a single final call).
+Cross-module note: architecture review completed (2026-09-25) — rc chain verified end-to-end (die → run_pack_merger → deploy_agents critical → exit 1), Tier-4 probe proved all 7 packs flip-only and every shipped target has a full definition; 1 Major applied (fixture :94-118 amendment owned by 1.2c), 5 minors applied (consumer-map rows, predicate pin, shape hardening, gate widening). Relay round 1: message string pinned, dry-run exit-1 accepted, gate widened. No frontend → uiux not selected. `die()` before the end-of-run write = no partial-write risk (write is a single final call).
 
 ## Implementation Phases
 
 ### Phase 1: Fail-loud stub detection
-- [ ] **1.1** In `deploy/merge-packs.mjs` per-pack loop, before merging the pack's `mcp`: for each `servers` entry with `disabled === false`, verify the TARGET config already defines the server fully (`config.mcp.servers[name]` exists and has a non-empty `command` or `url`); otherwise `die()` with an actionable message naming the pack, the server, and both remedies (re-run setup.sh answering 'y' to refresh the config, or re-copy `opencode_app/opencode.json`)
+- [ ] **1.1** In `deploy/merge-packs.mjs` per-pack loop, before merging the pack's `mcp`: for each `servers` entry with `disabled === false`, verify the TARGET config already defines the server fully (`config.mcp.servers[name]` exists and has a non-empty `command` or `url`); otherwise `die()` with the PINNED message (relay round 1; test 1.2(a) greps /no full definition/ against it): `ERROR: pack '<pack>' enables '<server>', but the target config has no full definition for it (missing command/url). The deployed config predates this pack. Re-run setup.sh and answer 'y' to refresh the config, or re-copy opencode_app/opencode.json.` Predicate pinned: a missing or non-object entry fails; `command` must be an array with length > 0, `url` a non-blank string
     — **Why:** the flip-only contract presumes the base definition exists; flipping into a definition-less config creates an inert v2 stub that silently does nothing (the #558 live failure) — fail-closed beats silent success.
     — **Done when:** merging a flip-only pack into a config lacking the server definition exits nonzero with the message and the target file is byte-unchanged; merging into a config WITH the definition exits 0.
     — **Consumers affected:** setup.sh CLI (error propagates), Docker builds (unaffected — fresh config), both bats files.
-- [ ] **1.2** Add two tests to `tests/test_pack_permissions.bats`: (a) flip-only pack + target lacking the server → nonzero exit, message matches /no full definition/, target file unchanged; (b) same pack + target WITH the full definition → exit 0, disabled flipped
+- [ ] **1.2** `tests/test_pack_permissions.bats`: (a) NEW test — flip-only pack + target lacking the server → nonzero exit, message matches /no full definition/, target file byte-unchanged; (b) NEW test — same pack + target WITH the full definition → exit 0, disabled flipped; (c) AMEND `pack_merge_preserves_unrelated_permission_rules` (:94-118) — give its minimal fixture a full markitdown definition (mirroring :74) or the new guard kills it; (d) one-line hardening in the shape test: pack server fragments' key set ⊆ {disabled} (keeps the predicate's flip-only assumption enforced) — 1.1 + 1.2 land in ONE commit (guard + its fixture mirror are coupled: fail-closed-guard-couples-cross-file-edits)
     — **Why:** AC #1/#4 — the mechanical enforcement of both branches.
     — **Done when:** both tests pass in the Phase 2 gate.
     — **Consumers affected:** CI.
 - [ ] **1.3** Fresh-deploy ordering proof: confirm via existing suite that the normal path is untouched (all current pack tests green on the new build) and assert the check only fires on the missing-definition branch
     — **Why:** AC #2/#3 — no regression for fresh deploys where the config copy precedes the merge.
-    — **Done when:** `bats tests/test_pack_permissions.bats tests/test_docling_skill.bats` green (docling test exercises merge-packs on a full config).
+    — **Done when:** `bats tests/test_pack_permissions.bats tests/test_docling_skill.bats` green with the amended fixture (1.2c) — the plan's original 'all current tests green' premise was false for exactly one fixture (plan-review Major).
     — **Consumers affected:** CI.
 
 ### Phase 2: Docs
 - [ ] **2.1** README: one troubleshooting line near the packs table — pack enable fails with "no full definition" ⇒ the deployed config predates the pack; re-run setup.sh and answer 'y' (or re-copy `opencode_app/opencode.json`), then re-run `--enable-pack`
     — **Why:** AC #5 — the remedy must be findable where pack users look.
-    — **Done when:** the line exists and names both remedies.
+    — **Done when:** the line exists, names both remedies, and notes the check applies to `--dry-run` previews too (relay round 1: a preview showing a successful stub merge is the silent failure in preview form).
     — **Consumers affected:** docs readers.
 
 ### Phase 3: Verification gate (ticket exit)
-- [ ] **3.1** Run gates: `node --check deploy/merge-packs.mjs`; `bats tests/test_pack_permissions.bats tests/test_docling_skill.bats tests/test_mcp_count_consistency.bats`; stub-fail behavioral proof (exit code + byte-unchanged target + message grep); README line present
+- [ ] **3.1** Run gates: `node --check deploy/merge-packs.mjs`; `bats tests/` (full local suite, 43 files — relay round 1); stub-fail behavioral proof (exit code + byte-unchanged target + message grep); README line present
     — **Why:** ACs #1/#2/#4/#5 — the exit gate (full tier) proving both branches and no regressions.
-    — **Done when:** node --check silent, 3 suites green, behavioral proof recorded, README line present.
+    — **Done when:** node --check silent, full `bats tests/` green, behavioral proof recorded, README line present.
     — **Consumers affected:** CI, PR merge decision.
 
 ## Technical Notes
+- Accepted behavior change (relay round 1): `--dry-run --enable-pack` on a stale config now exits 1 at the preview merge (was: exit 0 with a stub-bearing preview) — consistent with the dry-run contract that the preview reflects the would-be-merged result (setup.sh:3326-3331).
+- Landing: 1.1 + 1.2 in one commit (guard + fixture mirror coupled); the rest may follow in the same atomic commit.
 - The check reads only the TARGET config's existing entry — pack partials stay flip-only (no reference-config input needed; the self-heal alternative stays rejected per ticket).
 - setup.sh non-interactive default ("n" at the overwrite prompt) is correct behavior for protecting user customizations — this fix makes the failure mode visible instead of changing that default.
 - Message wording should match the ticket's Expected block for consistency with the assistant skill's guidance (#556).
