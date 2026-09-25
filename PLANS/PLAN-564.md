@@ -9,8 +9,8 @@
 - [x] `add <skill> --target auto --yes` installs to every harness whose config dir exists; none detected → non-zero exit naming the explicit `--target` values
 - [x] `--dry-run --target auto` previews without writing and lists resolved targets
 - [x] Explicit `--target <t>` overrides auto; `auto` combines with `--project` only for targets that have project destinations (downgrade note preserved)
-- [ ] `-y`, `-p`, `rm`, and `list <what>` all work as aliases of their long forms
-- [ ] `--help` documents every new flag/alias + the two divergence notes
+- [x] `-y`, `-p`, `rm`, and `list <what>` all work as aliases of their long forms
+- [x] `--help` documents every new flag/alias + the two divergence notes
 - [ ] New tests per item; full `bats tests/` green
 
 ## Dependency & Consumer Map
@@ -52,26 +52,31 @@ The preset/init flow does NOT gain auto (existing die-on-non-opencode contract p
 
 ### Phase 2: short flags + command aliases
 
-- [ ] **2.1** `parseArgs`: `-y` → `opts.yes = true`; `-p` → `opts.project = true` (boolean — cwd default already handled by `cmdAdd`'s `opts.project === true` path); add `-y`/`-p` recognition before the `--` branch, mirroring the `-g` case (including the value-eat rule: a long flag followed by `-y`/`-p` must NOT consume them — extend the `next === "-g"` guard to `next === "-g" || next === "-y" || next === "-p"`).
+- [x] **2.1** `parseArgs`: `-y` → `opts.yes = true`; `-p` → `opts.project = true` (boolean — cwd default already handled by `cmdAdd`'s `opts.project === true` path); add `-y`/`-p` recognition before the `--` branch, mirroring the `-g` case (including the value-eat rule: a long flag followed by `-y`/`-p` must NOT consume them — extend the `next === "-g"` guard to `next === "-g" || next === "-y" || next === "-p"`).
     — **Why:** npx-skills muscle memory; the value-eat lesson is the #563 review's LEARNINGS entry applied at introduction time.
     — **Done when:** `add tdd-workflow-skill --project "$TMP_PROJ" -y` installs; `--project -y` does not create a `./-y` dir (conflict-free combo: `-y` booleanizes).
     — **Consumers affected:** all CLI flows.
-- [ ] **2.2** Dispatch aliases: `rm` → `cmdRemove`; `list <what>` and `ls <what>` → `cmdList` (bare `list`/`ls` without a category → die naming valid categories).
+    — **Done:** -y/-p parse cases + value-eat guard extended to -g/-y/-p; files: installer/init.mjs; fixes: none
+- [x] **2.2** Dispatch aliases: `rm` → `cmdRemove`; `list <what>` and `ls <what>` → `cmdList` (bare `list`/`ls` without a category → die naming valid categories).
     — **Done when:** `rm <name>` removes a user-scope install; `list skills` output equals `--list skills`; bare `ls` exits non-zero naming categories.
     — **Why:** ticket AC — npx-skills command spellings.
     — **Consumers affected:** CLI users.
-- [ ] **2.3** Help text: USAGE gains `rm`/`list` alias lines; FLAGS gains `-y`, `-p`; SCOPE gains the two deliberate-divergence notes (scope default is USER here vs npx skills' project default; per-target COPIES vs symlinks — model/permission translations require real files).
+    — **Done:** rm and list/ls dispatch aliases added (bare list dies naming categories); files: installer/init.mjs; fixes: none
+- [x] **2.3** Help text: USAGE gains `rm`/`list` alias lines; FLAGS gains `-y`, `-p`; SCOPE gains the two deliberate-divergence notes (scope default is USER here vs npx skills' project default; per-target COPIES vs symlinks — model/permission translations require real files).
     — **Done when:** `--help` shows all four; grep confirms the divergence sentences.
     — **Why:** ticket AC — document the parity surface AND the two intentional inversions so future contributors don't "fix" them.
     — **Consumers affected:** CLI users, contributors.
-- [ ] **2.4** Tests: `-p` alias project install from cwd; `-y` alias non-interactive add; `rm` removes a prior install; `list skills` JSON equals `--list skills` output; bare `ls` non-zero.
+    — **Done:** USAGE rm/list lines, FLAGS -y/-p, SCOPE divergence notes (user-scope default; copies vs symlinks); files: installer/init.mjs; fixes: none
+- [x] **2.4** Tests: `-p` alias project install from cwd; `-y` alias non-interactive add; `rm` removes a prior install; `list skills` JSON equals `--list skills` output; bare `ls` non-zero.
     — **Done when:** all pass.
     — **Why:** aliases are contract — pin each.
     — **Consumers affected:** CI gates.
-- [ ] **2.5** Gate: `bats tests/init.bats` green.
+    — **Done:** three tests: aliases install, rm removes, list/ls mirror --list + bare ls non-zero; files: tests/init.bats; fixes: none
+- [x] **2.5** Gate: `bats tests/init.bats` green.
     — **Done when:** exit 0.
     — **Why:** scoped affected suite.
     — **Consumers affected:** Phase 3 gate.
+    — **Done:** bats tests/init.bats → 40 ok / 0 not ok, exit 0; files: none; fixes: none
 
 ### Phase 3: Full exit gate
 

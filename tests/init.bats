@@ -374,3 +374,40 @@ EOC
   [ ! -e "${HOME}/.agents/skills/tdd-workflow-skill" ]
   [ ! -e "${HOME}/.claude/skills/tdd-workflow-skill" ]
 }
+
+@test "-y and -p aliases work; --project -y value-eat is safe (#564)" {
+  run $INIT add tdd-workflow-skill --project "$TMP_PROJ" -y
+  [ "$status" -eq 0 ]
+  [ -d "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
+  cd "$TMP_PROJ"
+  export HOME="$TMP_PROJ/home2"
+  mkdir -p "$HOME"
+  run $INIT add solid-principles-skill -p -y
+  [ "$status" -eq 0 ]
+  [ -d "$TMP_PROJ/.agents/skills/solid-principles-skill" ]
+  [ ! -e "$TMP_PROJ/-y" ]
+}
+
+@test "rm alias removes a user-scope install (#564)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME"
+  run $INIT add tdd-workflow-skill -g --yes
+  [ "$status" -eq 0 ]
+  run $INIT rm tdd-workflow-skill
+  [ "$status" -eq 0 ]
+  [ ! -e "${HOME}/.config/opencode/skills/tdd-workflow-skill" ]
+}
+
+@test "list/ls command spellings mirror --list (#564)" {
+  run $INIT list skills
+  [ "$status" -eq 0 ]
+  list_out="$output"
+  run $INIT --list skills
+  [ "$status" -eq 0 ]
+  [ "$output" = "$list_out" ]
+  run $INIT ls categories
+  [ "$status" -eq 0 ]
+  run $INIT ls
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q "specify a category"
+}

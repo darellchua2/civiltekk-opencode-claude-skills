@@ -104,12 +104,14 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a === "--") { opts.rest.push(...argv.slice(i + 1)); break; }
     if (a === "-g") { opts.global = true; continue; } // npx-skills alias for user scope (the default)
+    if (a === "-y") { opts.yes = true; continue; }    // npx-skills alias for --yes
+    if (a === "-p") { opts.project = true; continue; } // npx-skills alias for --project (cwd default)
     if (a.startsWith("--")) {
       const key = a.slice(2).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
       if (BOOL_FLAGS.has(key)) opts[key] = true;
       else {
         const next = argv[i + 1];
-        if (next === undefined || next.startsWith("--") || next === "-g") opts[key] = true;
+        if (next === undefined || next.startsWith("--") || next === "-g" || next === "-y" || next === "-p") opts[key] = true;
         else { opts[key] = next; i++; }
       }
     } else {
@@ -1515,8 +1517,15 @@ async function main() {
   if (opts.rest[0] === "add") { await cmdAdd(opts.rest.slice(1), opts, reg, depMap); return; }
   if (opts.rest[0] === "update") { await cmdUpdate(opts.rest.slice(1), opts); return; }
   if (opts.rest[0] === "remove") { await cmdRemove(opts.rest.slice(1), opts); return; }
+  if (opts.rest[0] === "rm") { await cmdRemove(opts.rest.slice(1), opts); return; }
 
   // read modes
+  if (opts.rest[0] === "list" || opts.rest[0] === "ls") {
+    const what = opts.rest[1];
+    if (!what) die("list: specify a category — agents|skills|categories|mcps|presets (e.g. 'opencode-skill list skills')", 2);
+    cmdList(what, reg, opts);
+    return;
+  }
   if (opts.list) { cmdList(opts.list, reg, opts); return; }
   if (opts.describe) { await cmdDescribe(opts.describe, reg); return; }
   if (opts.expand) { await cmdExpand(opts.expand, reg, depMap); return; }
@@ -1647,6 +1656,8 @@ USAGE
   opencode-skill add --all --yes               install the full catalog (user scope)
   opencode-skill update [--prune]              re-copy manifest entries whose source changed
   opencode-skill remove <name>                 remove a user-scope install
+  opencode-skill rm <name>                     alias for remove
+  opencode-skill list <what>                   alias for --list (agents|skills|categories|mcps|presets)
   opencode-skill --list agents [--category X]      list agents (JSON)
   opencode-skill --list skills [--category X]      list skills (JSON)
   opencode-skill --list categories                 list categories + counts
@@ -1677,9 +1688,15 @@ SCOPE
   Project scope (--project): writes agents + opencode.json + models.json + AGENTS.md
   under .opencode/; skills go to .agents/skills/ (Agent Skills standard dir,
   natively discovered by OpenCode and pi).
+  npx-skills divergences (deliberate): the scope default is USER here (npx
+  skills defaults to project — use --project/-p), and installs are per-target
+  COPIES (npx skills symlinks) because targets apply model/permission
+  translations.
 
 FLAGS
   -g, --global         user scope (default) — explicit npx-skills-compatible alias; cannot combine with --project
+  -y                   alias for --yes
+  -p                   alias for --project (project scope, dir defaults to cwd)
   --project [dir]      project scope (default: cwd). Without 'add', takes a <dir> value.
   --preset <csv>       preset name(s): core review frontend backend docs devops business research cad
   --agents <csv>       agent stem(s)
