@@ -14,10 +14,10 @@ SETUP_PS1="deploy/setup.ps1"
 PACK_SERVERS="markitdown:markitdown docling:docling chrome-devtools:chrome-devtools nextjs:next-devtools playwright:playwright alpha-vantage:alpha-vantage nanobanana:nanobanana"
 
 # =============================================================================
-# Pack file shape (all 5 MCP packs)
+# Pack file shape (all MCP packs)
 # =============================================================================
 
-@test "all_five_mcp_packs_exist_and_are_valid_json" {
+@test "all_mcp_packs_exist_and_are_valid_json" {
   for entry in $PACK_SERVERS; do
     pack="${entry%%:*}"
     f="deploy/packs/pack-${pack}.json"

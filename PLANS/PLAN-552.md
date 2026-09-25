@@ -28,7 +28,7 @@ Consumer-map note: pack files have cross-module consumers (setup.sh validation, 
 ## Implementation Phases
 
 ### Phase 1: Config entries + pack partials
-- [x] **1.1** Add 3 `mcp.servers` entries to `opencode_app/opencode.json`: `playwright` (local, `npx -y @playwright/mcp@latest`, timeout 30000), `alpha-vantage` (remote `https://mcp.alphavantage.co/mcp`, headers `Authorization: Bearer {env:ALPHA_VANTAGE_API_KEY}`, no `oauth` key — matches the shipped zai remote shape), `nanobanana` (local, `npx -y nanobanana-mcp-server@latest`, environment `GEMINI_API_KEY: {env:GEMINI_API_KEY}`) — all `disabled: true`; the two locals carry `"timeout": {"catalog": 30000}` (v2 object; scalar is v1 — plan-review Major 1, relay round 1 ruling; no `execution` key so tool calls keep the 12h default)
+- [x] **1.1** Add 3 `mcp.servers` entries to `opencode_app/opencode.json`: `playwright` (local, `npx -y @playwright/mcp@latest`, timeout 30000), `alpha-vantage` (remote `https://mcp.alphavantage.co/mcp`, headers `Authorization: Bearer {env:ALPHA_VANTAGE_API_KEY}`, no `oauth` key — matches the shipped zai remote shape), `nanobanana` (local, `npx -y nanobanana-mcp-server@latest`, environment `GEMINI_API_KEY: {env:GEMINI_API_KEY}`) — all `disabled: true`; launcher corrected to `@mindstone/mcp-server-nano-banana@latest` (original npm name 404s — PyPI-only; registry verified live, v0.4.1, engines node >=20.3, gate node v24); alpha-vantage carries `"oauth": false` (relay round 2 REVERSES round 1's no-oauth ruling — docs document oauth:false with static-Bearer as its canonical case)
     — **Why:** the servers must exist in the base config before any pack can flip them; disabled-by-default keeps plain deploys unchanged (AC #2).
     — **Done when:** `python3 -c` count of mcp.servers = 11; each new entry `disabled: true`; `timeout.catalog == 30000` on both locals; confirmatory probe: temp-enable playwright in a scratch config copy, `opencode mcp list` connects with no config diagnostic, then revert.
     — **Consumers affected:** opencode runtime (zero change — disabled), mcp-count test, README count.
@@ -95,7 +95,7 @@ Consumer-map note: pack files have cross-module consumers (setup.sh validation, 
 - From ticket: nothing enabled by default; sec-edgar excluded (PyPI → pip hook pattern, not self-installing; track separately if wanted); Remotion/browser-use stay README-pilot material, not shipped.
 - alpha-vantage header shape: `Authorization: Bearer {env:ALPHA_VANTAGE_API_KEY}` mirrors the house remote-keyed pattern (zai servers, #554's removed autodesk entries). Alpha Vantage documents OAuth as primary; verify header behavior at first pilot and adjust if their gateway rejects Bearer keys.
 - nanobanana npm package name assumed `nanobanana-mcp-server` (per research doc [21]); verify `npm view` during 1.1 and correct the exact name if the registry differs — do not guess variants.
-- timeout: 30000 rationale: OpenCode default 5000 ms tool-fetch can lose the race against a cold npx download on first enable.
+- Timeout final state: keys dropped. The original 5000ms rationale misread the docs — catalog default is 30s and cold-npx fetch/spawn belongs to `startup` (30s default). Pre-authorized amend trigger: pilot cold-start failure → set `timeout.startup: 60000`.
 
 ## Dependencies
 None (no blocked-by tickets). Builds on #554's cleaned pack surface (merged as a5b864a; PLAN previously misattributed this to #553 — corrected per plan review). Landing strategy: the implementation lands as ONE atomic commit (config + packs + docs + test pins together) — per-phase commits would leave count pins red mid-branch (plan-review Minor).
@@ -113,3 +113,8 @@ None (no blocked-by tickets). Builds on #554's cleaned pack surface (merged as a
 - AC #1 per-pack merge proofs: playwright / alpha-vantage / nanobanana each exit 0 — enabled + permissions allow rule present
 - AC #4 fail-fast: `--enable-pack bogus` → "Available packs: alpha-vantage chrome-devtools docling markitdown nanobanana nextjs playwright"
 - Catalog-name sweep: residuals only in MIGRATION.md history (accepted) and valid examples
+
+- Gate re-run on review-fix tree: bash -n silent; config invariants green (11 servers, oauth:false, swapped launcher, no timeouts); 3 merge proofs exit 0; 5 suites 51 ok / 0 failed; Docker image node:24 (>= package engines 20.3).
+- Registry check (recorded per review): `nanobanana-mcp-server` npm 404 (PyPI-only) -> launcher switched to `@mindstone/mcp-server-nano-banana@latest`, registry-verified v0.4.1.
+
+GATE b802af0+fix tier=full lint=t typecheck=n.a. build=n.a. unit=t e2e=n.a.

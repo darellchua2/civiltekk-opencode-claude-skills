@@ -1,5 +1,5 @@
 {
-  "$comment": "Provider pack: nanobanana-mcp-server (Google Nano Banana image models; up-to-4K output, multi-reference editing, text rendering) for marketing visual production. Deep-merged by deploy/merge-packs.mjs when --enable-pack nanobanana (v2 shape: mcp.servers.<name>.disabled:false + permissions array rule). Requires GEMINI_API_KEY in the environment (free tier available). Self-installs via npx on first spawn.",
+  "$comment": "Provider pack: @mindstone/mcp-server-nano-banana (Google Nano Banana image models; up-to-4K output, multi-reference editing, text rendering) for marketing visual production. Deep-merged by deploy/merge-packs.mjs when --enable-pack nanobanana (v2 shape: mcp.servers.<name>.disabled:false + permissions array rule). Requires GEMINI_API_KEY in the environment (free tier available). Self-installs via npx on first spawn.",
   "mcp": {
     "servers": {
       "nanobanana": { "disabled": false }

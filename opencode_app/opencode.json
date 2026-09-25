@@ -843,12 +843,12 @@
                     "-y",
                     "@playwright/mcp@latest"
                 ],
-                "timeout": {"catalog": 30000},
                 "disabled": true
             },
             "alpha-vantage": {
                 "type": "remote",
                 "url": "https://mcp.alphavantage.co/mcp",
+                "oauth": false,
                 "headers": {
                     "Authorization": "Bearer {env:ALPHA_VANTAGE_API_KEY}"
                 },
@@ -859,12 +859,11 @@
                 "command": [
                     "npx",
                     "-y",
-                    "nanobanana-mcp-server@latest"
+                    "@mindstone/mcp-server-nano-banana@latest"
                 ],
                 "environment": {
                     "GEMINI_API_KEY": "{env:GEMINI_API_KEY}"
                 },
-                "timeout": {"catalog": 30000},
                 "disabled": true
             }
         }
