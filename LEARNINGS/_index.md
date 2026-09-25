@@ -1607,3 +1607,12 @@
 - **Scope**: project
 - **Summary**: Background watchers/notifications in prompt-level pipelines must state when the agent acts on them — step/ticket boundaries only, never mid-Task, arrival order, exactly-once — or JIRA side effects and resumes go nondeterministic (#560 plan review)
 - **Date**: 2026-09-25
+
+### Advance-on-ship guard must cover merged PRs
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/advance-on-ship-guard-must-cover-merged-prs.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: Overlap guards keyed to still-open PRs miss the stale-base class — a branch cut before an earlier in-run PR merged conflicts at PR time with no open PR at check time; classify that as overlap-hold (rebase + re-gate), not watcher failure (#560 re-review)
+- **Date**: 2026-09-25

@@ -50,6 +50,7 @@ LEARNINGS/**/*.md
 !LEARNINGS/conventions/count-restating-surfaces-exceed-drift-test-coverage.md
 !LEARNINGS/anti-patterns/preserved-phrase-lists-need-full-assertion-sweep.md
 !LEARNINGS/patterns/event-driven-contracts-need-notification-boundary-rule.md
+!LEARNINGS/patterns/advance-on-ship-guard-must-cover-merged-prs.md
 
 # Generated research-report artifacts (regenerate from docs/opencode-agent-tooling-research-2026-09-24.md)
 docs/OpenCode-Agent-Tooling-Research-2026-09-24.docx
