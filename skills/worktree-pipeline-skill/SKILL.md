@@ -401,6 +401,19 @@ step pushes it.
 > (pipeline runs assume an established repo; run `/create-ticket` standalone
 > if you want that signal).
 
+### 6f. Overlap hold gate (between 6e and Step 7)
+
+**Early leg (advisory)**: while any earlier in-run ticket still has an open
+PR, intersect that PR's branch diff with THIS ticket's PLAN **Dependency &
+Consumer Map touch-set** (the map 6d just validated — at this boundary the
+branch diff contains only the PLAN commit, so a `comm -12` on branch diffs
+would be vacuous here). Non-empty intersection → **hold** ticket N: keep the
+worktree, report held, and auto-resume when that PR's merge notification
+arrives — rebase `feat/<KEY>` onto the updated base, re-run the **full**
+gate (the SHA changes), continue at Step 7. Advisory default: an empty or
+missing Consumer Map skips the early leg — worst case is a late hold at the
+10a authoritative check, never a wrong merge.
+
 ## Failure Policy
 
 - **Halt triggers**: the executor's `[goal:blocked]` terminal marker
