@@ -361,7 +361,7 @@ MODELS_ONLY=false        # --models-only (provider + resolve only)
 FORCE_RESOLVE=false      # --force (ignore preserve-edits)
 MIGRATE_ONLY=false       # --migrate (migration + resolve only)
 MIX_MODE=false           # --mix (per-category provider/model editor)
-ENABLE_PACK=""           # --enable-pack <csv> (provider packs: autodesk,markitdown,nextjs,docling,chrome-devtools)
+ENABLE_PACK=""           # --enable-pack <csv> (provider packs: markitdown,nextjs,docling,chrome-devtools)
 SKILL_PROFILE="lean"     # --skill-profile lean|full (default lean: primary-visible skills per deploy/skill-profiles.json; full = the shipped opencode.json skill set)
 ENABLE_LOCAL_LLM=false   # --enable-local-llm (gemma-4-E4B via llama.cpp, requires NVIDIA GPU)
 ENABLE_VLLM=false        # --enable-vllm (vLLM Docker server, requires >12GB VRAM)
@@ -617,8 +617,8 @@ USAGE:
     --enable-pack <csv>   Enable provider pack(s) — flips mcp.servers.<server>.disabled
                           and appends v2 permissions-array allow rules for the
                           named packs. Available
-                          packs: autodesk, markitdown, nextjs, docling, chrome-devtools
-                          (comma-separated, e.g. --enable-pack autodesk,markitdown).
+                          packs: markitdown, nextjs, docling, chrome-devtools
+                          (comma-separated, e.g. --enable-pack markitdown,docling).
                           No-op if omitted; default state of every pack is OFF.
 
   SKILL PROFILE (deploy-time primary visibility):
@@ -656,8 +656,8 @@ USAGE:
     ./setup.sh -y -q                # Quick setup, non-interactive
 
   Provider packs (deploy-time MCP toggle):
-    ./setup.sh --enable-pack autodesk             # Enable the Autodesk MCP servers
-    ./setup.sh --enable-pack autodesk,markitdown   # Enable multiple packs
+    ./setup.sh --enable-pack markitdown           # Enable the markitdown MCP server
+    ./setup.sh --enable-pack markitdown,docling   # Enable multiple packs
     ./setup.sh --quick --enable-pack markitdown   # Combine with other modes
 
   Model resolution + skill profile:
@@ -670,7 +670,7 @@ USAGE:
     ./setup.sh -y -q --provider zai                  # Quick deploy, Z.AI, no prompts
     ./setup.sh -y --enable-pack markitdown,nextjs    # Defaults + packs, non-interactive
     ./setup.sh -y --provider openai --enable-pack markitdown --skill-profile lean
-    ./setup.sh --dry-run -y --enable-pack autodesk   # Preview a combo before running
+    ./setup.sh --dry-run -y --enable-pack docling   # Preview a combo before running
 
   Preview and update:
     ./setup.sh --dry-run            # Preview what would be done
@@ -751,10 +751,6 @@ USAGE:
       docling            Layout-aware document extraction (heavy ~3-4 GB)
       chrome-devtools    Live Chrome automation: perf traces, network/console, Lighthouse, heap snapshots
                           (privacy-hardened: telemetry + CrUX OFF; throwaway profile; enable via --enable-pack chrome-devtools)
-
-    Autodesk (4 servers, requires AUTODESK_API_KEY):
-      not shipped in the base config — added wholesale via
-      ./setup.sh --enable-pack autodesk (revit, model-data, fusion, help)
 
     SKILLS ($(count_skills "${REPO_DIR}/skills")):
 
@@ -938,7 +934,7 @@ parse_arguments() {
                 # Accept any value including "" (empty = no-op, handled by
                 # merge-packs.mjs). Only error if no following token at all.
                 if [ $# -lt 2 ]; then
-                    log_error "--enable-pack requires an argument (csv: autodesk,markitdown,nextjs,docling,chrome-devtools)"
+                    log_error "--enable-pack requires an argument (csv: markitdown,nextjs,docling,chrome-devtools)"
                     exit 1
                 fi
                 ENABLE_PACK="$2"
@@ -2728,7 +2724,7 @@ setup_config() {
              echo "    Auto-start: codegraph, web-reader, web-search"
               echo "    Opt-in per-project (.opencode/opencode.json): atlassian"
               echo "    Available but disabled (opt-in): next-devtools, markitdown, docling, chrome-devtools"
-              echo "    Enable a group with: ./setup.sh --enable-pack <autodesk|markitdown|nextjs|docling|chrome-devtools>"
+              echo "    Enable a group with: ./setup.sh --enable-pack <markitdown|nextjs|docling|chrome-devtools>"
             echo ""
         else
             log_error "opencode.json source not found: ${SOURCE_CONFIG}"

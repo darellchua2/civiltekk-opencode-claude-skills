@@ -1433,3 +1433,30 @@
 - **Scope**: project
 - **Summary**: Defining an invocation class by listing callers ("from Step 3 or 4f") rots in the very diff that rewires those callers — #550's `--update` step 6 named two dead sites while three real ones went unlisted. Key invocation classes to run-context signals (run in progress vs standalone), and grep agent/skill callers repo-wide at contract-change time instead of enumerating.
 - **Date**: 2026-09-25
+
+### Removal ticket dir-allowlist grep strands live refs
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/removal-ticket-dir-allowlist-grep-strands-live-refs.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: PLAN-553 scoped its safety grep to four dirs while live `--enable-pack autodesk` instructions sat in skills/ and agents/ — outside the net. Rule: removal tickets grep repo-wide (`git grep -i <name>`) with an explicit keep-list, never a directory allowlist (#553 plan review)
+- **Date**: 2026-09-25
+
+### Step done-when narrower than its AC's grep
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/step-done-when-narrower-than-ac-grep.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: AC promised zero refs in deploy/ but the step's done-when grepped only setup.sh — merge-packs.mjs:39 fell between scopes; steps green while AC red. Rule: the last content step's done-when re-runs the AC's grep verbatim over the AC's full scope (#553 plan review)
+- **Date**: 2026-09-25
+
+### Directory-scanned registries make deletion data-only
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/directory-scanned-registries-make-deletion-data-only.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: All three pack consumers dir-scan (merge-packs, scanPackNames, validate_enable_pack) so deleting pack-autodesk.json was a pure data change — fail-fast text and counts rebuilt themselves, proven by execution. Replicate for opt-in feature groups; never hardcode membership in consumers (#553 arch review + code review)
+- **Date**: 2026-09-25
