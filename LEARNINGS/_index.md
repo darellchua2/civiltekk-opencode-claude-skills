@@ -1568,3 +1568,18 @@
 - **Scope**: project
 - **Summary**: A conflict guard on two flags must cover the parser's value-eat branch (a long flag consumes a following short flag as its value — `--project -g` skipped the guard and installed into `./-g`) and post-date the last opts-mutation site (TUI `Object.assign` re-set `project` after the guard); pin both flag orders in tests (#563 code review)
 - **Date**: 2026-09-25
+
+### Auto-detect probes must not read self-created signals
+
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/auto-detect-probe-reads-self-created-signal.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: A detection probe reading a directory its own writer creates unconditionally (the shared manifest dir) self-inflates — first auto run on a non-opencode machine permanently adds opencode to detections; probe content (exclude manifest-only markers), not the root, and pin with an install-then-auto two-run test (#564 code review)
+
+- **Category**: solutions
+- **File**: `LEARNINGS/solutions/process-exit-truncates-async-pipe-writes-drain-first.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: process.exit after large stdout writes truncates at the ~8KB pipe boundary on pipes (files flush sync → CI-green/local-red flakes); gate on writableLength>0, await write("",cb) before exit, and pin with a JSON.parse-through-pipe test — file-redirect tests false-green (#564 exit gate)
+- **Date**: 2026-09-25

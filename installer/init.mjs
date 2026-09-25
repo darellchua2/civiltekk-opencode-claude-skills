@@ -30,7 +30,7 @@
 // => isolation (curated subset) only holds on a clean slate (no global deploy).
 
 import { readFile, writeFile, mkdir, readdir, rm, cp, copyFile } from "node:fs/promises";
-import { existsSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -83,20 +83,48 @@ const TARGETS = {
 const TARGET_VALUES = [...Object.keys(TARGETS), "both"];
 const activeTargets = (target) => (target === "both" ? ["opencode", "claude"] : [target]);
 
+// --target auto (#564): probe each target's user-scope config root — mirrors
+// npx skills' detectInstalledAgents() (config-root existence checks).
+// opencode probe is CONTENT-aware: the installer itself creates ~/.config/opencode
+// (manifest dir) on every user-scope add — for ANY target — so the bare root
+// existing is a signal this tool can synthesize as a side effect (probe would
+// self-inflate; #564 review). Only real content counts.
+function dirHasContent(dir, ignore) {
+  try {
+    return readdirSync(dir).some((f) => f !== ignore);
+  } catch {
+    return false;
+  }
+}
+const AUTO_TARGET_PROBES = {
+  opencode: () => existsSync(USER_OC) && dirHasContent(USER_OC, ".skill-manifest.json"),
+  agents: () => existsSync(join(os.homedir(), ".agents")),
+  claude: () => existsSync(process.env.CLAUDE_CONFIG_DIR?.trim() || USER_CLAUDE_SKILLS.replace(/\/skills$/, "")),
+  kimi: () => existsSync(USER_KIMI_AGENTS.replace(/\/agents$/, "")),
+  kilo: () => existsSync(USER_KILO_AGENTS.replace(/\/agent$/, "")) || existsSync(USER_KILO_SKILLS.replace(/\/skills$/, "")),
+};
+function detectInstalledHarnesses() {
+  return Object.keys(AUTO_TARGET_PROBES).filter((t) => AUTO_TARGET_PROBES[t]());
+}
+
 // ─────────────────────────── arg parsing ────────────────────────────────
 const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps", "global"]);
+// Single home for the short-flag set: the alias arms AND the value-eat guard
+// both consume this list — a fourth short updates one place or it gets eaten
+// as a flag value (#564 review).
+const SHORT_FLAGS = { "-g": "global", "-y": "yes", "-p": "project" };
 function parseArgs(argv) {
   const opts = { rest: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--") { opts.rest.push(...argv.slice(i + 1)); break; }
-    if (a === "-g") { opts.global = true; continue; } // npx-skills alias for user scope (the default)
+    if (SHORT_FLAGS[a]) { opts[SHORT_FLAGS[a]] = true; continue; } // npx-skills short aliases
     if (a.startsWith("--")) {
       const key = a.slice(2).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
       if (BOOL_FLAGS.has(key)) opts[key] = true;
       else {
         const next = argv[i + 1];
-        if (next === undefined || next.startsWith("--") || next === "-g") opts[key] = true;
+        if (next === undefined || next.startsWith("--") || SHORT_FLAGS[next]) opts[key] = true;
         else { opts[key] = next; i++; }
       }
     } else {
@@ -1482,11 +1510,35 @@ async function main() {
   const depMap = await loadDepMap();
 
   // verb dispatch: add / remove (npx UX surface)
+  if (opts.rest[0] === "add" && opts.target === "auto") {
+    // #564: --target auto resolves to the set of installed harnesses, then
+    // runs the normal per-target flow once each. Project scope dedupes on the
+    // EFFECTIVE project target (agents/claude downgrade to opencode).
+    const found = detectInstalledHarnesses();
+    if (!found.length)
+      die("'--target auto': no harness config directories detected. Searched: ~/.config/opencode, ~/.agents, ~/.claude, ~/.kimi-code, ~/.config/kilo — install a harness first, or pass --target <opencode|claude|agents|kimi|kilo>.", 2);
+    console.error(`--target auto: detected ${found.join(", ")}`);
+    let targets = found;
+    if (opts.project) {
+      targets = [...new Set(found.map((t) => (TARGETS[t].projectSkillsDir ? t : "opencode")))];
+    }
+    for (const t of targets) {
+      await cmdAdd(opts.rest.slice(1), { ...opts, target: t }, reg, depMap);
+    }
+    return;
+  }
   if (opts.rest[0] === "add") { await cmdAdd(opts.rest.slice(1), opts, reg, depMap); return; }
   if (opts.rest[0] === "update") { await cmdUpdate(opts.rest.slice(1), opts); return; }
   if (opts.rest[0] === "remove") { await cmdRemove(opts.rest.slice(1), opts); return; }
+  if (opts.rest[0] === "rm") { await cmdRemove(opts.rest.slice(1), opts); return; }
 
   // read modes
+  if (opts.rest[0] === "list" || opts.rest[0] === "ls") {
+    const what = opts.rest[1];
+    if (!what) die("list: specify a category — agents|skills|categories|mcps|presets (e.g. 'opencode-skill list skills')", 2);
+    cmdList(what, reg, opts);
+    return;
+  }
   if (opts.list) { cmdList(opts.list, reg, opts); return; }
   if (opts.describe) { await cmdDescribe(opts.describe, reg); return; }
   if (opts.expand) { await cmdExpand(opts.expand, reg, depMap); return; }
@@ -1617,6 +1669,8 @@ USAGE
   opencode-skill add --all --yes               install the full catalog (user scope)
   opencode-skill update [--prune]              re-copy manifest entries whose source changed
   opencode-skill remove <name>                 remove a user-scope install
+  opencode-skill rm <name>                     alias for remove
+  opencode-skill list <what>                   alias for --list (agents|skills|categories|mcps|presets)
   opencode-skill --list agents [--category X]      list agents (JSON)
   opencode-skill --list skills [--category X]      list skills (JSON)
   opencode-skill --list categories                 list categories + counts
@@ -1647,9 +1701,16 @@ SCOPE
   Project scope (--project): writes agents + opencode.json + models.json + AGENTS.md
   under .opencode/; skills go to .agents/skills/ (Agent Skills standard dir,
   natively discovered by OpenCode and pi).
+  npx-skills divergences (deliberate): the scope default is USER here (npx
+  skills defaults to project — use --project/-p), and installs are per-target
+  COPIES (npx skills symlinks) because targets apply model/permission
+  translations. Multi-target --target auto --dry-run emits one JSON document
+  per resolved target, newline-separated (NDJSON); single-target stays one doc.
 
 FLAGS
   -g, --global         user scope (default) — explicit npx-skills-compatible alias; cannot combine with --project
+  -y                   alias for --yes
+  -p                   alias for --project (project scope, dir defaults to cwd)
   --project [dir]      project scope (default: cwd). Without 'add', takes a <dir> value.
   --preset <csv>       preset name(s): core review frontend backend docs devops business research cad
   --agents <csv>       agent stem(s)
@@ -1663,7 +1724,7 @@ FLAGS
   --prune              remove opencode-init-owned entries absent from the new set
   --permit             (user scope) backup opencode.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
-  --target <t>         (add) install target: opencode (default), claude, agents (shared ~/.agents/), kimi, kilo, or both (--format is a deprecated alias)
+  --target <t>         (add) install target: opencode (default), auto (detect installed harnesses), claude, agents (shared ~/.agents/), kimi, kilo, or both (--format is a deprecated alias)
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and

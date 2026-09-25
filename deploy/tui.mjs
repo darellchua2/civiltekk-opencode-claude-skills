@@ -33,6 +33,12 @@ const parsed = parseArgs(process.argv.slice(3));
   }
   // Explicit exit — singleSelect/multiSelect resume stdin for keypress capture,
   // and a resumed stdin handle would keep node alive (hanging the caller's `&&`).
+  // Drain stdout first: a pending async pipe write (e.g. --print-plan's 20KB+
+  // JSON) is truncated at the pipe-buffer boundary by process.exit (#564 —
+  // file redirects flush synchronously, which is why this only bit pipes).
+  if (process.stdout.writableLength > 0) {
+    await new Promise((resolve) => process.stdout.write("", resolve));
+  }
   process.exit(0);
 })().catch((e) => { console.error(`tui error: ${e.message}`); process.exit(1); });
 
