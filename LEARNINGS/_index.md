@@ -1550,3 +1550,12 @@
 - **Scope**: project
 - **Summary**: A guard presuming a data-shape contract ships with a shape test pinning it in the same change — the assumption becomes CI-enforced instead of silently violable by future data (#558 code review)
 - **Date**: 2026-09-25
+
+### Destination flips need a legacy-dir sweep
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/dest-flip-legacy-sweep.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: A TARGETS-style destination flip must sweep legacy dirs in manifest-keyed lifecycle flows — name-storing manifests recompute paths from the current row, so re-add/prune orphan pre-flip copies in dirs the runtime still unions; sweep scope = prev-owned ∩ selected/pruned (#561 code review)
+- **Date**: 2026-09-25

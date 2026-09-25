@@ -79,7 +79,7 @@ teardown() { rm -rf "$TMP_PROJ"; }
   run $INIT --project "$TMP_PROJ" --preset review --yes
   [ "$status" -eq 0 ]
   agent_files=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
-  skill_dirs=$(ls "$TMP_PROJ/.opencode/skills/" | wc -l)
+  skill_dirs=$(ls "$TMP_PROJ/.agents/skills/" | wc -l)
   [ "$agent_files" -eq 4 ]
   [ "$skill_dirs" -eq 31 ]
 }
@@ -296,4 +296,31 @@ EOC
   echo "$output" | grep -q "conflict (skipped, use --force).*opencode.json"
   grep -q "myserver" "$TMP_PROJ/.opencode/opencode.json"
   [ "$(jq_get "d.get('configPath')" < "$TMP_PROJ/.opencode/.opencode-init.manifest.json")" = "None" ]
+}
+
+@test "project update migrates pre-flip .opencode/skills copies (#561)" {
+  run $INIT add tdd-workflow-skill --project "$TMP_PROJ" --yes
+  [ "$status" -eq 0 ]
+  [ -d "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
+  # simulated pre-flip leftover (installed before the #561 destination flip)
+  mkdir -p "$TMP_PROJ/.opencode/skills/tdd-workflow-skill"
+  run $INIT add tdd-workflow-skill --project "$TMP_PROJ" --yes
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "migrated from .opencode/skills"
+  [ ! -e "$TMP_PROJ/.opencode/skills/tdd-workflow-skill" ]
+  [ -d "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
+}
+
+@test "prune removes legacy-dir copies of pruned skills (#561)" {
+  run $INIT add tdd-workflow-skill --project "$TMP_PROJ" --yes
+  [ "$status" -eq 0 ]
+  [ -d "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
+  # simulated pre-flip leftover
+  mkdir -p "$TMP_PROJ/.opencode/skills/tdd-workflow-skill"
+  # prune-only mode: empty selection removes everything manifest-owned
+  run $INIT --project "$TMP_PROJ" --prune
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "legacy .opencode/skills"
+  [ ! -e "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
+  [ ! -e "$TMP_PROJ/.opencode/skills/tdd-workflow-skill" ]
 }

@@ -115,7 +115,7 @@ EOF
   run $INIT add tdd-workflow-skill --project "$TMP_PROJ" --target claude --yes
   [ "$status" -eq 0 ]
   echo "$output" | grep -q "has no project destination"
-  [ -d "$TMP_PROJ/.opencode/skills/tdd-workflow-skill" ]
+  [ -d "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
   [ ! -e "${HOME}/.claude/agents" ]
   rm -rf "$TMP_PROJ"
 }

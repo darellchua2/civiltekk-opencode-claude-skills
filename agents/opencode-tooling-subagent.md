@@ -106,7 +106,7 @@ Before any action, determine the current project type:
 - Creating a new skill/agent here means it gets deployed to ALL user projects
 
 **Regular project**:
-- Create project-level artifacts in `.opencode/agents/`, `.opencode/skills/`, `AGENTS.md`
+- Create project-level artifacts in `.opencode/agents/`, `.agents/skills/`, `AGENTS.md` — skills default to `.agents/skills/` (Agent Skills dir natively discovered by OpenCode and pi); write `.opencode/skills/` only when the user explicitly requests opencode-only placement
 - No cross-file sync needed
 - Focus on project-specific tooling
 
@@ -144,7 +144,7 @@ If in a configurator repo and user says "user level", the artifact goes into the
 |----------|---------------|---------------------|
 | Rules | `./AGENTS.md` | `~/.config/opencode/AGENTS.md` |
 | Agents | `.opencode/agents/<name>.md` | `~/.config/opencode/agents/<name>.md` |
-| Skills | `.opencode/skills/<name>/SKILL.md` | `~/.config/opencode/skills/<name>/SKILL.md` |
+| Skills | `.agents/skills/<name>/SKILL.md` (default; `.opencode/skills/` only on explicit opencode-only request) | `~/.config/opencode/skills/<name>/SKILL.md` (or the shared `~/.agents/skills/`) |
 | Config | `./opencode.json` | `~/.config/opencode/opencode.json` |
 
 ### Configurator Repo (`civiltekk-opencode-claude-skills`)
@@ -215,7 +215,7 @@ After completing any task, evaluate the project context and proactively prompt t
 
 ### Project-Specific Tooling Suggestions
 1. Analyze the project's tech stack, frameworks, and patterns
-2. If no project-level `.opencode/agents/` or `.opencode/skills/` exist, suggest:
+2. If no project-level `.opencode/agents/` or `.agents/skills/` exist, suggest:
    - "Would you like to create a project-specific [skill/agent] for [detected pattern]?"
    - Examples: testing agent for pytest projects, linting skill for specific frameworks, deployment agent for specific CI/CD
 3. If the project lacks a project-level `AGENTS.md` (or has a minimal one), offer to create one
@@ -241,7 +241,7 @@ After completing any task, evaluate the project context and proactively prompt t
 
 ### Suggestion Flow
 After any completed task:
-1. Check if project has `.opencode/agents/`, `.opencode/skills/`, and a rich `AGENTS.md`
+1. Check if project has `.opencode/agents/`, `.agents/skills/`, and a rich `AGENTS.md`
 2. If gaps exist, ask: "I noticed this project doesn't have [X]. Would you like me to create one?"
 3. Offer 1-3 actionable suggestions tailored to the detected tech stack
 4. Do NOT push suggestions if user declines — respect their choice
