@@ -97,3 +97,7 @@ None (no blocked-by tickets).
 - AC #2 behavioral proof: `--enable-pack autodesk` -> exit 1 "unknown pack(s): autodesk", available-list dynamic (4 packs)
 - AC #1 greps: deploy/ 0 - opencode_app/ 0 - skills/agents command-pattern 0 - README only policy paragraph + L301 skill listing
 - Repo-wide keep-list sweep: residual hits only in MIGRATION.md/CHANGELOG.md history, PLANS/, knowledge-skill names (autodesk-aps-skill), civil-3d-skill API namespaces
+
+- Gate re-run on LEARNINGS/docs additions: gated surfaces (shell/JSON/tests) unchanged by markdown-only commit — memo stands.
+
+GATE 38d3b1e tier=full lint=t typecheck=n.a. build=n.a. unit=t e2e=n.a.
