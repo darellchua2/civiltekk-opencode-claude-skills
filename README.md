@@ -228,6 +228,8 @@ Globally: set `"disabled": false` in `~/.config/opencode/opencode.json`, or use 
 | `alpha-vantage` | alpha-vantage | Remote; `ALPHA_VANTAGE_API_KEY` env var (free tier: 25 req/day) — market/macro/commodities data |
 | `nanobanana` | nanobanana | `GEMINI_API_KEY` env var — Google Nano Banana image generation (4K, multi-reference editing) |
 
+> **Troubleshooting:** `--enable-pack` fails with "no full definition" when the deployed config predates the pack — re-run `setup.sh` and answer **y** to the overwrite prompt (or re-copy `opencode_app/opencode.json`), then re-run the enable. Applies to `--dry-run` previews too.
+
 > **Autodesk MCP policy (official-only):** no Autodesk MCP pack ships. The former pack pointed at `mcp.autodesk.com` endpoints that do not resolve. Autodesk MCP may only be re-admitted once an **official** Autodesk MCP server's connection details are verifiable from Autodesk's own documentation — the archived `autodesk-platform-services/aps-mcp-server-nodejs` sample (clone-based, archived 2026-05) does not qualify. Until then, use the Autodesk Platform Services REST APIs via `autodesk-aps-skill`.
 
 ```bash

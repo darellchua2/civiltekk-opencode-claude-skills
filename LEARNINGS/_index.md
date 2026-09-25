@@ -1541,3 +1541,12 @@
 - **Scope**: project
 - **Summary**: "AskUserPreference" shipped instead of the real `AskUserQuestion` — binding rows are API claims; verify tool names against harness docs (#556 code review)
 - **Date**: 2026-09-25
+
+### Fail-closed guard needs a companion shape test
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/fail-closed-guard-needs-shape-test.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: A guard presuming a data-shape contract ships with a shape test pinning it in the same change — the assumption becomes CI-enforced instead of silently violable by future data (#558 code review)
+- **Date**: 2026-09-25

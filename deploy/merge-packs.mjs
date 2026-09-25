@@ -184,6 +184,20 @@ async function main() {
     if (mcp && typeof mcp === "object") {
       // v2 pack fragments are { servers: { name: {...} } }; merge into config.mcp.
       config.mcp = config.mcp || {};
+      // Fail-closed (#558): a flip-only pack presumes the base definition
+      // exists in the TARGET config. Flipping into a definition-less config
+      // creates an inert v2 stub ({disabled:false}, no command/url) that
+      // opencode silently ignores. die() here = exit before the single
+      // final write, so the target stays byte-unchanged.
+      for (const [srv, def] of Object.entries(mcp.servers ?? {})) {
+        if (!def || def.disabled !== false) continue;
+        const cur = config.mcp?.servers?.[srv];
+        const hasCmd = Array.isArray(cur?.command) && cur.command.length > 0;
+        const hasUrl = typeof cur?.url === "string" && cur.url.trim() !== "";
+        if (!cur || typeof cur !== "object" || (!hasCmd && !hasUrl)) {
+          die(`ERROR: pack '${name}' enables '${srv}', but the target config has no full definition for it (missing command/url). The deployed config predates this pack. Re-run setup.sh and answer 'y' to refresh the config, or re-copy opencode_app/opencode.json.`);
+        }
+      }
       deepMerge(config.mcp, mcp);
     }
     if (Array.isArray(permissions)) {

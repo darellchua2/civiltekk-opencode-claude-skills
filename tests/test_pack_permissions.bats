@@ -57,6 +57,8 @@ PACK_SERVERS="markitdown:markitdown docling:docling chrome-devtools:chrome-devto
         if (!def) { console.error('${pack}: missing mcp.servers.' + s); process.exit(1); }
         if (def.disabled !== false) { console.error('${pack}: mcp.servers.' + s + '.disabled must be false'); process.exit(1); }
         if (def.enabled !== undefined) { console.error('${pack}: v1 enabled key is dead in v2 (mcp.servers.' + s + ')'); process.exit(1); }
+        const extra = Object.keys(def).filter((k) => k !== 'disabled');
+        if (extra.length > 0) { console.error('${pack}: flip-only contract violated — mcp.servers.' + s + ' carries ' + JSON.stringify(extra) + ' (definitions belong in the base config, #558)'); process.exit(1); }
       }
     "
   done
@@ -91,12 +93,45 @@ EOF
   rm -rf "$dir"
 }
 
+@test "pack_merge_fails_loud_on_definition_less_target" {
+  local dir
+  dir="$(mktemp -d)"
+  # #558: flip-only pack + target lacking the server definition = the stale-config
+  # stub trap; must die before the write (target byte-unchanged).
+  cat > "$dir/opencode.json" <<'JSON'
+{ "mcp": { "servers": {} }, "permissions": [] }
+JSON
+  cp "$dir/opencode.json" "$dir/before.json"
+  run node "$MERGE_SCRIPT" --config "$dir/opencode.json" --packs-dir deploy/packs --packs markitdown
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q "no full definition"
+  cmp -s "$dir/opencode.json" "$dir/before.json"
+  rm -rf "$dir"
+}
+
+@test "pack_merge_succeeds_when_target_has_full_definition" {
+  local dir
+  dir="$(mktemp -d)"
+  cat > "$dir/opencode.json" <<'JSON'
+{ "mcp": { "servers": { "markitdown": { "type": "local", "command": ["markitdown-mcp"], "disabled": true } } }, "permissions": [] }
+JSON
+  node "$MERGE_SCRIPT" --config "$dir/opencode.json" --packs-dir deploy/packs --packs markitdown >/dev/null
+  node -e "
+    const c = JSON.parse(require('fs').readFileSync('$dir/opencode.json','utf8'));
+    if (c.mcp.servers.markitdown.disabled !== false) { console.error('must flip'); process.exit(1); }
+    if (!Array.isArray(c.mcp.servers.markitdown.command)) { console.error('definition must survive'); process.exit(1); }
+  "
+  rm -rf "$dir"
+}
+
 @test "pack_merge_preserves_unrelated_permission_rules" {
   local dir
   dir="$(mktemp -d)"
+  # Full markitdown definition required: #558's stub guard fails a flip into
+  # a definition-less target (the exact stale-config bug class this guards).
   cat > "$dir/opencode.json" <<'EOF'
 {
-  "mcp": { "servers": {} },
+  "mcp": { "servers": { "markitdown": { "type": "local", "command": ["markitdown-mcp"], "disabled": true } } },
   "permissions": [
     { "action": "codegraph*", "resource": "*", "effect": "allow" },
     { "action": "docling*", "resource": "*", "effect": "deny" },
