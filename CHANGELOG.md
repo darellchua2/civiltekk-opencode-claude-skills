@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.43.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.42.1...v9.43.0) (2026-09-25)
+
+### Features
+
+* **installer:** default project-scope skills to .agents/skills/ ([#562](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/562)) ([9de632c](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/9de632cfa4af244368d90c51d79c9b4875e8ea38)), closes [#561](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/561) [#561](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/561)
+
 ## [9.42.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.42.0...v9.42.1) (2026-09-25)
 
 ### Bug Fixes
