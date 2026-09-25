@@ -29,26 +29,31 @@ _Prose references confirmed unchanged-accurate under this rework (no edits plann
 _Every step MUST be atomic and carry rationale. Reject any step missing a "Why"._
 
 ### Phase 1: Step 1 — execution model + cross-repo parsing
-- [ ] **1.1** Replace the "Ticket order = execution order (sequential; never parallel worktrees)" bullet with the pipelining execution model: one active implementation at a time; a ticket's implementation starts once the previous implementation has created its PR (Step 10a) AND the ticket's own blockers have merged; unblocked tickets never wait on CI; N background merge watchers may run concurrently.
+- [x] **1.1** Replace the "Ticket order = execution order (sequential; never parallel worktrees)" bullet with the pipelining execution model: one active implementation at a time; a ticket's implementation starts once the previous implementation has created its PR (Step 10a) AND the ticket's own blockers have merged; unblocked tickets never wait on CI; N background merge watchers may run concurrently.
     — **Why:** This is the core stall fix — CI wait must leave the main loop so the next implementable ticket proceeds (AC #1). "Created its PR (10a)" is the deliberate advance trigger: reading it as merge would re-serialize the run (Requirements answer #2).
     — **Done when:** The bullet states one-active-implementation, advance-at-10a-PR-creation, and concurrent-watchers rules with no "never parallel worktrees" residue (`grep -c "never parallel worktrees"` → 0).
     — **Consumers affected:** OpenCode agent runtime executing multi-ticket runs; Failure Policy and Guarantees sections updated in Phase 5 to match.
-- [ ] **1.2** Rewrite the `blocked-by:` rule from permanent skip to hold-and-resume: held tickets are reported as held; when the blocker's merge notification arrives mid-run, the ticket auto-resumes (rebase `feat/<KEY>` onto the updated base, continue at Step 7); tickets still held at run end are reported as deferred, not failed.
+    — **Done:** Execution-model bullet landed (advance at 10a PR creation, one active implementation, N concurrent watchers); residue grep → 0; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **1.2** Rewrite the `blocked-by:` rule from permanent skip to hold-and-resume: held tickets are reported as held; when the blocker's merge notification arrives mid-run, the ticket auto-resumes (rebase `feat/<KEY>` onto the updated base, continue at Step 7); tickets still held at run end are reported as deferred, not failed.
     — **Why:** A permanent skip forces the user to re-invoke the pipeline after every merge in a dependent chain (AC #4).
     — **Done when:** The Step 1 blocked-by bullet says hold + auto-resume + deferred-at-end, with the resume mechanics named; the word "skip" no longer describes the blocked-by path.
     — **Consumers affected:** Step 2 (resume path) and Failure Policy (deferral semantics) must stay consistent.
-- [ ] **1.3** Extend the ticket-ref grammar and document the full Step-1 first-token taxonomy in one place: `--`flags, base-branch fallback test, bare numerics, `#N`, `owner/repo#N`, `[A-Z][A-Z0-9]+-\d+` (JIRA), and the new `repo/KEY` JIRA form matching `[\w.-]+/[A-Z][A-Z0-9]+-\d+`; bare `KEY` and all existing forms behave exactly as before.
+    — **Done:** blocked-by bullet rewritten (hold / open-PR-counts-as-unmerged / auto-resume via rebase to Step 7 / deferred-at-end); files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **1.3** Extend the ticket-ref grammar and document the full Step-1 first-token taxonomy in one place: `--`flags, base-branch fallback test, bare numerics, `#N`, `owner/repo#N`, `[A-Z][A-Z0-9]+-\d+` (JIRA), and the new `repo/KEY` JIRA form matching `[\w.-]+/[A-Z][A-Z0-9]+-\d+`; bare `KEY` and all existing forms behave exactly as before.
     — **Why:** Cross-repo chaining needs the ticket ref to name its repo; an explicit taxonomy with a deterministic fallthrough prevents classifier drift on variants (LEARNINGS: exact-match branch taxonomy fallthrough).
     — **Done when:** The regex in Step 1 includes the `repo/KEY` alternative and the bullet enumerates every accepted token shape; existing forms are byte-identical in behavior.
     — **Consumers affected:** `--dry-run` predictions (1.5) and Steps 2–4 repo context (Phase 2) consume the resolved repo.
-- [ ] **1.4** Add sibling-checkout resolution for `repo/KEY`: the named repo resolves to `../<repo>` relative to the main checkout, must exist and be a git repo (else one batched user ask, then abort if unresolved); base branch, `ls-remote` validation, worktree root, and gh context are resolved per repo.
+    — **Done:** Regex gains `[\w.-]+/[A-Z][A-Z0-9]+-\d+`; taxonomy enumerated in test order on the base-branch bullet; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **1.4** Add sibling-checkout resolution for `repo/KEY`: the named repo resolves to `../<repo>` relative to the main checkout, must exist and be a git repo (else one batched user ask, then abort if unresolved); base branch, `ls-remote` validation, worktree root, and gh context are resolved per repo.
     — **Why:** Without a local checkout the pipeline cannot cut branches or run gh/JIRA-aware steps for the foreign repo (AC #6).
     — **Done when:** Step 1 states the `../<repo>` resolution rule, the existence check, the ask-once-then-abort fallback, and per-repo base validation.
     — **Consumers affected:** Step 2 merged-check/branch-cut and Step 4 worktree root (Phase 2) thread this resolved repo path.
-- [ ] **1.5** Extend the `--dry-run` block to print per-ticket hold/async predictions: which tickets will hold on `blocked-by:`, which will hold on open-PR overlap, which PRs will get background watchers, and the would-be branch/worktree names per repo.
+    — **Done:** repo/KEY resolution bullet added (sibling checkout, ask-once-then-abort, per-repo base/gh/worktree scoping); base-validation bullet gains per-repo note; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **1.5** Extend the `--dry-run` block to print per-ticket hold/async predictions: which tickets will hold on `blocked-by:`, which will hold on open-PR overlap, which PRs will get background watchers, and the would-be branch/worktree names per repo.
     — **Why:** A run whose control flow changed must remain fully predictable before any mutation (AC #6).
     — **Done when:** The dry-run bullet lists hold predictions and watcher plans among its outputs; still read-only (no writes/mutations wording preserved).
     — **Consumers affected:** none (read-only path).
+    — **Done:** dry-run bullet prints merged/held-on-blocked-by/held-on-overlap predictions + watcher plans + per-repo branch/worktree names; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
 
 ### Phase 2: Steps 2–4 — per-repo context threading
 - [ ] **2.1** Thread the ticket's resolved repo through Steps 2–3: the merged-PR check, branch cut, and ticket fetch run against the ticket's repo (`git -C <repo>`, `gh ... -R <owner/name>` for foreign repos; session repo unchanged); the held-resume path rides the existing prune/resume/refuse ask with resume defined as rebase onto the updated base.

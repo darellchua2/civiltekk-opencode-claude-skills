@@ -28,22 +28,38 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 - Leading `--`-flags are stripped before the first-token test (`--dry-run`
   is the only flag).
 - First token is a **base-branch** iff it fails the ticket regex
-  `^(#\d+|[\w.-]+/[\w.-]+#\d+|[A-Z][A-Z0-9]+-\d+)$` **and is not purely
-  numeric**.
+  `^(#\d+|[\w.-]+/[\w.-]+#\d+|[A-Z][A-Z0-9]+-\d+|[\w.-]+/[A-Z][A-Z0-9]+-\d+)$`
+  **and is not purely numeric**. Full first-token taxonomy, in test order:
+  `--`flags → ticket forms (`#N` GitHub · `owner/repo#N` cross-repo GitHub ·
+  bare numeric `N` (auto-`#N`) · `KEY` JIRA · `repo/KEY` cross-repo JIRA) →
+  base-branch fallthrough. Every accepted token shape is listed here — a
+  variant that matches none of them is the base-branch, never silently
+  dropped.
 - Bare numerics (`351`) auto-normalize to GitHub issue refs (`#351`).
+- **`repo/KEY` cross-repo refs** (`canvastekk-workflow-engine/DA-2952`) name
+  a foreign repo: resolve it to the sibling checkout `../<repo>` relative to
+  the main checkout; it must exist and be a git repo — missing → one batched
+  user ask for the local path, still unresolved → abort with a clear error.
+  Bare `KEY`/`#N`/`owner/repo#N` behave exactly as before (session repo or
+  named GitHub repo). Everything repo-scoped downstream — base branch, its
+  validation, the worktree root, and the gh context — resolves **per
+  ticket's repo** (Steps 2–4 run `git -C <repo>` and `gh ... -R
+  <owner/name>` for foreign repos; the session repo is unchanged).
 - Zero ticket refs → print usage and stop.
 - The base-branch sets **both** where feat branches are cut from AND the PR
   target. Default (omitted): repo default branch via
   `git symbolic-ref --short refs/remotes/origin/HEAD` (yields
   `origin/<base>`; strip the prefix; fallback `main`).
-- **Validate the base** after resolving it:
-  `git ls-remote --exit-code --heads origin <base>`; non-zero exit → abort
-  with a clear error naming the attempted base (fail-fast — never reach
-  Step 2 with a typo'd base).
-- **`--dry-run`**: print the resolved base, ticket execution order,
-  per-ticket skip predictions (merged / `blocked-by:`), and the would-be
-  `feat/<KEY>` branch + worktree names, then stop before Step 2. Read-only:
-  no writes, no branch/worktree/remote mutations.
+- **Validate the base** after resolving it (per repo for `repo/KEY`
+  tickets): `git ls-remote --exit-code --heads origin <base>`; non-zero exit
+  → abort with a clear error naming the attempted base (fail-fast — never
+  reach Step 2 with a typo'd base).
+- **`--dry-run`**: print the resolved base (per repo), ticket execution
+  order, per-ticket predictions — merged / held-on-`blocked-by:` /
+  held-on-open-PR-overlap — which PRs will get background merge watchers,
+  and the would-be `feat/<KEY>` branch + worktree names (per repo), then
+  stop before Step 2. Read-only: no writes, no branch/worktree/remote
+  mutations.
 - **Dependency preflight (per-skill installs)**: hard deps — skill
   `plan-execution-skill` --gate (Step 8), agents `code-review-subagent`
   (Step 9) and `pr-workflow-subagent` (Step 10). Any missing → abort
@@ -52,10 +68,21 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   degrade with a note: `ticket-creation-skill` (only for new-work tickets,
   Step 3), `architecture-review-subagent` / `uiux-reviewer-subagent` /
   `requirements-specialist-subagent` (Step 7 skip-with-note rule).
-- **Ticket order = execution order** (sequential; never parallel worktrees).
-  Before starting a ticket, if its body contains `blocked-by: <ref>` naming a
-  ticket that is not yet merged, skip it and report why (no JIRA link
-  traversal in v1).
+- **Execution model (pipelined)**: ticket order = authoring order, but only
+  **one implementation runs at a time**. The next ticket's implementation
+  starts once the active ticket has **created its PR (Step 10a)** — not once
+  it merges — AND this ticket's own blockers (below) have merged; unblocked
+  tickets never wait on CI. Each PR ships with a **background merge
+  watcher** (Step 10b), so any number of PRs may be awaiting merge
+  concurrently while the next implementation proceeds.
+- **`blocked-by:` hold, not skip**: if a ticket's body contains
+  `blocked-by: <ref>` naming a ticket that is not yet merged (an open PR
+  counts as unmerged), **hold** it — report as held, keep it in run order —
+  and **auto-resume** when the blocker's merge notification arrives: rebase
+  `feat/<KEY>` onto the updated base and continue at Step 7 (Step 2's
+  leftover ask covers the pre-existing branch/worktree). Tickets still held
+  when nothing else is runnable are reported deferred at run end, not
+  failed. (No JIRA link traversal in v1 — body text only.)
 
 ## Steps 2-10 — per ticket (in order)
 
