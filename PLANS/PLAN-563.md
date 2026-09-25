@@ -11,8 +11,8 @@
 - [x] `skills/_archived/` removed from the working tree
 - [x] Census: zero remaining references to the 6 removed skill names (README, AGENTS.md, dependency-map.json, deploy-plan-items.mjs, registry.json, tests)
 - [x] Isolation guard: the `_archived` legacy exception retired from `tests/test_skill_isolation.bats` — the `_`-prefix ban becomes unconditional
-- [ ] `node installer/build-registry.mjs` regenerates cleanly (commit `registry.json` if it changes); portability guard stays green
-- [ ] Full `bats tests/` green
+- [x] `node installer/build-registry.mjs` regenerates cleanly (commit `registry.json` if it changes); portability guard stays green
+- [x] Full `bats tests/` green
 
 ## Dependency & Consumer Map
 
@@ -85,14 +85,16 @@
 
 ### Phase 3: README note + full exit gate
 
-- [ ] **3.1** `README.md`: one line in the individual-install section — the catalog is consumable via the ecosystem CLI (`npx skills add darellchua2/civiltekk-opencode-claude-skills`, project default) alongside this repo's own installer.
+- [x] **3.1** `README.md`: one line in the individual-install section — the catalog is consumable via the ecosystem CLI (`npx skills add darellchua2/civiltekk-opencode-claude-skills`, project default) alongside this repo's own installer.
     — **Why:** consumers deserve to know both paths exist; the ticket's proposed solution includes it.
     — **Done when:** README mentions `npx skills add` for this repo.
     — **Consumers affected:** README readers.
-- [ ] **3.2** Full exit gate: `bats tests/` (portability + isolation + profiles guards sweep the deleted tree and the flag change).
+    — **Done:** individual-install section now documents `npx skills add darellchua2/civiltekk-opencode-claude-skills` (skills-only, project default, -g global); files: README.md; fixes: none
+- [x] **3.2** Full exit gate: `bats tests/` (portability + isolation + profiles guards sweep the deleted tree and the flag change).
     — **Why:** ticket exit gate runs full tier; the deletion could shift any count-pinned test (skill_profiles union guard) — fix forward in-phase if so.
     — **Done when:** exit 0; gate memo `GATE <short-sha> tier=full` recorded in the trace.
     — **Consumers affected:** Step 9 review citation and Step 10 PR gate citation.
+    — **Done:** bats tests/ → 569 ok / 0 not ok, exit 0 (567 + 2 new -g tests); files: none; fixes: none
 
 ## Technical Notes
 
