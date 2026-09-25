@@ -1,0 +1,11 @@
+{
+  "$comment": "Provider pack: Microsoft Playwright MCP for general logged-in web work (accessibility-snapshot driven, token-cheap; opencode is a documented client). Deep-merged by deploy/merge-packs.mjs when --enable-pack playwright (v2 shape: mcp.servers.<name>.disabled:false + permissions array rule). Server definition incl. timeout lives in the base opencode.json; this pack only flips disabled + appends the allow. Requires npx (ships with npm). Self-installs on first spawn.",
+  "mcp": {
+    "servers": {
+      "playwright": { "disabled": false }
+    }
+  },
+  "permissions": [
+    { "action": "playwright*", "resource": "*", "effect": "allow" }
+  ]
+}

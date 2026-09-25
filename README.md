@@ -198,7 +198,7 @@ See `AGENTS.md` § Subagent Model Tiering for the full table.
 <details>
 <summary><strong>MCP servers, provider packs, and skill profiles</strong></summary>
 
-The configuration ships 8 MCP server entries. **3 are enabled by default:**
+The configuration ships 11 MCP server entries. **3 are enabled by default:**
 
 | Server | Type | Purpose |
 |--------|------|---------|
@@ -206,7 +206,7 @@ The configuration ships 8 MCP server entries. **3 are enabled by default:**
 | `zai-web-reader` | remote | Web page content extraction |
 | `zai-web-search` | remote | Web search with cited results |
 
-The remaining 5 ship `disabled: true` and are opt-in: `atlassian` (JIRA/Confluence OAuth), `next-devtools` (Next.js DevTools), `markitdown` (document-to-Markdown, plugins off), `docling` (layout-aware extraction, ~3-4 GB), `chrome-devtools` (live Chrome automation, telemetry pre-disabled).
+The remaining 8 ship `disabled: true` and are opt-in: `atlassian` (JIRA/Confluence OAuth), `next-devtools` (Next.js DevTools), `markitdown` (document-to-Markdown, plugins off), `docling` (layout-aware extraction, ~3-4 GB), `chrome-devtools` (live Chrome automation, telemetry pre-disabled), `playwright` (logged-in web automation via accessibility snapshots), `alpha-vantage` (market/macro/commodities data; `ALPHA_VANTAGE_API_KEY`), `nanobanana` (Google Nano Banana image generation; `GEMINI_API_KEY`). The last three are also available as provider packs (below).
 
 To enable one for a single project, add it to the project's `opencode.json` as a **full entry** (v2 replaces `mcp.servers.<name>` atomically — a bare `{"disabled": false}` stub is inert):
 
@@ -224,6 +224,9 @@ Globally: set `"disabled": false` in `~/.config/opencode/opencode.json`, or use 
 | `docling` | docling | Python + `docling-mcp[local]` (~3-4 GB) |
 | `nextjs` | next-devtools | A running Next.js dev server |
 | `chrome-devtools` | chrome-devtools | Chrome stable (telemetry + CrUX pre-disabled) |
+| `playwright` | playwright | npx (self-installs on first spawn) — logged-in web work via accessibility snapshots |
+| `alpha-vantage` | alpha-vantage | Remote; `ALPHA_VANTAGE_API_KEY` env var (free tier: 25 req/day) — market/macro/commodities data |
+| `nanobanana` | nanobanana | `GEMINI_API_KEY` env var — Google Nano Banana image generation (4K, multi-reference editing) |
 
 > **Autodesk MCP policy (official-only):** no Autodesk MCP pack ships. The former pack pointed at `mcp.autodesk.com` endpoints that do not resolve. Autodesk MCP may only be re-admitted once an **official** Autodesk MCP server's connection details are verifiable from Autodesk's own documentation — the archived `autodesk-platform-services/aps-mcp-server-nodejs` sample (clone-based, archived 2026-05) does not qualify. Until then, use the Autodesk Platform Services REST APIs via `autodesk-aps-skill`.
 
