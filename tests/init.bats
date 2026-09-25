@@ -24,9 +24,9 @@ teardown() { rm -rf "$TMP_PROJ"; }
   agents=$(jq_get "len(d['agents'])" < "$REG")
   skills=$(jq_get "len(d['skills'])" < "$REG")
   echo "agents=$agents skills=$skills" >&3
-  # Count-agnostic: registry must match disk (excludes _archived). BT-157.
+  # Count-agnostic: registry must match disk. BT-157.
   disk_agents=$(find "${REPO}/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
-  disk_skills=$(find "${REPO}/skills" -name 'SKILL.md' -not -path '*/_archived/*' 2>/dev/null | wc -l | tr -d ' ')
+  disk_skills=$(find "${REPO}/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
   [ "$agents" = "$disk_agents" ]
   [ "$skills" = "$disk_skills" ]
 }
@@ -323,4 +323,25 @@ EOC
   echo "$output" | grep -q "legacy .opencode/skills"
   [ ! -e "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
   [ ! -e "$TMP_PROJ/.opencode/skills/tdd-workflow-skill" ]
+}
+
+@test "add -g/--global installs user scope (npx-skills alias, #563)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME"
+  run $INIT add tdd-workflow-skill -g --yes
+  [ "$status" -eq 0 ]
+  [ -d "${HOME}/.config/opencode/skills/tdd-workflow-skill" ]
+  run $INIT add solid-principles-skill --global --yes
+  [ "$status" -eq 0 ]
+  [ -d "${HOME}/.config/opencode/skills/solid-principles-skill" ]
+}
+
+@test "add -g --project conflicts and exits non-zero (#563)" {
+  run $INIT add tdd-workflow-skill -g --project "$TMP_PROJ" --yes
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q "cannot combine --global with --project"
+  [ ! -d "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
+  run $INIT add tdd-workflow-skill --project "$TMP_PROJ" -g --yes
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q "cannot combine --global with --project"
 }

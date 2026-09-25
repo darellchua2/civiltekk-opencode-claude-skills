@@ -3,11 +3,10 @@
 # Rule 3 (bash requirement declarations) stays review-enforced.
 # Set PORTABILITY_ROOT to check a fixture tree instead of the repo (seeded-violation tests).
 # Uses POSIX grep (+ -E), NOT rg — CI runners don't ship ripgrep (#515 CI fix).
-# `_archived/` is excluded: frozen skills are historical artifacts, not living guidance.
 
 setup() {
   ROOT="${PORTABILITY_ROOT:-$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)}"
-  GREP_ARGS=(--include='SKILL.md' --exclude-dir='_archived' -r)
+  GREP_ARGS=(--include='SKILL.md' -r)
 }
 
 # frontmatter_lines FILE — print SKILL.md frontmatter body (between the --- fences)
@@ -17,7 +16,7 @@ frontmatter_lines() {
 
 @test "portability: sweep is non-vacuous (skills tree enumerated)" {
   local n
-  n="$(find "$ROOT/skills" -name 'SKILL.md' -not -path '*_archived*' | wc -l)"
+  n="$(find "$ROOT/skills" -name 'SKILL.md' | wc -l)"
   if [ "$n" -lt 1 ]; then
     echo "sweep found 0 SKILL.md files under $ROOT/skills — guard would pass vacuously" >&2
     return 1

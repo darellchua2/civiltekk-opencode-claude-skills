@@ -141,8 +141,6 @@ for p in sorted(root.rglob("*")):
     if not p.is_file():
         continue
     parts = p.parts
-    if parts[1].startswith("_"):  # _archived etc. — not shipped via npx add
-        continue
     if any(part in ("__pycache__", ".pytest_cache") for part in parts):
         continue
     try:
@@ -189,11 +187,11 @@ PYEOF
 }
 
 @test "skill_isolation_no_new_underscore_prefixed_shared_dirs" {
-  # AGENTS.md §Skill Isolation Contract bans new shared `_`-prefixed dirs.
-  # Legacy allowlist: _archived (pre-existing, not shipped via npx add).
+  # AGENTS.md §Skill Isolation Contract bans shared `_`-prefixed dirs outright
+  # (the _archived legacy exception was retired with its deletion, #563).
   # Pre-assert: a missing skills/ dir would make the pipeline exit 1 on empty
   # input and false-green the test (pipes swallow the ls failure).
   [ -d skills ] || fail "skills/ directory missing"
-  run bash -c "ls skills/ | grep '^_' | grep -v -x '_archived'"
+  run bash -c "ls skills/ | grep '^_'"
   [ "$status" -ne 0 ]
 }

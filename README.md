@@ -49,6 +49,8 @@ npx github:darellchua2/civiltekk-opencode-claude-skills remove solid-principles-
 
 `--project` installs into `./.opencode/` (agents, `opencode.json`, manifests — full-service config generation) with skills going to `./.agents/skills/` (Agent Skills standard dir natively discovered by OpenCode and pi) instead of user scope. `--no-deps` skips declared skill prerequisites.
 
+The catalog is also consumable via the ecosystem CLI: `npx skills add darellchua2/civiltekk-opencode-claude-skills` (skills only — project default, `-g` for global; no dependency resolution or agent installs).
+
 ### 2. Full deploy — the whole stack
 
 Copies config + agents + skills to `~/.config/opencode/` and installs two PATH commands (`opencode-setup` to re-run the deploy from anywhere, `opencode-init` for project-scoped installs).
@@ -278,7 +280,7 @@ Attribution: `plugins/ATTRIBUTION.md`; skill-level attributions in `THIRD_PARTY_
 <details>
 <summary><strong>Skill catalog — 149 skills by category</strong></summary>
 
-Current count: **149** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills archived under `skills/_archived/`).
+Current count: **149** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563).
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|

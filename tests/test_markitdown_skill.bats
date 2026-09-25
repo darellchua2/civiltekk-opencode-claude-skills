@@ -75,8 +75,8 @@ assert any(r['action']=='skill' and r['resource']=='markitdown-mcp-skill' and r[
 # =============================================================================
 
 @test "skill_count_consistent_across_docs" {
-  # Active count excludes _archived (matches count_skills/Get-SkillCount). BT-157.
-  actual=$(find skills -maxdepth 2 -name SKILL.md -not -path '*/_archived/*' | wc -l | tr -d ' ')
+  # Active count (matches count_skills/Get-SkillCount). BT-157.
+  actual=$(find skills -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')
   echo "Actual skill count: $actual" >&3
 
   # setup.sh: dynamic via count_skills() helper — source it, verify output == disk,

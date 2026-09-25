@@ -47,7 +47,7 @@ AGENTS_DIR="agents"
 # =============================================================================
 
 @test "skill_count_matches_disk" {
-  actual=$(find "$SKILLS_DIR" -maxdepth 2 -name SKILL.md -not -path '*/_archived/*' | wc -l | tr -d ' ')
+  actual=$(find "$SKILLS_DIR" -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')
   echo "Actual skill count: $actual" >&3
 
   source <(sed -n '/^count_skills()/,/^}/p' deploy/setup.sh)

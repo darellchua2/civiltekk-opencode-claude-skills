@@ -84,18 +84,19 @@ const TARGET_VALUES = [...Object.keys(TARGETS), "both"];
 const activeTargets = (target) => (target === "both" ? ["opencode", "claude"] : [target]);
 
 // ─────────────────────────── arg parsing ────────────────────────────────
-const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps"]);
+const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps", "global"]);
 function parseArgs(argv) {
   const opts = { rest: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--") { opts.rest.push(...argv.slice(i + 1)); break; }
+    if (a === "-g") { opts.global = true; continue; } // npx-skills alias for user scope (the default)
     if (a.startsWith("--")) {
       const key = a.slice(2).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
       if (BOOL_FLAGS.has(key)) opts[key] = true;
       else {
         const next = argv[i + 1];
-        if (next === undefined || next.startsWith("--")) opts[key] = true;
+        if (next === undefined || next.startsWith("--") || next === "-g") opts[key] = true;
         else { opts[key] = next; i++; }
       }
     } else {
@@ -1473,6 +1474,8 @@ async function cmdUpdate(args, opts) {
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) { printHelp(); return; }
+  if (opts.global && opts.project)
+    die("cannot combine --global with --project (user scope is already the default; drop -g)", 2);
 
   const reg = await loadRegistry();
   reg.__presets = await loadPresets();
@@ -1491,6 +1494,8 @@ async function main() {
   // no install inputs and no read mode -> help
   const hasInstallInput = opts.preset || opts.agents || opts.skills || opts.mcps || opts.prune;
   if (!hasInstallInput && !opts.help) { printHelp(); return; }
+  if (opts.global)
+    console.error("note: -g applies to 'add' only; the preset flow is project-scoped (installs under the --project dir).");
 
   // prune-only mode
   if (opts.prune && !opts.preset && !opts.agents && !opts.skills) {
@@ -1527,6 +1532,8 @@ async function main() {
     const interactive = await runInteractive(reg, depMap, opts);
     if (!interactive) return; // user cancelled
     Object.assign(opts, interactive.opts);
+    if (opts.global && opts.project)
+      die("cannot combine --global with --project (user scope is already the default; drop -g)", 2);
     // re-resolve with the gathered inputs
     const sel2 = resolveSelection({
       presets: toList(opts.preset),
@@ -1642,6 +1649,7 @@ SCOPE
   natively discovered by OpenCode and pi).
 
 FLAGS
+  -g, --global         user scope (default) — explicit npx-skills-compatible alias; cannot combine with --project
   --project [dir]      project scope (default: cwd). Without 'add', takes a <dir> value.
   --preset <csv>       preset name(s): core review frontend backend docs devops business research cad
   --agents <csv>       agent stem(s)

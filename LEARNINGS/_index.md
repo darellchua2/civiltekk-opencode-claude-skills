@@ -1559,3 +1559,12 @@
 - **Scope**: project
 - **Summary**: A TARGETS-style destination flip must sweep legacy dirs in manifest-keyed lifecycle flows — name-storing manifests recompute paths from the current row, so re-add/prune orphan pre-flip copies in dirs the runtime still unions; sweep scope = prev-owned ∩ selected/pruned (#561 code review)
 - **Date**: 2026-09-25
+
+### Flag-conflict guards vs value-flag parsers
+
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/flag-conflict-guard-vs-value-flag-parser.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: A conflict guard on two flags must cover the parser's value-eat branch (a long flag consumes a following short flag as its value — `--project -g` skipped the guard and installed into `./-g`) and post-date the last opts-mutation site (TUI `Object.assign` re-set `project` after the guard); pin both flag orders in tests (#563 code review)
+- **Date**: 2026-09-25
