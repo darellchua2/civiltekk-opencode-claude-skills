@@ -1740,3 +1740,11 @@
 - **Scope**: project
 - **Date**: 2026-09-26
 - **Summary**: v2 `commands` key; `agent` + explicit `subagent:` forces execution mode; model precedence command > agent > session — pin model identically per A/B arm and record the resolved model (#582 plan review M3)
+
+### Commands model pins bypass the tier resolver
+
+- **File**: `LEARNINGS/solutions/commands-model-pins-bypass-tier-resolver.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: Shipped `commands.<name>.model` pins are provider-locked (the resolver never rewrites command entries) — keep shipped commands model-free; pin experiment models via a project .opencode/opencode.json overlay (#582 re-review N1)

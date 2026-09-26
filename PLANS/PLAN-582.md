@@ -3,7 +3,7 @@
 **Branch**: feat/582
 **Issue**: https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/582
 **Base**: main
-**Rev**: 2 — applies architecture review (C1 preset-closure over new requiresSkills handoffs; C2 shipped skill-allow rules; M1 count-surface inventory; M2 read-the-agent-md; M3 pinned models; M4 capture sources; M5 redeploy step; m1-m4; RG1-3 adopted answers)
+**Rev**: 3 — folds re-review amendments (N1 shipped commands model-free + project-overlay A/B model parity; N2 setup.sh --yes; N3 listing check deferred to 4.1; N4 full literal enumeration; commands-model LEARNINGS candidate)
 
 ## Acceptance Criteria
 - [ ] `/review-arch` and `/review-inline` exist in the global commands block and run the same review target
@@ -49,10 +49,10 @@
     — **Consumers affected:** #437 packaging contract; 3.1's closure
 
 ### Phase 2: command surfaces
-- [ ] **2.1** Add `/review-arch` and `/review-inline` to the `opencode_app/opencode.json` `commands` block: identical review-prompt template (target arg → severity-gated review per `reviewer-baseline-skill`), both with an explicitly pinned identical `model:` (removes the command-model > agent-model > session confound, review M3); `/review-arch` sets `agent: architecture-review-subagent` + `subagent: true` (child session per its `mode: subagent`); `/review-inline` sets `subagent: false` (in-session) and its template instructs reading the deployed `agents/architecture-review-subagent.md` as the in-session checklist (single knowledge source — the referenced `architecture-review-skill` does not exist and must not be created, review M2/RG3)
-    — **Why:** AC 1 + review M2/M3/RG3 — both arms must run the same target under the same model with the same knowledge source, differing only in execution isolation
-    — **Done when:** Both entries in the commands block with `model:` pinned identically and explicit `subagent:` values; JSON parses
-    — **Consumers affected:** opencode runtime command surface; A/B (4.2)
+- [ ] **2.1** Add `/review-arch` and `/review-inline` to the `opencode_app/opencode.json` `commands` block: identical review-prompt template (target arg → severity-gated review per `reviewer-baseline-skill`), both **model-free** (a provider-qualified `model:` in the shipped block is provider-locked across `--provider` swaps — the deploy-time resolver's blast radius is agent .md files + built-in agent blocks only, review N1); `/review-arch` sets `agent: architecture-review-subagent` + `subagent: true` (child session per its `mode: subagent`); `/review-inline` sets `subagent: false` (in-session) and its template instructs reading the deployed `~/.config/opencode/agents/architecture-review-subagent.md` as the in-session checklist (single knowledge source — the referenced `architecture-review-skill` does not exist and must not be created, review M2/RG3)
+    — **Why:** AC 1 + review M2/RG3/N1 — both arms run the same target with the same knowledge source, differing only in execution isolation; shipped config stays provider-agnostic
+    — **Done when:** Both entries in the commands block, model-free, with explicit `subagent:` values; JSON parses
+    — **Consumers affected:** opencode runtime command surface (incl. provider-swap users — commands must survive `--provider` changes); A/B (4.2)
 - [ ] **2.2** Add `/run-plan-v2` to the commands block: wraps unmodified `plan-execution-skill` with an explicit delegation-substitution map in the template (testing → `testing-inline-skill`, linting → `linting-inline-skill`, documentation → `documentation-inline-skill`, responsive-audit → `responsive-audit-inline-skill` inline loop) and a hard "zero Task/subagent calls" instruction
     — **Why:** AC 3 — the inline execution path must be a single command, not a remembered convention
     — **Done when:** Entry present; template carries the full substitution map and the zero-Task instruction
@@ -65,17 +65,17 @@
     — **Consumers affected:** installer preset flow; AC 4
 - [ ] **3.2** Make the family loadable and profile-consistent: add 4 `{"action":"skill","resource":"<inline-skill>","effect":"allow"}` rules to the `opencode_app/opencode.json` `permissions` array (C2 — deny-all-first makes the primary blind to them otherwise); add the 4 inline skills to `deploy/skill-profiles.json` `lean` array; update the `skill_profiles.bats` count literals 72→76 (:44, :105)
     — **Why:** Review Critical 2 — without shipped allows the inline arm of the A/B cannot run at all; the lean ⊆ shipped-allows guard requires both surfaces
-    — **Done when:** `skill_profiles.bats` green; a primary-session skill listing shows the 4 inline skills
+    — **Done when:** `skill_profiles.bats` green; live-listing verification deferred to 4.1 (the running session reads the deployed config, which redeploys in 4.1)
     — **Consumers affected:** opencode runtime; deploy profiles; AC 3/4
 - [ ] **3.3** Run `node installer/build-registry.mjs`; commit `registry.json` with the 4 new entries (149→153); sync the count/literal surfaces: `README.md:247` (149→153, lean 72→76), `opencode_app/README.md:26` (149→153), README category table (new `experiment` rows)
     — **Why:** AC 5 + review M1 — the real pinned surfaces, enumerated from the actual literals (setup.sh/ps1 counts are dynamic; only verify no stale comment)
-    — **Done when:** Registry 153; all listed literals updated; grep census clean
+    — **Done when:** Registry 153; all listed literals updated PLUS the full enumeration — README.md:5, :72, :106, :247, :286 (every "149"/lean-72 site), `opencode_app/README.md:26`, and the `deploy/setup.sh:3579` "72 primary-visible" comment — verified via census `grep -rn "149\|\b72\b" README.md opencode_app/README.md deploy/setup.sh tests/skill_profiles.bats` returning only intended values
     — **Consumers affected:** installer listing; deploy banner; docs
 
 ### Phase 4: live deployment + A/B execution + evidence
-- [ ] **4.1** Redeploy the global config (`./deploy/setup.sh`) so the new commands + skill allows are live in the running session's harness; verify `/review-arch`, `/review-inline`, `/run-plan-v2` appear and one inline skill loads
-    — **Why:** Review M5 — the repo files are inert until deployed; Phase 4's runs are impossible before this
-    — **Done when:** All three commands invocable and an inline skill loads in the session
+- [ ] **4.1** Redeploy the global config (`./deploy/setup.sh --yes` — non-interactive; bare setup.sh stalls an agent-driven run) so the new commands + skill allows are live in the running session's harness; verify `/review-arch`, `/review-inline`, `/run-plan-v2` appear and one inline skill loads. Then create the A/B model-parity overlay: a project `.opencode/opencode.json` in the worktree redefining `/review-arch` + `/review-inline` with an identical pinned `model:` (v2 Loading: project replaces global same-name commands; keeps the shipped entries provider-agnostic — review N1's prescribed fix)
+    — **Why:** Review M5 — the repo files are inert until deployed; the overlay delivers M3's model parity without provider-locking the shipped config
+    — **Done when:** All three commands invocable, an inline skill loads, and the overlay pins both review commands to one model
     — **Consumers affected:** Phase 4 runs (4.2-4.4)
 - [ ] **4.2** Run the review A/B on a fixed target (the repo's last merged feature diff — #583's `git diff 6752e15..86cbd45` scope) once per variant, sequential, fresh session per variant where the harness allows: `/review-arch` (child session — sum PARENT+CHILD usage from session-storage JSONL fields) vs `/review-inline` (in-session — parent usage); record per arm: tokens (with capture source named), wall time (timestamps), context growth (session length delta), findings count by severity, resolved model
     — **Why:** AC 6 + review M4 — metrics name their capture source; the arch arm's dominant cost hides in the child session
