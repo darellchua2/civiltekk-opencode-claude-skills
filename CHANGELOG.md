@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.52.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.51.0...v9.52.0) (2026-09-26)
+
+### Features
+
+* **skills:** add skill-generalizer skill from civiltekk-cad-app ([#586](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/586)) ([#589](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/589)) ([147f6c1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/147f6c15f0ccf03de44b38f4eb6bd8749e79b491))
+
+### Documentation
+
+* **585:** pipeline-v2 command + experiment-commands README note ([#587](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/587)) ([c89ec1d](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/c89ec1d98af585735d5dde7fb762c26dcc7c6ee8)), closes [#585](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/585) [#585](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/585)
+
 ## [9.51.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.50.0...v9.51.0) (2026-09-26)
 
 ### Features
