@@ -1772,3 +1772,10 @@
 - **Scope**: project
 - **Date**: 2026-09-26
 - **Summary**: Steps that interrupt live user sessions (service restarts, kills, reloads) log the impact BEFORE acting — #588 adds the pre-restart announcement and test-pins the string; announce-first is the shape for every service-touching setup step.
+### Worktree teardown leaves opencode registry rows
+
+- **File**: `LEARNINGS/anti-patterns/worktree-teardown-leaves-opencode-registry-rows.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: Deleting a git worktree without purging its `worktree`/`project` rows in `~/.local/share/opencode/opencode.db` made `opencode reload` fail with `ENOENT FileSystem.realPath` (56 stale rows); teardown must clear every registry keying the removed path in the same step.
