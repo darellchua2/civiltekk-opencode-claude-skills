@@ -46,6 +46,7 @@ LEARNINGS/**/*.md
 !LEARNINGS/solutions/opencode-v2-commands-agent-subagent-semantics.md
 !LEARNINGS/solutions/commands-model-pins-bypass-tier-resolver.md
 !LEARNINGS/anti-patterns/plan-done-claims-outrun-committed-tree.md
+!LEARNINGS/anti-patterns/zero-reference-gate-must-census-and-self-exclude.md
 !LEARNINGS/anti-patterns/trial-scaffold-rides-into-deliverable.md
 !LEARNINGS/solutions/shipped-command-templates-need-mode-relative-paths.md
 !LEARNINGS/solutions/frontmatter-key-rewrites-scope-to-frontmatter-slice.md
