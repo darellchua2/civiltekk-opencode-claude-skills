@@ -11,7 +11,7 @@
 - [x] Project-scope auto dry-run (`--project --target auto --dry-run`) uses the same wrapped shape via the `writeInstall` sink; dedupe behavior unchanged
 - [x] Nothing is written to disk on dry-run; explicit `--target <t> --dry-run` still prints its plain single doc (shape unchanged)
 - [x] Help text + README updated (NDJSON sentence replaced)
-- [ ] New tests per item; full `bats tests/` green
+- [x] New tests per item; full `bats tests/` green
 
 ## Dependency & Consumer Map
 
@@ -57,10 +57,11 @@ The `jsonSink` opt is additive and internal: without it, both dry branches print
 
 ### Phase 2: Full exit gate
 
-- [ ] **2.1** Full `bats tests/`.
+- [x] **2.1** Full `bats tests/`.
     — **Why:** ticket exit gate — full tier.
     — **Done when:** exit 0; `GATE <short-sha> tier=full` appended to the trace below.
     — **Consumers affected:** Step 9/10 citations.
+    — **Done:** bats tests/ → 581 ok / 0 not ok, exit 0 (577 + 4 new); files: none; fixes: none
 
 ## Technical Notes
 
@@ -78,4 +79,5 @@ None (no `blocked-by:`).
 
 ## Gate Trace
 
-GATE <p1-sha> tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 51e6320 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE <full-sha> tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
