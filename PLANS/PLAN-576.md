@@ -3,7 +3,11 @@
 **Branch**: feat/576
 **Issue**: https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/576
 **Base**: main
-**Rev**: 2 — applies architecture review (BLOCK-1, Majors 1/3/4/5, Minors 1–4) + requirements relay (REQ-BIND, REQ-COMPOSE, REQ-PARITY, REQ-PILOT)
+**Rev**: 3 — re-review gate fixes applied (New-1/2/3)
+
+## Gate trace
+
+GATE 0ee91e2 tier=light lint=n.a. typecheck=n.a. build=- unit=n.a. e2e=n.a. — Phase 1 docs-only; done-when checks ran (paths on disk, sections present, pi source pinned)
 
 ## Acceptance Criteria
 - [ ] `docs/harness-landscape-2026-09.md` covers the harness comparison (OpenCode, Claude Code, Codex, Copilot, ZCode, Kilo, pi, M365 Copilot), the standards layer (Agent Skills / AGENTS.md / MCP / ACP), the standardization strategy, a pi section grounded in https://pi.dev/docs/latest, and a "Planned targets — not composable" note for zcode/copilot
@@ -30,14 +34,16 @@
 ## Implementation Phases
 
 ### Phase 1: Documentation foundation
-- [ ] **1.1** Write `docs/harness-landscape-2026-09.md`: per-harness breakdown (OpenCode, Claude Code, Codex, Copilot, ZCode, Kilo, pi, M365 Copilot) across primary/subagent/skill/plugin/MCP concepts, the four-standard interoperability layer, the three-strategy tradeoff (duplicate installs vs shared folders vs LCD+composition), the chosen strategy, a pi section grounded in https://pi.dev/docs/latest (no native subagents; delegation via extensions/tmux/RPC/SDK embedding; Agent Skills dirs; project-trust security model), and a "Planned targets — not composable" note for zcode/copilot (follow-up ticket)
+- [x] **1.1** Write `docs/harness-landscape-2026-09.md`: per-harness breakdown (OpenCode, Claude Code, Codex, Copilot, ZCode, Kilo, pi, M365 Copilot) across primary/subagent/skill/plugin/MCP concepts, the four-standard interoperability layer, the three-strategy tradeoff (duplicate installs vs shared folders vs LCD+composition), the chosen strategy, a pi section grounded in https://pi.dev/docs/latest (no native subagents; delegation via extensions/tmux/RPC/SDK embedding; Agent Skills dirs; project-trust security model), and a "Planned targets — not composable" note for zcode/copilot (follow-up ticket)
     — **Why:** The contract doc (1.2) cites its conclusions; the zcode/copilot note captures user intent without implying support, per REQ-BIND
     — **Done when:** File exists with a section per harness, the standards layer, the strategy comparison, the pi section sourced from docs/latest, the planned-targets note, and zero dangling cross-references
     — **Consumers affected:** `docs/subagent-portability-contract.md` (step 1.2)
-- [ ] **1.2** Write `docs/subagent-portability-contract.md`: LCD body rules (harness-neutral phrasing, universal return contract, `Other/none:` runtime-fallback rows), the two-tier binding matrix per REQ-BIND (overlay suffixes valid only for composable targets), overlay naming `agents/overlays/<stem>.<target>.md` with `.agents.md` declared invalid (verbatim target never composes), composition pipeline order (frontmatter transform → body concat → config emit; renderAgent composes before injectModel), the moved-token manifest requirement per REQ-PARITY, pilot per-target coverage statement per REQ-PILOT (kimi/kilo LCD-only as documented improvement; claude minimal overlay), the lossy-translation registry, and an empty parity-verdict appendix
+    — **Done:** 8 per-harness sections + standards layer + strategy table + pi section (docs/latest-sourced) + planned-targets note; all present-tense path refs verified on disk; files: docs/harness-landscape-2026-09.md; fixes: none
+- [x] **1.2** Write `docs/subagent-portability-contract.md`: LCD body rules (harness-neutral phrasing, universal return contract, `Other/none:` runtime-fallback rows), the two-tier binding matrix per REQ-BIND (overlay suffixes valid only for composable targets), overlay naming `agents/overlays/<stem>.<target>.md` with `.agents.md` declared invalid (verbatim target never composes), composition pipeline order (frontmatter transform → body concat → config emit; renderAgent composes before injectModel), the moved-token manifest requirement per REQ-PARITY, pilot per-target coverage statement per REQ-PILOT (kimi/kilo LCD-only as documented improvement; claude minimal overlay), the lossy-translation registry, and an empty parity-verdict appendix
     — **Why:** It is the authoring standard the pilot retrofits and the shared helper both implement; an undocumented convention cannot be reviewed or audited
     — **Done when:** File exists and every mechanism named here matches what steps 2.x/3.x build, including the appendix section existing (empty)
     — **Consumers affected:** steps 2.1–2.4, 3.1, 3.3, 3.4; all future `agents/` authoring
+    — **Done:** 9 sections incl. two-tier matrix, overlay convention, pipeline order, initial token manifests, pilot coverage table, lossy registry, appendix skeleton with 3 preliminary placeholders; files: docs/subagent-portability-contract.md; fixes: none
 
 ### Phase 2: Pilot retrofit (core + opencode overlay + minimal claude overlay each)
 - [ ] **2.1** Retrofit `agents/code-review-subagent.md` into LCD core + `agents/overlays/code-review-subagent.opencode.md` + `agents/overlays/code-review-subagent.claude.md`: OpenCode-specific invocation prose (Task-tool `subagent_type` syntax, explore/general/language-reviewer delegation, memory-tool LEARNINGS recall, question-tool/headless phrasing) moves to the opencode overlay; the claude overlay carries the Claude Task-tool binding (~5–15 lines); LCD core keeps the review workflow, severity rubric, `Patterns applied/violated` contract, and `Other/none:` inline-fallback row
