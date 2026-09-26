@@ -55,12 +55,15 @@ assert 'code-review-subagent' in m['agents'], m['agents']
   echo "$output" | grep -q "skill("
 }
 
-@test "kimi target: body bytes stay identical to source" {
+@test "kimi target: body is the source body + composed overlay (frontmatter-only translation)" {
   run $INIT add code-review-subagent --target kimi --yes --no-deps
   [ "$status" -eq 0 ]
   local F="${HOME}/.kimi-code/agents/code-review-subagent.md"
-  diff <(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2' "$F") \
-       <(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2' "$AGENT_SRC") >/dev/null
+  local src_body inst_body
+  src_body=$(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2' "$AGENT_SRC")
+  inst_body=$(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2' "$F")
+  case "$inst_body" in "$src_body"*) ;; *) echo "installed body diverges from source body" >&3; return 1 ;; esac
+  grep -q "## Harness binding — Kimi Code" "$F"
 }
 
 @test "kimi target: skills install verbatim" {

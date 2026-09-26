@@ -79,14 +79,32 @@ assert_composed_present() {
   assert_composed_present requirements-specialist-subagent claude 'Task tool'
 }
 
-@test "kimi/kilo targets compose to the untouched core (LCD-only, by contract)" {
+@test "kimi/kilo composed output carries target delegation bindings" {
+  # Phase-2 (#581): kimi/kilo overlays exist — composition must append them.
   for stem in code-review-subagent image-analyzer-subagent requirements-specialist-subagent; do
     for target in kimi kilo; do
-      if ! diff -q <(cat "$REPO/agents/$stem.md") <($COMPOSE "$stem" "$target" 2>/dev/null) >/dev/null; then
-        echo "unexpected composition for $stem/$target (no overlay should exist)" >&3
+      out=$($COMPOSE "$stem" "$target" 2>/dev/null)
+      if [ "$out" = "$(cat "$REPO/agents/$stem.md")" ]; then
+        echo "expected a $target binding overlay for $stem — got bare core" >&3
+        return 1
+      fi
+      if ! echo "$out" | grep -qi "task tool"; then
+        echo "missing delegation binding in composed $stem/$target" >&3
         return 1
       fi
     done
+  done
+}
+
+@test "copilot composed output carries the Task-tool binding" {
+  for stem in code-review-subagent image-analyzer-subagent requirements-specialist-subagent; do
+    assert_composed_present "$stem" copilot 'Task tool'
+  done
+}
+
+@test "zcode composed output carries the inline-delegation (nesting-ban) binding" {
+  for stem in code-review-subagent image-analyzer-subagent requirements-specialist-subagent; do
+    assert_composed_present "$stem" zcode 'ZCode'
   done
 }
 
@@ -114,16 +132,24 @@ assert_composed_present() {
   case "$a" in "$core"*) ;; *) echo "composed body does not start with the core" >&3; return 1 ;; esac
 }
 
-@test "orphan-overlay guard: overlay suffixes only for targets with a TARGETS row" {
-  # Composable targets (installer/init.mjs TARGETS) minus the verbatim `agents` row.
+@test "orphan-overlay guard: overlay suffixes only for targets with a composition path" {
+  # Allowlist DERIVED from the exported COMPOSABLE_TARGETS — single source
+  # (installer/overlay.mjs); no second hardcoded list (#581 review Minor 3).
+  # Absolute path via pathToFileURL — relative specifiers resolve against cwd (#537).
+  allowlist="$(node --input-type=module -e "
+    import { pathToFileURL } from 'node:url';
+    const { COMPOSABLE_TARGETS } = await import(pathToFileURL('$REPO/installer/overlay.mjs'));
+    process.stdout.write([...COMPOSABLE_TARGETS].sort().join(' '));
+  ")"
+  [ -n "$allowlist" ]
   while IFS= read -r f; do
     name=$(basename "$f")
     tmp="${name%.md}"
     suffix="${tmp##*.}"  # e.g. code-review-subagent.opencode.md -> opencode
-    case "$suffix" in
-      opencode|claude|kimi|kilo) ;;
-      *) echo "orphan overlay (no composition path for target '$suffix'): $f" >&3; return 1 ;;
-    esac
+    if ! echo "$allowlist" | grep -qw "$suffix"; then
+      echo "orphan overlay (no composition path for target '$suffix'): $f" >&3
+      return 1
+    fi
   done < <(find "$REPO/agents/overlays" -name '*.md' 2>/dev/null)
 }
 

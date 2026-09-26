@@ -19,8 +19,9 @@ const NO_COMPOSE_MODES = new Set(["verbatim"]);
 // Targets with a composition path (installer/init.mjs TARGETS rows minus the
 // verbatim `agents` row). Any other target is refused — overlay files for it
 // would be silently-uncomposed dead files (docs/subagent-portability-contract.md
-// §Binding matrix; guard test: tests/agent_lcd_pilot.bats orphan-overlay).
-const COMPOSABLE_TARGETS = new Set(["opencode", "claude", "kimi", "kilo"]);
+// §Binding matrix; guard test: tests/agent_lcd_pilot.bats orphan-overlay, which
+// derives its allowlist from this export).
+export const COMPOSABLE_TARGETS = new Set(["opencode", "claude", "kimi", "kilo", "zcode", "copilot"]);
 
 export async function composeAgentBody({ stem, body, agentsSrc, target, agentMode = "", warn = () => {} }) {
   if (!target || !COMPOSABLE_TARGETS.has(target) || NO_COMPOSE_MODES.has(agentMode)) return body;
