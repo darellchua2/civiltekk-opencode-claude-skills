@@ -4131,7 +4131,7 @@ setup_provider_credentials() {
             const fs = require("fs");
             const auth = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
             const ids = JSON.parse(process.argv[2]);
-            const key = process.env.AUTH_KEY;
+            const key = process.env.AUTH_KEY.trim();
             process.exit(ids.every(id => auth[id] && auth[id].key === key) ? 0 : 1);
         ' "$auth_file" "$auth_ids" 2>/dev/null; then
             log_info "Provider '${chosen}' credentials unchanged (auth.json already holds this key) - skipping re-seed and service restart"

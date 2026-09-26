@@ -101,3 +101,6 @@ Note: changed file is a .bats file — no applicable bash linter in repo/CI (CI 
 
 GATE 3f2a7b8 tier=full lint=t(bash -n) typecheck=n.a build=n.a unit=t(632/632, 47/47 files) e2e=n.a
 Note: ticket exit gate — full CI-parity sequence (bats tests/*.bats + bash -n deploy/setup.sh). build=n.a: template repo defines no build step in CI; the suite substitutes per verification-loop §command discovery. e2e=n.a: backend-only change (E2E rule).
+
+GATE 89c322e tier=full lint=t(bash -n) typecheck=n.a build=n.a unit=t(632/632, 47/47 files) e2e=n.a
+Note: post-review re-gate on the fixed tree (review: 0 BLOCK / 0 WARN / 3 NOTE; fix applied: trim gate key to seeder normalization — NOTE 1; NOTEs 2-3 declined: cosmetic / inherent to AC1). LEARNINGS captured: unset-only-idempotency-gate-env-set-rerun-side-effects, announce-session-impact-before-disruptive-action.
