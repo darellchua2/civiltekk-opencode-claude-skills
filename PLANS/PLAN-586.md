@@ -5,7 +5,7 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] `skills/skill-generalizer/SKILL.md` exists, self-contained, frontmatter uses top-level `category: OpenCode Meta`
+- [x] `skills/skill-generalizer/SKILL.md` exists, self-contained, frontmatter uses top-level `category: OpenCode Meta`
 - [ ] README.md skill counts 153 → 154 (intro, opencode-init, tree, profiles, catalog summary + current count) and OpenCode Meta row lists it
 - [ ] `opencode_app/README.md` count 153 → 154
 - [ ] `opencode_app/opencode.json` permissions allow rule added (full-profile single source)
@@ -25,14 +25,16 @@
 ## Implementation Phases
 
 ### Phase 1: Copy and normalize the skill
-- [ ] **1.1** Copy `SKILL.md` from `civiltekk-cad-app` checkout `.agents/skills/skill-generalizer/` into `skills/skill-generalizer/` in this worktree, byte-identical
+- [x] **1.1** Copy `SKILL.md` from `civiltekk-cad-app` checkout `.agents/skills/skill-generalizer/` into `skills/skill-generalizer/` in this worktree, byte-identical
     — **Why:** the skill content is already generalized and audited (commit f2fe101 in the source repo); the move must not rewrite method content (source skill's own identity-preservation rule)
     — **Done when:** `git status` shows `skills/skill-generalizer/SKILL.md` staged-new and `diff` vs the source file is empty
     — **Consumers affected:** every downstream registration (Phases 2–3) requires the dir to exist first
-- [ ] **1.2** Normalize frontmatter: replace the `metadata:` block (`category: civiltekk`) with top-level `category: OpenCode Meta`, matching repo convention (e.g. `skills/opencode-skill-creation-skill/SKILL.md`)
+    — **Done:** verbatim copy verified by empty `diff`; files: `skills/skill-generalizer/SKILL.md`; fixes: none
+- [x] **1.2** Normalize frontmatter: replace the `metadata:` block (`category: civiltekk`) with top-level `category: OpenCode Meta`, matching repo convention (e.g. `skills/opencode-skill-creation-skill/SKILL.md`)
     — **Why:** setup.sh derives per-category counts from the top-level `category:` field; `civiltekk` is not a registry group in this repo
     — **Done when:** `grep -n "^category: OpenCode Meta" skills/skill-generalizer/SKILL.md` hits and no `category: civiltekk` remains
     — **Consumers affected:** setup.sh banner counts, GitHub Pages catalog grouping
+    — **Done:** frontmatter normalized to top-level `category: OpenCode Meta`; files: `skills/skill-generalizer/SKILL.md`; fixes: none
 
 ### Phase 2: Register the skill everywhere AGENTS.md requires
 - [ ] **2.1** Update README.md: six current-count instances 153 → 154 (lines 5, 74, 108, 249, 286, 288), lean count 76 → 77 (line 249), and the OpenCode Meta category row (6) → (7) listing `skill-generalizer`
@@ -75,3 +77,6 @@ None — single contained ticket.
 - JSON syntax breakage in two config files → mitigate with parse checks in 2.3/2.4 Done-when.
 - Count drift (README claims vs disk) → mitigate with the 3.2 grep audit; setup.sh derives from disk so the banner cannot drift.
 - Lean guard failure (key without dir) → impossible by phase ordering (1.1 precedes 2.4).
+
+## Gate Trace
+GATE PENDING
