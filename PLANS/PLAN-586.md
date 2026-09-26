@@ -6,11 +6,11 @@
 
 ## Acceptance Criteria
 - [x] `skills/skill-generalizer/SKILL.md` exists, self-contained, frontmatter uses top-level `category: OpenCode Meta`
-- [ ] README.md skill counts 153 → 154 (intro, opencode-init, tree, profiles, catalog summary + current count) and OpenCode Meta row lists it
-- [ ] `opencode_app/README.md` count 153 → 154
-- [ ] `opencode_app/opencode.json` permissions allow rule added (full-profile single source)
-- [ ] `deploy/skill-profiles.json` lean array entry added
-- [ ] isolation + skill-profile tests pass
+- [x] README.md skill counts 153 → 154 (intro, opencode-init, tree, profiles, catalog summary + current count) and OpenCode Meta row lists it
+- [x] `opencode_app/README.md` count 153 → 154
+- [x] `opencode_app/opencode.json` permissions allow rule added (full-profile single source)
+- [x] `deploy/skill-profiles.json` lean array entry added
+- [x] isolation + skill-profile tests pass
 
 ## Dependency & Consumer Map
 
@@ -59,14 +59,16 @@
     — **Done:** entry inserted at the planned position; JSON parses; len==77. Deviation: the "remains sorted" clause was a wrong authoring assumption — the array has a pre-existing non-alphabetical Experiment group (not touched); the repo's actual invariant is the bats guard. Fix: updated the count pin in `tests/skill_profiles.bats` 76 → 77 (6 sites); full skill_profiles run green 8/8; files: `deploy/skill-profiles.json`, `tests/skill_profiles.bats`; fixes: test-count pin update
 
 ### Phase 3: Verify gates
-- [ ] **3.1** Run the repo guards: skill-profile test (`tests/skill_profiles.bats` if bats exists, else scripted equivalent: every lean key maps to an existing skill dir, every lean key appears in the permissions array) and skill-isolation check (no `_common` refs, no sibling-skill path escapes in the new skill)
+- [x] **3.1** Run the repo guards: skill-profile test (`tests/skill_profiles.bats` if bats exists, else scripted equivalent: every lean key maps to an existing skill dir, every lean key appears in the permissions array) and skill-isolation check (no `_common` refs, no sibling-skill path escapes in the new skill)
     — **Why:** these are the mechanical enforcement AGENTS.md names for exactly this change
     — **Done when:** guard script exits 0 (or bats run passes) with the new key validated
     — **Consumers affected:** CI on the PR
-- [ ] **3.2** Full-tree grep audit: no remaining stale count ("153" outside the history sentence, "76 primary-visible" in setup.sh comment updated to 77), JSON files parse, frontmatter `name: skill-generalizer` matches the directory name
+    — **Done:** both suites green in one run — 13/13 (8 skill_profiles incl. count-pin 77, 5 isolation); files: none (verification); fixes: none
+- [x] **3.2** Full-tree grep audit: no remaining stale count ("153" outside the history sentence, "76 primary-visible" in setup.sh comment updated to 77), JSON files parse, frontmatter `name: skill-generalizer` matches the directory name
     — **Why:** belt for the doc-sync contract; a stale count fails documentation-consistency audits later
     — **Done when:** audit script prints zero findings
     — **Consumers affected:** none (verification only)
+    — **Done:** zero findings — no "153" remaining anywhere, no stale "76", both JSON files parse, name matches dir, 154 dirs on disk matches README; files: `deploy/setup.sh` (stale comment 76→77); fixes: none
 
 ## Technical Notes
 - Source: `/home/silentx/VSCODE/civiltekk-cad-app/.agents/skills/skill-generalizer/SKILL.md` (last touched by f2fe101, already audit-generalized).
@@ -83,4 +85,6 @@ None — single contained ticket.
 - Lean guard failure (key without dir) → impossible by phase ordering (1.1 precedes 2.4).
 
 ## Gate Trace
-GATE PENDING
+GATE 7d4a3b8 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t(isolation 5/5) e2e=n.a.
+GATE 4252e8d tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t(skill_profiles 8/8) e2e=n.a.
+GATE 4252e8d+wt tier=full lint=n.a. typecheck=n.a. build=n.a. unit=t(13/13 both suites) e2e=n.a. — ticket exit gate; tree = 4252e8d + setup.sh comment fix; lint/typecheck/build n.a. (no tooling configured in repo)
