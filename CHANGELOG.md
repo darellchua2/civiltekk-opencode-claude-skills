@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.45.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.45.0...v9.45.1) (2026-09-26)
+
+### Bug Fixes
+
+* **installer:** reject --prune on add with explicit guidance ([#569](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/569)) ([6f0932c](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/6f0932cf5160fd43dec1db0f89b9cccf09225d53)), closes [#567](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/567) [#567](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/567)
+
 ## [9.45.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.44.0...v9.45.0) (2026-09-25)
 
 ### Features
