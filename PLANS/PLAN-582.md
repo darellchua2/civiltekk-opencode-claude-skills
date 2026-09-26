@@ -115,6 +115,7 @@
 
 GATE e5fdec6 tier=light lint=n.a. typecheck=t build=t unit=t e2e=n.a. — Phases 1-3 scoped: skill_profiles + init.bats 54/54; --expand experiment = 8 skills; JSON parse ×3
 GATE 3796e8c tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — ticket exit gate: build-registry --check no drift (153); full bats 612/612 exit 0
+GATE cfcae90 tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — post-review re-gate on fixed tree (review fixes: count-sync sweep actually committed; LEARNINGS bodies + gitignore negations ×8; /review-inline deploy-mode path clause; trial line reverted; cosmetic indent/reflow; registry rebuild for the reflow): full bats 612/612 exit 0; registry diff = generatedAt + intended description reflow only
 
 ## Technical Notes
 - Commands vehicle: the shipped `opencode_app/opencode.json` `commands` block (v2 key is plural `commands`; `agent` selects the executor; `subagent: true|false` forces child/current session — omitted means child iff the agent's `mode: subagent`; model precedence is command-model > agent model > session model — hence the pinned `model:`). Deployed globally by `setup.sh` (opencode_app/opencode.json:130 is the single global deploy source).
