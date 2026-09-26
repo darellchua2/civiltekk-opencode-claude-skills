@@ -41,6 +41,14 @@ LEARNINGS/**/*.md
 !LEARNINGS/anti-patterns/flag-conflict-guard-vs-value-flag-parser.md
 !LEARNINGS/anti-patterns/auto-detect-probe-reads-self-created-signal.md
 !LEARNINGS/solutions/process-exit-truncates-async-pipe-writes-drain-first.md
+!LEARNINGS/anti-patterns/guard-test-literals-are-plan-consumers.md
+!LEARNINGS/decisions/preset-closure-over-new-requireskills-handoffs.md
+!LEARNINGS/solutions/opencode-v2-commands-agent-subagent-semantics.md
+!LEARNINGS/solutions/commands-model-pins-bypass-tier-resolver.md
+!LEARNINGS/anti-patterns/plan-done-claims-outrun-committed-tree.md
+!LEARNINGS/anti-patterns/trial-scaffold-rides-into-deliverable.md
+!LEARNINGS/solutions/shipped-command-templates-need-mode-relative-paths.md
+!LEARNINGS/solutions/frontmatter-key-rewrites-scope-to-frontmatter-slice.md
 !LEARNINGS/anti-patterns/globally-parsed-flags-silently-ignore-on-unread-verbs.md
 !LEARNINGS/conventions/dry-run-stdout-json-only-notices-stderr.md
 !LEARNINGS/conventions/docs-runnable-snippets-must-match-ci-invocation.md

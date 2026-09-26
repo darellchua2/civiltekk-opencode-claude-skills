@@ -576,6 +576,26 @@
             "effect": "allow"
         },
         {
+            "action": "skill",
+            "resource": "testing-inline-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "linting-inline-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "documentation-inline-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "responsive-audit-inline-skill",
+            "effect": "allow"
+        },
+        {
             "action": "codegraph*",
             "resource": "*",
             "effect": "allow"
@@ -638,6 +658,23 @@
         "run-worktree-pipeline": {
             "description": "Tracker-ticket-to-merged-PR pipeline via git worktrees — sync, plan, adaptive review (requirements-gap relay), /run-plan, code review, PR merge. Usage: /run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>",
             "template": "Load the skill `worktree-pipeline-skill` and run it with the arguments: $ARGUMENTS",
+            "agent": "build"
+        },
+        "review-arch": {
+            "description": "Architecture review pilot (A/B arm A, #582) — delegates to architecture-review-subagent in an isolated child session: system design, layer boundaries, dependency direction, transitive blast radius. Usage: /review-arch <review target — diff range, files, or PLAN>",
+            "template": "Perform an architecture review of: $ARGUMENTS. Follow your system prompt's full workflow — reviewer-baseline-skill first, severity-gated findings with business impact, Requirements Gaps array, Patterns applied/violated with LEARNINGS evidence, Return Contract.",
+            "agent": "architecture-review-subagent",
+            "subagent": true
+        },
+        "review-inline": {
+            "description": "Architecture review pilot (A/B arm B, #582) — the SAME review executed in-session (no subagent): load the deployed architecture-review-subagent definition as your checklist and run the identical workflow in this context. Usage: /review-inline <review target — diff range, files, or PLAN>",
+            "template": "Load the deployed file agents/architecture-review-subagent.md as your checklist IN THIS SESSION for: $ARGUMENTS. Deploy-mode path: CLI ~/.config/opencode/agents/architecture-review-subagent.md; Docker /app/.opencode/agents/architecture-review-subagent.md — if neither resolves, report the review as unavailable and stop. Same workflow, same severity gates, same Return Contract — but in-session: state the review scope before starting and keep findings evidence-backed (file:line).",
+            "agent": "build",
+            "subagent": false
+        },
+        "run-plan-v2": {
+            "description": "A/B trial (#582) — plan-execution-skill --gate with the delegate family substituted INLINE: zero Task/subagent calls (testing → testing-inline-skill, linting → linting-inline-skill, documentation → documentation-inline-skill, responsive-audit → responsive-audit-inline-skill loop). Usage: /run-plan-v2 <PLAN file>",
+            "template": "Load the skill `plan-execution-skill` in --gate mode and run it to fully implement the plan file given as the argument: $ARGUMENTS. DELEGATION SUBSTITUTION (hard constraint — zero Task/subagent calls this run): where the skill's delegate matrix says testing-subagent, load and follow `testing-inline-skill`; linting-subagent → `linting-inline-skill`; documentation-subagent → `documentation-inline-skill`; responsive-audit-subagent → the `responsive-audit-inline-skill` inline loop. Execute every delegated step yourself in-session per those skills' decision trees and output contracts.",
             "agent": "build"
         }
     },

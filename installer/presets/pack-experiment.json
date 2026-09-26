@@ -1,0 +1,16 @@
+{
+    "$comment": "Preset 'experiment' for installer/init.mjs (--preset experiment). HAND-MAINTAINED (unlike the derived presets): the /tmp/gen-presets.mjs generator is not in-repo, so regeneration would drop this file. A/B harness family from #582 — the 4 *-inline-skill decision trees plus their knowledge-skill dependency closure (the closure rides preset membership, NOT dependency-map requiresSkills edges: the #437 guard asserts that map's shape exactly). Opt-in: default setup.sh deploy is unaffected.",
+    "name": "experiment",
+    "description": "A/B harness (#582): inline delegation family — testing/linting/documentation/responsive-audit inline skills plus the knowledge skills they defer to. Opt-in companion to the /review-arch, /review-inline, and /run-plan-v2 pilot commands.",
+    "agents": [],
+    "skills": [
+        "testing-inline-skill",
+        "linting-inline-skill",
+        "documentation-inline-skill",
+        "responsive-audit-inline-skill",
+        "language-linting-skill",
+        "verification-loop-skill",
+        "technical-writing-skill",
+        "playwright-responsive-audit-skill"
+    ]
+}
