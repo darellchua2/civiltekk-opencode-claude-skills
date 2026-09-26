@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.52.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.52.0...v9.52.1) (2026-09-26)
+
+### Bug Fixes
+
+* **setup:** skip opencode service restart when credentials unchanged ([#588](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/588)) ([#590](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/590)) ([fa576c4](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/fa576c4fc3c5dbdc94c3dad25499803e478623f7)), closes [#573](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/573)
+
 ## [9.52.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.51.0...v9.52.0) (2026-09-26)
 
 ### Features
