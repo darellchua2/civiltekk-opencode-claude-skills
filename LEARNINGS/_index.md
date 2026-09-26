@@ -15,7 +15,6 @@
 
 ## Entries
 
-
 ### By-reference docs mechanize no-duplication with sentinel greps
 
 - **Category**: patterns
@@ -31,7 +30,6 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Summary**: Copy CI's setup lines (PATH export, env) into runnable doc snippets — bats lives off-PATH at tests/lib/bats-core/bin; bare `bats` fails on clean machines (#539).
-
 
 ### Tracked LEARNINGS entries need gitignore negations
 
@@ -1592,3 +1590,56 @@
 - **Scope**: project
 - **Summary**: parseArgs accepts every BOOL_FLAGS entry for every verb, so an unread flag on a mutating verb is a latent silent-ignore bug (#567: add ignored --prune); when honoring would be destructive (set-replace on a single-name add), fix with a first-statement rejection guard covering all entry paths and pin the exact exit code (#567 code review)
 - **Date**: 2026-09-26
+### Preserved-phrase lists need a full assertion sweep
+
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/preserved-phrase-lists-need-full-assertion-sweep.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: Derive phrase-preserve lists by grepping the assertion file for every literal it checks against the target file — reading only the edited section misses assertions on sibling sections in the same edit region (#560 plan review)
+- **Date**: 2026-09-25
+
+### Event-driven contracts need a notification boundary rule
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/event-driven-contracts-need-notification-boundary-rule.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: Background watchers/notifications in prompt-level pipelines must state when the agent acts on them — step/ticket boundaries only, never mid-Task, arrival order, exactly-once — or JIRA side effects and resumes go nondeterministic (#560 plan review)
+- **Date**: 2026-09-25
+
+### Advance-on-ship guard must cover merged PRs
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/advance-on-ship-guard-must-cover-merged-prs.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: Overlap guards keyed to still-open PRs miss the stale-base class — a branch cut before an earlier in-run PR merged conflicts at PR time with no open PR at check time; classify that as overlap-hold (rebase + re-gate), not watcher failure (#560 re-review)
+- **Date**: 2026-09-25
+
+### Hold/resume rules must match parked state
+
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/hold-resume-rules-must-match-parked-state.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: A hold/resume rule may only reference artifacts the held item can have at its hold point — copy-pasting "rebase and continue at Step 7" across holds at different boundaries instructs executors to review PLANs that were never authored (#560 code review)
+- **Date**: 2026-09-25
+
+### Background command templates inline scoping flags
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/background-command-templates-inline-scoping-flags.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: Literal background-shell templates must inline their scoping flags (`gh -R`, `git -C`) — prose scoping rules elsewhere in the doc never reach the unattended runtime artifact (#560 code review)
+- **Date**: 2026-09-25
+
+### Contracts adding rebases must state force-push
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/contracts-adding-rebases-must-state-force-push.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: Every rebase site in a workflow contract needs its force-push story (`--force-with-lease`) or the first resume dies non-fast-forward at the next phase push (#560 code review)
+- **Date**: 2026-09-25
