@@ -88,3 +88,4 @@ None — single contained ticket.
 GATE 7d4a3b8 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t(isolation 5/5) e2e=n.a.
 GATE 4252e8d tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t(skill_profiles 8/8) e2e=n.a.
 GATE 4252e8d+wt tier=full lint=n.a. typecheck=n.a. build=n.a. unit=t(13/13 both suites) e2e=n.a. — ticket exit gate; tree = 4252e8d + setup.sh comment fix; lint/typecheck/build n.a. (no tooling configured in repo)
+GATE REVIEWFIX tier=full lint=n.a. typecheck=n.a. build=n.a. unit=t(13/13 both suites) e2e=n.a. — re-gate after review fix (installer/registry.json regen); build-registry --check green (154 skills, no drift)
