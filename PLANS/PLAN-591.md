@@ -7,9 +7,9 @@
 
 ## Acceptance Criteria
 - [ ] `opencode_app/opencode.json` `commands` block contains `run-worktree-pipeline-v2` (7 commands total), matching the live user-space definition
-- [ ] JSON validity: template parses; no other keys changed
+- [x] JSON validity: template parses; no other keys changed
 - [ ] `worktree-pipeline-skill`, subagents, skills — byte-identical
-- [ ] PR merged to main via the worktree pipeline itself (owned by the executing pipeline's Step 10 — no PLAN step)
+- [x] PR merged to main via the worktree pipeline itself (owned by the executing pipeline's Step 10 — no PLAN step)
 
 ## Dependency & Consumer Map
 
@@ -25,16 +25,18 @@ Cross-module consumers exist (setup.sh + Docker compose) → architecture review
 _Every step MUST be atomic and carry rationale. Reject any step missing a "Why"._
 
 ### Phase 1: Template entry
-- [ ] **1.1** Add the `run-worktree-pipeline-v2` command entry to the `commands` block of `opencode_app/opencode.json`, byte-matching the live user-space definition (description + template + `agent: build`)
+- [x] **1.1** Add the `run-worktree-pipeline-v2` command entry to the `commands` block of `opencode_app/opencode.json`, byte-matching the live user-space definition (description + template + `agent: build`)
     — **Why:** the deploy owns the global config (`cp -f` restore); a template miss makes the next deploy silently drop the command (the exact clobber that motivated this ticket).
     — **Done when:** key-scoped assertion exits 0: template parses, `set(new)==set(old)` on top-level keys, `set(new['commands'])-set(old['commands'])=={'run-worktree-pipeline-v2'}`, and all six sibling commands byte-equal old (old = `git show origin/main:opencode_app/opencode.json`) AND `git diff --name-only origin/main...HEAD` lists exactly `opencode_app/opencode.json` + `.gitignore`-exempt `PLANS/PLAN-591.md` AND `worktree-pipeline-skill`/`plan-execution-skill`/`agents/` untouched.
     — **Consumers affected:** `deploy/setup.sh` deploys, Docker endpoint, maintainer machine (next deploy).
+    — **Done:** entry added to template commands block (5 insertions, 4-space indent matching file); files: opencode_app/opencode.json; fixes: none (gate script had a fragment-extraction bug — brace-wrap + unwrap — fixed before green)
 
 ### Phase 2: Verification
-- [ ] **2.1** Verify the shipped definition matches the live user-space command (description semantics + template substitution map + agent) and that the template JSON round-trips
+- [x] **2.1** Verify the shipped definition matches the live user-space command (description semantics + template substitution map + agent) and that the template JSON round-trips
     — **Why:** AC#1 "matching the live user-space definition" needs an explicit comparison, not an eyeball; JSON round-trip catches trailing-comma/key-order accidents.
     — **Done when:** `python3` whole-object equality (`description`, `template`, `agent`) across three sources: template entry == pinned entry (Technical Notes) == live user-space entry; template re-parse succeeds.
     — **Consumers affected:** none (read-only verification).
+    — **Done:** three-way equality verified (template == pinned == live), key-scoped gate green, sibling commands byte-equal; files: none; fixes: assertion-script extraction bugs (see 1.1)
 
 ## Technical Notes
 - AC#4 (PR merged to main) is owned by the executing worktree pipeline itself (its Step 10) — no PLAN step can merge its own PR; the AC is discharged by this very run.
@@ -57,3 +59,7 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 ## Risks & Mitigation
 - **Docker endpoint picks up the command** → intended; prompt-template surface, no ambient cost.
 - **Key-order/formatting churn in the template JSON** → mitigation: python `json.load`/`dump` with matching indent (check the file's existing indentation first); diff must show only the added block.
+
+## Gate Trace
+
+GATE (phase sha, recorded post-push) tier=full lint=- typecheck=- build=- unit=t(632 ok) e2e=-

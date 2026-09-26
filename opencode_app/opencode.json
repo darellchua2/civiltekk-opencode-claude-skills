@@ -681,6 +681,11 @@
             "description": "A/B trial (#582) — plan-execution-skill --gate with the delegate family substituted INLINE: zero Task/subagent calls (testing → testing-inline-skill, linting → linting-inline-skill, documentation → documentation-inline-skill, responsive-audit → responsive-audit-inline-skill loop). Usage: /run-plan-v2 <PLAN file>",
             "template": "Load the skill `plan-execution-skill` in --gate mode and run it to fully implement the plan file given as the argument: $ARGUMENTS. DELEGATION SUBSTITUTION (hard constraint — zero Task/subagent calls this run): where the skill's delegate matrix says testing-subagent, load and follow `testing-inline-skill`; linting-subagent → `linting-inline-skill`; documentation-subagent → `documentation-inline-skill`; responsive-audit-subagent → the `responsive-audit-inline-skill` inline loop. Execute every delegated step yourself in-session per those skills' decision trees and output contracts.",
             "agent": "build"
+        },
+        "run-worktree-pipeline-v2": {
+            "description": "A/B trial (#585) — worktree pipeline with Step 8 delegated INLINE via the substitution family (zero worker subagents); Step 9 code review + Step 10 PR remain subagent-driven. Usage: /run-worktree-pipeline-v2 [--dry-run] [base-branch] <ticket-refs...>",
+            "template": "Load the skill `worktree-pipeline-skill` and run it fully for: $ARGUMENTS. ONE substitution at Step 8: execute plan-execution-skill in --gate mode with the inline delegation map (testing → testing-inline-skill, linting → linting-inline-skill, documentation → documentation-inline-skill, responsive-audit → responsive-audit-inline-skill) instead of /run-plan — zero worker Task/subagent calls in the execution phase. Step 9 (code-review-subagent) and Step 10 (pr-workflow-subagent) unchanged. Pass the explicit PLAN path to the executor.",
+            "agent": "build"
         }
     },
     "providers": {
