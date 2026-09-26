@@ -6,14 +6,14 @@
 
 ## Acceptance Criteria
 
-- [ ] Full-mode run prints an agent-detection table (found/missing per agent) in the banner and the setup summary
-- [ ] With pi installed and a Z.AI key captured, `~/.pi/agent/models.json` gains `providers.zai` with `apiKey: "$ZAI_API_KEY"`; pre-existing providers untouched; re-run idempotent
-- [ ] With codex installed, `~/.codex/config.toml` gains `[model_providers.zai]` + `[profiles.zai]`; existing content untouched; re-run idempotent
-- [ ] Neither seed writes anything under `--dry-run`
-- [ ] Agents not installed → no seed attempted, run still succeeds
-- [ ] After key seeding with opencode installed, setup.sh restarts the opencode service (or logs the manual command if restart fails)
-- [ ] `deploy/setup.ps1` mirrors the detection step; `show_help` and README mention the feature
-- [ ] One bats test (temp HOME, stubbed `pi`/`codex` on PATH; `grep` not `rg`; assertions run separately, not `&&`-chained) covering: seed-written-when-present, no-write-when-absent, dry-run-writes-nothing
+- [x] Full-mode run prints an agent-detection table (found/missing per agent) in the banner and the setup summary
+- [x] With pi installed and a Z.AI key captured, `~/.pi/agent/models.json` gains `providers.zai` with `apiKey: "$ZAI_API_KEY"`; pre-existing providers untouched; re-run idempotent
+- [x] With codex installed, `~/.codex/config.toml` gains `[model_providers.zai]` + `[profiles.zai]`; existing content untouched; re-run idempotent
+- [x] Neither seed writes anything under `--dry-run`
+- [x] Agents not installed → no seed attempted, run still succeeds
+- [x] After key seeding with opencode installed, setup.sh restarts the opencode service (or logs the manual command if restart fails)
+- [x] `deploy/setup.ps1` mirrors the detection step; `show_help` and README mention the feature
+- [x] One bats test (temp HOME, stubbed `pi`/`codex` on PATH; `grep` not `rg`; assertions run separately, not `&&`-chained) covering: seed-written-when-present, no-write-when-absent, dry-run-writes-nothing
 
 ## Dependency & Consumer Map
 
@@ -95,15 +95,17 @@ No cross-module runtime consumers beyond this repo (no skill/, agents/, installe
 
 ### Phase 6: tests + verification
 
-- [ ] **6.1** Add `tests/test_agent_detection_seed.bats`: separate `@test` blocks (no `&&`-chained assertions) with temp HOME + stubbed `pi`/`codex` binaries on PATH — (a) pi present + `ZAI_API_KEY` set ⇒ `~/.pi/agent/models.json` gains `providers.zai` with `apiKey` literally `"$ZAI_API_KEY"` and a pre-seeded sibling provider survives; (b) agents absent ⇒ no `~/.pi`/`~/.codex` writes, functions return 0; (c) `DRY_RUN=true` ⇒ neither file is created/modified; (d) codex present ⇒ TOML block appended once, second call no-op. Use `grep` (not `rg`); positive control: a real (non-dry) run must change bytes
+- [x] **6.1** Add `tests/test_agent_detection_seed.bats`: separate `@test` blocks (no `&&`-chained assertions) with temp HOME + stubbed `pi`/`codex` binaries on PATH — (a) pi present + `ZAI_API_KEY` set ⇒ `~/.pi/agent/models.json` gains `providers.zai` with `apiKey` literally `"$ZAI_API_KEY"` and a pre-seeded sibling provider survives; (b) agents absent ⇒ no `~/.pi`/`~/.codex` writes, functions return 0; (c) `DRY_RUN=true` ⇒ neither file is created/modified; (d) codex present ⇒ TOML block appended once, second call no-op. Use `grep` (not `rg`); positive control: a real (non-dry) run must change bytes
     — **Why:** The repo's LEARNINGS catalog records dry-run leaks and false-green gates as recurring bug classes; these are the exact failure modes of this change, and separate assertions avoid the chained-assertion trap
     — **Done when:** `bats tests/test_agent_detection_seed.bats` passes locally and the full suite stays green
     — **Consumers affected:** CI bats suite
+    — **Done:** tests/test_agent_detection_seed.bats created — 10 @test blocks, one concern each, plain grep only, positive controls via real-run content asserts; 10/10 green; files: tests/test_agent_detection_seed.bats; fixes: none
 
-- [ ] **6.2** Full verification gate: `bash -n deploy/setup.sh`; node syntax check on the mjs helper; full bats suite; confirm no `rg` usage inside the new bats file; confirm no skill/agent count surfaces changed
+- [x] **6.2** Full verification gate: `bash -n deploy/setup.sh`; node syntax check on the mjs helper; full bats suite; confirm no `rg` usage inside the new bats file; confirm no skill/agent count surfaces changed
     — **Why:** Non-trivial logic requires the exit gate before the PR citation (verification-loop-skill tier=full for the ticket exit gate)
     — **Done when:** All checks green in one run on the final tree; gate memo appended to this PLAN's trace
     — **Consumers affected:** Step 10a PR citation
+    — **Done:** first full run caught two items — (1) tests/test_plan_executor.bats plan_full_mode_shape pinned step 2 = gh-cli (detect-agents is the new step 2; pin updated to document both #573 steps, gh-cli presence via grep), (2) my own header comment tripped the rg word-scan (reworded to "ripgrep"); second full run on the fixed tree: FAILED_SUITES=0 across all tests/*.bats + bash -n + node --check green, no skills/agents surfaces touched; files: tests/test_plan_executor.bats, tests/test_agent_detection_seed.bats; fixes: plan-shape pin update, comment reword
 
 ## Technical Notes
 
@@ -133,3 +135,4 @@ GATE b47fe21 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
 GATE 5245a2b tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
 GATE 586063f tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
 GATE 4176822 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
+GATE 31f035a tier=full lint=t typecheck=n.a build=- unit=t e2e=n.a

@@ -24,7 +24,9 @@ source_plan() {
     first=$(echo "$output" | head -1)
     second=$(echo "$output" | sed -n 2p)
     [[ "$first" == *"true|deps|Dependency check|check_dependencies_strict"* ]]
-    [[ "$second" == *"false|gh-cli|"* ]]
+    # #573: detection is the new step 2 (read-only, non-critical); gh-cli moved to 3.
+    [[ "$second" == *"false|detect-agents|"* ]]
+    echo "$output" | grep -q 'false|gh-cli|'
     # content steps exist with correct criticality
     echo "$output" | grep -q 'true|config|Deploy config|setup_config'
     echo "$output" | grep -q 'true|agents|Deploy agents|deploy_agents'
@@ -32,6 +34,8 @@ source_plan() {
     echo "$output" | grep -q 'false|shell-vars|'
     # env steps present in full
     echo "$output" | grep -q 'false|nvm|'
+    # #573: seeding rides right after credential capture (non-critical)
+    echo "$output" | grep -q 'false|seed-agent-keys|Seed Z.AI key into detected agents|seed_agent_keys'
 }
 
 @test "plan_quick_mode_has_no_env_steps" {
