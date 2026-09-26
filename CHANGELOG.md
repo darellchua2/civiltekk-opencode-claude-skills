@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.49.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.48.0...v9.49.0) (2026-09-26)
+
+### Features
+
+* **576:** standardize subagents across harnesses — docs, portability contract, overlay composition, 3-agent pilot ([#578](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/578)) ([95766df](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/95766dfef86b678f13b455ceb36d03f364d5fbd7)), closes [#576](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/576) [#576](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/576)
+
 ## [9.48.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.47.0...v9.48.0) (2026-09-26)
 
 ### Features
