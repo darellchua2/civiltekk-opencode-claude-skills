@@ -62,12 +62,17 @@ EOF
   echo "$output" | grep -q "read(mcp:\*)"
 }
 
-@test "claude agents: body bytes stay identical to source" {
+@test "claude agents: body is the source body + composed overlay (frontmatter-only translation)" {
   run $INIT add code-review-subagent --target claude --yes --no-deps
   [ "$status" -eq 0 ]
   local F="${HOME}/.claude/agents/code-review-subagent.md"
-  diff <(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2' "$F") \
-       <(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2' "$AGENT_SRC") >/dev/null
+  # Translation must not mutate the body: the source body is an unchanged prefix…
+  local src_body inst_body
+  src_body=$(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2' "$AGENT_SRC")
+  inst_body=$(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2' "$F")
+  case "$inst_body" in "$src_body"*) ;; *) echo "installed body diverges from source body" >&3; return 1 ;; esac
+  # …and composition appends the claude harness binding (#576).
+  grep -q "## Harness binding — Claude Code" "$F"
 }
 
 @test "claude target: skills output unchanged (model-strip path intact)" {

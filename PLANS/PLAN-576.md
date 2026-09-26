@@ -10,6 +10,7 @@
 GATE 0ee91e2 tier=light lint=n.a. typecheck=n.a. build=- unit=n.a. e2e=n.a. — Phase 1 docs-only; done-when checks ran (paths on disk, sections present, pi source pinned)
 GATE a10a5c1 tier=light lint=n.a. typecheck=n.a. build=t unit=n.a. e2e=n.a. — Phase 2: token-manifest greps green (7 banned=0, 9 required≥1), registry extraction build OK (restored; 4.1 owns diff)
 GATE 8388801 tier=light lint=n.a. typecheck=t build=t unit=t e2e=n.a. — Phase 3: node --check ×4; tests/agent_lcd_pilot.bats 12/12; tests/init.bats 42/42 (count parity with overlays, 3.2); seam-arg equivalence verified (init.mjs:907 vs resolve-models.mjs:411 ← setup.sh:97)
+GATE 6882e81 tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — ticket exit gate: full bats 608/608 exit 0 (after fixing 2 composition-caused failures: update+project paths unwired, claude byte-identity invariant); registry diff scoped (6882e81); README counts unchanged (34/149)
 
 ## Acceptance Criteria
 - [ ] `docs/harness-landscape-2026-09.md` covers the harness comparison (OpenCode, Claude Code, Codex, Copilot, ZCode, Kilo, pi, M365 Copilot), the standards layer (Agent Skills / AGENTS.md / MCP / ACP), the standardization strategy, a pi section grounded in https://pi.dev/docs/latest, and a "Planned targets — not composable" note for zcode/copilot
@@ -92,18 +93,21 @@ GATE 8388801 tier=light lint=n.a. typecheck=t build=t unit=t e2e=n.a. — Phase 
     — **Done:** byte-identity: determinism + formula asserted (test 10); seam-arg equivalence verified (init.mjs:907 AGENTS_SRC=repo/agents vs resolve-models.mjs:411 O.agentsSrc <- setup.sh:97); claude validated by content assertions (test 7); final verdicts recorded in contract appendix; files: docs/subagent-portability-contract.md; fixes: none
 
 ### Phase 4: Registry + verification gate
-- [ ] **4.1** Run `node installer/build-registry.mjs`; review the diff; expected scope is exactly ONE description change (image-analyzer-subagent, from 2.2) plus `generatedAt` churn — the code-review and requirements-specialist registry entries must be byte-identical (their frontmatter is untouched; any diff there means a frontmatter edit slipped and halts); commit as one atomic registry commit
+- [x] **4.1** Run `node installer/build-registry.mjs`; review the diff; expected scope is exactly ONE description change (image-analyzer-subagent, from 2.2) plus `generatedAt` churn — the code-review and requirements-specialist registry entries must be byte-identical (their frontmatter is untouched; any diff there means a frontmatter edit slipped and halts); commit as one atomic registry commit
     — **Why:** Frontmatter deliberately changes in 2.2, so a plain-run diff is intentional this time — the phantom-gate anti-pattern (learning: build-registry-plain-run-churns-generatedat, recurrence #7 avoided) is dodged by enumerating the expected churn instead of demanding an empty diff
     — **Done when:** Diff matches the expected scope exactly (halt and fix if anything else appears); committed
     — **Consumers affected:** installer registry consumers (init.mjs picker, site build)
-- [ ] **4.2** Run the full bats suite; fix failures caused by this PLAN's changes; report pre-existing breakage explicitly with evidence
+    — **Done:** build-registry run; diff = exactly generatedAt + image-analyzer description (code-review/requirements entries byte-identical); committed as 6882e81. DEVIATION (visible): registry landed as its own commit before this PLAN-tick commit instead of one combined phase commit — the registry write is the phase's only file change and was verified+committed immediately; no standalone tick content rides here beyond the phase trace; files: installer/registry.json; fixes: none
+- [x] **4.2** Run the full bats suite; fix failures caused by this PLAN's changes; report pre-existing breakage explicitly with evidence
     — **Why:** Ticket exit gate — the full-tier verification for this change set
     — **Done when:** Suite green, or failures triaged as pre-existing with evidence
     — **Consumers affected:** CI; ticket AC 7
-- [ ] **4.3** Documentation consistency sweep: confirm `README.md`/`AGENTS.md` counts need no change (overlays are body fragments, not new skills/agents), and every cross-reference in the two new docs resolves to a real path
+    — **Done:** full bats 608/608 exit 0. fixes: (1) update path (init.mjs ~1425) and project path (~555) hashed/wrote raw source without composition — stored composed hash never matched, perpetual "updated 1" (claude_target #90) — both now call composeAgentBody (third+fourth writers found by the exit gate, same class as BLOCK-1); (2) claude_target #65 invariant updated: installed body = source body as unchanged prefix + composed claude overlay (old byte-identity assertion contradicted the new contract); files: installer/init.mjs, tests/claude_target.bats
+- [x] **4.3** Documentation consistency sweep: confirm `README.md`/`AGENTS.md` counts need no change (overlays are body fragments, not new skills/agents), and every cross-reference in the two new docs resolves to a real path
     — **Why:** AC cross-references must resolve (learning: dangling-cross-reference-in-ac); count-table drift is the repo's most common doc rot
     — **Done when:** All referenced paths exist on disk; no count edits required (or made if they are)
     — **Consumers affected:** docs readers; documentation-consistency checks
+    — **Done:** README counts unchanged (34 subagents / 149 skills = registry); AGENTS.md carries no counts table; all 10 cross-referenced paths from the new docs verified on disk; files: none (sweep only); fixes: none
 
 ## Technical Notes
 - Overlay convention this ticket is agents-only; the skills-side equivalent (`skills/<name>/overlays/`) is future work and MUST NOT start here (isolation contract #437 scope).

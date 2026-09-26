@@ -552,6 +552,7 @@ export async function writeInstall(sel, opts, reg, depMap) {
     } else if (pCfg.agentMode === "kilo-translate") {
       content = kiloAgentContent(content, (m) => console.error(`  kilo (${a.stem}): ${m}`));
     }
+    content = await composeAgentBody({ stem: a.stem, body: content, agentsSrc: AGENTS_SRC, target: pTarget, agentMode: pCfg.agentMode, warn: (m) => console.error(`  overlay (${a.stem}): ${m}`) });
     await writeFile(a.dst, content, "utf8");
   }
   for (const s of plan.skills) { await mkdir(dirname(s.dst), { recursive: true }); await cp(s.src, s.dst, { recursive: true, force: true }); }
@@ -1423,6 +1424,9 @@ async function cmdUpdate(args, opts) {
         } else {
           wouldContent = agent.content; // shared target: verbatim, unpinned (#453)
         }
+        // Compose overlays so the update hash matches what the add loop wrote (#576) —
+        // hashing raw source against a stored composed hash reports "updated" forever.
+        wouldContent = await composeAgentBody({ stem: name, body: wouldContent, agentsSrc: AGENTS_SRC, target, agentMode: cfg.agentMode, warn: () => {} });
         wouldHash = sha256Hex(wouldContent);
       } else {
         if (!cfg.skillsDir) { console.error(`warning: '${name}' target '${target}' does not install skills — skipping`); continue; }
