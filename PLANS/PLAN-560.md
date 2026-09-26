@@ -143,6 +143,8 @@ GATE 3ff1202 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: tiered_g
 GATE c9b1223 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: tiered_gating+portability+skill_isolation, 33 ok) e2e=n.a
 GATE 64d54c0 tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: tiered_gating+portability+skill_isolation, 33 ok) e2e=n.a
 GATE e04f8ad tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: tiered_gating+portability+skill_isolation, 33 ok) e2e=n.a
+GATE ebef5d4 tier=full lint=n.a typecheck=n.a build=t(registry --check OK) unit=t(bats tests/ 565/565) e2e=n.a
+GATE 1693498 tier=full lint=n.a typecheck=n.a build=t(registry --check OK) unit=t(bats tests/ full-suite green; scoped 33/33) e2e=n.a — post-review-fix re-gate (C1 hold-state coherence, W1-W5 scoping/force-with-lease/timeout/lane-release; 1 racy plugin-inventory flake documented in adjudications, identical-tree rerun green)
 
 ## Plan-Review Adjudications (architecture review + Mode R relay, 2026-09-25)
 - **Overlap guard vacuous at 6e→7 (BLOCK, fixed):** the branch diff at that boundary holds only the PLAN commit — early leg re-scoped to the PLAN Consumer-Map touch-set (advisory, empty-map fallback), authoritative `comm -12` moved to 10a pre-PR (step 4.2).
