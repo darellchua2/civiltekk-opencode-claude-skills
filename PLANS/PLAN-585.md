@@ -49,4 +49,4 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ## Gate Trace
 
-GATE (phase-1 sha, recorded post-push) tier=full lint=- typecheck=- build=- unit=t(629 ok) e2e=-
+GATE 3d8b4d5 tier=full lint=- typecheck=- build=- unit=t(629 ok) e2e=-
