@@ -5,10 +5,10 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] `run-worktree-pipeline-v2` exists in the global commands block (user-space) with the Step-8 substitution map
-- [ ] README documents the #582 experiment command set (`/review-arch`, `/review-inline`, `/run-plan-v2`, `/run-worktree-pipeline-v2`) in a compact experiment note
-- [ ] `worktree-pipeline-skill`, `plan-execution-skill`, and all subagents byte-identical (no repo code changes beyond README)
-- [ ] PR merged to main via the worktree pipeline itself
+- [x] `run-worktree-pipeline-v2` exists in the global commands block (user-space) with the Step-8 substitution map
+- [x] README documents the #582 experiment command set (`/review-arch`, `/review-inline`, `/run-plan-v2`, `/run-worktree-pipeline-v2`) in a compact experiment note
+- [x] `worktree-pipeline-skill`, `plan-execution-skill`, and all subagents byte-identical (no repo code changes beyond README)
+- [x] PR merged to main via the worktree pipeline itself
 
 ## Dependency & Consumer Map
 
