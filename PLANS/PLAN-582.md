@@ -5,101 +5,102 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] `/review-arch` and `/review-inline` exist in the global commands block and target the same review workflow
+- [ ] `/review-arch` and `/review-inline` exist in the global commands block and run the same review target
 - [ ] Four `*-inline-skill` dirs exist: self-contained, frontmatter contract conformant (`name` = dir, `license`, `compatibility`, `metadata`), `requiresSkills` declared
-- [ ] `/run-plan-v2` command entry exists referencing only skills that exist; documented zero-subagent substitution map
+- [ ] `/run-plan-v2` completes a small PLAN end-to-end with zero Task/subagent calls
 - [ ] `pack-experiment` preset installs the family opt-in; default `setup.sh` deploy unchanged
-- [ ] `build-registry.mjs` + `registry.json` rebuilt; skill counts synced (README; setup.sh derives from registry)
-- [ ] A/B protocol + numbers recorded in issue #582 with a keep/park decision per variant (pilot/pipeline runs are user-executed post-merge; this PLAN delivers the harness + protocol)
+- [ ] `build-registry.mjs` + `registry.json` rebuilt; skill counts synced (`setup.sh`, `setup.ps1`, README)
+- [ ] A/B numbers recorded in this issue (session tokens, wall time, context growth, findings per variant) with a keep/park decision per variant
 
 ## Dependency & Consumer Map
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `skills/testing-inline-skill/SKILL.md` | — | dependency-map entry, registry scan, lean profile | low |
-| `skills/linting-inline-skill/SKILL.md` | — | dependency-map entry, registry scan, lean profile | low |
-| `skills/documentation-inline-skill/SKILL.md` | — | dependency-map entry, registry scan, lean profile | low |
-| `skills/responsive-audit-inline-skill/SKILL.md` | — | dependency-map entry, registry scan, lean profile | low |
-| `installer/dependency-map.json` | 4 skill dirs exist (name match) | `build-registry.mjs` edges, `init.mjs` resolveSelection | med |
-| `installer/presets/pack-experiment.json` | registry contains the 4 skills | `init.mjs --preset experiment` | low |
-| `installer/registry.json` (generated) | dependency-map + presets + skill scan | `init.mjs`, `setup.sh` category/help generation | med |
-| `deploy/skill-profiles.json` | 4 skill dirs exist | `setup.sh --skill-profile lean`, `tests/skill_profiles.bats` | low |
-| `README.md` | final registry counts (153) | repo readers, preset table consumers | low |
-| `~/.config/opencode/opencode.json` (user-space, not in PR) | skills installed locally for `/run-plan-v2` | local A/B runs | low |
+| `skills/{testing,linting,documentation,responsive-audit}-inline-skill/SKILL.md` (4 new) | — | `/run-plan-v2` template (substitution map), `pack-experiment` preset, lean profile, registry rebuild | medium |
+| `installer/dependency-map.json` (skill→skill `requiresSkills` edges) | skill dirs exist (1.1) | installer dep resolution (`add <inline-skill>` pulls knowledge skills) | medium |
+| `opencode_app/opencode.json` `commands` block (+`/review-arch`, `/review-inline`, `/run-plan-v2`) | inline family (for `/run-plan-v2`'s substitution map) | opencode runtime command surface (user-facing slash commands) | high |
+| `installer/presets/pack-experiment.json` (new) | skill dirs (1.1) | `--preset experiment` installer flow | low |
+| `deploy/skill-profiles.json` (lean +4) | skill dirs (1.1) | `apply-skill-profile.mjs`, `tests/skill_profiles.bats` (lean keys must match disk) | low |
+| `installer/registry.json` (rebuild) | skill dirs (1.1) | installer picker/listing; README counts | low |
+| `setup.sh`/`setup.ps1`/`README.md` counts | registry rebuild (3.2) | deploy banner; docs readers | low |
+| Issue #582 A/B comment | Phase 4 runs | ticket AC 6; keep/park decision | low |
 
 ## Implementation Phases
 
-_Every step MUST be atomic and carry rationale. Reject any step missing a "Why"._
+### Phase 1: inline skill family (4 self-contained skills)
+- [ ] **1.1** Create `skills/testing-inline-skill/SKILL.md`: thin decision tree for running the testing delegate's workflow in-session — role skip rules (pure-data/trivial exemptions, test-inviable stacks), scope bounds (only files in the current diff), output contract mirroring testing-subagent's report shape, an **Enforcement deltas** section (translating the subagent's harness-enforced `edit: allow` isolation, fresh context, tier routing into explicit advisory discipline: announce scope before writing tests, no source edits beyond test files, self-report token budget), and frontmatter per contract (`name` = dir, `description` ≤1024 with triggers, `license: Apache-2.0`, `compatibility: opencode`, `metadata`)
+    — **Why:** First family member establishes the inline-skill template the other three clone — its shape decision (decision-tree + enforcement-deltas + output contract) is the design the A/B measures
+    — **Done when:** Dir + SKILL.md exist, frontmatter contract-conformant, decision tree covers skip/scope/output, Enforcement deltas section present
+    — **Consumers affected:** `/run-plan-v2` (2.1), preset (3.1), lean profile (3.3), registry (3.2)
+- [ ] **1.2** Create `skills/linting-inline-skill/SKILL.md`: in-session linting delegate — language linter discovery, scoped-lint rule (only touched files), gate semantics deferring to `verification-loop-skill`, Enforcement deltas (subagent's read-only-then-fix isolation → in-session: fixes applied directly but reported per-file), output contract
+    — **Why:** Highest-frequency /run-plan delegate — its inline form carries the most A/B weight
+    — **Done when:** Dir + SKILL.md contract-conformant with the four sections
+    — **Consumers affected:** same as 1.1
+- [ ] **1.3** Create `skills/documentation-inline-skill/SKILL.md`: in-session docstring/docs delegate — PEP 257/JSDoc/XML per language pointers via `documentation-*` knowledge, skip rules (pure-data, trivial), scope bounds (new/changed symbols only), output contract
+    — **Why:** Third standard /run-plan delegate
+    — **Done when:** Dir + SKILL.md contract-conformant
+    — **Consumers affected:** same as 1.1
+- [ ] **1.4** Create `skills/responsive-audit-inline-skill/SKILL.md`: in-session responsive audit delegate — wraps the `playwright-responsive-audit-skill` inline loop (detect→fix→re-verify tiers) with skip rules (no Playwright config → note + skip, never install unprompted) and output contract
+    — **Why:** Completes the delegation-substitution map; the subagent's background/timeout model needs an explicit inline translation
+    — **Done when:** Dir + SKILL.md contract-conformant
+    — **Consumers affected:** same as 1.1
+- [ ] **1.5** Declare `requiresSkills` edges in `installer/dependency-map.json` for the four inline skills → their knowledge-skill deps (testing-inline → none beyond self; linting-inline → `language-linting-skill`, `verification-loop-skill`; documentation-inline → `technical-writing-skill`; responsive-audit-inline → `playwright-responsive-audit-skill`), following the existing skill-entry shape in the map
+    — **Why:** `add <inline-skill>` must pull the knowledge skills the decision trees defer to — without the edges the skills are hollow
+    — **Done when:** Installer `--expand` on an inline skill resolves its knowledge deps; JSON parses
+    — **Consumers affected:** installer dep resolution; preset installs
 
-### Phase 1: Pilot commands (user-space)
-- [ ] **1.1** Add `review-arch` and `review-inline` command entries to the `commands` block of `~/.config/opencode/opencode.json`
-    — **Why:** unblocks the pilot A/B measurement (issue AC #1); user-space so it lands outside the PR by design.
-    — **Done when:** `python3 -c "import json;c=json.load(open('/home/silentx/.config/opencode/opencode.json'))['commands'];assert 'review-arch' in c and 'review-inline' in c"` exits 0.
-    — **Consumers affected:** local `/review-arch` + `/review-inline` invocations.
+### Phase 2: command surfaces
+- [ ] **2.1** Add `/review-arch` and `/review-inline` to the `opencode_app/opencode.json` `commands` block: identical review-prompt template (target arg → severity-gated review per `reviewer-baseline-skill`), differing only in executor — `/review-arch` sets `agent: architecture-review-subagent` (subagent session per its `mode: subagent`), `/review-inline` runs in-session on `build` with the architecture checklist inlined via `architecture-review-skill` pointer
+    — **Why:** AC 1 — the A/B needs both variants reachable as first-class commands running the same review target
+    — **Done when:** Both entries in the commands block; JSON parses; descriptions state the executor difference
+    — **Consumers affected:** opencode runtime command surface; A/B (4.1)
+- [ ] **2.2** Add `/run-plan-v2` to the commands block: wraps unmodified `plan-execution-skill` with an explicit delegation-substitution map in the template (testing → `testing-inline-skill`, linting → `linting-inline-skill`, documentation → `documentation-inline-skill`, responsive-audit → `responsive-audit-inline-skill` inline loop) and a hard "zero Task/subagent calls" instruction
+    — **Why:** AC 3 — the inline execution path must be a single command, not a remembered convention
+    — **Done when:** Entry present; template carries the full substitution map and the zero-Task instruction
+    — **Consumers affected:** A/B trial (4.2); plan-execution skill (unmodified — verified)
 
-### Phase 2: Inline executor skill family (repo)
-- [ ] **2.1** Create `skills/testing-inline-skill/SKILL.md` — decision tree (framework detect → scope to step's Done-when → runnable check), Enforcement deltas section, `requiresSkills: ["verification-loop-skill"]`
-    — **Why:** first family member; establishes the structure the other three copy.
-    — **Done when:** frontmatter `name` equals dir name, `license: Apache-2.0`, `compatibility: opencode`, `metadata` present; body contains "Enforcement deltas" heading.
-    — **Consumers affected:** dependency-map (3.1), registry scan (3.3).
-- [ ] **2.2** Create `skills/linting-inline-skill/SKILL.md` — thin tree over `language-linting-skill` + `verification-loop-skill` rules (language detect → scoped lint → gate semantics), same structure
-    — **Why:** mirrors `linting-subagent` for `/run-plan-v2`.
-    — **Done when:** same checks as 2.1.
-    — **Consumers affected:** dependency-map (3.1), registry scan (3.3).
-- [ ] **2.3** Create `skills/documentation-inline-skill/SKILL.md` — docstring standards (PEP 257/Javadoc/JSDoc) + skip rules + same-phase commit binding, same structure
-    — **Why:** mirrors `documentation-subagent`.
-    — **Done when:** same checks as 2.1.
-    — **Consumers affected:** dependency-map (3.1), registry scan (3.3).
-- [ ] **2.4** Create `skills/responsive-audit-inline-skill/SKILL.md` — wraps the documented inline loop of `playwright-responsive-audit-skill` (detect→fix→re-verify tiers), same structure
-    — **Why:** mirrors `responsive-audit-subagent`; the inline fallback already specified in plan-execution-skill §84 needs a loadable home.
-    — **Done when:** same checks as 2.1.
-    — **Consumers affected:** dependency-map (3.1), registry scan (3.3).
+### Phase 3: packaging
+- [ ] **3.1** Create `installer/presets/pack-experiment.json` (`name: experiment`, the 4 inline skills, no agents) in the exact `pack-*.json` shape; hand-authored with a `$comment` noting the registry generator (`/tmp/gen-presets.mjs`) is not in-repo, so this preset is hand-maintained
+    — **Why:** AC 4 — opt-in install path; opt-in means default deploy is untouched
+    — **Done when:** `--expand experiment` resolves the 4 skills; file matches the pack-*.json schema
+    — **Consumers affected:** installer preset flow; AC 4
+- [ ] **3.2** Run `node installer/build-registry.mjs`; commit `registry.json` with the 4 new skill entries (149→153); sync counts in `setup.sh` + `setup.ps1` (banner/count sites) + `README.md` skill count; add the 4 inline skills to `deploy/skill-profiles.json` `lean` array (primary must load them for /run-plan-v2)
+    — **Why:** AC 5 + the lean profile is what lets the primary actually invoke the family
+    — **Done when:** Registry shows 153 skills; counts grep consistent across the three surfaces; `skill_profiles.bats` green (every lean key matches a dir)
+    — **Consumers affected:** installer listing; deploy banner; docs
 
-### Phase 3: Installer + docs wiring (repo)
-- [ ] **3.1** Declare `requiresSkills` entries for the four inline skills in `installer/dependency-map.json`
-    — **Why:** registry edges derive from the dependency map; the installer must co-install prerequisites (declared-handoff pattern, #437).
-    — **Done when:** `python3 -c "import json;d=json.load(open('installer/dependency-map.json'))['requiresSkills'];assert all(k in d for k in ['testing-inline-skill','linting-inline-skill','documentation-inline-skill','responsive-audit-inline-skill'])"` exits 0.
-    — **Consumers affected:** registry rebuild (3.3).
-- [ ] **3.2** Create `installer/presets/pack-experiment.json` — `agents: []`, `skills: [the four inline skills]`, `mcps: []`, with `$comment` noting experiment status
-    — **Why:** opt-in distribution keeps default deploys unchanged (AC #4).
-    — **Done when:** valid JSON, `name: "experiment"`, skills array matches the four dir names exactly.
-    — **Consumers affected:** registry rebuild (3.3), README preset table (3.5).
-- [ ] **3.3** Rebuild the registry: `node installer/build-registry.mjs`
-    — **Why:** registry auto-scans `skills/*/SKILL.md`; the rebuild embeds the new skills, dependency-map edges, and `__presets.pack-experiment`.
-    — **Done when:** script prints `registry OK (…no drift)`; `python3 -c "import json;r=json.load(open('installer/registry.json'));names=[s['stem'] for s in r['skills'] if isinstance(s,dict) else s];assert all(n in str(r) for n in ['testing-inline-skill','linting-inline-skill','documentation-inline-skill','responsive-audit-inline-skill','pack-experiment'])"` exits 0.
-    — **Consumers affected:** `init.mjs`, `setup.sh` category generation, README counts (3.5).
-- [ ] **3.4** Add the four inline skills to `deploy/skill-profiles.json` `lean` array
-    — **Why:** primary sessions must be able to load them for `/run-plan-v2`; guard `tests/skill_profiles.bats` requires lean keys to match disk dirs.
-    — **Done when:** keys present in `lean`; `bats tests/skill_profiles.bats` passes.
-    — **Consumers affected:** lean deploy profile count statement in README (3.5).
-- [ ] **3.5** Sync README: 149→153 skill counts (lines ~72, ~247, ~284), lean count 72→76, add `experiment` row to the preset table
-    — **Why:** documentation-sync rule (AGENTS.md: new skills → counts + category listing); setup.sh derives from registry so README is the only hand-maintained surface.
-    — **Done when:** `rg -c "153 skills" README.md` ≥ 2 and preset table contains an `experiment` row.
-    — **Consumers affected:** repo readers.
-- [ ] **3.6** Add `run-plan-v2` command entry to the global commands block (user-space)
-    — **Why:** completes the A/B pair for the pipeline; deferred to after 2.x so it references existing skills only.
-    — **Done when:** `python3 -c "import json;c=json.load(open('/home/silentx/.config/opencode/opencode.json'))['commands'];assert 'run-plan-v2' in c"` exits 0.
-    — **Consumers affected:** local `/run-plan-v2` invocations.
+### Phase 4: A/B execution + evidence
+- [ ] **4.1** Run the review A/B on a fixed target (the repo's last merged feature diff — #583's `git diff 6752e15..86cbd45` scope) once per variant: `/review-arch` (subagent session) vs `/review-inline` (in-session); record per variant in a working note: session tokens, wall time, context growth (session length delta), findings count by severity
+    — **Why:** AC 6 — the harness exists to measure; qualitative arguments are what this ticket replaces
+    — **Done when:** Both variants ran to their output contracts on the same target; four metrics captured per variant
+    — **Consumers affected:** 4.3 keep/park decision; issue comment
+- [ ] **4.2** Run the `/run-plan-v2` end-to-end trial: author a small scratch PLAN (3-5 atomic steps, e.g. a docs fix in the worktree), execute it via `/run-plan-v2`, verify zero Task/subagent calls in the session trace
+    — **Why:** AC 3 — the substitution map must be proven end-to-end, not just written
+    — **Done when:** Scratch PLAN fully executed via /run-plan-v2; trace shows no Task tool calls
+    — **Consumers affected:** AC 3; 4.3 evidence
+- [ ] **4.3** Post the A/B numbers + `/run-plan-v2` trial result + keep/park decision per variant as an issue comment on #582
+    — **Why:** AC 6 — numbers live in the issue, decision recorded where the experiment was proposed
+    — **Done when:** Comment posted with all four metrics per variant and an explicit keep/park per variant
+    — **Consumers affected:** ticket AC 6; future routing-skill work
 
-### Phase 4: Verification + issue protocol
-- [ ] **4.1** Run repo gates: `node installer/build-registry.mjs` drift check, `bats tests/skill_isolation.bats tests/skill_profiles.bats`, and re-verify 3.3/3.4/3.5 assertions
-    — **Why:** registry/profile/isolation guards are the repo's mechanical enforcement; the exit gate re-runs them at full tier.
-    — **Done when:** all green with no drift.
-    — **Consumers affected:** none (read-only verification).
-- [ ] **4.2** Post the A/B measurement protocol as a comment on issue #582 (pilot: fresh session per variant, `/sessions` token capture, context meter before/after; pipeline: same small PLAN per variant, compaction events; model-mix note; keep/park decision template)
-    — **Why:** AC #6 requires the protocol and numbers home to be recorded in the issue; post-merge the user only executes and appends results.
-    — **Done when:** `gh issue view 582 --comments` shows the protocol comment.
-    — **Consumers affected:** issue #582 readers (post-merge measurement).
+### Phase 5: verification gate
+- [ ] **5.1** Full `bats tests/` + `node installer/build-registry.mjs --check` + `skill_profiles.bats` explicitly green (ticket exit gate, tier=full)
+    — **Why:** AC 5 — packaging must survive the whole suite (skill counts, lean keys, preset flow all have pinned tests)
+    — **Done when:** --check no drift beyond the 4 intended entries; bats fully green
+    — **Consumers affected:** CI; ticket AC 5
 
 ## Technical Notes
-- Executor trees stay thin: role decision tree + Enforcement deltas + `requiresSkills`; knowledge lives in the existing skills they declare (declared-handoff, no vendoring — isolation contract #437).
-- User-space command entries (`~/.config/opencode/opencode.json`) are intentionally outside the PR; they are machine-local config the ACs require.
-- Frontmatter contract per repo AGENTS.md: `name` = dir name, `description` ≤50 words with triggers, `license: Apache-2.0`, `compatibility: opencode`, `metadata` house sub-keys. No `category` in frontmatter is fine (installer-registry-only key may be set for registry grouping).
+- Commands vehicle: the shipped `opencode_app/opencode.json` `commands` block (already carries `/run-plan`, `/create-ticket`, `/run-worktree-pipeline`) — deployed globally by `setup.sh`, so the pilot commands appear for all users of the default deploy. Opt-in-ness comes from the preset (skills) + the commands being additive/no-op unless invoked.
+- `pack-experiment.json` is hand-maintained: the other presets carry `$comment: derived by /tmp/gen-presets.mjs` — that generator is not in-repo, so regeneration would drop the hand preset; noted in its `$comment`.
+- The inline family must NOT vendor subagent content (isolation contract #437): decision trees defer to the same knowledge skills (`requiresSkills`), Enforcement deltas translate harness enforcement into advisory discipline.
+- A/B fairness: same review target, same model (session default), sequential runs, fresh session per variant where the harness allows; context growth measured as session message-length delta.
+- Existing subagents, `plan-execution-skill`, and all knowledge skills stay byte-identical (ticket constraint).
 
 ## Dependencies
-- None external. Post-merge user steps (recorded in issue #582): pilot A/B run (`/review-arch` vs `/review-inline`), `/run-plan-v2` smoke on a small PLAN, numbers + keep/park decision (AC #6).
+- None external; single ticket.
 
 ## Risks & Mitigation
-- **AC #3/#6 cannot be fully executed by this pipeline** (need fresh interactive sessions + a small PLAN target) → mitigation: harness + protocol shipped; issue #582 records the post-merge protocol; exit gate verifies all file/JSON/test-level Done-whens.
-- **Registry shape drift** (skill entry is object vs string) → mitigation: 3.3 Done-when asserts via substring, robust to both shapes; drift check in the build script is authoritative.
-- **bats unavailable in environment** → mitigation: run via `npx bats` if present; if the runner is absent, run the guard scripts' assertions manually and note it in the gate memo as inconclusive-then-manual.
+- **A/B measurement noise** (single run per variant): the ticket asks for recorded numbers + a decision, not statistical significance — record raw numbers and state the caveat in the comment.
+- **Skill-count drift across surfaces**: 3.2 greps all three surfaces in one step; documentation-sync rules.
+- **Command-block JSON size**: three new entries in a large config — full bats + JSON parse in 5.1 catches syntax; descriptions kept ≤ the run-plan entry's length.
+- **opt-in leak**: default deploy unchanged verified by 5.1's full suite (skill_profiles + pack tests) — the preset only installs when requested.
