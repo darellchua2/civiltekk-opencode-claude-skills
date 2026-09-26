@@ -53,18 +53,25 @@
     — **Done:** decision: DEFER to plugin — no _index generator exists in-repo (grep verified); rationale recorded in resolution comment; files: none (decision); fixes: none
 
 ### Phase 3: Verification + resolution
-- [ ] **3.1** Census: `grep -rn "plan-automation-loop" LEARNINGS/ opencode_app/opencode.json` (LEARNINGS against the main checkout where bodies live, opencode.json in the worktree) — every remaining match must be a dated historical mention
+- [x] **3.1** Census: `grep -rn "plan-automation-loop" LEARNINGS/ opencode_app/opencode.json` (LEARNINGS against the main checkout where bodies live, opencode.json in the worktree) — every remaining match must be a dated historical mention
     — **Why:** The AC's definition of done for items 1-4
     — **Done when:** Zero live-tense matches; all remaining matches carry a date or issue-ref qualifying them as historical
     — **Consumers affected:** ticket AC 4
-- [ ] **3.2** `node installer/build-registry.mjs --check` + full `bats tests/` in the worktree (ticket exit gate, tier=full)
+    — **Done:** census clean: opencode.json 0 matches, Install-MarkitdownMcp 0, LEARNINGS census only dated-historical (caught + fixed a diverged local _index.md the tracked fix alone missed); files: main-checkout LEARNINGS/_index.md; fixes: none
+- [x] **3.2** `node installer/build-registry.mjs --check` + full `bats tests/` in the worktree (ticket exit gate, tier=full)
     — **Why:** AC 5; the opencode.json prose edit is config content the suite parses
     — **Done when:** --check exits 0; bats fully green
     — **Consumers affected:** CI; ticket AC 5
-- [ ] **3.3** Resolution comment on issue #517: what the PR fixed (tracked files), what was fixed locally and why (gitignored bodies + the gitignore design), item 7 deferral
+    — **Done:** build-registry --check green (no drift); full bats 612/612 exit 0; files: none (verification); fixes: none
+- [x] **3.3** Resolution comment on issue #517: what the PR fixed (tracked files), what was fixed locally and why (gitignored bodies + the gitignore design), item 7 deferral
     — **Why:** The split between PR-carried and local-only fixes is non-obvious; the issue must explain where each fix landed
     — **Done when:** Comment posted; PR `Closes #517` auto-closes on merge
     — **Consumers affected:** issue readers; future archaeologists of the LEARNINGS layout
+    — **Done:** resolution comment posted (PR/local split, item-7 deferral, census catch); files: none; fixes: none
+
+## Gate trace
+
+GATE b3ca203 tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — ticket exit gate: build-registry --check green (no drift); full bats 612/612 exit 0
 
 ## Technical Notes
 - `LEARNINGS/**/*.md` is gitignored (.gitignore:37) by design — per-checkout session memory; `_index.md` is the tracked surface. This split is why item 4 has two halves (body 2.1, index 1.3).
