@@ -49,6 +49,12 @@ LEARNINGS/**/*.md
 !LEARNINGS/anti-patterns/replacement-edits-need-removal-assertions.md
 !LEARNINGS/anti-patterns/provenance-repoint-swaps-repo-keeps-license-label.md
 !LEARNINGS/conventions/count-restating-surfaces-exceed-drift-test-coverage.md
+!LEARNINGS/anti-patterns/preserved-phrase-lists-need-full-assertion-sweep.md
+!LEARNINGS/patterns/event-driven-contracts-need-notification-boundary-rule.md
+!LEARNINGS/patterns/advance-on-ship-guard-must-cover-merged-prs.md
+!LEARNINGS/anti-patterns/hold-resume-rules-must-match-parked-state.md
+!LEARNINGS/patterns/background-command-templates-inline-scoping-flags.md
+!LEARNINGS/patterns/contracts-adding-rebases-must-state-force-push.md
 
 # Generated research-report artifacts (regenerate from docs/opencode-agent-tooling-research-2026-09-24.md)
 docs/OpenCode-Agent-Tooling-Research-2026-09-24.docx

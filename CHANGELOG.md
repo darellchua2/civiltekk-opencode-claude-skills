@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.47.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.46.1...v9.47.0) (2026-09-26)
+
+### Features
+
+* **setup:** detect coding agents; seed Z.AI key into pi + codex ([#573](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/573)) ([#574](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/574)) ([5484395](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/54843955b5954b974c628dfa56bb5cb0ae03e2f6))
+
+## [9.46.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.46.0...v9.46.1) (2026-09-26)
+
+### Bug Fixes
+
+* **deploy:** --help UX fixes + setup.ps1 flag parity with setup.sh ([#571](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/571)) ([#572](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/572)) ([36e372f](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/36e372fe9e082fffe6d621dc337d21b2de30ea5f)), closes [#474](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/474)
+
+## [9.46.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.45.1...v9.46.0) (2026-09-26)
+
+### Features
+
+* **skills:** worktree-pipeline — async merge wait + cross-repo chaining ([#560](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/560)) ([#570](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/570)) ([952411c](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/952411cb6e8d80a0fedc5e92cc1a56bdc3cf9a51))
+
+## [9.45.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.45.0...v9.45.1) (2026-09-26)
+
+### Bug Fixes
+
+* **installer:** reject --prune on add with explicit guidance ([#569](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/569)) ([6f0932c](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/6f0932cf5160fd43dec1db0f89b9cccf09225d53)), closes [#567](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/567) [#567](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/567)
+
 ## [9.45.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.44.0...v9.45.0) (2026-09-25)
 
 ### Features
