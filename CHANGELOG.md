@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.50.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.49.0...v9.50.0) (2026-09-26)
+
+### Features
+
+* **581:** portability phase 2 — zcode/copilot targets, kimi/kilo/copilot overlays, derived composition guard ([#583](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/583)) ([86cbd45](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/86cbd45780e464bafcd8963ec8ae48c9b18c2bf9)), closes [#581](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/581) [#581](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/581) [#581](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/581)
+
+### Documentation
+
+* **517:** sweep residual stale pointers from the [#506](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/506) review (tracked-file half) ([#580](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/580)) ([6752e15](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/6752e15ba30580303c1ca62dabac3f67a6f7de62)), closes [#517](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/517) [#387](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/387) [#408](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/408) [#517](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/517)
+* pi reads ~/.agents/skills only — split the cross-tool claim ([#579](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/579)) ([c65376d](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/c65376d64a42c689190860cb73e2efd0ac5616e2)), closes [#577](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/577) [#577](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/577)
+
 ## [9.49.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.48.0...v9.49.0) (2026-09-26)
 
 ### Features
