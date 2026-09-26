@@ -37,22 +37,26 @@
     — **Done:** frontmatter normalized to top-level `category: OpenCode Meta`; files: `skills/skill-generalizer/SKILL.md`; fixes: none
 
 ### Phase 2: Register the skill everywhere AGENTS.md requires
-- [ ] **2.1** Update README.md: six current-count instances 153 → 154 (lines 5, 74, 108, 249, 286, 288), lean count 76 → 77 (line 249), and the OpenCode Meta category row (6) → (7) listing `skill-generalizer`
+- [x] **2.1** Update README.md: six current-count instances 153 → 154 (lines 5, 74, 108, 249, 286, 288), lean count 76 → 77 (line 249), and the OpenCode Meta category row (6) → (7) listing `skill-generalizer`
     — **Why:** README is the human-facing source of record; AGENTS.md §doc-sync mandates count + category sync for every new/removed skill
     — **Done when:** `grep -c "153" README.md` returns only the history sentence (line 288 keeps 123/146 as history), and the OpenCode Meta row contains `skill-generalizer`
     — **Consumers affected:** readers; documentation-consistency audits
-- [ ] **2.2** Update `opencode_app/README.md` line 26: 153 → 154 skill directories
+    — **Done:** all six counts + lean count + category row updated, "153" now only in the history sentence; files: `README.md`; fixes: none
+- [x] **2.2** Update `opencode_app/README.md` line 26: 153 → 154 skill directories
     — **Why:** Docker self-host docs mirror repo content counts
     — **Done when:** `grep -n "154 skill directories" opencode_app/README.md` hits
     — **Consumers affected:** Docker self-host users
-- [ ] **2.3** Add an allow rule `{"action": "skill", "resource": "skill-generalizer", "effect": "allow"}` to `opencode_app/opencode.json` immediately after the `opencode-v2-migration-skill` entry, keeping the OpenCode Meta skill group contiguous
+    — **Done:** count updated; files: `opencode_app/README.md`; fixes: none
+- [x] **2.3** Add an allow rule `{"action": "skill", "resource": "skill-generalizer", "effect": "allow"}` to `opencode_app/opencode.json` immediately after the `opencode-v2-migration-skill` entry, keeping the OpenCode Meta skill group contiguous
     — **Why:** the full profile's single source is this permissions array; an unlisted skill is invisible to full-profile deploys
     — **Done when:** `python3 -c "import json; json.load(open('opencode_app/opencode.json'))"` parses and the resource appears exactly once
     — **Consumers affected:** full-profile deploy in the `opencode_app` container
-- [ ] **2.4** Insert `"skill-generalizer"` into the `lean` array of `deploy/skill-profiles.json` at its alphabetical position (between `security-audit-skill` and `solid-principles-skill`)
+    — **Done:** rule added in the OpenCode Meta group; JSON parses; resource present exactly once; files: `opencode_app/opencode.json`; fixes: none
+- [x] **2.4** Insert `"skill-generalizer"` into the `lean` array of `deploy/skill-profiles.json` at its alphabetical position (between `security-audit-skill` and `solid-principles-skill`)
     — **Why:** skill-generalizer is a primary-session workflow skill like its OpenCode Meta siblings; the lean array is sorted and guard-tested
     — **Done when:** `python3` JSON parse succeeds, `len(lean) == 77`, and the array remains sorted
     — **Consumers affected:** lean-profile deploys; `tests/skill_profiles.bats`
+    — **Done:** entry inserted at the planned position; JSON parses; len==77. Deviation: the "remains sorted" clause was a wrong authoring assumption — the array has a pre-existing non-alphabetical Experiment group (not touched); the repo's actual invariant is the bats guard. Fix: updated the count pin in `tests/skill_profiles.bats` 76 → 77 (6 sites); full skill_profiles run green 8/8; files: `deploy/skill-profiles.json`, `tests/skill_profiles.bats`; fixes: test-count pin update
 
 ### Phase 3: Verify gates
 - [ ] **3.1** Run the repo guards: skill-profile test (`tests/skill_profiles.bats` if bats exists, else scripted equivalent: every lean key maps to an existing skill dir, every lean key appears in the permissions array) and skill-isolation check (no `_common` refs, no sibling-skill path escapes in the new skill)

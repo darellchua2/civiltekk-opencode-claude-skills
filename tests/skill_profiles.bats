@@ -2,9 +2,9 @@
 # GIT-333: skill-profile mechanism coverage (v2 shapes, PLAN-374).
 #   1. every lean key in deploy/skill-profiles.json matches a real skill dir
 #   2. lean ⊆ shipped skill allows in opencode_app/opencode.json (typo guard)
-#   3. lean count == 76
+#   3. lean count == 77
 #   4. apply-skill-profile.mjs lean rewrites a scratch deployed config to
-#      exactly 76 allow rules + a skill deny-all-first; full leaves the
+#      exactly 77 allow rules + a skill deny-all-first; full leaves the
 #      shipped permissions array verbatim. Non-skill rules are never touched.
 #   5. every shipped skill allow resolves on a skill surface (root skills/ ∪
 #      opencode_app/.opencode/skills) and the surfaces stay disjoint (#486)
@@ -39,9 +39,9 @@ const c=require('$1');
 console.log(c.permissions.filter(r=>r.action==='skill'&&r.effect==='allow'&&r.resource!=='*').map(r=>r.resource).filter(r=>!union.has(r)).join(' '));"
 }
 
-@test "skill-profiles: lean has exactly 76 keys" {
+@test "skill-profiles: lean has exactly 77 keys" {
     count=$(lean_keys | wc -l)
-    [ "$count" -eq 76 ]
+    [ "$count" -eq 77 ]
 }
 
 @test "skill-profiles: every lean key matches a skill dir on disk" {
@@ -85,7 +85,7 @@ fs.writeFileSync('${scratch}',JSON.stringify(c,null,2));"
     [ "$bad" = "not-a-real-skill" ] || { echo "guard missed phantom (got: '${bad}')"; return 1; }
 }
 
-@test "apply-skill-profile: lean rewrites scratch config to 76 allows + deny-all-first" {
+@test "apply-skill-profile: lean rewrites scratch config to 77 allows + deny-all-first" {
     scratch="${TEST_HOME}/opencode.json"
     cp "${PROJECT_ROOT}/opencode_app/opencode.json" "$scratch"
     non_skill_before=$(node -e "const c=require('$scratch');console.log(c.permissions.filter(r=>r.action!=='skill').length)")
@@ -102,7 +102,7 @@ const first=rules[0]||{};
 const nonSkill=c.permissions.filter(r=>r.action!=='skill').length;
 console.log(allows.length, first.resource==='*'&&first.effect==='deny'?'deny-ok':'no-deny', nonSkill===${non_skill_before}?'non-skill-ok':'non-skill-lost');")
     echo "result: $out"
-    [ "$out" = "76 deny-ok non-skill-ok" ]
+    [ "$out" = "77 deny-ok non-skill-ok" ]
 }
 
 @test "apply-skill-profile: full is a verified no-op on a fresh copy" {
