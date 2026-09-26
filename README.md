@@ -41,7 +41,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills remove solid-principles-
 | Target | Destination | Notes |
 |--------|-------------|-------|
 | `opencode` (default) | `~/.config/opencode/{skills,agents}/` | Full opencode compat (model injection, strict-allowlist detection) |
-| `auto` | all detected harness config roots | Probes `~/.config/opencode`, `~/.agents`, `~/.claude`, `~/.kimi-code`, `~/.config/kilo` — installs to every hit (`add` only; none found → error) |
+| `auto` | all detected harness config roots | Probes `~/.config/opencode`, `~/.agents`, `~/.claude`, `~/.kimi-code`, `~/.config/kilo` — installs to every hit (`add` only; none found → error); `--dry-run` emits one aggregated JSON doc |
 | `claude` | `~/.claude/skills/` · agents `~/.claude/agents/` | Skills verbatim (`model:` stripped); agents get additive `tools:`/`disallowedTools:` translation |
 | `agents` | `~/.agents/{skills,agents}/` | Cross-tool shared dir — read by Kimi Code and pi; verbatim copies |
 | `kimi` | `~/.kimi-code/{skills,agents}/` (user) · `.kimi-code/` (project) | Kimi Code native dirs; additive frontmatter translation |
