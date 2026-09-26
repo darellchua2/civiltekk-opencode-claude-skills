@@ -801,7 +801,7 @@ $(print_skill_categories "${REPO_DIR}/skills")
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 For more information: https://opencode.ai
-Report issues: https://github.com/anomalyco/opencode/issues
+Report issues: https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues
 
 EOF
 }
@@ -2756,8 +2756,9 @@ setup_config() {
 # plain `pip install markitdown-mcp` fails ("no matching distribution") because
 # pip skips pre-releases. An exact pre-release pin installs without --pre and
 # keeps pre-release candidates out of transitive resolution. Bump ritual: the
-# pin appears in deploy/setup.sh, deploy/setup.ps1, and opencode_app/Dockerfile
-# — bump all three together.
+# pin appears in deploy/setup.sh and opencode_app/Dockerfile — bump both
+# together (deploy/setup.ps1 is a thin launcher since #474 and carries no pin;
+# tests/test_setup_ps1_vars.bats enforces its absence there).
 #
 # Why the mcp[cli] co-install: docling-mcp>=3.0 requires mcp[cli]>=2.0,<3.0 and
 # upstream markitdown-mcp requires mcp>=2.1.1,<3.0.0 — installing both specs in
