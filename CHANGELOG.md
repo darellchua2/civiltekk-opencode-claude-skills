@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.53.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.52.1...v9.53.0) (2026-09-26)
+
+### Features
+
+* **591:** ship run-worktree-pipeline-v2 in the deploy template ([#593](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/593)) ([8de2ccc](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/8de2ccc10c2be3df48b867b809fffba08d71d050)), closes [#591](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/591) [#591](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/591)
+
 ## [9.52.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.52.0...v9.52.1) (2026-09-26)
 
 ### Bug Fixes
