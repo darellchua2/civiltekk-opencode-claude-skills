@@ -64,6 +64,7 @@ LEARNINGS/**/*.md
 !LEARNINGS/anti-patterns/hold-resume-rules-must-match-parked-state.md
 !LEARNINGS/patterns/background-command-templates-inline-scoping-flags.md
 !LEARNINGS/patterns/contracts-adding-rebases-must-state-force-push.md
+!LEARNINGS/anti-patterns/worktree-teardown-leaves-opencode-registry-rows.md
 
 # Generated research-report artifacts (regenerate from docs/opencode-agent-tooling-research-2026-09-24.md)
 docs/OpenCode-Agent-Tooling-Research-2026-09-24.docx

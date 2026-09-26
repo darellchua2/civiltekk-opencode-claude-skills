@@ -252,10 +252,24 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
     only (never mid-Task: a Step 8 run-plan or Step 9 review may run many
     minutes), in arrival order, each notification exactly once. On a merge
     notification: report the merge SHA, then run the cleanup the watcher
-    must not — `git -C <ticket-repo> worktree remove <root>/<KEY>`, delete
-    the remote branch, and `git -C <ticket-repo> fetch` in the ticket
+    must not — `git -C <ticket-repo> worktree remove <root>/<KEY>`, purge
+    the worktree from the opencode registry (below), delete the remote
+    branch, and `git -C <ticket-repo> fetch` in the ticket
     repo's main checkout (**fetch-only** — never
     `pull` in the user's main worktree; uncommitted state may conflict);
+    **opencode registry purge** — OpenCode keeps a `worktree` row plus a
+    phantom `project` row per worktree directory in
+    `~/.local/share/opencode/opencode.db` and never garbage-collects them;
+    any dangling path makes `opencode reload` fail whole-command with
+    `ENOENT ... FileSystem.realPath <dir>` (seen 2026-09-26 with 56 stale
+    rows from prior pipelines), so run this in the same cleanup step:
+
+    ```bash
+    node -e 'const{DatabaseSync}=require("node:sqlite");const p=process.argv[1];const db=new DatabaseSync(process.env.HOME+"/.local/share/opencode/opencode.db");db.prepare("DELETE FROM worktree WHERE directory=?").run(p);db.prepare("DELETE FROM project WHERE worktree=?").run(p)' "<root>/<KEY>"
+    ```
+
+    Requires Node ≥23.4 (`node:sqlite` built in); older Node fallback:
+    `sqlite3 ~/.local/share/opencode/opencode.db "DELETE FROM worktree WHERE directory='<root>/<KEY>';DELETE FROM project WHERE worktree='<root>/<KEY>'"`.
     JIRA tickets: ensure exactly one `jira-status-updater` transition to
     Done — check the ticket status first, transition only if still open. On
     a red notification: the fix is queued for the next boundary (immediate
