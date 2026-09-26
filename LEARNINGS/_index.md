@@ -1708,3 +1708,11 @@
 - **Scope**: project
 - **Date**: 2026-09-26
 - **Summary**: New subdirs under agents/ or skills/ ride the Dockerfile's wildcard COPY into the runtime agent-discovery dir — audit container COPY consumers alongside CLI/resolver writers when adding source subdirs (#576 code review; Dockerfile:80)
+
+### Frontmatter key rewrites scope to the frontmatter slice
+
+- **File**: `LEARNINGS/solutions/frontmatter-key-rewrites-scope-to-frontmatter-slice.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: Translator key renames must scope to the frontmatter slice — agent bodies carry fenced frontmatter examples (opencode-tooling-subagent.md:167 teaches steps: 5) that whole-document regexes silently mutate; rename within lines.slice(1, closeIdx) and grep the corpus for off-frontmatter keys first (#581 code review Major)

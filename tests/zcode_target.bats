@@ -75,6 +75,22 @@ teardown() {
   [ ! -e "${HOME}/.config/opencode/skills/tdd-workflow-skill" ]
 }
 
+@test "zcode target: steps→maxTurns rename is frontmatter-scoped (body examples untouched)" {
+  # Regression fixture: opencode-tooling-subagent teaches `steps: 5` inside a
+  # fenced yaml body example (no steps: in its own frontmatter) — a whole-doc
+  # rename would silently mutate the body (#581 review Major).
+  run $INIT add opencode-tooling-subagent --target zcode --yes --no-deps
+  [ "$status" -eq 0 ]
+  local F="${HOME}/.zcode/agents/opencode-tooling-subagent.md"
+  grep -q 'steps: 5' "$F"
+  ! grep -q 'maxTurns' "$F"
+  # Positive: an agent with frontmatter steps: gets the rename, body unaffected.
+  run $INIT add code-review-subagent --target zcode --yes --no-deps
+  [ "$status" -eq 0 ]
+  [ "$(grep -c '^maxTurns: 30' "${HOME}/.zcode/agents/code-review-subagent.md")" -eq 1 ]
+  ! grep -q '^steps:' "${HOME}/.zcode/agents/code-review-subagent.md"
+}
+
 @test "zcode target: remove wipes user-scope zcode copies" {
   $INIT add code-review-subagent --target zcode --yes --no-deps >/dev/null 2>&1
   [ -f "${HOME}/.zcode/agents/code-review-subagent.md" ]

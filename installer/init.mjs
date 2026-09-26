@@ -1308,14 +1308,18 @@ function zcodeAgentContent(content, stem, warn) {
     warn("tools: omitted — ZCode tools: allowlists are exhaustive and the skill tool is not a proven member; emitting a partial list would lock skills out (denies still carried by disallowedTools:)");
   }
   if (dropped.size) warn(`no ZCode agent-frontmatter equivalent — dropped: ${[...dropped].sort().join(", ")}`);
-  if (!tools.size && !denied.size && hasName && !hasSkillAllow) return content;
+  // steps→maxTurns rename is FRONTMATTER-SCOPED: bodies carry fenced frontmatter
+  // examples (opencode-tooling-subagent.md:167 teaches `steps: 5` in a ```yaml
+  // block) and a whole-document replace silently mutates them (#581 review —
+  // learning: frontmatter-key-rewrites-scope-to-frontmatter-slice).
+  const needsRename = /^steps:(\s*)(\S+)/m.test(fm);
+  if (!tools.size && !denied.size && hasName && !hasSkillAllow && !needsRename) return content;
   const insert = [];
   if (!hasName) insert.push(`name: ${stem}`);
   if (tools.size) insert.push("tools:", ...[...tools].sort().map((t) => `  - ${t}`));
   if (denied.size) insert.push("disallowedTools:", ...[...denied].sort().map((t) => `  - ${t}`));
-  let out = [...lines.slice(0, 1), ...insert, ...lines.slice(1)].join("\n");
-  out = out.replace(/^steps:(\s*)(\S+)/m, "maxTurns:$1$2");
-  return out;
+  const fmLines = lines.slice(1, closeIdx).map((l) => l.replace(/^steps:(\s*)(\S+)/, "maxTurns:$1$2"));
+  return [...lines.slice(0, 1), ...insert, ...fmLines, ...lines.slice(closeIdx)].join("\n");
 }
 
 // minimal YAML subset parse of a permissions list from frontmatter lines:

@@ -70,7 +70,7 @@
 ### Phase 4: docs
 - [x] **4.1** `docs/subagent-portability-contract.md`: binding matrix — Composable = opencode/claude/kimi/kilo/zcode/copilot (zcode: user-scope only + nesting ban + tools-omission rule; copilot: claude-translate reuse, `.claude`-format workspace dirs); documented-only shrinks to codex/pi/M365; pilot-coverage rows updated; `.zcode.md`/`.copilot.md` overlay validity stated
     — **Why:** The matrix is normative — it must match shipped reality (review Major 1's docs half)
-    — **Done when:** Matrix, documented-only list, pilot table reflect 6 composable targets with the two caveats; lossy-translation registry gains the mcp-glob-deny row (ZCode ignores `mcp__*` wildcards — unenforceable, dropped with warning)
+    — **Done when:** Matrix, documented-only list, pilot table reflect 6 composable targets with the two caveats; mcp-glob-deny loss documented in the matrix notes prose (the lossy-translation table's documented-only column doesn't enumerate per-target zcode rows — the prose caveat is the carried form)
     — **Consumers affected:** issue #581 AC 4; future authoring
     — **Done:** matrix: 6 composable (zcode user-scope + 3 deviations; copilot .claude-format dirs), documented-only = codex/pi/M365, mcp-glob lossy row added; files: docs/subagent-portability-contract.md; fixes: none
 - [x] **4.2** `docs/harness-landscape-2026-09.md`: "Planned targets — not composable" rewritten as shipped (zcode/copilot landed via #581; pi/codex/M365 remain documented-only with reasons)
@@ -90,7 +90,7 @@
     — **Done when:** Suite green
     — **Consumers affected:** CI; ticket AC 1
     — **Done:** zcode_target.bats 8/8 (omission+warning+positive-map cases covered); files: tests/zcode_target.bats; fixes: none
-- [x] **5.2** `tests/copilot_target.bats`: help lists copilot; user-scope add writes `~/.copilot/agents/` and no skills dir; project add writes `.claude/agents/` + `.claude/skills/` with `name:`/`tools:` frontmatter; remove wipes
+- [x] **5.2** `tests/copilot_target.bats`: help lists copilot; user-scope add writes `~/.copilot/agents/` and no skills dir; project add writes `.claude/agents/` + `.github/skills/` with `name:`/`tools:` frontmatter; remove wipes
     — **Why:** AC 2 — proves the null-skillsDir guard, the new project chain branch, and the `.claude`-format dir choice
     — **Done when:** Suite green
     — **Consumers affected:** CI; ticket AC 2
@@ -105,6 +105,7 @@
 
 GATE 9f6306d tier=light lint=n.a. typecheck=t build=t unit=t e2e=n.a. — Phases 1-3 scoped: 8 suites 121/121 (zcode/copilot/pilot-guards/kimi/kilo/claude/agents/init)
 GATE d1ac601 tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — ticket exit gate: build-registry --check no drift; full bats 628/628 exit 0
+GATE 318fb86 tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — post-review re-gate on fixed tree (review fix: frontmatter-scoped steps→maxTurns rename + regression fixture; PLAN touch-ups): full bats 629/629 exit 0
 
 ## Technical Notes
 - ZCode frontmatter (zcode.z.ai/en/docs/subagents, docs-verified this session): `name`/`description` required, `model` omit=inherit, `thoughtLevel` gated on explicit model, `tools`/`disallowedTools`, `maxTurns`, `injectAgentsMd` default-on, `mcpServers` exact-match; subagents cannot spawn subagents; custom `tools:` lists are EXHAUSTIVE ("nothing outside it is available") and gate skill invocation — the basis for 1.1(b).
