@@ -1675,3 +1675,19 @@
 - **Scope**: project
 - **Date**: 2026-09-26
 - **Summary**: Overlay suffixes are valid only for targets with a TARGETS row (opencode/claude/agents/kimi/kilo); zcode/copilot/codex/pi/M365 are documented-only until a composition path exists — dead overlay files are guard-blocked (#576 requirements relay, REQ-BIND)
+
+### Review targets must be read from disk
+
+- **File**: `LEARNINGS/anti-patterns/review-targets-must-be-read-from-disk.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: A re-typed prompt embed produced a false Major in #576 round 1 (on-disk PLAN was clean); reviewers must read the artifact from disk via a passed file path, never a verbatim re-type (#576 re-review)
+
+### Gate matrix must match seam capabilities
+
+- **File**: `LEARNINGS/anti-patterns/gate-matrix-must-match-seam-capabilities.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: Byte-identity gate iterating {opencode, claude} × both write-path seams was half-unsatisfiable — renderAgent is opencode-only; enumerate seam capabilities before writing the done-when (#576 re-review, New-2)

@@ -9,10 +9,10 @@
 - [ ] `docs/harness-landscape-2026-09.md` covers the harness comparison (OpenCode, Claude Code, Codex, Copilot, ZCode, Kilo, pi, M365 Copilot), the standards layer (Agent Skills / AGENTS.md / MCP / ACP), the standardization strategy, a pi section grounded in https://pi.dev/docs/latest, and a "Planned targets — not composable" note for zcode/copilot
 - [ ] `docs/subagent-portability-contract.md` specifies LCD rules, the two-tier binding matrix (composable: opencode/claude/agents/kimi/kilo vs documented-only: zcode/copilot/codex/pi/M365), overlay convention, composition pipeline, the moved-token manifest requirement, the lossy-translation registry, and a parity-verdict appendix
 - [ ] 3 pilot agents retrofitted, each as LCD core + `.opencode.md` overlay + minimal `.claude.md` overlay, with behavior-equivalent OpenCode output proven mechanically
-- [ ] Both agent write paths (npx `installer/init.mjs` AND `deploy/setup.sh` → `installer/resolve-models.mjs`) compose overlays through one shared helper; composed-body bytes are byte-identical across paths (CI-asserted); manifest hash tracking unchanged
+- [ ] Both agent write paths (npx `installer/init.mjs` AND `deploy/setup.sh` → `installer/resolve-models.mjs`) compose overlays through one shared helper; composed-body bytes byte-identical across paths for the opencode target, CI-asserted in `tests/agent_lcd_pilot.bats`; manifest hash tracking unchanged
 - [ ] Mechanical parity gate green: per-agent moved tokens absent from core and present in composed output; `Other/none:` fallback row present in every core; meaning-parity signoff recorded in the contract appendix
 - [ ] Guard tests green: orphan-overlay guard (no overlay for a target without a TARGETS row), no `.agents.md` overlays (verbatim target never composes), `tests/init.bats` enumeration aligned with registry semantics
-- [ ] `node installer/build-registry.mjs` diff matches exactly the expected scope (3 pilot description changes + generatedAt) and is committed; full bats suite passes
+- [ ] `node installer/build-registry.mjs` diff matches exactly the expected scope (one description change — image-analyzer, 2.2 — plus generatedAt; 2.1/2.3 entries byte-identical) and is committed; full bats suite passes
 
 ## Dependency & Consumer Map
 
@@ -47,7 +47,7 @@
 - [ ] **2.2** Retrofit `agents/image-analyzer-subagent.md` into core + two overlays, including review Minors: the deploy model pin ("zai-coding-plan/glm-5.3-flash", prose AND the frontmatter description at :3) is replaced — core conditions native perception on actual runtime capability ("when your runtime provides image input"), the Z.AI HTTP fallback recipe stays in core as a runtime fallback, the opencode overlay restores the exact pin + provider-auth prose, and the stale `permission.task` v1 syntax (:196-197) is rewritten to capability phrasing; the description becomes capability-neutral
     — **Why:** Only pilot case exercising the layer-3 rule (runtime fallback stays core, deploy pin moves to overlay) — and the description de-pin is what makes the 4.1 registry diff intentional rather than churn
     — **Done when:** Core works for a non-ZAI deploy (conditioned claim, fallback recipe intact, no provider pin anywhere in core incl. description); opencode overlay restores pin/auth prose; both overlays exist
-    — **Consumers affected:** `registry.json` (4.1 — one of the 3 expected description diffs), responsive-audit/pptx-specialist/uiux-reviewer delegators, vision fallback path
+    — **Consumers affected:** `registry.json` (4.1 — the single expected description diff), responsive-audit/pptx-specialist/uiux-reviewer delegators, vision fallback path
 - [ ] **2.3** Retrofit `agents/requirements-specialist-subagent.md` into core + two overlays: generalize the headless clause from "`question` tool is deny'd" to capability phrasing ("no interactive clarification channel exists in a subagent session — proceed on stated assumptions"), Mode R workflow stays in core, OpenCode invocation wording moves to the opencode overlay, claude overlay carries the Task binding
     — **Why:** Third structural variant (headless specialist, no delegation, no vision) completes the coupling taxonomy from the recon
     — **Done when:** Headless clause is harness-neutral and semantics-preserving; core free of OpenCode-only invocation snippets; both overlays exist; frontmatter untouched
@@ -70,13 +70,13 @@
     — **Why:** Minor-3 + REQ-BIND/REQ-PARITY — the mechanical floor that makes the remaining 31 retrofits auditable instead of judgment calls, and the guard that kills dead overlay files
     — **Done when:** All assertions green; tokens chosen to ban invocation snippets, not legitimate negative mentions ("NEVER call `question`" stays legal in a core)
     — **Consumers affected:** CI; step 4.2 full suite; future retrofit audits
-- [ ] **3.4** Authoritative equivalence gate per REQ-COMPOSE/PARITY: for each pilot × {opencode, claude}, compose through BOTH write-path seams (init.mjs loop and renderAgent) and assert byte-identity of composed bodies; run the 3.3 token gate; record final meaning-parity verdicts in the contract appendix (replacing 2.4's preliminary entries)
-    — **Why:** AC "behavior-equivalent OpenCode output" must be proven by the real composer across the real write paths, and Minor-4 — verdicts in a durable artifact, not a commit message
-    — **Done when:** Byte-identity assertions pass for all 6 combinations; appendix verdicts final and dated
-    — **Consumers affected:** ticket ACs 3–5; contract appendix readers
+- [ ] **3.4** Authoritative equivalence gate per REQ-COMPOSE/PARITY: for each pilot on the **opencode target only**, compose through BOTH write-path seams (init.mjs loop and renderAgent — opencode-only by design) and assert byte-identity of composed bodies; claude composed output is validated by content assertions only (3.3c Task binding + token gate — the renderAgent seam has no claude-translate, so cross-seam claude comparison is structurally unsatisfiable); run the 3.3 token gate; add the byte-identity assertions to `tests/agent_lcd_pilot.bats` so the AC-4 guarantee survives the ticket; record final meaning-parity verdicts in the contract appendix (replacing 2.4's preliminary entries)
+    — **Why:** AC "behavior-equivalent OpenCode output" must be proven by the real composer across the real write paths — and only where both seams actually produce that target (learning: gate-matrix-must-match-seam-capabilities); Minor-4 — verdicts in a durable artifact, not a commit message
+    — **Done when:** Byte-identity assertions pass for all 3 opencode combinations and live in `tests/agent_lcd_pilot.bats`; claude content assertions green; appendix verdicts final and dated
+    — **Consumers affected:** ticket ACs 3–5; contract appendix readers; future retrofit audits
 
 ### Phase 4: Registry + verification gate
-- [ ] **4.1** Run `node installer/build-registry.mjs`; review the diff; expected scope is exactly: the 3 pilot `description` changes (2.2's is the only semantic one; 2.1/2.3 descriptions unchanged — if they appear, a frontmatter edit slipped) plus `generatedAt` churn; commit as one atomic registry commit
+- [ ] **4.1** Run `node installer/build-registry.mjs`; review the diff; expected scope is exactly ONE description change (image-analyzer-subagent, from 2.2) plus `generatedAt` churn — the code-review and requirements-specialist registry entries must be byte-identical (their frontmatter is untouched; any diff there means a frontmatter edit slipped and halts); commit as one atomic registry commit
     — **Why:** Frontmatter deliberately changes in 2.2, so a plain-run diff is intentional this time — the phantom-gate anti-pattern (learning: build-registry-plain-run-churns-generatedat, recurrence #7 avoided) is dodged by enumerating the expected churn instead of demanding an empty diff
     — **Done when:** Diff matches the expected scope exactly (halt and fix if anything else appears); committed
     — **Consumers affected:** installer registry consumers (init.mjs picker, site build)
