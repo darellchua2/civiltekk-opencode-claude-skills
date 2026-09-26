@@ -5,11 +5,11 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] Items 1-4 either cite live paths or carry dated historical notes
-- [ ] Item 5 References match the file's own header numbers
-- [ ] Item 6 comment no longer names a removed function
-- [ ] `grep -rn "plan-automation-loop" LEARNINGS/ opencode_app/opencode.json` returns only dated historical mentions
-- [ ] Full `bats tests/` + `node installer/build-registry.mjs --check` green
+- [x] Items 1-4 either cite live paths or carry dated historical notes
+- [x] Item 5 References match the file's own header numbers
+- [x] Item 6 comment no longer names a removed function
+- [x] `grep -rn "plan-automation-loop" LEARNINGS/ opencode_app/opencode.json` returns only dated historical mentions
+- [x] Full `bats tests/` + `node installer/build-registry.mjs --check` green
 
 ## Dependency & Consumer Map
 
@@ -71,7 +71,7 @@
 
 ## Gate trace
 
-GATE b3ca203 tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — ticket exit gate: build-registry --check green (no drift); full bats 612/612 exit 0
+GATE 6d5b9d6 tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — ticket exit gate: build-registry --check green (no drift); full bats 612/612 exit 0
 
 ## Technical Notes
 - `LEARNINGS/**/*.md` is gitignored (.gitignore:37) by design — per-checkout session memory; `_index.md` is the tracked surface. This split is why item 4 has two halves (body 2.1, index 1.3).
