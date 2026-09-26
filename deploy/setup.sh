@@ -4123,6 +4123,23 @@ setup_provider_credentials() {
     else
         log_warn "opencode not found - skipping credential verification"
     fi
+
+    # #573: the v2 background service captures its environment at start, so a
+    # freshly seeded key does not reach {env:ZAI_API_KEY} MCP servers
+    # (zai-web-reader/search) until the service restarts. Best-effort and
+    # bounded — a failed restart never fails setup. Only reached on the path
+    # where a key was seeded this run (earlier returns skip it by design).
+    if command_exists opencode; then
+        local restart_cmd=(opencode service restart)
+        command_exists timeout && restart_cmd=(timeout 15 "${restart_cmd[@]}")
+        if [ "$DRY_RUN" = true ]; then
+            log_info "[DRY-RUN] Would restart the opencode background service (env pickup for {env:} MCP vars)"
+        elif "${restart_cmd[@]}" >/dev/null 2>&1; then
+            log_success "opencode service restarted - MCP {env:} substitution now sees the new key"
+        else
+            log_warn "opencode service restart failed - run 'opencode service restart' manually so MCP servers pick up ZAI_API_KEY"
+        fi
+    fi
     return 0
 }
 

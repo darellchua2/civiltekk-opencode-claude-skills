@@ -73,10 +73,11 @@ No cross-module runtime consumers beyond this repo (no skill/, agents/, installe
 
 ### Phase 4: opencode service restart after key seeding
 
-- [ ] **4.1** At the tail of `setup_provider_credentials` in `deploy/setup.sh`: when a key was seeded this run AND `opencode` is installed, run `timeout 15 opencode service restart` (best-effort; failure ⇒ log the manual command `opencode service restart` and continue); dry-run logs intent only
+- [x] **4.1** At the tail of `setup_provider_credentials` in `deploy/setup.sh`: when a key was seeded this run AND `opencode` is installed, run `timeout 15 opencode service restart` (best-effort; failure ⇒ log the manual command `opencode service restart` and continue); dry-run logs intent only
     — **Why:** The v2 background service captures its environment at start, so `{env:ZAI_API_KEY}` MCP servers (zai-web-reader/search) keep failing until restart — this is the fix for the reported bashrc symptom
     — **Done when:** A run with opencode stubbed invokes the restart; a failing stub does not fail the setup (step returns 0 with a warning); dry-run performs no restart
     — **Consumers affected:** long-lived opencode background service (restart only); none in-repo
+    — **Done:** restart tail added after the credential-verify block (early-return paths skip it by design); smoke green: happy path invokes restart after auth registration, failing stub warns with FUNC_RC=0, dry-run never invokes the stub (the #471 capture gate returns first — subsumes the restart, noted); files: deploy/setup.sh; fixes: none
 
 ### Phase 5: help text + README
 
@@ -128,3 +129,4 @@ No cross-module runtime consumers beyond this repo (no skill/, agents/, installe
 GATE 9b0cffa tier=light lint=t typecheck=n.a build=- unit=n.a e2e=n.a
 GATE b47fe21 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
 GATE 5245a2b tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
+GATE 586063f tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
