@@ -25,15 +25,15 @@ The LCD core alone must **work** everywhere — it is what the `agents` (verbati
 
 ## Binding matrix
 
-Two tiers. **An overlay suffix is valid only where a composition path exists** — a guard test fails any overlay whose target has no `TARGETS` row.
+Two tiers. **An overlay suffix is valid only where a composition path exists** — a guard test fails any overlay whose target has no `TARGETS` row (the allowlist is derived from the exported `COMPOSABLE_TARGETS`, single source).
 
 | Tier | Targets | Overlay files |
 |---|---|---|
-| **Composable** | `opencode`, `claude`, `kimi`, `kilo` (have `TARGETS` rows + composition paths) | Yes — `<target>.md` overlays compose |
+| **Composable** | `opencode`, `claude`, `kimi`, `kilo`, `zcode` (user scope), `copilot` | Yes — `<target>.md` overlays compose |
 | **Composable, never composes** | `agents` (verbatim interchange mode) | **None — `.agents.md` overlays are invalid** and guard-blocked |
-| **Documented-only** | `zcode`, `copilot`, `codex`, `pi`, M365 Copilot | None — landscape doc may describe their mechanisms; no overlay files |
+| **Documented-only** | `codex`, `pi`, M365 Copilot | None — landscape doc may describe their mechanisms; no overlay files |
 
-Notes per documented-only harness: **copilot** needs none (reads `~/.claude/agents/` natively — the claude artifact covers it); **zcode** forbids nested subagents (its agents would need core-only + importer flow — Portability phase 2); **pi** has no native subagents (RPC/SDK embedding is the documented delegation route); **codex/M365** use different definition formats (`.toml` profiles / declarative agents).
+Notes per target: **zcode** is user-scope only (the ZCode subagents Beta documents user-level `~/.zcode/agents/` with no workspace load path; project installs degrade to the opencode project target) and carries three translator deviations — `subagent` rules dropped (ZCode forbids nested subagents: the primary launches subagents via its Agent tool), `tools:` omitted for skill-allow sources (ZCode `tools:` lists are exhaustive; a partial list would lock the agent out of its own skills — denies still carried by `disallowedTools:`), mcp-globbed denies dropped (ZCode ignores `mcp__*` wildcards); **copilot** reuses `claude-translate`, user agents at `~/.copilot/agents/`, project agents at `.claude/agents/` (the documented Claude-format workspace agents dir) and project skills at `.github/skills/` (the documented workspace skills dir — `.claude/skills` loading by VS Code is unverified); **pi** has no native subagents (RPC/SDK embedding is the documented delegation route); **codex/M365** use different definition formats (`.toml` profiles / declarative agents).
 
 ## Overlay convention
 
@@ -79,9 +79,11 @@ Initial manifests (finalized as each pilot retrofit lands):
 |---|---|---|
 | opencode | core + `.opencode.md` overlay | Full parity with pre-retrofit behavior (byte-identity asserted across both seams) |
 | claude | core + minimal `.claude.md` overlay (~5–15 lines: Task binding + capability rows) | LCD-only would be a regression — claude's current bodies carry mostly-valid Task-tool wording |
-| kimi / kilo | core only | Strict improvement: current translated bodies reference mechanisms those harnesses lack; fallback rows replace them |
+| kimi / kilo | core + `.kimi.md` / `.kilo.md` overlays (#581) | Task-tool/`@mention` delegation bindings + trusted-location caveats; the LCD-only interim was a strict improvement but overlays complete the binding |
+| zcode | core + `.zcode.md` overlay (#581) | Nesting ban (delegation runs inline), `$skill-name` hint, MCP-at-session-start caveat; user scope only |
+| copilot | core + `.copilot.md` overlay (#581) | Task-tool binding; user `~/.copilot/agents/`, project `.claude/agents/` + `.github/skills/` |
 | agents (verbatim) | core only | Neutral interchange copy — never composes |
-| zcode / copilot / codex / pi / M365 | core only | Documented-only (see matrix); phase-2 follow-up covers zcode/copilot TARGETS rows + kimi/kilo overlays |
+| codex / pi / M365 | core only | Documented-only (see matrix); different definition formats or no subagent concept |
 
 ## Lossy-translation registry
 

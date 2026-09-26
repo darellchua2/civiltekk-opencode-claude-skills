@@ -68,6 +68,9 @@ const USER_KIMI_AGENTS = join(os.homedir(), ".kimi-code/agents");
 const USER_KIMI_SKILLS = join(os.homedir(), ".kimi-code/skills");
 const USER_KILO_AGENTS = join(os.homedir(), ".config/kilo/agent"); // singular per Kilo docs
 const USER_KILO_SKILLS = join(os.homedir(), ".kilo/skills");
+const USER_ZCODE_AGENTS = join(os.homedir(), ".zcode/agents");
+const USER_ZCODE_SKILLS = join(os.homedir(), ".zcode/skills");
+const USER_COPILOT_AGENTS = join(os.homedir(), ".copilot/agents");
 
 // Per-target write contract (#453): user-scope dest dirs + transform mode.
 // SINGLE SITE for target dest/transform resolution — write/update/remove paths
@@ -79,6 +82,15 @@ const TARGETS = {
   agents: { agentsDir: USER_AGENTS_SHARED, skillsDir: USER_SKILLS_SHARED, agentMode: "verbatim", skillMode: "verbatim" },
   kimi: { agentsDir: USER_KIMI_AGENTS, skillsDir: USER_KIMI_SKILLS, projectAgentsDir: ".kimi-code/agents", projectSkillsDir: ".kimi-code/skills", agentMode: "kimi-translate", skillMode: "verbatim" },
   kilo: { agentsDir: USER_KILO_AGENTS, skillsDir: USER_KILO_SKILLS, projectAgentsDir: ".kilo/agents", projectSkillsDir: ".kilo/skills", agentMode: "kilo-translate", skillMode: "verbatim" },
+  // #581: zcode is USER-SCOPE ONLY — the ZCode subagents Beta documents user-level
+  // ~/.zcode/agents/ with no workspace load path; project installs degrade via the
+  // no-project-destination note (claude-target precedent).
+  zcode: { agentsDir: USER_ZCODE_AGENTS, skillsDir: USER_ZCODE_SKILLS, agentMode: "zcode-translate", skillMode: "verbatim" },
+  // #581: copilot project dirs are per-content-type documented locations —
+  // .claude/agents (Claude-format workspace agents dir VS Code documents) and
+  // .github/skills (documented workspace skills dir; .claude/skills loading by
+  // VS Code is unverified). agentMode reuses claude-translate.
+  copilot: { agentsDir: USER_COPILOT_AGENTS, skillsDir: null, projectAgentsDir: ".claude/agents", projectSkillsDir: ".github/skills", agentMode: "claude-translate", skillMode: "verbatim" },
 };
 // derived from the table so a new target row can't skip validation (both = opencode+claude alias)
 const TARGET_VALUES = [...Object.keys(TARGETS), "both"];
@@ -103,6 +115,8 @@ const AUTO_TARGET_PROBES = {
   claude: () => existsSync(process.env.CLAUDE_CONFIG_DIR?.trim() || USER_CLAUDE_SKILLS.replace(/\/skills$/, "")),
   kimi: () => existsSync(USER_KIMI_AGENTS.replace(/\/agents$/, "")),
   kilo: () => existsSync(USER_KILO_AGENTS.replace(/\/agent$/, "")) || existsSync(USER_KILO_SKILLS.replace(/\/skills$/, "")),
+  zcode: () => existsSync(USER_ZCODE_AGENTS.replace(/\/agents$/, "")),
+  copilot: () => existsSync(USER_COPILOT_AGENTS.replace(/\/agents$/, "")),
 };
 function detectInstalledHarnesses() {
   return Object.keys(AUTO_TARGET_PROBES).filter((t) => AUTO_TARGET_PROBES[t]());
@@ -554,6 +568,10 @@ export async function writeInstall(sel, opts, reg, depMap) {
       content = kimiAgentContent(content, (m) => console.error(`  kimi (${a.stem}): ${m}`));
     } else if (pCfg.agentMode === "kilo-translate") {
       content = kiloAgentContent(content, (m) => console.error(`  kilo (${a.stem}): ${m}`));
+    } else if (pCfg.agentMode === "claude-translate") {
+      // copilot project agents (#581) — claude has no project columns, so this
+      // branch only fires for the copilot target's .claude/agents destination.
+      content = claudeAgentContent(content, a.stem, (m) => console.error(`  claude (${a.stem}): ${m}`));
     }
     content = await composeAgentBody({ stem: a.stem, body: content, agentsSrc: AGENTS_SRC, target: pTarget, agentMode: pCfg.agentMode, warn: (m) => console.error(`  overlay (${a.stem}): ${m}`) });
     await writeFile(a.dst, content, "utf8");
@@ -873,7 +891,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
       scope: "user",
       target,
       // legacy single-destination key preserved for scripts (PLAN-453 step 1.1 contract)
-    destination: doOc ? USER_OC : (target === "agents" ? dirname(TARGETS.agents.agentsDir) : target === "claude" ? dirname(TARGETS.claude.agentsDir) : dirname(TARGETS.kimi.agentsDir)),
+    destination: doOc ? USER_OC : dirname(TARGETS[target].agentsDir),
       destinations,
       agents: sel.agents,
       skills: sel.skills,
@@ -910,6 +928,8 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
           content = kiloAgentContent(content, (m) => console.error(`  kilo (${stem}): ${m}`));
         } else if (cfg.agentMode === "claude-translate") {
           content = claudeAgentContent(content, stem, (m) => console.error(`  claude (${stem}): ${m}`));
+        } else if (cfg.agentMode === "zcode-translate") {
+          content = zcodeAgentContent(content, stem, (m) => console.error(`  zcode (${stem}): ${m}`));
         }
         content = await composeAgentBody({ stem, body: content, agentsSrc: AGENTS_SRC, target: t, agentMode: cfg.agentMode, warn: (m) => console.error(`  overlay (${stem}): ${m}`) });
         await writeFile(join(cfg.agentsDir, `${stem}.md`), content, "utf8");
@@ -1213,6 +1233,95 @@ function claudeAgentContent(content, stem, warn) {
   return [...lines.slice(0, 1), ...insert, ...lines.slice(1)].join("\n");
 }
 
+// ZCode tool-name map (#581): opencode action → ZCode built-in tool (docs:
+// Read/Grep/Glob/Bash/Edit/Write/WebFetch/WebSearch/TodoWrite). NO subagent
+// mapping — ZCode subagents cannot spawn subagents (the primary launches them
+// via its Agent tool); subagent rules drop with a warning instead of mapping
+// to a phantom analog.
+const ZCODE_TOOL_MAP = {
+  read: "Read", write: "Write", edit: "Edit", shell: "Bash",
+  glob: "Glob", grep: "Grep", webfetch: "WebFetch", websearch: "WebSearch",
+};
+
+// Translate an opencode agent file into ZCode agent frontmatter (#581), on the
+// claude-translate pattern (column-0 insertion; body + existing keys verbatim —
+// ZCode silently ignores unknown keys): synthesizes `name: <stem>` (required),
+// translates `*`-resource allow/deny permission rules into `tools:` /
+// `disallowedTools:` (deny wins), renames `steps:` → `maxTurns:`, and never
+// emits `model:` (ZCode default = inherit). ZCode deviations:
+//   (a) `subagent` rules drop with a warning (nesting ban — no Task analog);
+//   (b) ANY allow-effect `skill` rule (any resource — the corpus carries only
+//       narrow-resource skill allows) omits `tools:` entirely with a loud
+//       warning: ZCode `tools:` lists are EXHAUSTIVE and the skill tool is not
+//       a proven member, so a partial list locks the agent out of its own
+//       skills; `disallowedTools:` is still emitted for deny rules;
+//   (c) mcp-globbed denies drop with a warning (ZCode ignores `mcp__*`
+//       wildcards in tools lists — unenforceable).
+function zcodeAgentContent(content, stem, warn) {
+  const lines = content.split(/\r?\n/);
+  if (lines[0]?.trim() !== "---") {
+    warn("no frontmatter — installed verbatim, permissions not translated");
+    return content;
+  }
+  let closeIdx = -1;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() === "---") { closeIdx = i; break; }
+  }
+  if (closeIdx === -1) {
+    warn("unterminated frontmatter — installed verbatim, permissions not translated");
+    return content;
+  }
+  const fm = lines.slice(1, closeIdx).join("\n");
+  const hasName = /^name:/m.test(fm);
+  if (/^(tools|disallowedTools):/m.test(fm)) {
+    if (hasName) {
+      warn("frontmatter already declares tools/disallowedTools — skipping permission translation");
+      return content;
+    }
+    warn("frontmatter already declares tools/disallowedTools — skipping permission translation; inserting required name only");
+    return [...lines.slice(0, 1), `name: ${stem}`, ...lines.slice(1)].join("\n");
+  }
+  const rules = parsePermissionRules(lines, closeIdx);
+  const tools = new Set(), denied = new Set(), dropped = new Set();
+  let hasSkillAllow = false, warnedSubagent = false;
+  for (const r of rules) {
+    if (!r.action || !r.effect) continue;
+    if (r.action === "skill") {
+      if (r.effect === "allow") hasSkillAllow = true;
+      continue; // skill gating has no ZCode frontmatter equivalent — never emitted
+    }
+    if (r.action === "subagent") {
+      if (!warnedSubagent) { warn("subagent rules dropped — ZCode subagents cannot spawn subagents"); warnedSubagent = true; }
+      continue;
+    }
+    const tool = ZCODE_TOOL_MAP[r.action];
+    if (!tool || r.resource !== "*" || !["allow", "deny"].includes(r.effect)) {
+      dropped.add(`${r.action}(${r.resource ?? "*"})`);
+      continue;
+    }
+    if (r.effect === "deny") denied.add(tool);
+    else tools.add(tool);
+  }
+  for (const t of denied) tools.delete(t); // deny wins
+  if (hasSkillAllow) {
+    tools.clear(); // exhaustive allowlist — a partial one would lock skills out
+    warn("tools: omitted — ZCode tools: allowlists are exhaustive and the skill tool is not a proven member; emitting a partial list would lock skills out (denies still carried by disallowedTools:)");
+  }
+  if (dropped.size) warn(`no ZCode agent-frontmatter equivalent — dropped: ${[...dropped].sort().join(", ")}`);
+  // steps→maxTurns rename is FRONTMATTER-SCOPED: bodies carry fenced frontmatter
+  // examples (opencode-tooling-subagent.md:167 teaches `steps: 5` in a ```yaml
+  // block) and a whole-document replace silently mutates them (#581 review —
+  // learning: frontmatter-key-rewrites-scope-to-frontmatter-slice).
+  const needsRename = /^steps:(\s*)(\S+)/m.test(fm);
+  if (!tools.size && !denied.size && hasName && !hasSkillAllow && !needsRename) return content;
+  const insert = [];
+  if (!hasName) insert.push(`name: ${stem}`);
+  if (tools.size) insert.push("tools:", ...[...tools].sort().map((t) => `  - ${t}`));
+  if (denied.size) insert.push("disallowedTools:", ...[...denied].sort().map((t) => `  - ${t}`));
+  const fmLines = lines.slice(1, closeIdx).map((l) => l.replace(/^steps:(\s*)(\S+)/, "maxTurns:$1$2"));
+  return [...lines.slice(0, 1), ...insert, ...fmLines, ...lines.slice(closeIdx)].join("\n");
+}
+
 // minimal YAML subset parse of a permissions list from frontmatter lines:
 //   - action: <name> / resource: <glob> / effect: <allow|deny|ask>
 function parsePermissionRules(lines, closeIdx) {
@@ -1427,6 +1536,8 @@ async function cmdUpdate(args, opts) {
           wouldContent = kiloAgentContent(agent.content, () => {}); // warnings already surfaced at install
         } else if (cfg.agentMode === "claude-translate") {
           wouldContent = claudeAgentContent(agent.content, name, () => {}); // warnings already surfaced at install
+        } else if (cfg.agentMode === "zcode-translate") {
+          wouldContent = zcodeAgentContent(agent.content, name, () => {}); // warnings already surfaced at install
         } else {
           wouldContent = agent.content; // shared target: verbatim, unpinned (#453)
         }
@@ -1533,7 +1644,7 @@ async function main() {
     // EFFECTIVE project target (agents/claude downgrade to opencode).
     const found = detectInstalledHarnesses();
     if (!found.length)
-      die("'--target auto': no harness config directories detected. Searched: ~/.config/opencode, ~/.agents, ~/.claude, ~/.kimi-code, ~/.config/kilo — install a harness first, or pass --target <opencode|claude|agents|kimi|kilo>.", 2);
+      die("'--target auto': no harness config directories detected. Searched: ~/.config/opencode, ~/.agents, ~/.claude, ~/.kimi-code, ~/.config/kilo, ~/.zcode, ~/.copilot — install a harness first, or pass --target <opencode|claude|agents|kimi|kilo|zcode|copilot>.", 2);
     console.error(`--target auto: detected ${found.join(", ")}`);
     let targets = found;
     if (opts.project) {
@@ -1728,6 +1839,14 @@ SCOPE
   Kilo target (--target kilo): Kilo Code dirs ~/.config/kilo/agent + ~/.kilo/skills/
   (user), .kilo/{agents,skills}/ (project); permissions translate additively to a
   permission: map (lossy — unmapped rules dropped with a warning).
+  Zcode target (--target zcode): ZCode dirs ~/.zcode/{agents,skills}/ (user scope
+  only — the subagents Beta is user-level; project installs use the opencode
+  target). Permissions translate additively to tools/disallowedTools (lossy);
+  subagent rules drop (ZCode forbids nested subagents); steps: renames to
+  maxTurns:; tools: is omitted for skill-allow agents (exhaustive allowlists).
+  Copilot target (--target copilot): agents ~/.copilot/agents/ (user),
+  .claude/agents/ + .github/skills/ (project); claude-format translation
+  (lossy — same as --target claude).
   Claude target (--target claude): agents now install too — ~/.claude/agents/ with
   a tools/disallowedTools allowlist translated from permissions (lossy — unmapped
   rules dropped with a warning; #457).
@@ -1758,7 +1877,7 @@ FLAGS
   --prune              remove opencode-init-owned entries absent from the new set
   --permit             (user scope) backup opencode.json + merge permissions-array rules (skill allows + build's subagent rules)
   --no-deps            (add) skip transitive dependency resolution
-  --target <t>         (add) install target: opencode (default), auto (detect installed harnesses), claude, agents (shared ~/.agents/), kimi, kilo, or both (--format is a deprecated alias)
+  --target <t>         (add) install target: opencode (default), auto (detect installed harnesses), claude, agents (shared ~/.agents/), kimi, kilo, zcode, copilot, or both (--format is a deprecated alias)
 
 CONFIG MERGE SEMANTICS
   opencode MERGES config and UNIONS agents/skills across ~/.config/opencode and

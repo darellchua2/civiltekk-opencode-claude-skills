@@ -59,13 +59,9 @@ The chosen strategy's three layers, and the rule that makes them coherent:
 2. **Install-time composition** — per-target overlay fragments appended by a single shared helper at write time, on both agent write paths (npx `installer/init.mjs` and `deploy/setup.sh` → `installer/resolve-models.mjs`). Spec: `docs/subagent-portability-contract.md`.
 3. **Runtime fallbacks** — one-line degrade paths in the LCD for model availability, granted permissions, and MCP state.
 
-### Planned targets — not composable
+### Planned targets — status
 
-**ZCode and Copilot are documented-only.** The installer's `TARGETS` table (installer/init.mjs) has no rows for them; overlay files for targets without a composition path would be silently-uncomposed dead files (guard-blocked). Porting them (zcode/copilot `TARGETS` rows + composition paths, kimi/kilo overlays) is the "Portability phase 2" follow-up. Until then:
-
-- **ZCode**: import skills via its Claude-compatible importer; agents have no install path — the LCD core's `Other/none:` fallback is the contract surface. Note ZCode forbids nested subagents entirely.
-- **Copilot**: reads `~/.claude/agents/` natively, so the existing `claude` target's output already covers VS Code — zero new code, by design.
-- **pi**: documented-only by philosophy — no native subagents; the LCD core + fallback row is its entire surface; delegation routes through extensions or RPC/SDK embedding (pi.dev/docs/latest).
+Shipped as composable since #581: **zcode** (user scope only — `~/.zcode/{agents,skills}/`; the subagents Beta documents no workspace load path; translator deviations: subagent rules dropped per the nesting ban, `tools:` omitted for skill-allow sources per exhaustive allowlists, `steps:`→`maxTurns:`) and **copilot** (user `~/.copilot/agents/`; project `.claude/agents/` + `.github/skills/` — the per-content-type documented VS Code workspace dirs; claude-translate reuse). Still **documented-only**: **pi** (no native subagents; the LCD core + fallback row is its entire surface; delegation routes through extensions or RPC/SDK embedding per pi.dev/docs/latest), **codex** (`.toml` agent profiles — different definition format), **M365 Copilot** (declarative agents — different paradigm).
 
 ## Per-harness sources
 
