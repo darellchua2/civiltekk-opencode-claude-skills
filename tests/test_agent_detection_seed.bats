@@ -21,9 +21,13 @@ seed_env() {
 }
 
 @test "detection_lists_all_six_agents" {
-  local d
+  local d count
   d="$(mktemp -d)"
-  HOME="$d" PATH="$d/emptybin:$PATH" bash -c "source '$SETUP_SH' >/dev/null 2>&1; detect_installed_agents" 2>/dev/null | grep -cE '^  [✓✗] (opencode|pi|codex|claude|kimi|kilo): '
+  # Locale-safe: (✓|✗) alternation byte-matches where a [✓✗] class would
+  # not under LC_ALL=C; count pinned at exactly 6 (a lone grep -c in the
+  # last pipeline position only asserts >= 1).
+  count=$(HOME="$d" PATH="$d/emptybin:$PATH" bash -c "source '$SETUP_SH' >/dev/null 2>&1; detect_installed_agents" 2>/dev/null | grep -cE '^  (✓|✗) (opencode|pi|codex|claude|kimi|kilo): ')
+  [ "$count" -eq 6 ]
   rm -rf "$d"
 }
 
@@ -121,5 +125,31 @@ seed_env() {
   run node "$SEED_MJS" --config "$d/models.json"
   [ "$status" -ne 0 ]
   grep -qF '{broken' "$d/models.json"
+  rm -rf "$d"
+}
+
+@test "pi_seed_rerun_is_byte_stable" {
+  local d sum1 sum2
+  d="$(mktemp -d)"
+  seed_env "$d"
+  mkdir -p "$d/.pi/agent"
+  printf '{"providers":{"openrouter":{"baseUrl":"https://openrouter.ai/api/v1","apiKey":"$OR_KEY"}}}' > "$d/.pi/agent/models.json"
+  HOME="$d" PATH="$d/bin:$PATH" bash -c "source '$SETUP_SH' >/dev/null 2>&1; PI_INSTALLED=true; CODEX_INSTALLED=false; ZAI_API_KEY=fakekey1234567890; seed_pi_provider" >/dev/null 2>&1
+  sum1=$(md5sum "$d/.pi/agent/models.json" | cut -d' ' -f1)
+  HOME="$d" PATH="$d/bin:$PATH" bash -c "source '$SETUP_SH' >/dev/null 2>&1; PI_INSTALLED=true; CODEX_INSTALLED=false; ZAI_API_KEY=fakekey1234567890; seed_pi_provider" >/dev/null 2>&1
+  sum2=$(md5sum "$d/.pi/agent/models.json" | cut -d' ' -f1)
+  [ "$sum1" = "$sum2" ]
+  grep -qF '"apiKey": "$OR_KEY"' "$d/.pi/agent/models.json"
+  rm -rf "$d"
+}
+
+@test "codex_dotted_key_definition_skips_append" {
+  local d
+  d="$(mktemp -d)"
+  seed_env "$d"
+  mkdir -p "$d/.codex"
+  printf 'model_providers.zai.base_url = "https://my-proxy"\n' > "$d/.codex/config.toml"
+  HOME="$d" PATH="$d/bin:$PATH" bash -c "source '$SETUP_SH' >/dev/null 2>&1; CODEX_INSTALLED=true; PI_INSTALLED=false; ZAI_API_KEY=fakekey1234567890; seed_codex_provider" >/dev/null 2>&1
+  [ "$(wc -l < "$d/.codex/config.toml")" -eq 1 ]
   rm -rf "$d"
 }

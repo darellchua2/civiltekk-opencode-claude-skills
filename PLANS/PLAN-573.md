@@ -136,3 +136,13 @@ GATE 5245a2b tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
 GATE 586063f tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
 GATE 4176822 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
 GATE 31f035a tier=full lint=t typecheck=n.a build=- unit=t e2e=n.a
+
+## Review Record (Step 9)
+
+code-review-subagent: 0 Critical / 3 Major / 4 Minor. All Majors fixed:
+1. test 1 count assertion (≥1 → -eq 6) + LC_ALL=C-safe `(✓|✗)` alternation
+2. `export ZAI_API_KEY` before the service restart (prompted keys were shell-local; verified via stub env probe)
+3. codex endpoint documented with first-party source (Z.AI devpack: OpenAI Responses → api/v1) + append wrapped in success check
+Minors fixed: dotted-key duplicate-table guards, pi re-run byte-stability test, dotted-key guard test. mjs first-run formatting normalization accepted (reviewer NOTE). Requirements gaps resolved on the reviewer's recommended answers (endpoint gap closed by primary-source citation; banner placement accepted; pi flag verification opportunistic-non-fatal).
+LEARNINGS captured: grep-c-last-in-pipeline-is-at-least-one-pin (anti-patterns), export-captured-secrets-before-daemon-restart (patterns).
+GATE f214f7f tier=full lint=t typecheck=n.a build=- unit=t e2e=n.a

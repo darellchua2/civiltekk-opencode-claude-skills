@@ -3979,20 +3979,27 @@ seed_codex_provider() {
         echo "[DRY-RUN] Would append Z.AI provider block to ${codex_config}"
         return 0
     fi
-    if grep -q '^\[model_providers\.zai\]' "$codex_config" 2>/dev/null; then
+    if grep -q '^\[model_providers\.zai\]' "$codex_config" 2>/dev/null \
+        || grep -q '^model_providers\.zai\.' "$codex_config" 2>/dev/null; then
         log_info "codex config already defines [model_providers.zai] - leaving ${codex_config} untouched"
         return 0
     fi
-    if grep -q '^\[profiles\.zai\]' "$codex_config" 2>/dev/null; then
+    if grep -q '^\[profiles\.zai\]' "$codex_config" 2>/dev/null \
+        || grep -q '^profiles\.zai\.' "$codex_config" 2>/dev/null; then
         log_info "codex config already defines [profiles.zai] - leaving ${codex_config} untouched"
         return 0
     fi
     mkdir -p "${HOME}/.codex"
-    cat >> "$codex_config" <<'EOF'
+    if cat >> "$codex_config" <<'EOF'
 
 # --- Z.AI provider (added by opencode setup, #573) ---
 # codex supports wire_api = "responses" only, so base_url points at Z.AI's
-# OpenAI Responses endpoint (NOT the PAAS chat-completions base pi uses).
+# OpenAI Responses endpoint. Source of truth for the endpoint (verified
+# 2026-09-26): Z.AI devpack docs "Coding Endpoint" table lists
+#   Protocol "OpenAI Responses" -> base https://api.z.ai/api/v1
+# (https://docs.z.ai/devpack/tool/others). NOT the PAAS chat-completions
+# base pi uses (api/paas/v4 speaks openai-completions, not Responses).
+# If Z.AI revises this, update here + tests + README together.
 # env_key names the env var codex reads per invocation - the key itself is
 # never stored in this file.
 [model_providers.zai]
@@ -4005,7 +4012,11 @@ env_key = "ZAI_API_KEY"
 model_provider = "zai"
 model = "glm-5.3"
 EOF
-    log_success "codex: zai provider appended to ${codex_config} (activate: codex --profile zai)"
+    then
+        log_success "codex: zai provider appended to ${codex_config} (activate: codex --profile zai)"
+    else
+        log_warn "codex: failed to append Z.AI provider block to ${codex_config} (non-fatal)"
+    fi
     return 0
 }
 
@@ -4140,6 +4151,11 @@ setup_provider_credentials() {
     # bounded — a failed restart never fails setup. Only reached on the path
     # where a key was seeded this run (earlier returns skip it by design).
     if command_exists opencode; then
+        # The restarted service inherits the CLI's environment, so the key
+        # must be EXPORTED here — a read-captured (prompted) ZAI_API_KEY is
+        # shell-local and otherwise never reaches the spawned service, while
+        # the success log below would still print (review #573 Major 2).
+        [ -n "${ZAI_API_KEY:-}" ] && export ZAI_API_KEY
         local restart_cmd=(opencode service restart)
         command_exists timeout && restart_cmd=(timeout 15 "${restart_cmd[@]}")
         if [ "$DRY_RUN" = true ]; then
