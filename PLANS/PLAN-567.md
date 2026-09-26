@@ -7,10 +7,10 @@
 ## Acceptance Criteria
 
 - [x] `add <name> --prune` (user scope), `add <name> --project <dir> --prune`, and `add --all --prune` all exit non-zero naming the flag and pointing at the preset flow / prune-only mode / remove
-- [ ] Preset flow `--prune` and prune-only mode still work unchanged (existing tests stay green)
+- [x] Preset flow `--prune` and prune-only mode still work unchanged (existing tests stay green)
 - [x] No shipped caller passes `--prune` to `add` (setup.sh, setup.ps1, opencode_app, CI) — verified on origin/main @ 2cace4b (re-verified in-tree at Step 5)
 - [x] Help text documents that `--prune` is preset-flow/prune-only
-- [ ] New tests per path; full `bats tests/` green
+- [x] New tests per path; full `bats tests/` green
 
 ## Dependency & Consumer Map
 
@@ -50,10 +50,11 @@
 
 ### Phase 2: Full exit gate
 
-- [ ] **2.1** Full `bats tests/`.
+- [x] **2.1** Full `bats tests/`.
     — **Why:** ticket exit gate — full tier.
     — **Done when:** exit 0; `GATE <short-sha> tier=full` appended to the trace below.
     — **Consumers affected:** Step 9/10 citations.
+    — **Done:** bats tests/ → 577 ok / 0 not ok, exit 0; files: none; fixes: none
 
 ## Technical Notes
 
@@ -69,3 +70,6 @@ None (no `blocked-by:`).
 - **Caller regression** (a script passing `--prune` to add would now fail loudly): mitigated by the Step 5 caller sweep — setup.sh/ps1/opencode_app/CI verified clean; a loud failure is the desired outcome for that case anyway.
 
 ## Gate Trace
+
+GATE 26e2310 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 8edd0c2 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
