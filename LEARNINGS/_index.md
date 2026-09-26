@@ -1716,3 +1716,27 @@
 - **Scope**: project
 - **Date**: 2026-09-26
 - **Summary**: Translator key renames must scope to the frontmatter slice — agent bodies carry fenced frontmatter examples (opencode-tooling-subagent.md:167 teaches steps: 5) that whole-document regexes silently mutate; rename within lines.slice(1, closeIdx) and grep the corpus for off-frontmatter keys first (#581 code review Major)
+
+### Guard test literals are plan consumers
+
+- **File**: `LEARNINGS/anti-patterns/guard-test-literals-are-plan-consumers.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: Grep tests/*.bats for planned artifact names/counts before writing done-whens — #582's plan missed three guard literals in one step-set (requiresSkills exact-map, lean 72, presets 9) (#582 plan review)
+
+### Preset closure over new requiresSkills handoffs
+
+- **File**: `LEARNINGS/decisions/preset-closure-over-new-requireskills-handoffs.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: Opt-in experiment skill groupings ride preset member lists (8-skill closure), never new dependency-map requiresSkills edges — the #437 guard asserts the map's shape exactly (#582 plan review C1)
+
+### opencode v2 commands: agent/subagent/model semantics
+
+- **File**: `LEARNINGS/solutions/opencode-v2-commands-agent-subagent-semantics.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: v2 `commands` key; `agent` + explicit `subagent:` forces execution mode; model precedence command > agent > session — pin model identically per A/B arm and record the resolved model (#582 plan review M3)
