@@ -3949,10 +3949,61 @@ seed_pi_provider() {
     return 0
 }
 
+# Seed the Z.AI provider into the codex CLI's config (#573). Guarded TOML
+# append — never rewrites user content, never sets the global default model
+# (activation is opt-in via `codex --profile zai`). Guards on BOTH section
+# headers: appending a table that already exists is a TOML parse error, so a
+# user-defined zai provider or profile skips with a note instead of
+# corrupting the file. Non-fatal on every path.
+seed_codex_provider() {
+    if [ "${CODEX_INSTALLED:-false}" != true ]; then
+        log_info "codex not detected - skipping Z.AI provider seed"
+        return 0
+    fi
+    if [ -z "${ZAI_API_KEY:-}" ]; then
+        log_warn "codex detected but no ZAI_API_KEY captured - skipping provider seed"
+        return 0
+    fi
+    local codex_config="${HOME}/.codex/config.toml"
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Would append Z.AI provider block to ${codex_config}"
+        return 0
+    fi
+    if grep -q '^\[model_providers\.zai\]' "$codex_config" 2>/dev/null; then
+        log_info "codex config already defines [model_providers.zai] - leaving ${codex_config} untouched"
+        return 0
+    fi
+    if grep -q '^\[profiles\.zai\]' "$codex_config" 2>/dev/null; then
+        log_info "codex config already defines [profiles.zai] - leaving ${codex_config} untouched"
+        return 0
+    fi
+    mkdir -p "${HOME}/.codex"
+    cat >> "$codex_config" <<'EOF'
+
+# --- Z.AI provider (added by opencode setup, #573) ---
+# codex supports wire_api = "responses" only, so base_url points at Z.AI's
+# OpenAI Responses endpoint (NOT the PAAS chat-completions base pi uses).
+# env_key names the env var codex reads per invocation - the key itself is
+# never stored in this file.
+[model_providers.zai]
+name = "Z.AI"
+base_url = "https://api.z.ai/api/v1"
+env_key = "ZAI_API_KEY"
+
+# Opt-in activation: `codex --profile zai` (global default model untouched).
+[profiles.zai]
+model_provider = "zai"
+model = "glm-5.3"
+EOF
+    log_success "codex: zai provider appended to ${codex_config} (activate: codex --profile zai)"
+    return 0
+}
+
 # Plan-step entry: seed the captured provider key into every detected agent
 # (#573). Future agents (claude, kimi, kilo) join as additional calls here.
 seed_agent_keys() {
     seed_pi_provider
+    seed_codex_provider
     return 0
 }
 

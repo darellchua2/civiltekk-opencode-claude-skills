@@ -65,10 +65,11 @@ No cross-module runtime consumers beyond this repo (no skill/, agents/, installe
 
 ### Phase 3: codex provider seeding
 
-- [ ] **3.1** Add `seed_codex_provider()` to `deploy/setup.sh`: gated on `CODEX_INSTALLED` + captured key; grep-guarded append of a marked TOML block to `~/.codex/config.toml` — `[model_providers.zai]` (`name`, `base_url = "https://api.z.ai/api/v1"`, `env_key = "ZAI_API_KEY"`) + `[profiles.zai]` (`model_provider = "zai"`, `model = "glm-5.3"`); never sets global `model`/`model_provider`; `mkdir -p ~/.codex` on first seed; dry-run prints the block; called from the same `seed-agent-keys` plan step
+- [x] **3.1** Add `seed_codex_provider()` to `deploy/setup.sh`: gated on `CODEX_INSTALLED` + captured key; grep-guarded append of a marked TOML block to `~/.codex/config.toml` — `[model_providers.zai]` (`name`, `base_url = "https://api.z.ai/api/v1"`, `env_key = "ZAI_API_KEY"`) + `[profiles.zai]` (`model_provider = "zai"`, `model = "glm-5.3"`); never sets global `model`/`model_provider`; `mkdir -p ~/.codex` on first seed; dry-run prints the block; called from the same `seed-agent-keys` plan step
     — **Why:** codex only supports `wire_api = "responses"` now and Z.AI's Responses endpoint is `/api/v1`; the profile scoping keeps the user's default provider untouched (opt-in via `codex --profile zai`); grep guard + append-only is idempotent and never rewrites user TOML
     — **Done when:** With a stubbed `codex` and a pre-seeded config.toml containing user content, the block appends once; second run is a no-op; `--dry-run` leaves the file unchanged
     — **Consumers affected:** `~/.codex/config.toml` (user file, append-only); full-mode plan order
+    — **Done:** function added beside seed_pi_provider; seed_agent_keys now calls both; smoke green on absent-no-op, dry-run intent-only (re-proven after a mis-scripted first smoke — the helper had not set DRY_RUN; the setup.sh gate itself held), append-preserves-user-content, idempotent second call, user-defined-section skip; guards on BOTH section headers (duplicate TOML tables are parse errors); files: deploy/setup.sh; fixes: none (test-script artifact, not code)
 
 ### Phase 4: opencode service restart after key seeding
 
@@ -126,3 +127,4 @@ No cross-module runtime consumers beyond this repo (no skill/, agents/, installe
 
 GATE 9b0cffa tier=light lint=t typecheck=n.a build=- unit=n.a e2e=n.a
 GATE b47fe21 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
+GATE 5245a2b tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
