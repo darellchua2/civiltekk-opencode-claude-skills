@@ -57,4 +57,4 @@ Triaged to zero reviewers per Step 7: docs-only diff plus one help-string litera
 
 ## Gate Trace
 
-GATE <full-sha> tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 67eb561 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
