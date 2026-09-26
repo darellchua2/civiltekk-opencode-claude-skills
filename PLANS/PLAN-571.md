@@ -112,5 +112,13 @@ None — self-contained; no blocked-by tickets (#564/#563 touch different surfac
 - INCONCLUSIVE: ps1 runtime proof (no pwsh on host) — covered statically by test_setup_ps1_vars.bats undefined-variable audit + test_help_parity.bats pins; shellcheck not installed (bash -n green).
 - Gate fix iterations: 2 (bats for-list syntax → array form; Help fast-path pins bare `--help`, not a quoted translation arm).
 
+**REVIEW (Step 9)**
+- code-review-subagent: approve — 0 BLOCK, 1 Major WARN, 2 NOTE; exhaustive 31/31 flag-arm + 7/7 subcommand parity table PASS.
+- Fixed (Major): test_help_parity flag-family test extended to ALL arms with same-line pairing greps (catches cross-wiring; resolves violated pattern derived-consistency-pins).
+- Fixed (NOTE): `-RollbackTarget` without `-Rollback` now still forwards `--rollback <target>` (`-or` guard).
+- Skipped (NOTE, reviewer-accepted): wslpath idiom dedup at 2 occurrences (Rule of Three).
+- LEARNINGS candidates: 0 (qualifying finding mapped to existing derived-consistency-pins convention).
+
 **GATE MEMO**
 GATE 730b27d tier=full lint=n/a(bash -n ok) typecheck=n/a(no TS) build=n/a(config repo) unit=t(584/584) e2e=n/a(no frontend)
+GATE review-fix tier=full lint=n/a(bash -n ok) typecheck=n/a build=n/a unit=t(584/584) e2e=n/a

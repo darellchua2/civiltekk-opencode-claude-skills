@@ -55,32 +55,53 @@ INIT_MJS="installer/init.mjs"
   [ "$help_ln" -lt "$gate_ln" ]
 }
 
-@test "setup_ps1_maps_every_setup_sh_flag_family" {
-  # One param-read + one translation-arm grep per flag that had no ps1
-  # mapping before #571. The exhaustive setup.sh-parse-arm ↔ ps1-param
-  # checklist is review-verified (PLAN-571 3.1 Done-when).
+@test "setup_ps1_maps_every_setup_sh_flag_arm_same_line" {
+  # Review #571 finding: the delta-only, name/flag-separate greps could not
+  # catch a cross-wired arm or a re-dropped pre-existing flag (the #465/#466/
+  # #469 class). Pin EVERY arm: the line reading `if ($Name)` must carry that
+  # flag's literal on the SAME line; value flags ride @("--flag", $Name) pairs.
   local pairs=(
+    'Quick:--quick'
+    'SkillsOnly:--skills-only'
+    'DryRun:--dry-run'
+    'Yes:--yes'
     'Verbose:--verbose'
+    'Update:--update'
     'CheckUpdate:--check-update'
+    'EnableAutoUpdate:--enable-auto-update'
+    'DisableAutoUpdate:--disable-auto-update'
+    'ScheduleUpdate:--schedule-update'
+    'Select:--select'
+    'CheckCatalog:--check-catalog'
     'Peonping:--peonping'
     'KeepBackups:--keep-backups'
-    'ScheduleUpdate:--schedule-update'
     'NoZipBackup:--no-zip-backup'
+    'Provider:--provider'
+    'ModelsOnly:--models-only'
+    'Force:--force'
+    'Migrate:--migrate'
     'Mix:--mix'
+    'EnablePack:--enable-pack'
+    'SkillProfile:--skill-profile'
     'EnableLocalLlm:--enable-local-llm'
     'EnableVllm:--enable-vllm'
     'LocalLlm:--local-llm'
     'Vllm:--vllm'
-    'EnableAutoUpdate:--enable-auto-update'
-    'DisableAutoUpdate:--disable-auto-update'
+    'ListItems:--list-items'
+    'SavePreset:--save-preset'
+    'Preset:--preset'
   )
-  local pair name flag
+  local pair name flag line
   for pair in "${pairs[@]}"; do
     name="${pair%%:*}"
     flag="${pair##*:}"
-    grep -qF "\$$name" "$SETUP_PS1" || { echo "param not read: \$$name"; return 1; }
-    grep -qF "\"$flag\"" "$SETUP_PS1" || { echo "flag not forwarded: $flag"; return 1; }
+    line=$(grep -F "if (\$$name)" "$SETUP_PS1" | head -1)
+    [ -n "$line" ] || { echo "no translation arm reads \$$name"; return 1; }
+    echo "$line" | grep -qF -- "\"$flag\"" || { echo "\$$name arm does not forward $flag: $line"; return 1; }
   done
+  # Rollback arm is multi-line: pin its value pair and bare form directly.
+  grep -qF '@("--rollback", $RollbackTarget)' "$SETUP_PS1"
+  grep -qF '$forward += "--rollback"' "$SETUP_PS1"
   # -Help rides the fast-path (bare --help literal), not the $forward table.
   grep -qF '$setupSh --help' "$SETUP_PS1"
 }

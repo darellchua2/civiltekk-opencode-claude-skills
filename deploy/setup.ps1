@@ -136,7 +136,10 @@ if ($LocalLlm)         { $forward += "--local-llm" }
 if ($Vllm)             { $forward += "--vllm" }
 if ($EnableAutoUpdate) { $forward += "--enable-auto-update" }
 if ($DisableAutoUpdate){ $forward += "--disable-auto-update" }
-if ($Rollback) {
+if ($Rollback -or $RollbackTarget) {
+    # -or: `-RollbackTarget latest` alone still means rollback-latest —
+    # dropping the target silently (review NOTE, #571) reproduced the exact
+    # silent-drop class this ticket closes.
     if ($RollbackTarget) { $forward += @("--rollback", $RollbackTarget) }
     else { $forward += "--rollback" }
 }
