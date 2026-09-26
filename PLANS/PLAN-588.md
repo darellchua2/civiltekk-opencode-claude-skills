@@ -8,9 +8,9 @@
 
 From the ticket's Expected behavior:
 
-- [ ] A re-run of `deploy/setup.sh` (full or quick path) with the credential already seeded in `~/.local/share/opencode/auth.json` AND the same key present in the environment is a credentials no-op: no re-seed, no `opencode service restart`, no interruption of a live opencode session.
-- [ ] A genuinely fresh or changed key still seeds every auth_id and still restarts the background service (#573 behavior preserved), and setup **announces the restart (and its live-session impact) before performing it**.
-- [ ] The pre-existing idempotency path (env var unset + already seeded → skip without prompting) keeps working unchanged.
+- [x] A re-run of `deploy/setup.sh` (full or quick path) with the credential already seeded in `~/.local/share/opencode/auth.json` AND the same key present in the environment is a credentials no-op: no re-seed, no `opencode service restart`, no interruption of a live opencode session.
+- [x] A genuinely fresh or changed key still seeds every auth_id and still restarts the background service (#573 behavior preserved), and setup **announces the restart (and its live-session impact) before performing it**.
+- [x] The pre-existing idempotency path (env var unset + already seeded → skip without prompting) keeps working unchanged.
 
 ## Dependency & Consumer Map
 
@@ -67,10 +67,11 @@ No config (`opencode.json`), agent, skill, or MCP surfaces change — the AGENTS
 
 ### Phase 3: Verification gate
 
-- [ ] **3.1** Run the full gate per `verification-loop-skill` tiering: `bash -n deploy/setup.sh`, `bats tests/test_provider_credentials.bats`, `bats tests/test_help_parity.bats`, `bats tests/test_dry_run_leaks.bats` (a dry-run-adjacent path was touched), then the repo's broader test entry per discovery. Fix any failure in the same phase's commit; record the gate memo.
+- [x] **3.1** Run the full gate per `verification-loop-skill` tiering: `bash -n deploy/setup.sh`, `bats tests/test_provider_credentials.bats`, `bats tests/test_help_parity.bats`, `bats tests/test_dry_run_leaks.bats` (a dry-run-adjacent path was touched), then the repo's broader test entry per discovery. Fix any failure in the same phase's commit; record the gate memo.
     — **Why:** Lint + tests on the touched path are the repo's verification contract (no package.json scripts — bats + `bash -n` are the gate).
     — **Done when:** All listed commands exit 0; gate memo appended with `tier=full` for the exit gate.
     — **Consumers affected:** PR gate citation (Step 10a).
+    — **Done:** `bash -n deploy/setup.sh` OK; full CI-parity suite 47/47 files, 632/632 tests green (incl. tests/test_provider_credentials.bats 12/12, test_help_parity.bats, test_dry_run_leaks.bats); files: PLANS/PLAN-588.md; fixes: none
 
 ## Technical Notes
 
@@ -97,3 +98,6 @@ WORK LOG: 1.1 smoke — same-key: "credentials unchanged" log + zero opencode in
 
 GATE 75ac71e tier=light lint=n.a typecheck=n.a build=- unit=t(12/12 tests/test_provider_credentials.bats) e2e=n.a
 Note: changed file is a .bats file — no applicable bash linter in repo/CI (CI runs `bash -n` on deploy/setup.sh only, never tests/); the bats run is the parse+execute check. deploy/setup.sh untouched this phase (Phase 1 tree already gated full).
+
+GATE 3f2a7b8 tier=full lint=t(bash -n) typecheck=n.a build=n.a unit=t(632/632, 47/47 files) e2e=n.a
+Note: ticket exit gate — full CI-parity sequence (bats tests/*.bats + bash -n deploy/setup.sh). build=n.a: template repo defines no build step in CI; the suite substitutes per verification-loop §command discovery. e2e=n.a: backend-only change (E2E rule).
