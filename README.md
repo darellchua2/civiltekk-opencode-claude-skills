@@ -41,11 +41,13 @@ npx github:darellchua2/civiltekk-opencode-claude-skills remove solid-principles-
 | Target | Destination | Notes |
 |--------|-------------|-------|
 | `opencode` (default) | `~/.config/opencode/{skills,agents}/` | Full opencode compat (model injection, strict-allowlist detection) |
-| `auto` | all detected harness config roots | Probes `~/.config/opencode`, `~/.agents`, `~/.claude`, `~/.kimi-code`, `~/.config/kilo` — installs to every hit (`add` only; none found → error); `--dry-run` emits one aggregated JSON doc |
+| `auto` | all detected harness config roots | Probes `~/.config/opencode`, `~/.agents`, `~/.claude`, `~/.kimi-code`, `~/.config/kilo`, `~/.zcode`, `~/.copilot` — installs to every hit (`add` only; none found → error); `--dry-run` emits one aggregated JSON doc |
 | `claude` | `~/.claude/skills/` · agents `~/.claude/agents/` | Skills verbatim (`model:` stripped); agents get additive `tools:`/`disallowedTools:` translation |
 | `agents` | `~/.agents/{skills,agents}/` | Cross-tool shared dir — skills read by Kimi Code and pi, agents Kimi-only (pi has no agents concept); verbatim copies |
 | `kimi` | `~/.kimi-code/{skills,agents}/` (user) · `.kimi-code/` (project) | Kimi Code native dirs; additive frontmatter translation |
 | `kilo` | `~/.config/kilo/agent/` + `~/.kilo/skills/` (user) · `.kilo/` (project) | Kilo Code native dirs; additive `permission:`-map translation |
+| `zcode` | `~/.zcode/{skills,agents}/` (user only) | ZCode dirs; additive `tools:`/`disallowedTools:` translation with ZCode deviations (subagent rules dropped — nesting ban; `tools:` omitted for skill-allow agents — exhaustive allowlists; `steps:`→`maxTurns:`). Project installs use the opencode target (Beta is user-level) |
+| `copilot` | agents `~/.copilot/agents/` (user) · `.claude/agents/` (project) · skills `.github/skills/` (project) | Claude-format translation (same as `claude`); project dirs are the per-content-type documented VS Code workspace locations |
 | `both` | opencode + Claude Code paths | Agents install to opencode only |
 
 `--project` installs into `./.opencode/` (agents, `opencode.json`, manifests — full-service config generation) with skills going to `./.agents/skills/` (Agent Skills standard dir natively discovered by OpenCode and pi) instead of user scope. `--no-deps` skips declared skill prerequisites.
