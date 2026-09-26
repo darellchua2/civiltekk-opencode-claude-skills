@@ -524,7 +524,10 @@ export async function writeInstall(sel, opts, reg, depMap) {
   };
 
   if (dry) {
-    process.stdout.write(JSON.stringify({ dryRun: true, project, ...manifest, agents: sel.agents, skills: sel.skills, mcps: sel.mcps, ...(pluginFiles.length ? { plugins: pluginFiles } : {}), warnings: sel.warnings, conflicts: plan.conflicts.map((c) => c.path) }, null, 2) + "\n");
+    const doc = { dryRun: true, project, ...manifest, agents: sel.agents, skills: sel.skills, mcps: sel.mcps, ...(pluginFiles.length ? { plugins: pluginFiles } : {}), warnings: sel.warnings, conflicts: plan.conflicts.map((c) => c.path) };
+    // #568: --target auto --dry-run collects docs instead of printing (one aggregated doc)
+    if (opts.jsonSink) { opts.jsonSink.push(doc); return; }
+    process.stdout.write(JSON.stringify(doc, null, 2) + "\n");
     return;
   }
 
@@ -863,7 +866,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
     const destinations = {};
     for (const t of activeTargets(target))
       destinations[t] = TARGETS[t].agentsDir ? dirname(TARGETS[t].agentsDir) : TARGETS[t].skillsDir;
-    process.stdout.write(JSON.stringify({
+    const doc = {
       dryRun: true,
       scope: "user",
       target,
@@ -875,7 +878,10 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
       mcps: sel.mcps,
       ...(pluginFiles.length ? { plugins: pluginFiles } : {}),
       warnings: sel.warnings,
-    }, null, 2) + "\n");
+    };
+    // #568: --target auto --dry-run collects docs instead of printing (one aggregated doc)
+    if (opts.jsonSink) { opts.jsonSink.push(doc); return; }
+    process.stdout.write(JSON.stringify(doc, null, 2) + "\n");
     return;
   }
 
@@ -1527,6 +1533,15 @@ async function main() {
     if (opts.project) {
       targets = [...new Set(found.map((t) => (TARGETS[t].projectSkillsDir ? t : "opencode")))];
     }
+    if (opts.dryRun) {
+      // #568: one aggregated doc (matches --target both's single-doc contract)
+      const sink = [];
+      for (const t of targets) {
+        await cmdAdd(opts.rest.slice(1), { ...opts, target: t, jsonSink: sink }, reg, depMap);
+      }
+      process.stdout.write(JSON.stringify({ dryRun: true, auto: true, scope: opts.project ? "project" : "user", targets: sink }, null, 2) + "\n");
+      return;
+    }
     for (const t of targets) {
       await cmdAdd(opts.rest.slice(1), { ...opts, target: t }, reg, depMap);
     }
@@ -1716,8 +1731,9 @@ SCOPE
   npx-skills divergences (deliberate): the scope default is USER here (npx
   skills defaults to project — use --project/-p), and installs are per-target
   COPIES (npx skills symlinks) because targets apply model/permission
-  translations. Multi-target --target auto --dry-run emits one JSON document
-  per resolved target, newline-separated (NDJSON); single-target stays one doc.
+  translations. A --target auto --dry-run emits ONE aggregated JSON document:
+  { dryRun, auto, scope, targets: [per-target docs] } — one shape regardless of
+  how many harnesses were detected.
 
 FLAGS
   -g, --global         user scope (default) — explicit npx-skills-compatible alias; cannot combine with --project

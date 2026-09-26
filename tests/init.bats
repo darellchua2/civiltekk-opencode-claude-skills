@@ -445,3 +445,62 @@ EOC
   [ "$status" -eq 2 ]
   echo "$output" | grep -q "'--prune' is not an add flag"
 }
+
+@test "--target auto --dry-run emits one aggregated doc, multi-detected (#568)" {
+  export HOME="$TMP_PROJ/home"
+  mkdir -p "$HOME/.agents" "$HOME/.claude"
+  run $INIT add tdd-workflow-skill --target auto --dry-run
+  [ "$status" -eq 0 ]
+  # bats merges stderr into $output — strip notices so python parses pure JSON
+  echo "$output" | sed -n '/^{/,$p' | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+assert d['dryRun'] is True and d['auto'] is True and d['scope'] == 'user', d
+assert len(d['targets']) == 2, d
+assert [t['target'] for t in d['targets']] == ['agents', 'claude'], d
+assert all(t['skills'] == ['tdd-workflow-skill'] for t in d['targets']), d
+"
+  [ ! -e "${HOME}/.agents/skills/tdd-workflow-skill" ]
+  [ ! -e "${HOME}/.claude/skills/tdd-workflow-skill" ]
+}
+
+@test "--target auto --dry-run wraps single-detected too (#568)" {
+  export HOME="$TMP_PROJ/home2"
+  mkdir -p "$HOME/.claude"
+  run $INIT add tdd-workflow-skill --target auto --dry-run
+  [ "$status" -eq 0 ]
+  echo "$output" | sed -n '/^{/,$p' | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+assert d['auto'] is True and len(d['targets']) == 1 and d['targets'][0]['target'] == 'claude', d
+"
+}
+
+@test "--target auto --project --dry-run aggregates deduped targets (#568)" {
+  export HOME="$TMP_PROJ/home3"
+  mkdir -p "$HOME/.agents" "$HOME/.claude"
+  run $INIT add tdd-workflow-skill --project "$TMP_PROJ" --target auto --dry-run
+  [ "$status" -eq 0 ]
+  echo "$output" | sed -n '/^{/,$p' | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+assert d['auto'] is True and d['scope'] == 'project', d
+assert len(d['targets']) == 1, d
+assert d['targets'][0]['dryRun'] is True, d
+"
+  [ ! -d "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
+  [ ! -e "${HOME}/.agents/skills/tdd-workflow-skill" ]
+}
+
+@test "explicit --target --dry-run keeps its plain unwrapped doc (#568)" {
+  export HOME="$TMP_PROJ/home4"
+  mkdir -p "$HOME/.claude"
+  run $INIT add tdd-workflow-skill --target claude --dry-run
+  [ "$status" -eq 0 ]
+  echo "$output" | sed -n '/^{/,$p' | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+assert d['dryRun'] is True and d['target'] == 'claude', d
+assert 'auto' not in d and 'targets' not in d, d
+"
+}
