@@ -34,6 +34,7 @@
 import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, dirname, basename } from "node:path";
+import { composeAgentBody } from "./overlay.mjs";
 
 // ─────────────────────────── arg parsing ────────────────────────────────
 const camel = (s) => s.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
@@ -401,10 +402,14 @@ async function main() {
   const doWrite = !O.dryRun || !!O.previewDir;
 
   // Render the complete resolved content (source .md with model: injected) for one agent.
+  // Composition (overlay append) runs BEFORE injectModel — injectModel touches only the
+  // frontmatter block, so the two write paths (this seam and init.mjs's transform-then-
+  // compose order) converge on identical composed bodies (#576 REQ-COMPOSE).
   async function renderAgent(r) {
     const srcPath = join(O.agentsSrc, r.stem + ".md");
     const content = await readFile(srcPath, "utf8");
-    return injectModel(content, newState[r.stem].model);
+    const composed = await composeAgentBody({ stem: r.stem, body: content, agentsSrc: O.agentsSrc, target: "opencode", agentMode: "model-injected", warn: (m) => console.error(`  overlay (${r.stem}): ${m}`) });
+    return injectModel(composed, newState[r.stem].model);
   }
 
   // Dry-run: dump ONE complete resolved .md so the user sees the full file with

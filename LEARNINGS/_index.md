@@ -1668,3 +1668,43 @@
 - **Scope**: project
 - **Summary**: Every rebase site in a workflow contract needs its force-push story (`--force-with-lease`) or the first resume dies non-fast-forward at the next phase push (#560 code review)
 - **Date**: 2026-09-25
+
+### Parallel write path bypasses composition hook
+
+- **File**: `LEARNINGS/anti-patterns/parallel-write-path-bypasses-composition-hook.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: A composition hook added to one writer of deployed agent bytes (init.mjs add loop) silently regresses the other (setup.sh → resolve-models.mjs renderAgent) — enumerate ALL writers in the Consumer Map and route them through one shared helper with a byte-identity assertion (#576 plan review, BLOCK-1)
+
+### Composable vs documented-only target matrix
+
+- **File**: `LEARNINGS/decisions/composable-vs-documented-target-matrix.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: Overlay suffixes are valid only for targets with a TARGETS row (opencode/claude/agents/kimi/kilo); zcode/copilot/codex/pi/M365 are documented-only until a composition path exists — dead overlay files are guard-blocked (#576 requirements relay, REQ-BIND)
+
+### Review targets must be read from disk
+
+- **File**: `LEARNINGS/anti-patterns/review-targets-must-be-read-from-disk.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: A re-typed prompt embed produced a false Major in #576 round 1 (on-disk PLAN was clean); reviewers must read the artifact from disk via a passed file path, never a verbatim re-type (#576 re-review)
+
+### Gate matrix must match seam capabilities
+
+- **File**: `LEARNINGS/anti-patterns/gate-matrix-must-match-seam-capabilities.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: Byte-identity gate iterating {opencode, claude} × both write-path seams was half-unsatisfiable — renderAgent is opencode-only; enumerate seam capabilities before writing the done-when (#576 re-review, New-2)
+
+### Container COPY ships new source subdirs into runtime dirs
+
+- **File**: `LEARNINGS/anti-patterns/container-copy-ships-new-source-subdirs.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: New subdirs under agents/ or skills/ ride the Dockerfile's wildcard COPY into the runtime agent-discovery dir — audit container COPY consumers alongside CLI/resolver writers when adding source subdirs (#576 code review; Dockerfile:80)

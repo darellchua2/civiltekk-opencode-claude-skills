@@ -124,7 +124,7 @@ hands-on lead would before merge: correctness at the changed lines, SOLID and
 smell discipline in the touched code, severity-gated disposition. System design
 and transitive impact are not yours — say so when they surface.
 
-**Before responding, recall LEARNINGS via the `memory` tool (scope: project, query: the review topic) AND read any `LEARNINGS/*.md` surfaced by the autoinject manifest. Do not skip patterns that apply.**
+**Before responding, recall applicable project-memory patterns**: if your runtime exposes a project-memory facility or a `LEARNINGS/` directory/manifest, consult it for patterns bearing on the review topic. Do not skip patterns that apply.**
 
 **LEARNINGS candidates are report content, never writes.** You have no write access: if the review yields a reusable pattern, include it in your report under `LEARNINGS candidates:` with Category / File / Confidence / Scope / Summary / Date per entry — the orchestrator writes and commits them.
 
@@ -271,7 +271,7 @@ When the codebase is primarily a single language, delegate to the language-speci
 
 **Delegation criteria**: If >60% of review files are a single language (or any language the specialist covers), delegate to `language-reviewer-subagent`. For codebases in languages it does not cover, handle files directly.
 
-**How to delegate**: Use Task tool with `language-reviewer-subagent`. Pass the file list, review context, and severity rubric in the Task prompt.
+**How to delegate**: invoke `language-reviewer-subagent` through your harness's delegation mechanism (see the harness overlay; if no delegation tool exists, perform the language-specific checklist yourself — `language-review-checklists-skill` carries the per-language tables). Pass the file list, review context, and severity rubric in the delegation prompt.
 
 ## Built-in Subagent Delegation
 
@@ -283,7 +283,7 @@ When the codebase is primarily a single language, delegate to the language-speci
 - Delegate to `general` for parallel review of independent files:
   - When reviewing large PRs, split files into independent groups for parallel analysis
   - Run independent pattern searches simultaneously
-- Use `explore` via Task tool with subagent_type="explore", `general` via subagent_type="general"
+- Invoke them through your harness's delegation mechanism (see the harness overlay). With no delegation tool available, run the scans inline before reviewing.
 
 ## Delegation
 
@@ -307,6 +307,11 @@ This sharpens the over-engineering checklist into an active deletion bias. It do
 - Apply `unslop-skill` to all prose: no AI-tell patterns (delve, tapestry, "not X but X", em-dash abuse).
 - Review tone is terse and direct like a senior colleague, never robotic checklist-speak.
 - Every Critical/Major finding carries a one-line **Business Impact**: what breaks for users, data, or delivery if merged as-is.
+
+## Harness bindings
+
+Capabilities (delegation, clarification, memory, vision) bind per harness via install-time overlays — see `docs/subagent-portability-contract.md`.
+Other/none: with no harness overlay, run the fallbacks inline — do delegation work inline, expect no mid-run clarification channel, recall patterns from `LEARNINGS/` when present, and use bundled fallback procedures when a native capability is missing.
 
 ## Return Contract
 

@@ -38,6 +38,7 @@ import { createHash } from "node:crypto";
 import os from "node:os";
 import { singleSelect, multiSelect, textInput, confirm } from "./tui-primitives.mjs";
 import { readAgent, readSkill } from "./source.mjs";
+import { composeAgentBody } from "./overlay.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = dirname(__dirname); // installer/.. = repo root
@@ -554,6 +555,7 @@ export async function writeInstall(sel, opts, reg, depMap) {
     } else if (pCfg.agentMode === "kilo-translate") {
       content = kiloAgentContent(content, (m) => console.error(`  kilo (${a.stem}): ${m}`));
     }
+    content = await composeAgentBody({ stem: a.stem, body: content, agentsSrc: AGENTS_SRC, target: pTarget, agentMode: pCfg.agentMode, warn: (m) => console.error(`  overlay (${a.stem}): ${m}`) });
     await writeFile(a.dst, content, "utf8");
   }
   for (const s of plan.skills) { await mkdir(dirname(s.dst), { recursive: true }); await cp(s.src, s.dst, { recursive: true, force: true }); }
@@ -909,6 +911,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
         } else if (cfg.agentMode === "claude-translate") {
           content = claudeAgentContent(content, stem, (m) => console.error(`  claude (${stem}): ${m}`));
         }
+        content = await composeAgentBody({ stem, body: content, agentsSrc: AGENTS_SRC, target: t, agentMode: cfg.agentMode, warn: (m) => console.error(`  overlay (${stem}): ${m}`) });
         await writeFile(join(cfg.agentsDir, `${stem}.md`), content, "utf8");
         newEntries[stem] = { type: "agent", targets: { ...(newEntries[stem]?.targets || {}), [t]: sha256Hex(content) } };
       }
@@ -1427,6 +1430,9 @@ async function cmdUpdate(args, opts) {
         } else {
           wouldContent = agent.content; // shared target: verbatim, unpinned (#453)
         }
+        // Compose overlays so the update hash matches what the add loop wrote (#576) —
+        // hashing raw source against a stored composed hash reports "updated" forever.
+        wouldContent = await composeAgentBody({ stem: name, body: wouldContent, agentsSrc: AGENTS_SRC, target, agentMode: cfg.agentMode, warn: (m) => console.error(`  overlay (${name}): ${m}`) });
         wouldHash = sha256Hex(wouldContent);
       } else {
         if (!cfg.skillsDir) { console.error(`warning: '${name}' target '${target}' does not install skills — skipping`); continue; }

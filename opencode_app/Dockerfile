@@ -98,7 +98,11 @@ RUN node /app/installer/resolve-models.mjs \
         $([ -n "$OPENCODE_PROVIDER" ] && echo "--provider $OPENCODE_PROVIDER") \
         --config-dest /app/opencode.json \
         --state /tmp/.resolved-models.json \
-    && rm -f /tmp/.resolved-models.json
+    && rm -f /tmp/.resolved-models.json \
+# Overlay fragments (#576) are composition SOURCES, not runtime agents — the
+# resolver consumed them above; leaving them here would ship dead .md files
+# into OpenCode's agent-discovery dir.
+    && rm -rf /app/.opencode/agents/overlays
 
 # Provider packs (#268): set mcp.servers.<server>.disabled:false + append
 # permissions-array allow rules ({action:"<ns>*",resource:"*",effect:"allow"});

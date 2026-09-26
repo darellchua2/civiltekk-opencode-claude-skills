@@ -24,8 +24,10 @@ teardown() { rm -rf "$TMP_PROJ"; }
   agents=$(jq_get "len(d['agents'])" < "$REG")
   skills=$(jq_get "len(d['skills'])" < "$REG")
   echo "agents=$agents skills=$skills" >&3
-  # Count-agnostic: registry must match disk. BT-157.
-  disk_agents=$(find "${REPO}/agents" -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+  # Count-agnostic: registry must match disk. BT-157. Enumeration is -maxdepth 1
+  # to match build-registry.mjs (non-recursive): agents/overlays/*.md are body
+  # fragments, not agents (#576 step 3.2 — semantics-preserving alignment).
+  disk_agents=$(find "${REPO}/agents" -maxdepth 1 -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
   disk_skills=$(find "${REPO}/skills" -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
   [ "$agents" = "$disk_agents" ]
   [ "$skills" = "$disk_skills" ]
