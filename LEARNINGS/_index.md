@@ -1592,3 +1592,12 @@
 - **Scope**: project
 - **Summary**: parseArgs accepts every BOOL_FLAGS entry for every verb, so an unread flag on a mutating verb is a latent silent-ignore bug (#567: add ignored --prune); when honoring would be destructive (set-replace on a single-name add), fix with a first-statement rejection guard covering all entry paths and pin the exact exit code (#567 code review)
 - **Date**: 2026-09-26
+
+### Dry-run stdout is JSON-only — notices go to stderr
+
+- **Category**: conventions
+- **File**: `LEARNINGS/conventions/dry-run-stdout-json-only-notices-stderr.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: dry-run stdout must stay machine-readable JSON (notices via console.error only, since #439); bats merges stderr into $output so JSON tests strip notices with sed before json.load — new stdout output in dry paths or removing the strip silently breaks consumers/suite (#568 code review)
+- **Date**: 2026-09-26

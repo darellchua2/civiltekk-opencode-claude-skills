@@ -451,6 +451,7 @@ EOC
   mkdir -p "$HOME/.agents" "$HOME/.claude"
   run $INIT add tdd-workflow-skill --target auto --dry-run
   [ "$status" -eq 0 ]
+  # bats merges stderr into $output — strip notices so python parses pure JSON
   echo "$output" | sed -n '/^{/,$p' | python3 -c "
 import json, sys
 d = json.load(sys.stdin)

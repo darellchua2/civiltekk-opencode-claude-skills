@@ -81,3 +81,11 @@ None (no `blocked-by:`).
 
 GATE 51e6320 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 GATE e6762b7 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+## Review Fixes (Step 9)
+
+- **Minor 1/2 (deferred, reviewer-concurred "merge as-is")**: project-scope aggregated docs carry no per-target `target` key (no consumer today); `jsonSink` without `dryRun` would install (unreachable — sole constructor gates on dryRun). Recorded as follow-up notes.
+- **Minor 3 (fixed)**: "why sed" comment added to the four new tests (bats merges stderr into $output).
+- **LEARNINGS**: `conventions/dry-run-stdout-json-only-notices-stderr.md`.
+- **Re-gate**: full `bats tests/` on the fixed tree → see trace below.
+
+## Gate Trace (review-fix round)
