@@ -81,15 +81,17 @@ No cross-module runtime consumers beyond this repo (no skill/, agents/, installe
 
 ### Phase 5: help text + README
 
-- [ ] **5.1** Add the feature to `show_help` in `deploy/setup.sh` and the mirrored help in `deploy/setup.ps1` (one block: detection step + pi/codex seeding + service restart)
+- [x] **5.1** Add the feature to `show_help` in `deploy/setup.sh` and the mirrored help in `deploy/setup.ps1` (one block: detection step + pi/codex seeding + service restart)
     — **Why:** Help is the operator-facing contract and parity is test-pinned (`test_help_parity.bats`) — adding to setup.sh alone would break parity CI
     — **Done when:** `./setup.sh --help` and the ps1 help both contain the new block; parity test passes
     — **Consumers affected:** `tests/test_help_parity.bats`; operators
+    — **Done:** CODING AGENT DETECTION block added to show_help (CONFIGURED FEATURES head); ps1 has no own help — its -Help fast-path executes `$setupSh --help` (delegation, per #474), so the block appears in ps1 help output by construction; test_help_parity.bats 7/7 green; files: deploy/setup.sh; fixes: none
 
-- [ ] **5.2** Add a short feature paragraph to `README.md` (multi-agent detection + pi/codex key seeding + the service-restart note)
+- [x] **5.2** Add a short feature paragraph to `README.md` (multi-agent detection + pi/codex key seeding + the service-restart note)
     — **Why:** README is the usage surface for deploy features; repo sync rules require it for setup behavior changes
     — **Done when:** README mentions the feature once in the appropriate section; no counts drift (no skill/agent counts touched)
     — **Consumers affected:** docs readers; count-drift tests (must stay green — no counts edited)
+    — **Done:** paragraph added to §"2. Full deploy" (after the provider-swap line); no counts or tables touched — count-drift suites unaffected (full suite re-run in Phase 6 exit gate); files: README.md; fixes: none
 
 ### Phase 6: tests + verification
 
@@ -130,3 +132,4 @@ GATE 9b0cffa tier=light lint=t typecheck=n.a build=- unit=n.a e2e=n.a
 GATE b47fe21 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
 GATE 5245a2b tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
 GATE 586063f tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
+GATE 4176822 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a

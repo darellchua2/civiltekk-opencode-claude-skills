@@ -699,6 +699,16 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+   CODING AGENT DETECTION (#573):
+    Setup probes for installed coding agents (opencode, pi, codex, claude,
+    kimi, kilo) and prints a found/missing table in the banner + summary.
+    With pi/codex present and a Z.AI key captured, it seeds a zai provider:
+      pi    -> ~/.pi/agent/models.json (apiKey via $ZAI_API_KEY interpolation)
+      codex -> ~/.codex/config.toml    (env_key; activate: codex --profile zai)
+    After key seeding the opencode background service is restarted so
+    {env:} MCP substitution picks up the key. (setup.ps1 inherits this via
+    delegation to setup.sh.)
+
    AGENTS ($(count_agents "${REPO_DIR}/agents")):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)

@@ -65,6 +65,8 @@ Copies config + agents + skills to `~/.config/opencode/` and installs two PATH c
 
 Provider swap (Z.AI default): `./deploy/setup.sh --provider anthropic|openai|openrouter|zai` — agent models are tier-based and provider-agnostic (details in the collapsed reference below). Full flag table: `./deploy/setup.sh --help`, or the [collapsed reference](#full-setup-reference) at the end.
 
+**Multi-agent detection (#573):** the deploy also probes which coding agents are installed (opencode, pi, codex, claude, kimi, kilo) and prints a found/missing table. With pi or codex present and a Z.AI key captured, it seeds a `zai` provider into `~/.pi/agent/models.json` (`apiKey` via `$ZAI_API_KEY` interpolation — key never stored) and `~/.codex/config.toml` (`env_key`; opt-in via `codex --profile zai`), then restarts the opencode background service so `{env:}` MCP substitution picks up the key — the fix for "the bashrc export never reached the MCP servers".
+
 ### 3. Per-project subset — presets
 
 Not every project needs 34 agents + 149 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
