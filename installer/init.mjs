@@ -1721,7 +1721,7 @@ SCOPE
   User scope (default for 'add'): drops files into ~/.config/opencode/{agents,skills}/.
   opencode auto-discovers them — no opencode.json touch unless --permit.
   Agents target (--target agents): cross-tool shared dir ~/.agents/{agents,skills}/
-  (scanned by Kimi Code and pi; files are verbatim, agents stay model-unpinned).
+  (skills scanned by Kimi Code and pi, agents by Kimi Code only — pi has no agents concept; files are verbatim, agents stay model-unpinned).
   Kimi target (--target kimi): Kimi Code native dirs ~/.kimi-code/{agents,skills}/
   (user) and .kimi-code/{agents,skills}/ (project); permissions translate additively
   to tools/disallowedTools (lossy — unmapped rules dropped with a warning).
