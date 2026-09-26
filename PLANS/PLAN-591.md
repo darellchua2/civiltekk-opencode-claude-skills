@@ -6,9 +6,9 @@
 **Rev**: 2 — folds arch-review minors (key-scoped gate, whole-object 3-way compare, deploy-copy map row) + Mode R gap resolutions (RG1 follow-up ticket note, RG2 pinned entry)
 
 ## Acceptance Criteria
-- [ ] `opencode_app/opencode.json` `commands` block contains `run-worktree-pipeline-v2` (7 commands total), matching the live user-space definition
+- [x] `opencode_app/opencode.json` `commands` block contains `run-worktree-pipeline-v2` (7 commands total), matching the live user-space definition
 - [x] JSON validity: template parses; no other keys changed
-- [ ] `worktree-pipeline-skill`, subagents, skills — byte-identical
+- [x] `worktree-pipeline-skill`, subagents, skills — byte-identical
 - [x] PR merged to main via the worktree pipeline itself (owned by the executing pipeline's Step 10 — no PLAN step)
 
 ## Dependency & Consumer Map
