@@ -1955,6 +1955,44 @@ download_file() {
 # SETUP FUNCTIONS
 ################################################################################
 
+# Report one coding agent's presence (helper for detect_installed_agents).
+agent_report() {
+    local name="$1" found="$2"
+    if [ "$found" = true ]; then
+        echo "  ✓ ${name}: found"
+    else
+        echo "  ✗ ${name}: not found"
+    fi
+}
+
+# Detect installed coding-agent harnesses (#573). Read-only and idempotent —
+# callable from print_summary without the plan step having run (quick and
+# skills-only epilogues included). Sets the boolean globals the seed step
+# consumes (PI_INSTALLED, CODEX_INSTALLED) and prints a found/missing table.
+# Binary probe OR config-dir fallback: an installed-but-off-PATH agent still
+# reports (and still seeds — the config dir is where the seed writes).
+detect_installed_agents() {
+    local opencode_ok=false pi_ok=false codex_ok=false claude_ok=false kimi_ok=false kilo_ok=false
+    command_exists opencode && opencode_ok=true
+    { command_exists pi || [ -d "${HOME}/.pi/agent" ]; } && pi_ok=true
+    { command_exists codex || [ -d "${HOME}/.codex" ]; } && codex_ok=true
+    { command_exists claude || [ -d "${HOME}/.claude" ]; } && claude_ok=true
+    [ -d "${HOME}/.kimi-code" ] && kimi_ok=true
+    { [ -d "${HOME}/.kilo" ] || [ -d "${HOME}/.config/kilo" ]; } && kilo_ok=true
+
+    PI_INSTALLED="$pi_ok"
+    CODEX_INSTALLED="$codex_ok"
+
+    echo "Coding Agents Detected:"
+    agent_report "opencode" "$opencode_ok"
+    agent_report "pi" "$pi_ok"
+    agent_report "codex" "$codex_ok"
+    agent_report "claude" "$claude_ok"
+    agent_report "kimi" "$kimi_ok"
+    agent_report "kilo" "$kilo_ok"
+    return 0
+}
+
 # Check GitHub CLI
 setup_github_cli() {
     echo ""
@@ -3767,6 +3805,7 @@ build_plan() {
     else
         PLAN_MODE="full"
         PLAN_STEPS+=("true|deps|Dependency check|check_dependencies_strict")
+        PLAN_STEPS+=("false|detect-agents|Detect installed coding agents|detect_installed_agents")
         if [ -n "$LOAD_PRESET_NAME" ]; then
             PLAN_STEPS+=("true|load-preset|Load preset ${LOAD_PRESET_NAME}|load_user_preset")
         fi
@@ -4573,6 +4612,11 @@ print_summary() {
     echo "✓ Detected OS: ${DETECTED_OS} ${OS_VERSION:+(${OS_VERSION})}"
     echo "✓ Detected Shell: ${DETECTED_SHELL}"
     echo "✓ Shell Config: ${SHELL_CONFIG_FILE}"
+    echo ""
+
+    # Coding-agent detection (#573) — read-only, idempotent; works in every
+    # epilogue even when the detect-agents plan step never ran.
+    detect_installed_agents
     echo ""
 
     # nvm status (Unix-like systems only)

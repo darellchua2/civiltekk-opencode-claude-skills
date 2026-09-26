@@ -31,20 +31,23 @@ No cross-module runtime consumers beyond this repo (no skill/, agents/, installe
 
 ### Phase 1: Agent detection (setup.sh + setup.ps1)
 
-- [ ] **1.1** Add `detect_installed_agents()` to `deploy/setup.sh` — read-only probe of `opencode`/`pi`/`claude`/`codex` via `command_exists` plus config-dir fallbacks (`~/.pi/agent`, `~/.kimi-code`, `~/.kilo`, `~/.codex`); sets lowercase boolean globals (`PI_INSTALLED`, `CODEX_INSTALLED`, …) and prints a found/missing table; idempotent, no writes
+- [x] **1.1** Add `detect_installed_agents()` to `deploy/setup.sh` — read-only probe of `opencode`/`pi`/`claude`/`codex` via `command_exists` plus config-dir fallbacks (`~/.pi/agent`, `~/.kimi-code`, `~/.kilo`, `~/.codex`); sets lowercase boolean globals (`PI_INSTALLED`, `CODEX_INSTALLED`, …) and prints a found/missing table; idempotent, no writes
     — **Why:** Detection gates every downstream seed and feeds both banner and summary; must exist before any seed logic or plan wiring
     — **Done when:** `bash -c 'source deploy/setup.sh; detect_installed_agents'` from a temp HOME prints one line per agent and exits 0 with agents present and absent
     — **Consumers affected:** `seed_pi_provider`, `seed_codex_provider`, `build_plan` step, `print_summary`
+    — **Done:** detect_installed_agents() + agent_report() added before setup_github_cli(); smoke-verified in temp HOME with absent agents, stubbed pi/codex, and config-dir-only fallback (all rc=0, globals correct); files: deploy/setup.sh; fixes: none
 
-- [ ] **1.2** Wire detection into `deploy/setup.sh`: non-critical plan step `detect-agents|Detect installed coding agents` early in the full-mode branch of `build_plan` (after `deps`), and a `detect_installed_agents` call inside `print_summary` so every epilogue (full/quick/skills-only) shows the table
+- [x] **1.2** Wire detection into `deploy/setup.sh`: non-critical plan step `detect-agents|Detect installed coding agents` early in the full-mode branch of `build_plan` (after `deps`), and a `detect_installed_agents` call inside `print_summary` so every epilogue (full/quick/skills-only) shows the table
     — **Why:** The AC requires the table in banner and summary; a single idempotent function at two call sites avoids flag plumbing for display while the early step persists globals for the seed step (run_plan executes in one shell)
     — **Done when:** `./setup.sh --dry-run -y` output contains the detection table; `print_summary` renders it even when the detect step was never a plan step
     — **Consumers affected:** full/quick/skills-only mode output; none downstream of summary
+    — **Done:** plan step appended after deps in the full branch; print_summary calls detect_installed_agents() after the Platform Detection block (works in every epilogue); files: deploy/setup.sh; fixes: none
 
-- [ ] **1.3** Mirror the detection step in `deploy/setup.ps1` (probe `Get-Command` equivalents + config dirs, print the same table) and keep help text parity for the new feature lines
+- [x] **1.3** Mirror the detection step in `deploy/setup.ps1` (probe `Get-Command` equivalents + config dirs, print the same table) and keep help text parity for the new feature lines
     — **Why:** setup.ps1 is the Windows mirror and `test_help_parity.bats` pins setup.sh/ps1 help drift; shipping detection bash-only breaks the mirror contract
     — **Done when:** PowerShell syntax check passes and the ps1 help output includes the same feature wording as setup.sh
     — **Consumers affected:** Windows users; `tests/test_help_parity.bats`
+    — **Done:** deliberate deviation from the literal wording, noted: setup.ps1 is the #474 thin launcher (forwards everything to setup.sh, performs no own logic — its header forbids it), so the mirror is BY DELEGATION: detection + help wording reach Windows users through the forwarded setup.sh run; no new flags → no translation arms. Change limited to a header disclosure line citing #573; parity test constraints (flag-arm pins) untouched; files: deploy/setup.ps1; fixes: none
 
 ### Phase 2: pi provider seeding
 
@@ -116,3 +119,7 @@ No cross-module runtime consumers beyond this repo (no skill/, agents/, installe
 - **Service restart on machines without a running service**: best-effort with timeout; failure logs the manual command, never fails the run (non-critical semantics).
 - **Help parity drift**: 5.1 ships both files together; `test_help_parity.bats` backstops.
 - **Drift with future pi/codex config schema changes**: endpoints and field names are commented with doc references at each definition site for the next maintainer.
+
+## Gate Trace
+
+GATE 9b0cffa tier=light lint=t typecheck=n.a build=- unit=n.a e2e=n.a
