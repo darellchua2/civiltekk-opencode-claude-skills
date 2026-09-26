@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.46.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.45.1...v9.46.0) (2026-09-26)
+
+### Features
+
+* **skills:** worktree-pipeline — async merge wait + cross-repo chaining ([#560](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/560)) ([#570](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/570)) ([952411c](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/952411cb6e8d80a0fedc5e92cc1a56bdc3cf9a51))
+
 ## [9.45.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.45.0...v9.45.1) (2026-09-26)
 
 ### Bug Fixes
