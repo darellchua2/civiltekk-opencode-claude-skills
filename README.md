@@ -21,6 +21,8 @@ These four commands carry most of my day-to-day flow. **Slash commands ship with
 
 The first two compose: `/create-ticket` makes the ticket, `/run-worktree-pipeline #NNN` takes it to a merged PR.
 
+**#582 experiment commands** (opt-in A/B, defined in user-space config): `/review-arch` runs the architecture reviewer in an isolated child session; `/review-inline` runs the same review in-session; `/run-plan-v2` executes plans with the inline worker family (zero subagent delegation); `/run-worktree-pipeline-v2` is the pipeline with Step 8 inline workers — Step 9 review + Step 10 PR stay subagent-driven. Decision record: #582.
+
 ## Installation
 
 Three ways in, pick by appetite. All commands below work from any clone of this repo.

@@ -24,14 +24,16 @@ No cross-module consumers → zero Step-7 reviewers selected (thin docs-only map
 _Every step MUST be atomic and carry rationale. Reject any step missing a "Why"._
 
 ### Phase 1: Command + tracked docs
-- [ ] **1.1** Add a compact "#582 experiment commands" note to README.md near the existing `/run-plan` / `/run-worktree-pipeline` usage rows, documenting the four experiment commands (`/review-arch`, `/review-inline`, `/run-plan-v2`, `/run-worktree-pipeline-v2`), their one-line semantics, and the hybrid scope (inline workers at Step 8; subagent reviewer at Step 9)
+- [x] **1.1** Add a compact "#582 experiment commands" note to README.md near the existing `/run-plan` / `/run-worktree-pipeline` usage rows, documenting the four experiment commands (`/review-arch`, `/review-inline`, `/run-plan-v2`, `/run-worktree-pipeline-v2`), their one-line semantics, and the hybrid scope (inline workers at Step 8; subagent reviewer at Step 9)
     — **Why:** the command definitions live only in machine-local config; the ticket requires a tracked definition (AC#2) so the A/B decision record is reproducible.
     — **Done when:** `rg -c "run-worktree-pipeline-v2" README.md` ≥ 1 AND `git diff --name-only origin/main...HEAD` lists exactly `README.md` (every other file byte-identical).
     — **Consumers affected:** repo readers; #582 decision record.
-- [ ] **1.2** Verify AC#1: `run-worktree-pipeline-v2` present in `~/.config/opencode/opencode.json` commands with the substitution map (user-space — added outside this PR by design)
+    — **Done:** experiment-commands paragraph inserted verbatim after README compose line (L24, 2 insertions); files: README.md; fixes: none. Deviation note: branch diff lists PLANS/PLAN-585.md alongside README.md — the PLAN rides the branch by pipeline contract §6e; intent of "byte-identical" (no code beyond README) holds.
+- [x] **1.2** Verify AC#1: `run-worktree-pipeline-v2` present in `~/.config/opencode/opencode.json` commands with the substitution map (user-space — added outside this PR by design)
     — **Why:** AC#1 must be checked even though the artifact is deliberately outside the PR; the check rides this run's gate trace.
     — **Done when:** `python3 -c "import json;assert 'run-worktree-pipeline-v2' in json.load(open('/home/silentx/.config/opencode/opencode.json'))['commands']"` exits 0.
     — **Consumers affected:** none (read-only verification).
+    — **Done:** user-space `run-worktree-pipeline-v2` confirmed present with Step-8 substitution map; files: none (user-space, outside PR by design); fixes: none
 
 ## Technical Notes
 - AC#4 (PR merged to main) is owned by the executing worktree pipeline itself (its Step 10) — no PLAN step can merge its own PR; the AC is discharged by this very run.
@@ -44,3 +46,7 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ## Risks & Mitigation
 - **README drift** (counts change independently) → mitigation: the note names commands, not skill counts, so it cannot drift with registry arithmetic.
+
+## Gate Trace
+
+GATE (phase-1 sha, recorded post-push) tier=full lint=- typecheck=- build=- unit=t(629 ok) e2e=-
