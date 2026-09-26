@@ -13,13 +13,13 @@ GATE 8388801 tier=light lint=n.a. typecheck=t build=t unit=t e2e=n.a. — Phase 
 GATE 6882e81 tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — ticket exit gate: full bats 608/608 exit 0 (after fixing 2 composition-caused failures: update+project paths unwired, claude byte-identity invariant); registry diff scoped (6882e81); README counts unchanged (34/149)
 
 ## Acceptance Criteria
-- [ ] `docs/harness-landscape-2026-09.md` covers the harness comparison (OpenCode, Claude Code, Codex, Copilot, ZCode, Kilo, pi, M365 Copilot), the standards layer (Agent Skills / AGENTS.md / MCP / ACP), the standardization strategy, a pi section grounded in https://pi.dev/docs/latest, and a "Planned targets — not composable" note for zcode/copilot
-- [ ] `docs/subagent-portability-contract.md` specifies LCD rules, the two-tier binding matrix (composable: opencode/claude/agents/kimi/kilo vs documented-only: zcode/copilot/codex/pi/M365), overlay convention, composition pipeline, the moved-token manifest requirement, the lossy-translation registry, and a parity-verdict appendix
-- [ ] 3 pilot agents retrofitted, each as LCD core + `.opencode.md` overlay + minimal `.claude.md` overlay, with behavior-equivalent OpenCode output proven mechanically
-- [ ] Both agent write paths (npx `installer/init.mjs` AND `deploy/setup.sh` → `installer/resolve-models.mjs`) compose overlays through one shared helper; composed-body bytes byte-identical across paths for the opencode target, CI-asserted in `tests/agent_lcd_pilot.bats`; manifest hash tracking unchanged
-- [ ] Mechanical parity gate green: per-agent moved tokens absent from core and present in composed output; `Other/none:` fallback row present in every core; meaning-parity signoff recorded in the contract appendix
-- [ ] Guard tests green: orphan-overlay guard (no overlay for a target without a TARGETS row), no `.agents.md` overlays (verbatim target never composes), `tests/init.bats` enumeration aligned with registry semantics
-- [ ] `node installer/build-registry.mjs` diff matches exactly the expected scope (one description change — image-analyzer, 2.2 — plus generatedAt; 2.1/2.3 entries byte-identical) and is committed; full bats suite passes
+- [x] `docs/harness-landscape-2026-09.md` covers the harness comparison (OpenCode, Claude Code, Codex, Copilot, ZCode, Kilo, pi, M365 Copilot), the standards layer (Agent Skills / AGENTS.md / MCP / ACP), the standardization strategy, a pi section grounded in https://pi.dev/docs/latest, and a "Planned targets — not composable" note for zcode/copilot
+- [x] `docs/subagent-portability-contract.md` specifies LCD rules, the two-tier binding matrix (composable: opencode/claude/agents/kimi/kilo vs documented-only: zcode/copilot/codex/pi/M365), overlay convention, composition pipeline, the moved-token manifest requirement, the lossy-translation registry, and a parity-verdict appendix
+- [x] 3 pilot agents retrofitted, each as LCD core + `.opencode.md` overlay + minimal `.claude.md` overlay, with behavior-equivalent OpenCode output proven mechanically
+- [x] Both agent write paths (npx `installer/init.mjs` AND `deploy/setup.sh` → `installer/resolve-models.mjs`) compose overlays through one shared helper; composed-body bytes byte-identical across paths for the opencode target, CI-asserted in `tests/agent_lcd_pilot.bats`; manifest hash tracking unchanged
+- [x] Mechanical parity gate green: per-agent moved tokens absent from core and present in composed output; `Other/none:` fallback row present in every core; meaning-parity signoff recorded in the contract appendix
+- [x] Guard tests green: orphan-overlay guard (no overlay for a target without a TARGETS row), no `.agents.md` overlays (verbatim target never composes), `tests/init.bats` enumeration aligned with registry semantics
+- [x] `node installer/build-registry.mjs` diff matches exactly the expected scope (one description change — image-analyzer, 2.2 — plus generatedAt; 2.1/2.3 entries byte-identical) and is committed; full bats suite passes
 
 ## Dependency & Consumer Map
 
