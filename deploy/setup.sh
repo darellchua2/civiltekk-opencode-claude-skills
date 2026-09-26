@@ -705,8 +705,9 @@ USAGE:
     With pi/codex present and a Z.AI key captured, it seeds a zai provider:
       pi    -> ~/.pi/agent/models.json (apiKey via $ZAI_API_KEY interpolation)
       codex -> ~/.codex/config.toml    (env_key; activate: codex --profile zai)
-    After key seeding the opencode background service is restarted so
-    {env:} MCP substitution picks up the key. (setup.ps1 inherits this via
+    After a NEW key is seeded the opencode background service is restarted
+    (announced first) so {env:} MCP substitution picks up the key; unchanged
+    credentials skip the restart entirely. (setup.ps1 inherits this via
     delegation to setup.sh.)
 
    AGENTS ($(count_agents "${REPO_DIR}/agents")):
@@ -4118,6 +4119,26 @@ setup_provider_credentials() {
         return 0
     fi
 
+    # #588: identical-key idempotency. The pre-prompt gate above only fires
+    # when the env var is UNSET, so an exported key (persisted by
+    # setup_shell_vars) re-seeded AND restarted the background service on
+    # every run — killing live opencode sessions although nothing changed.
+    # auth.json already holding this exact key for every auth_id means this
+    # run changes nothing: skip the re-seed and the #573 service restart.
+    local auth_file="${XDG_DATA_HOME:-$HOME/.local/share}/opencode/auth.json"
+    if [ -f "$auth_file" ]; then
+        if AUTH_KEY="$key" node -e '
+            const fs = require("fs");
+            const auth = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            const ids = JSON.parse(process.argv[2]);
+            const key = process.env.AUTH_KEY.trim();
+            process.exit(ids.every(id => auth[id] && auth[id].key === key) ? 0 : 1);
+        ' "$auth_file" "$auth_ids" 2>/dev/null; then
+            log_info "Provider '${chosen}' credentials unchanged (auth.json already holds this key) - skipping re-seed and service restart"
+            return 0
+        fi
+    fi
+
     # Seed EVERY auth_id (merge-never-clobber inside register_provider_auth).
     local oid
     for oid in $(node -e 'console.log(JSON.parse(process.argv[1]).auth_ids.join(" "))' "$block"); do
@@ -4160,10 +4181,15 @@ setup_provider_credentials() {
         command_exists timeout && restart_cmd=(timeout 15 "${restart_cmd[@]}")
         if [ "$DRY_RUN" = true ]; then
             log_info "[DRY-RUN] Would restart the opencode background service (env pickup for {env:} MCP vars)"
-        elif "${restart_cmd[@]}" >/dev/null 2>&1; then
-            log_success "opencode service restarted - MCP {env:} substitution now sees the new key"
         else
-            log_warn "opencode service restart failed - run 'opencode service restart' manually so MCP servers pick up ZAI_API_KEY"
+            # Announce before acting (#588): the restart interrupts any live
+            # opencode session — never do that silently.
+            log_info "Restarting opencode background service (new key seeded) - live opencode sessions will be interrupted"
+            if "${restart_cmd[@]}" >/dev/null 2>&1; then
+                log_success "opencode service restarted - MCP {env:} substitution now sees the new key"
+            else
+                log_warn "opencode service restart failed - run 'opencode service restart' manually so MCP servers pick up ZAI_API_KEY"
+            fi
         fi
     fi
     return 0

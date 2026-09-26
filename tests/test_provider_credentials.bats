@@ -136,3 +136,74 @@ JSON
   [[ "$output" == *"already seeded"* ]]
   rm -rf "$d"
 }
+
+# #588: the pre-prompt gate above only fires when the env var is UNSET, so an
+# exported ZAI_API_KEY (persisted to the shell rc by setup_shell_vars) used to
+# re-seed and restart the background service on EVERY run — killing live
+# opencode sessions with nothing changed. The identical-key gate must make
+# same-key runs a full no-op, while changed/fresh keys keep the #573 restart
+# (now announced).
+
+@test "same_key_env_set_skips_reseed_and_restart" {
+  local d; d="$(mktemp -d)"
+  mkdir -p "$d/.local/share/opencode"
+  cat > "$d/.local/share/opencode/auth.json" <<'JSON'
+{ "zai": {"type": "api", "key": "testkey123"}, "zai-coding-plan": {"type": "api", "key": "testkey123"} }
+JSON
+  local before after
+  before="$(md5sum < "$d/.local/share/opencode/auth.json")"
+  run bash -c "export HOME='$d'; unset XDG_DATA_HOME XDG_CONFIG_HOME; export ZAI_API_KEY='testkey123'; source '$SETUP_SH' >/dev/null 2>&1
+           DRY_RUN=false; AUTO_ACCEPT=true; PROVIDER=zai
+           command_exists(){ return 0; }
+           timeout(){ shift; \"\$@\"; }
+           opencode(){ echo \"\$*\" >> \"\$HOME/oc-calls\"; }
+           setup_provider_credentials" </dev/null
+  [ "$status" -eq 0 ]
+  after="$(md5sum < "$d/.local/share/opencode/auth.json")"
+  [ "$before" = "$after" ]
+  # Zero opencode invocations: no auth-list verify, no service restart.
+  [ ! -f "$d/oc-calls" ]
+  [[ "$output" == *"credentials unchanged"* ]]
+  rm -rf "$d"
+}
+
+@test "changed_key_reseeds_and_restarts_with_announcement" {
+  local d; d="$(mktemp -d)"
+  mkdir -p "$d/.local/share/opencode"
+  cat > "$d/.local/share/opencode/auth.json" <<'JSON'
+{ "zai": {"type": "api", "key": "oldkey-9"}, "zai-coding-plan": {"type": "api", "key": "oldkey-9"} }
+JSON
+  run bash -c "export HOME='$d'; unset XDG_DATA_HOME XDG_CONFIG_HOME; export ZAI_API_KEY='newkey-9'; source '$SETUP_SH' >/dev/null 2>&1
+           DRY_RUN=false; AUTO_ACCEPT=true; PROVIDER=zai
+           command_exists(){ return 0; }
+           timeout(){ shift; \"\$@\"; }
+           opencode(){ echo \"\$*\" >> \"\$HOME/oc-calls\"; }
+           setup_provider_credentials" </dev/null
+  [ "$status" -eq 0 ]
+  node -e '
+    const a = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+    if (a.zai.key !== "newkey-9" || a["zai-coding-plan"].key !== "newkey-9") throw new Error("changed key not re-seeded for both ids");
+  ' "$d/.local/share/opencode/auth.json"
+  grep -q "service restart" "$d/oc-calls"
+  [ "$(grep -c "service restart" "$d/oc-calls")" -eq 1 ]
+  [[ "$output" == *"live opencode sessions will be interrupted"* ]]
+  rm -rf "$d"
+}
+
+@test "fresh_seed_restarts_service_with_announcement" {
+  local d; d="$(mktemp -d)"
+  run bash -c "export HOME='$d'; unset XDG_DATA_HOME XDG_CONFIG_HOME; export ZAI_API_KEY='freshkey-7'; source '$SETUP_SH' >/dev/null 2>&1
+           DRY_RUN=false; AUTO_ACCEPT=true; PROVIDER=zai
+           command_exists(){ return 0; }
+           timeout(){ shift; \"\$@\"; }
+           opencode(){ echo \"\$*\" >> \"\$HOME/oc-calls\"; }
+           setup_provider_credentials" </dev/null
+  [ "$status" -eq 0 ]
+  node -e '
+    const a = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+    if (!a.zai || a.zai.key !== "freshkey-7" || !a["zai-coding-plan"] || a["zai-coding-plan"].key !== "freshkey-7") throw new Error("fresh seed missing");
+  ' "$d/.local/share/opencode/auth.json"
+  grep -q "service restart" "$d/oc-calls"
+  [[ "$output" == *"live opencode sessions will be interrupted"* ]]
+  rm -rf "$d"
+}

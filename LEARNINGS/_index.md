@@ -1756,3 +1756,19 @@
 - **Scope**: project
 - **Date**: 2026-09-26
 - **Summary**: Shipped `commands.<name>.model` pins are provider-locked (the resolver never rewrites command entries) — keep shipped commands model-free; pin experiment models via a project .opencode/opencode.json overlay (#582 re-review N1)
+
+### Unset-only idempotency gates re-run side effects when the flag is set
+
+- **File**: `LEARNINGS/anti-patterns/unset-only-idempotency-gate-env-set-rerun-side-effects.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: A "skip if already done" gate keyed on flag-UNSET silently re-runs the side-effect chain when the flag is SET — #471's gate re-seeded + `opencode service restart`ed on every deploy once the key was exported (#588). Probe must assert the VALUE (with the writer's normalization) on the SET side too; pin unset/set-same/set-changed/fresh.
+
+### Announce session impact before disruptive actions
+
+- **File**: `LEARNINGS/conventions/announce-session-impact-before-disruptive-action.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: Steps that interrupt live user sessions (service restarts, kills, reloads) log the impact BEFORE acting — #588 adds the pre-restart announcement and test-pins the string; announce-first is the shape for every service-touching setup step.
