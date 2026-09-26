@@ -6,11 +6,11 @@
 **Rev**: 3 — folds re-review amendments (Minor 1-4 + notes: narrow-resource omission trigger, 5.1 warning+positive assertions, `.github/skills` project skills dir, derived-allowlist absolute import, mcp-glob caveat, map label)
 
 ## Acceptance Criteria
-- [ ] `--target zcode` installs a translated code-review-subagent to `~/.zcode/agents/` (synthesized `name:`, `maxTurns` from `steps`, no `model:` pin, deny rules carried by `disallowedTools:`, skill-allow sources omit `tools:` with a loud warning) and composes the zcode overlay
-- [ ] `--target copilot --project` writes `.claude/agents/` (documented Claude-format workspace dir) + `.github/skills/` (documented workspace skills dir) with claude-format frontmatter; user scope writes `~/.copilot/agents/`
-- [ ] kimi/kilo composed output for the 3 pilots carries target-appropriate delegation bindings; copilot composed output carries the Task-tool binding
-- [ ] Orphan guard derives from the exported `COMPOSABLE_TARGETS` (single source); contract/landscape docs move zcode/copilot to composable (zcode: user-scope + nesting ban; copilot: `.claude`-format workspace dirs)
-- [ ] New target test suites green; full bats green; registry `--check` clean; README/AGENTS target docs updated
+- [x] `--target zcode` installs a translated code-review-subagent to `~/.zcode/agents/` (synthesized `name:`, `maxTurns` from `steps`, no `model:` pin, deny rules carried by `disallowedTools:`, skill-allow sources omit `tools:` with a loud warning) and composes the zcode overlay
+- [x] `--target copilot --project` writes `.claude/agents/` (documented Claude-format workspace dir) + `.github/skills/` (documented workspace skills dir) with claude-format frontmatter; user scope writes `~/.copilot/agents/`
+- [x] kimi/kilo composed output for the 3 pilots carries target-appropriate delegation bindings; copilot composed output carries the Task-tool binding
+- [x] Orphan guard derives from the exported `COMPOSABLE_TARGETS` (single source); contract/landscape docs move zcode/copilot to composable (zcode: user-scope + nesting ban; copilot: `.claude`-format workspace dirs)
+- [x] New target test suites green; full bats green; registry `--check` clean; README/AGENTS target docs updated
 
 ## Dependency & Consumer Map
 
@@ -27,66 +27,84 @@
 ## Implementation Phases
 
 ### Phase 1: zcode target (user-scope only)
-- [ ] **1.1** Add `ZCODE_TOOL_MAP` — the 8 shared actions (read→Read, write→Write, edit→Edit, shell→Bash, glob→Glob, grep→Grep, webfetch→WebFetch, websearch→WebSearch) — and `zcodeAgentContent(content, stem, warn)` mirroring `claudeAgentContent` with three ZCode-specific deviations: (a) `subagent` rules are DROPPED with warning "ZCode subagents cannot spawn subagents" (no Task analog — ZCode launches subagents via its primary-side Agent tool; nesting is banned), (b) ANY allow-effect `skill` rule — any resource; the corpus carries only narrow-resource skill allows, so a claude-mirror star-only predicate would be dead code — triggers omission of `tools:` entirely with a loud warning ("ZCode tools: allowlists are exhaustive; emitting one without the skill tool would lock skills out — denies still carried by disallowedTools:"), while `disallowedTools:` is always emitted for deny rules (mcp-globbed denies dropped with warning — ZCode ignores `mcp__*` wildcards), (c) the `steps:` frontmatter key is rewritten to `maxTurns:`; synthesized `name: <stem>`; never emit `model:` (ZCode default = inherit); `mode`/`permissions`/`category` left in place (unknown keys silently ignored)
+- [x] **1.1** Add `ZCODE_TOOL_MAP` — the 8 shared actions (read→Read, write→Write, edit→Edit, shell→Bash, glob→Glob, grep→Grep, webfetch→WebFetch, websearch→WebSearch) — and `zcodeAgentContent(content, stem, warn)` mirroring `claudeAgentContent` with three ZCode-specific deviations: (a) `subagent` rules are DROPPED with warning "ZCode subagents cannot spawn subagents" (no Task analog — ZCode launches subagents via its primary-side Agent tool; nesting is banned), (b) ANY allow-effect `skill` rule — any resource; the corpus carries only narrow-resource skill allows, so a claude-mirror star-only predicate would be dead code — triggers omission of `tools:` entirely with a loud warning ("ZCode tools: allowlists are exhaustive; emitting one without the skill tool would lock skills out — denies still carried by disallowedTools:"), while `disallowedTools:` is always emitted for deny rules (mcp-globbed denies dropped with warning — ZCode ignores `mcp__*` wildcards), (c) the `steps:` frontmatter key is rewritten to `maxTurns:`; synthesized `name: <stem>`; never emit `model:` (ZCode default = inherit); `mode`/`permissions`/`category` left in place (unknown keys silently ignored)
     — **Why:** Docs-verified deviations (review Majors 2-3): nearest-analog tool mapping would advertise a delegation capability ZCode forbids, and an exhaustive allowlist without the skill tool silently strips skill invocation
     — **Done when:** Function beside the sibling translators in `installer/init.mjs`; `node --check` clean; the three deviations each covered by a 5.1 assertion
     — **Consumers affected:** zcode TARGETS row (1.2), tests 5.1
-- [ ] **1.2** Add consts (`USER_ZCODE_AGENTS`/`USER_ZCODE_SKILLS` = `~/.zcode/{agents,skills}`), TARGETS row `zcode: { agentsDir, skillsDir, agentMode: "zcode-translate", skillMode: "verbatim" }` — **user-scope columns only** (ZCode subagents Beta is documented user-level-only; project installs degrade via the existing no-project-destination note, claude-target precedent) — wire `"zcode-translate"` into all three agentMode chains (user add :~905, update :~1428; no project branch needed), add the `~/.zcode` auto-probe, extend help text, and fix the legacy dry-run `destination` ternary (:~876) to `dirname(TARGETS[target].agentsDir)` for single targets (stops misreporting `~/.kimi-code` for new targets)
+    — **Done:** ZCODE_TOOL_MAP (8 actions, no subagent) + zcodeAgentContent (name synth, tools/disallowedTools, subagent-drop warning, tools-omission on skill-allow sources, mcp-glob deny drop, steps→maxTurns, never model:); files: installer/init.mjs; fixes: none
+- [x] **1.2** Add consts (`USER_ZCODE_AGENTS`/`USER_ZCODE_SKILLS` = `~/.zcode/{agents,skills}`), TARGETS row `zcode: { agentsDir, skillsDir, agentMode: "zcode-translate", skillMode: "verbatim" }` — **user-scope columns only** (ZCode subagents Beta is documented user-level-only; project installs degrade via the existing no-project-destination note, claude-target precedent) — wire `"zcode-translate"` into all three agentMode chains (user add :~905, update :~1428; no project branch needed), add the `~/.zcode` auto-probe, extend help text, and fix the legacy dry-run `destination` ternary (:~876) to `dirname(TARGETS[target].agentsDir)` for single targets (stops misreporting `~/.kimi-code` for new targets)
     — **Why:** Per-target contract enforcement; the three-chain + dry-run sites are the exact silent-regression class the #576 exit gate caught
     — **Done when:** `--target zcode --yes` add of code-review-subagent writes `~/.zcode/agents/code-review-subagent.md` with `name:`/`maxTurns:`/`disallowedTools:`, NO `tools:` (skill-allow source) and NO `model:`; `--dry-run` JSON `destination` reports `~/.zcode`
     — **Consumers affected:** CLI users; tests 5.1; update/remove paths
-- [ ] **1.3** In `installer/overlay.mjs`: add `"zcode"` and `"copilot"` to `COMPOSABLE_TARGETS` and **export the set** (single source for the guard)
+    — **Done:** USER_ZCODE consts, user-scope-only TARGETS row, probe, help + --target list + auto-die message, zcode-translate wired in user+update chains (no project branch — no project columns), dry-run destination ternary generalized; files: installer/init.mjs; fixes: none
+- [x] **1.3** In `installer/overlay.mjs`: add `"zcode"` and `"copilot"` to `COMPOSABLE_TARGETS` and **export the set** (single source for the guard)
     — **Why:** Review Major 1 — copilot was documented composable without a composition path (dead-file class); Minor 3 — the twin hardcoded allowlists are the structural cause, mechanized by export + derivation
     — **Done when:** Set exported with 6 members; helper composes `.zcode.md`/`.copilot.md` overlays once 1.4/3.1 land
     — **Consumers affected:** all write sites; guard derivation (3.2)
-- [ ] **1.4** Write 3 zcode overlays (`agents/overlays/{code-review,image-analyzer,requirements-specialist}-subagent.zcode.md`): nesting ban (delegation work runs inline), no memory tool (LEARNINGS glob fallback), `$skill-name` invocation hint, MCP-only-at-session-start caveat where relevant
+    — **Done:** COMPOSABLE_TARGETS +zcode+copilot and exported; files: installer/overlay.mjs; fixes: none
+- [x] **1.4** Write 3 zcode overlays (`agents/overlays/{code-review,image-analyzer,requirements-specialist}-subagent.zcode.md`): nesting ban (delegation work runs inline), no memory tool (LEARNINGS glob fallback), `$skill-name` invocation hint, MCP-only-at-session-start caveat where relevant
     — **Why:** ZCode-specific ergonomics per the contract's overlay convention
     — **Done when:** 3 files exist; `tests/fixtures/compose_agent.mjs <stem> zcode` composes them
     — **Consumers affected:** zcode installs; guard suite
+    — **Done:** 3 zcode overlays (nesting ban inline delegation, LEARNINGS glob, $skill hint, MCP session-start caveat); files: agents/overlays/*.zcode.md; fixes: none
 
 ### Phase 2: copilot target
-- [ ] **2.1** Add const (`USER_COPILOT_AGENTS` = `~/.copilot/agents`), TARGETS row `copilot: { agentsDir, skillsDir: null, projectAgentsDir: ".claude/agents", projectSkillsDir: ".github/skills", agentMode: "claude-translate", skillMode: "verbatim" }` (mixed dirs by documented ground: `.claude/agents` is the Claude-format workspace agents dir VS Code documents; `.github/skills` is the documented workspace skills dir — `.claude/skills` loading by VS Code is unverified, review re-round Minor 3), `~/.copilot` auto-probe, help-text entry; ADD a `claude-translate` branch to the project install chain (:~553-557 — it has no claude branch today because claude has no project columns; "add", not "verify"); user loop and update path already key off `cfg.agentMode` — verify copilot flows through the existing `"claude-translate"` branches there
+- [x] **2.1** Add const (`USER_COPILOT_AGENTS` = `~/.copilot/agents`), TARGETS row `copilot: { agentsDir, skillsDir: null, projectAgentsDir: ".claude/agents", projectSkillsDir: ".github/skills", agentMode: "claude-translate", skillMode: "verbatim" }` (mixed dirs by documented ground: `.claude/agents` is the Claude-format workspace agents dir VS Code documents; `.github/skills` is the documented workspace skills dir — `.claude/skills` loading by VS Code is unverified, review re-round Minor 3), `~/.copilot` auto-probe, help-text entry; ADD a `claude-translate` branch to the project install chain (:~553-557 — it has no claude branch today because claude has no project columns; "add", not "verify"); user loop and update path already key off `cfg.agentMode` — verify copilot flows through the existing `"claude-translate"` branches there
     — **Why:** Fills the project-scope gap using per-content-type documented dirs (RG3 adopted answer as amended by re-round Minor 3)
     — **Done when:** `--target copilot --project --yes` writes `.claude/agents/code-review-subagent.md` + `.github/skills/`; user-scope add writes `~/.copilot/agents/` and no skills dir; `--dry-run` destination reports `~/.copilot`
     — **Consumers affected:** CLI users; tests 5.2
+    — **Done:** USER_COPILOT_AGENTS, copilot row (.claude/agents + .github/skills project, skillsDir null), probe, help, NEW claude-translate branch in project chain; user/update flow through existing claude-translate verified; files: installer/init.mjs; fixes: none
 
 ### Phase 3: overlays for kimi/kilo/copilot + guard updates
-- [ ] **3.1** Write 9 overlays: 3 kimi (`{3 pilots}.kimi.md` — delegate by agent name via the Task tool, agents at `~/.kimi-code/agents`, no memory tool, no mid-run clarification), 3 kilo (`{3 pilots}.kilo.md` — task-tool/`@mention` delegation, `permission.task` grant note, same memory/clarification fallbacks), 3 copilot (`{3 pilots}.copilot.md` — Task-tool binding + capability rows, near-twins of the claude overlays)
+- [x] **3.1** Write 9 overlays: 3 kimi (`{3 pilots}.kimi.md` — delegate by agent name via the Task tool, agents at `~/.kimi-code/agents`, no memory tool, no mid-run clarification), 3 kilo (`{3 pilots}.kilo.md` — task-tool/`@mention` delegation, `permission.task` grant note, same memory/clarification fallbacks), 3 copilot (`{3 pilots}.copilot.md` — Task-tool binding + capability rows, near-twins of the claude overlays)
     — **Why:** AC 3 + review Major-5-class prevention — without `.copilot.md` overlays, copilot installs regress to LCD-only (the exact regression #576's plan review rejected for claude)
     — **Done when:** 9 files exist; helper composes each for its target
     — **Consumers affected:** kimi/kilo/copilot installs; guard suite (3.2)
-- [ ] **3.2** Update `tests/agent_lcd_pilot.bats`: orphan-guard allowlist DERIVED from the exported `COMPOSABLE_TARGETS` (node -e dynamic import with an ABSOLUTE path/pathToFileURL — relative specifiers resolve against cwd, the #537 trap; bats runs from arbitrary cwds); kimi/kilo test flips from byte-identical-core to binding-present; NEW assertions: copilot composed output carries the Task-tool binding, zcode composed output carries the inline-delegation/nesting-ban binding
+    — **Done:** 9 overlays (kimi ×3, kilo ×3, copilot ×3); files: agents/overlays/; fixes: none
+- [x] **3.2** Update `tests/agent_lcd_pilot.bats`: orphan-guard allowlist DERIVED from the exported `COMPOSABLE_TARGETS` (node -e dynamic import with an ABSOLUTE path/pathToFileURL — relative specifiers resolve against cwd, the #537 trap; bats runs from arbitrary cwds); kimi/kilo test flips from byte-identical-core to binding-present; NEW assertions: copilot composed output carries the Task-tool binding, zcode composed output carries the inline-delegation/nesting-ban binding
     — **Why:** Review Minor 3 + Major 1 — mechanized allowlists prevent the dead-file class structurally; the flips must land in the same commit as 3.1
     — **Done when:** Full guard file green with 12 new overlays present
     — **Consumers affected:** CI
+    — **Done:** orphan allowlist derived from exported COMPOSABLE_TARGETS (pathToFileURL import); kimi/kilo test flipped to binding-present; copilot Task-binding + zcode nesting-ban assertions added; also flipped stale byte-identity invariants in kimi/kilo suites (same class claude hit in #576, caught proactively); files: tests/agent_lcd_pilot.bats, tests/kimi_target.bats, tests/kilo_target.bats; fixes: none
 
 ### Phase 4: docs
-- [ ] **4.1** `docs/subagent-portability-contract.md`: binding matrix — Composable = opencode/claude/kimi/kilo/zcode/copilot (zcode: user-scope only + nesting ban + tools-omission rule; copilot: claude-translate reuse, `.claude`-format workspace dirs); documented-only shrinks to codex/pi/M365; pilot-coverage rows updated; `.zcode.md`/`.copilot.md` overlay validity stated
+- [x] **4.1** `docs/subagent-portability-contract.md`: binding matrix — Composable = opencode/claude/kimi/kilo/zcode/copilot (zcode: user-scope only + nesting ban + tools-omission rule; copilot: claude-translate reuse, `.claude`-format workspace dirs); documented-only shrinks to codex/pi/M365; pilot-coverage rows updated; `.zcode.md`/`.copilot.md` overlay validity stated
     — **Why:** The matrix is normative — it must match shipped reality (review Major 1's docs half)
     — **Done when:** Matrix, documented-only list, pilot table reflect 6 composable targets with the two caveats; lossy-translation registry gains the mcp-glob-deny row (ZCode ignores `mcp__*` wildcards — unenforceable, dropped with warning)
     — **Consumers affected:** issue #581 AC 4; future authoring
-- [ ] **4.2** `docs/harness-landscape-2026-09.md`: "Planned targets — not composable" rewritten as shipped (zcode/copilot landed via #581; pi/codex/M365 remain documented-only with reasons)
+    — **Done:** matrix: 6 composable (zcode user-scope + 3 deviations; copilot .claude-format dirs), documented-only = codex/pi/M365, mcp-glob lossy row added; files: docs/subagent-portability-contract.md; fixes: none
+- [x] **4.2** `docs/harness-landscape-2026-09.md`: "Planned targets — not composable" rewritten as shipped (zcode/copilot landed via #581; pi/codex/M365 remain documented-only with reasons)
     — **Why:** The section explicitly promises this flip
     — **Done when:** Section reflects shipped state
     — **Consumers affected:** docs readers; contract cross-ref
-- [ ] **4.3** `README.md` target table + `AGENTS.md` §Repository Purpose bullet: add `--target zcode` (user-scope only `~/.zcode/{agents,skills}/`, zcode-translate: camelCase `maxTurns`←`steps`, subagent rules dropped, tools-omission rule, nesting ban) and `--target copilot` (`~/.copilot/agents/` user; project `.claude/{agents,skills}/` — Claude-format workspace dirs VS Code documents; `.github/agents` native format out of scope)
+    — **Done:** planned-targets section rewritten as shipped; files: docs/harness-landscape-2026-09.md; fixes: none
+- [x] **4.3** `README.md` target table + `AGENTS.md` §Repository Purpose bullet: add `--target zcode` (user-scope only `~/.zcode/{agents,skills}/`, zcode-translate: camelCase `maxTurns`←`steps`, subagent rules dropped, tools-omission rule, nesting ban) and `--target copilot` (`~/.copilot/agents/` user; project `.claude/{agents,skills}/` — Claude-format workspace dirs VS Code documents; `.github/agents` native format out of scope)
     — **Why:** documentation-sync rules; #579 just made the AGENTS.md bullet reader-precise — keep it that way
     — **Done when:** Both surfaces name the new targets with accurate paths, scopes, and caveats
     — **Consumers affected:** repo readers; documentation-consistency checks
+    — **Done:** README target table (+zcode/+copilot rows, auto-probe list) and AGENTS.md purpose bullet updated; files: README.md, AGENTS.md; fixes: none
 
 ### Phase 5: tests + verification gate
-- [ ] **5.1** `tests/zcode_target.bats` (mirror `kimi_target.bats`): help lists zcode; user-scope add writes `~/.zcode/agents/` with `name:`/`maxTurns:` and zero `model:` lines; skill-allow source (code-review-subagent) omits `tools:` and carries `disallowedTools:`, stderr carries the subagent-drop warning; non-skill source (image-analyzer-subagent) DOES emit a `tools:` list (positive 8-action-map case); zcode overlay composed; project add prints the no-project-destination note; remove wipes
+- [x] **5.1** `tests/zcode_target.bats` (mirror `kimi_target.bats`): help lists zcode; user-scope add writes `~/.zcode/agents/` with `name:`/`maxTurns:` and zero `model:` lines; skill-allow source (code-review-subagent) omits `tools:` and carries `disallowedTools:`, stderr carries the subagent-drop warning; non-skill source (image-analyzer-subagent) DOES emit a `tools:` list (positive 8-action-map case); zcode overlay composed; project add prints the no-project-destination note; remove wipes
     — **Why:** AC 1 per-target enforcement incl. the three translator deviations
     — **Done when:** Suite green
     — **Consumers affected:** CI; ticket AC 1
-- [ ] **5.2** `tests/copilot_target.bats`: help lists copilot; user-scope add writes `~/.copilot/agents/` and no skills dir; project add writes `.claude/agents/` + `.claude/skills/` with `name:`/`tools:` frontmatter; remove wipes
+    — **Done:** zcode_target.bats 8/8 (omission+warning+positive-map cases covered); files: tests/zcode_target.bats; fixes: none
+- [x] **5.2** `tests/copilot_target.bats`: help lists copilot; user-scope add writes `~/.copilot/agents/` and no skills dir; project add writes `.claude/agents/` + `.claude/skills/` with `name:`/`tools:` frontmatter; remove wipes
     — **Why:** AC 2 — proves the null-skillsDir guard, the new project chain branch, and the `.claude`-format dir choice
     — **Done when:** Suite green
     — **Consumers affected:** CI; ticket AC 2
-- [ ] **5.3** Full gate: `tests/agent_lcd_pilot.bats` green (derived allowlist, kimi/kilo + copilot + zcode binding assertions); then full `bats tests/` + `node installer/build-registry.mjs --check` (ticket exit gate, tier=full)
+    — **Done:** copilot_target.bats 6/6 (user agents-only, project .claude/agents + .github/skills); files: tests/copilot_target.bats; fixes: none
+- [x] **5.3** Full gate: `tests/agent_lcd_pilot.bats` green (derived allowlist, kimi/kilo + copilot + zcode binding assertions); then full `bats tests/` + `node installer/build-registry.mjs --check` (ticket exit gate, tier=full)
     — **Why:** AC 5 — every pre-existing target suite must stay green with two new rows; the composition assertions close the plan-exit-gate-narrower violation from review
     — **Done when:** --check no drift; bats fully green
     — **Consumers affected:** CI; ticket AC 5
+    — **Done:** registry --check no drift; full bats 628/628 exit 0. fixes: (1) dry-run grep pattern in my new tests (quoted-any-char regex vs nested mktemp paths — test bug, not code), (2) agents_target invalid-target list six→eight (expected consequence of new rows)
+
+## Gate trace
+
+GATE 9f6306d tier=light lint=n.a. typecheck=t build=t unit=t e2e=n.a. — Phases 1-3 scoped: 8 suites 121/121 (zcode/copilot/pilot-guards/kimi/kilo/claude/agents/init)
+GATE d1ac601 tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — ticket exit gate: build-registry --check no drift; full bats 628/628 exit 0
 
 ## Technical Notes
 - ZCode frontmatter (zcode.z.ai/en/docs/subagents, docs-verified this session): `name`/`description` required, `model` omit=inherit, `thoughtLevel` gated on explicit model, `tools`/`disallowedTools`, `maxTurns`, `injectAgentsMd` default-on, `mcpServers` exact-match; subagents cannot spawn subagents; custom `tools:` lists are EXHAUSTIVE ("nothing outside it is available") and gate skill invocation — the basis for 1.1(b).
