@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.48.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.47.0...v9.48.0) (2026-09-26)
+
+### Features
+
+* **installer:** aggregate --target auto --dry-run into one JSON doc ([#575](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/575)) ([5d8c235](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/5d8c2352f6ddc9402fa356f69251be61c7a2cd4c)), closes [#568](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/568) [#568](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/568)
+
 ## [9.47.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.46.1...v9.47.0) (2026-09-26)
 
 ### Features
