@@ -151,7 +151,7 @@
 - **File**: `LEARNINGS/anti-patterns/generated-artifact-unstaged-regen.md`
 - **Confidence**: n.a.
 - **Scope**: project
-- **Summary**: `node installer/build-registry.mjs` writes `installer/registry.json` on disk; if the phase commit doesn't `git add` it, the branch ships main's stale registry while local gates pass (they read disk). #408 merged-state caught it only at code review — the reviewer's diff-alphabetical-skip noticed `installer/registry.json` missing between `pack-devops.json` and `opencode_app/README.md`.
+- **Summary**: `node installer/build-registry.mjs` writes `installer/registry.json` on disk; if the phase commit doesn't `git add` it, the branch ships main's stale registry while local gates pass (they read disk). #408 merged-state caught it only at code review — the reviewer's diff-alphabetical-skip noticed `installer/registry.json` missing between `pack-devops.json` and `opencode_app/README.md`. Recurred in #586 (153-entry registry vs 154 dirs; local gates green, CI drift guard would have caught it) — confidence 0.95.
 
 ### `gh api --paginate --jq` evaluates per page — aggregations count pages
 
@@ -280,6 +280,14 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Summary**: When a refactor's correctness rests on call ORDER inside a 4k-line shell script (lift must see pre-overwrite agents; CLI owns agent files before config-only resolve), pin it with a bats test: `grep -n` each anchor (exact indentation to disambiguate call sites), assert line numbers ascending, and negatively grep the removed pattern. Cheap, review-anchored, and survives future edits. Established in 
+
+### Pattern: Skill migration into this repo has 5 registration surfaces
+
+- **Category**: pattern
+- **File**: `LEARNINGS/patterns/skill-migration-registration-surface-checklist.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: Adding/migrating a skill means 5 surfaces: (1) top-level `category:` frontmatter — `metadata.category` is dead code to build-registry.mjs:216; (2) `installer/registry.json` regen + commit — CI-enforced only (`release.yml --check`), invisible to local bats gates; (3) lean array + its 6 count pins in tests/skill_profiles.bats; (4) README + opencode_app/README counts and catalog row (setup.sh/ps1 derive from disk); (5) dependency-map/presets only for MCP/pack deps (#586).
 
 ### Pattern: jq @tsv needs sentinels for nullable columns
 
@@ -415,7 +423,7 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-21
-- **Summary**: A Dependency & Consumer Map row that names a consumer but maps to no implementation step is a silent coverage hole.
+- **Summary**: A Dependency & Consumer Map row that names a consumer but maps to no implementation step is a silent coverage hole. #586: PLAN-586's map named the installer + Pages catalog but no step owned the registry regen feeding both.
 
 ### Steps appended to one build_plan branch vanish when main rebuilds the plan
 
