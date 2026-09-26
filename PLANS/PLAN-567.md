@@ -73,3 +73,12 @@ None (no `blocked-by:`).
 
 GATE 26e2310 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 8edd0c2 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+## Review Fixes (Step 9)
+
+- **Minor (fixed)**: the three rejection asserts tightened from `-ne 0` to `-eq 2` (die's default code pinned); added the `--target auto --prune` pin (guard must fire through the auto dispatch's opts spread).
+- **Minor (fixed)**: die message names `update --prune` among the legit --prune homes.
+- **Minor (not fixed)**: pre-existing `remove --project` message could name the exact invocation — out of scope, noted.
+- **LEARNINGS**: `anti-patterns/globally-parsed-flags-silently-ignore-on-unread-verbs.md`.
+- **Re-gate**: full `bats tests/` on the fixed tree → see trace below.
+
+## Gate Trace (review-fix round)

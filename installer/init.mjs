@@ -793,7 +793,7 @@ async function cmdAdd(args, opts, reg, depMap) {
   // Honoring it on a single-name add would delete every other installed entry —
   // reject instead of the old silent ignore.
   if (opts.prune)
-    die("'--prune' is not an add flag — it belongs to the preset/init flow (set replace) and prune-only mode. 'add' already migrates legacy copies of the names it installs; to remove entries use 'remove' (user scope) or the preset flow with --prune.", 2);
+    die("'--prune' is not an add flag — it belongs to the preset/init flow and prune-only mode (set replace; update --prune also uses it). 'add' already migrates legacy copies of the names it installs; to remove entries use 'remove' (user scope) or the preset flow with --prune.", 2);
   // --all (#379): full-catalog selection for delegated full deploys.
   if (opts.all) {
     const sel = {
