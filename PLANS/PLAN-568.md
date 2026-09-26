@@ -80,4 +80,4 @@ None (no `blocked-by:`).
 ## Gate Trace
 
 GATE 51e6320 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
-GATE <full-sha> tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE e6762b7 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
