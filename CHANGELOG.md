@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.53.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.53.0...v9.53.1) (2026-09-26)
+
+### Bug Fixes
+
+* **worktree-pipeline:** purge opencode registry rows in worktree teardown ([#594](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/594)) ([9ecb914](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/9ecb914bb021735dbf6a5f2c4a512ae94bebdd51))
+
 ## [9.53.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.52.1...v9.53.0) (2026-09-26)
 
 ### Features
