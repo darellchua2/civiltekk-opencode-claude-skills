@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 # Tests for the `agents` install target (#453): verbatim copies into the
-# cross-tool shared dir ~/.agents/{agents,skills}/ (read by Kimi Code and pi).
+# cross-tool shared dir ~/.agents/{agents,skills}/ (skills read by Kimi Code and pi, agents Kimi-only).
 # HOME-isolated per test (same mechanism as update.bats).
 
 REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
