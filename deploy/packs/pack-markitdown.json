@@ -1,5 +1,5 @@
 {
-  "$comment": "Provider pack: markitdown MCP (PDF/DOCX/PPTX/XLSX -> Markdown) — upstream markitdown-mcp from PyPI (#487), stdio by default, MARKITDOWN_ENABLE_PLUGINS=false kept in the server env. Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack markitdown (v2 shape: mcp.servers.<name>.disabled:false + permissions array rule). --enable-pack markitdown also pip-installs the pinned PyPI package (install_markitdown_mcp / Install-MarkitdownMcp; the Docker image bakes it in the python-deps stage). Appends the permissions rule {\"action\": \"markitdown*\", \"resource\": \"*\", \"effect\": \"allow\"} to flip the shipped deny.",
+  "$comment": "Provider pack: markitdown MCP (PDF/DOCX/PPTX/XLSX -> Markdown) — upstream markitdown-mcp from PyPI (#487), stdio by default, MARKITDOWN_ENABLE_PLUGINS=false kept in the server env. Deep-merged by deploy/merge-packs.mjs when the user passes --enable-pack markitdown (v2 shape: mcp.servers.<name>.disabled:false + permissions array rule). --enable-pack markitdown also pip-installs the pinned PyPI package (install_markitdown_mcp; the Docker image bakes it in the python-deps stage). Appends the permissions rule {\"action\": \"markitdown*\", \"resource\": \"*\", \"effect\": \"allow\"} to flip the shipped deny.",
   "mcp": {
     "servers": {
       "markitdown": { "disabled": false }

@@ -1009,7 +1009,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-19
-- **Summary**: **Context**: PLAN-409 review. Plans executed by plan-automation-loop commit + push per phase, and CI (release.yml) runs the full bats suite plus `node installer/build-registry.mjs --check` on every push.
+- **Summary**: **Context**: PLAN-409 review. Plans executed by plan-execution-skill (then plan-automation-loop-skill, renamed #408) commit + push per phase, and CI (release.yml) runs the full bats suite plus `node installer/build-registry.mjs --check` on every push.
 
 ### Conditional-mode blocks must supersede all restatements, not just the numbered list
 
