@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.51.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.50.0...v9.51.0) (2026-09-26)
+
+### Features
+
+* **582:** A/B harness — /review-arch + /review-inline pilots, inline skill family, /run-plan-v2 ([#584](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/584)) ([e5eba09](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/e5eba09c1638ca2d3fa070d2f24bf41e6e11bddd)), closes [#582](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/582) [#582](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/582) [#437](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/437) [#582](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/582) [#437](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/437)
+
 ## [9.50.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.49.0...v9.50.0) (2026-09-26)
 
 ### Features
