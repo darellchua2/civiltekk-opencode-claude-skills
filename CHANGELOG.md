@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.46.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.46.0...v9.46.1) (2026-09-26)
+
+### Bug Fixes
+
+* **deploy:** --help UX fixes + setup.ps1 flag parity with setup.sh ([#571](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/571)) ([#572](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/572)) ([36e372f](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/36e372fe9e082fffe6d621dc337d21b2de30ea5f)), closes [#474](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/474)
+
 ## [9.46.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.45.1...v9.46.0) (2026-09-26)
 
 ### Features
