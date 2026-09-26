@@ -3821,6 +3821,7 @@ build_plan() {
         PLAN_STEPS+=("false|vllm|Configure vLLM|setup_vllm")
         PLAN_STEPS+=("false|provider|Select model provider|setup_model_provider")
         PLAN_STEPS+=("false|credentials|Capture provider credentials|setup_provider_credentials")
+        PLAN_STEPS+=("false|seed-agent-keys|Seed Z.AI key into detected agents|seed_agent_keys")
         if [ "$SELECT_ITEMS" = true ]; then
             # Per-item picker (#473): selection replaces the blanket content
             # deploy. Steps APPEND here (never interleave — deploy_delegate
@@ -3910,6 +3911,48 @@ update_manifest() {
         # #379 contract: pre-#379 installs warn-and-continue (non-critical).
         log_warn "manifest update skipped (exit ${rc}) — pre-#379 installs: one full ./deploy/setup.sh run adopts the manifest"
     fi
+    return 0
+}
+
+# Seed the Z.AI provider into the pi coding agent's config (#573). Gated on
+# detection + a captured key; delegates the merge to deploy/seed-pi-provider.mjs
+# (merge-never-clobber, dry-run aware, 0600 output). Non-fatal on every path.
+seed_pi_provider() {
+    if [ "${PI_INSTALLED:-false}" != true ]; then
+        log_info "pi not detected - skipping Z.AI provider seed"
+        return 0
+    fi
+    if [ -z "${ZAI_API_KEY:-}" ]; then
+        log_warn "pi detected but no ZAI_API_KEY captured - skipping provider seed"
+        return 0
+    fi
+    local pi_config="${HOME}/.pi/agent/models.json"
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Would run: node ${DEPLOY_DIR}/seed-pi-provider.mjs --config ${pi_config}"
+        return 0
+    fi
+    log_info "Seeding Z.AI provider into pi (${pi_config})"
+    if ! node "${DEPLOY_DIR}/seed-pi-provider.mjs" --config "$pi_config"; then
+        log_warn "pi provider seed failed - pi remains unconfigured (non-fatal)"
+        return 0
+    fi
+    log_success "pi: zai provider seeded (apiKey resolves from \$ZAI_API_KEY at runtime)"
+    # Best-effort verification: pi reloads models.json on every /model open;
+    # the probe confirms the file parses from pi's perspective.
+    if command_exists pi && command_exists timeout; then
+        if timeout 15 pi --list-models >/dev/null 2>&1; then
+            log_success "pi --list-models OK (provider visible)"
+        else
+            log_warn "pi --list-models probe failed (non-fatal - check ~/.pi/agent/models.json)"
+        fi
+    fi
+    return 0
+}
+
+# Plan-step entry: seed the captured provider key into every detected agent
+# (#573). Future agents (claude, kimi, kilo) join as additional calls here.
+seed_agent_keys() {
+    seed_pi_provider
     return 0
 }
 

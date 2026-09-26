@@ -51,15 +51,17 @@ No cross-module runtime consumers beyond this repo (no skill/, agents/, installe
 
 ### Phase 2: pi provider seeding
 
-- [ ] **2.1** Create `deploy/seed-pi-provider.mjs` (node helper, zero deps, mirrors merge-packs.mjs conventions): reads `--config <models.json>` (missing file ⇒ `{}`), sets `providers.zai = { api: "openai-completions", baseUrl: "https://api.z.ai/api/paas/v4", apiKey: "$ZAI_API_KEY", models: [glm-5.3, glm-5.3-flash with contextWindow/maxTokens] }` without touching sibling providers, writes 2-space JSON with 0600 perms; `--dry-run` prints the delta and writes nothing; idempotent re-run (byte-stable output)
+- [x] **2.1** Create `deploy/seed-pi-provider.mjs` (node helper, zero deps, mirrors merge-packs.mjs conventions): reads `--config <models.json>` (missing file ⇒ `{}`), sets `providers.zai = { api: "openai-completions", baseUrl: "https://api.z.ai/api/paas/v4", apiKey: "$ZAI_API_KEY", models: [glm-5.3, glm-5.3-flash with contextWindow/maxTokens] }` without touching sibling providers, writes 2-space JSON with 0600 perms; `--dry-run` prints the delta and writes nothing; idempotent re-run (byte-stable output)
     — **Why:** The merge is the correctness-critical piece (never-clobber of user's other providers) and must be dry-run-gated; a node helper follows the house pattern and is directly testable
     — **Done when:** Running it twice on a config containing another provider leaves that provider byte-identical and produces identical output; `--dry-run` leaves the file untouched (mtime + content unchanged)
     — **Consumers affected:** `seed_pi_provider` wrapper in setup.sh; new bats test
+    — **Done:** helper created; self-test green on dry-run-no-write (mtime unchanged), sibling-preserved + zai-block-correct after real run, idempotent no-rewrite re-run, 0600 perms, malformed-JSON clean failure; files: deploy/seed-pi-provider.mjs; fixes: none
 
-- [ ] **2.2** Add `seed_pi_provider()` to `deploy/setup.sh`: gated on `PI_INSTALLED` + a captured Z.AI key; invokes the mjs helper against `~/.pi/agent/models.json`; dry-run safe; after a real write runs bounded `pi --list-models` (15s timeout, best-effort, warn-only) as verification; wire a non-critical `seed-agent-keys|Seed provider keys into detected agents` plan step immediately after `credentials` in the full branch
+- [x] **2.2** Add `seed_pi_provider()` to `deploy/setup.sh`: gated on `PI_INSTALLED` + a captured Z.AI key; invokes the mjs helper against `~/.pi/agent/models.json`; dry-run safe; after a real write runs bounded `pi --list-models` (15s timeout, best-effort, warn-only) as verification; wire a non-critical `seed-agent-keys|Seed provider keys into detected agents` plan step immediately after `credentials` in the full branch
     — **Why:** The seed must ride the existing credential capture (#471 machinery) so the key is prompted once and never persisted by us; the plan step placement after `credentials` guarantees the key exists
     — **Done when:** Full-mode run with a stubbed `pi` on PATH and key in env writes `providers.zai` with `apiKey: "$ZAI_API_KEY"` (literal string, env-interpolation form); with `pi` absent the step is a logged no-op
     — **Consumers affected:** `~/.pi/agent/models.json` (user file, merge-only); full-mode plan order
+    — **Done:** wrapper + seed_agent_keys() entry added before setup_provider_credentials; plan step wired after credentials (full branch only — models-only keeps credential-only semantics); smoke green: absent→no-op no-write, dry-run→intent only, real→seeded with literal $ZAI_API_KEY; files: deploy/setup.sh; fixes: none
 
 ### Phase 3: codex provider seeding
 
@@ -123,3 +125,4 @@ No cross-module runtime consumers beyond this repo (no skill/, agents/, installe
 ## Gate Trace
 
 GATE 9b0cffa tier=light lint=t typecheck=n.a build=- unit=n.a e2e=n.a
+GATE b47fe21 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a
