@@ -27,20 +27,23 @@ No config (`opencode.json`), agent, skill, or MCP surfaces change — the AGENTS
 
 ### Phase 1: Idempotency gate + restart announcement (deploy/setup.sh)
 
-- [ ] **1.1** Add an identical-key skip gate in `setup_provider_credentials()`, placed AFTER key capture (env/prompt) and BEFORE `register_provider_auth` seeding: when `auth.json` exists and EVERY auth_id already holds a key identical to the captured key, log "credentials unchanged … skipping re-seed and service restart" and `return 0` (never `exit` — non-critical plan step, LEARNING `plan-step-functions-must-return`). Key comparison happens inside a `node -e` one-liner with the key passed via environment (`AUTH_KEY="$key" node -e …`, mirroring `register_provider_auth`'s env pattern) — the key value is never logged or interpolated (LEARNING `dry-run-logs-interpolating-secrets`). Leave the existing no-env/already-seeded pre-prompt gate (~:4094-4106) untouched.
+- [x] **1.1** Add an identical-key skip gate in `setup_provider_credentials()`, placed AFTER key capture (env/prompt) and BEFORE `register_provider_auth` seeding: when `auth.json` exists and EVERY auth_id already holds a key identical to the captured key, log "credentials unchanged … skipping re-seed and service restart" and `return 0` (never `exit` — non-critical plan step, LEARNING `plan-step-functions-must-return`). Key comparison happens inside a `node -e` one-liner with the key passed via environment (`AUTH_KEY="$key" node -e …`, mirroring `register_provider_auth`'s env pattern) — the key value is never logged or interpolated (LEARNING `dry-run-logs-interpolating-secrets`). Leave the existing no-env/already-seeded pre-prompt gate (~:4094-4106) untouched.
     — **Why:** This is the root-cause fix — the current gate only fires when the env var is empty, so an exported `ZAI_API_KEY` (persisted by `setup_shell_vars`) re-seeds and restarts the service on every run.
     — **Done when:** With auth.json seeded `key=X` and `ZAI_API_KEY=X` exported, sourcing setup.sh and calling `setup_provider_credentials` (PROVIDER=zai) returns 0, leaves auth.json byte-identical, and never invokes `opencode` (no verify call, no restart).
     — **Consumers affected:** the `credentials` plan step in every full/quick deploy; any live opencode session during a deploy (positively — no longer killed).
+    — **Done:** identical-key gate added (env-safe `AUTH_KEY= node -e` compare, `return 0`, pre-prompt gate untouched); smoke: same-key → "unchanged" + 0 opencode calls, changed-key → reseed both ids; files: deploy/setup.sh; fixes: none
 
-- [ ] **1.2** In the #573 restart block (~:4153-4168), before executing the real `opencode service restart`, emit one `log_info` line announcing the restart and its impact ("live opencode sessions will be interrupted"). Dry-run keeps its existing `[DRY-RUN]` line unchanged.
+- [x] **1.2** In the #573 restart block (~:4153-4168), before executing the real `opencode service restart`, emit one `log_info` line announcing the restart and its impact ("live opencode sessions will be interrupted"). Dry-run keeps its existing `[DRY-RUN]` line unchanged.
     — **Why:** Ticket AC requires setup to announce a genuine restart before performing it; also the honest signal for anyone running deploys beside live sessions.
     — **Done when:** A changed-key run prints the announcement line before the restart command runs; dry-run output contains no real-restart wording.
     — **Consumers affected:** deploy log readers; tests asserting the warning (2.2/2.3).
+    — **Done:** restart block restructured to announce ("live opencode sessions will be interrupted") before the real restart; dry-run line untouched; smoke showed announcement→restart ordering; files: deploy/setup.sh; fixes: none
 
-- [ ] **1.3** Update the `show_help()` "CODING AGENT DETECTION (#573)" paragraph (~:706-710): the restart happens only when a NEW key is seeded; unchanged credentials skip it.
+- [x] **1.3** Update the `show_help()` "CODING AGENT DETECTION (#573)" paragraph (~:706-710): the restart happens only when a NEW key is seeded; unchanged credentials skip it.
     — **Why:** The help text currently promises an unconditional restart after key seeding — stale the moment 1.1 lands.
     — **Done when:** `./deploy/setup.sh --help` prose states the conditional restart; `tests/test_help_parity.bats` still passes.
     — **Consumers affected:** `--help` readers only.
+    — **Done:** paragraph now states restart fires only on a NEW key (announced first), unchanged credentials skip it; tests/test_help_parity.bats green in the Phase 1 full suite; files: deploy/setup.sh; fixes: none
 
 ### Phase 2: Regression tests (tests/test_provider_credentials.bats)
 
@@ -82,3 +85,9 @@ No config (`opencode.json`), agent, skill, or MCP surfaces change — the AGENTS
 - **Risk:** A user rotated the key in auth.json to a *different* value intentionally and expects the env key NOT to win. **Mitigation:** out of scope — current behavior already lets the env/prompt key win on every run; this PLAN only removes the no-op case.
 - **Risk:** CI lacks `opencode` binary → stubs already handle (function shadows binary inside the sourced shell).
 - **Risk:** Help-parity test pins the old paragraph. **Mitigation:** 1.3 runs `tests/test_help_parity.bats`; adjust wording if pinned (check the test's assertions before rewording assertions themselves — never weaken a test to pass).
+
+## Gate Trace
+
+GATE 5625e87 tier=full lint=t(bash -n) typecheck=n.a build=n.a unit=t(629 ok, 47/47 files) e2e=n.a
+Note: Phase 1 escalated full — anchor: deploy file (deploy/setup.sh) per §Tiered gating (1). No build target exists in this repo (CI = bats + bash -n only); bash -n + the full CI-parity suite substitute for the build axis. e2e: backend-only change (E2E rule skip).
+WORK LOG: 1.1 smoke — same-key: "credentials unchanged" log + zero opencode invocations + auth.json byte-identical; changed-key: announcement → `service restart`, both auth_ids reseeded, `auth list` verify recorded.
