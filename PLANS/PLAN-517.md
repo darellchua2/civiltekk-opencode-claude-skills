@@ -24,28 +24,33 @@
 ## Implementation Phases
 
 ### Phase 1: Tracked-file fixes (PR-carried)
-- [ ] **1.1** `opencode_app/opencode.json:629` — drop the stale "; Docker awaits #387" clause from the plan-execution skill description (#387 shipped: v2 binary + authenticated healthcheck); keep the /goal recommendation itself
+- [x] **1.1** `opencode_app/opencode.json:629` — drop the stale "; Docker awaits #387" clause from the plan-execution skill description (#387 shipped: v2 binary + authenticated healthcheck); keep the /goal recommendation itself
     — **Why:** User-visible config prose asserting a pending fix for a resolved issue misinforms harness-choice decisions
     — **Done when:** `grep -n "Docker awaits" opencode_app/opencode.json` returns nothing; the /goal path wording remains
     — **Consumers affected:** opencode runtime skill descriptions; CI config-parsing tests
-- [ ] **1.2** `deploy/packs/pack-markitdown.json` $comment — remove the removed PowerShell fn name `Install-MarkitdownMcp`, keep `install_markitdown_mcp` (the live bash/npm install fn)
+    — **Done:** Docker-await #387 clause deleted from plan-execution description; /goal wording kept; files: opencode_app/opencode.json; fixes: none
+- [x] **1.2** `deploy/packs/pack-markitdown.json` $comment — remove the removed PowerShell fn name `Install-MarkitdownMcp`, keep `install_markitdown_mcp` (the live bash/npm install fn)
     — **Why:** The comment names a function deleted from setup.ps1 — a stale pointer genus #506 was sweep-killing
     — **Done when:** `grep -c "Install-MarkitdownMcp" deploy/packs/pack-markitdown.json` = 0
     — **Consumers affected:** docs readers only (merge-packs strips `$comment`)
-- [ ] **1.3** `LEARNINGS/_index.md:1012` — reword the phase-commit-ci-gate-ordering summary to name `plan-execution-skill` with the dated rename note "(then plan-automation-loop-skill, renamed #408)"
+    — **Done:** Install-MarkitdownMcp removed from $comment (live fn name kept); files: deploy/packs/pack-markitdown.json; fixes: none
+- [x] **1.3** `LEARNINGS/_index.md:1012` — reword the phase-commit-ci-gate-ordering summary to name `plan-execution-skill` with the dated rename note "(then plan-automation-loop-skill, renamed #408)"
     — **Why:** The tracked index entry is the PR-visible half of item 4; the index is the auto-inject surface other sessions read
     — **Done when:** `_index.md` carries the dated rename note; summary still describes the same learning
     — **Consumers affected:** session memory recall via the manifest
+    — **Done:** index entry reworded to plan-execution-skill with dated rename note; files: LEARNINGS/_index.md; fixes: none
 
 ### Phase 2: LEARNINGS body fixes (gitignored — applied in the main checkout, documented here)
-- [ ] **2.1** In `/home/silentx/VSCODE/civiltekk-opencode-claude-skills/LEARNINGS/` (bodies are per-checkout, gitignored — the PR cannot carry them; this step edits the only live copy): item 1 — `anti-patterns/concurrent-execute-before-writers-event-input.md:12` add dated repoint note (v1 `plugins/vibeguard.ts:490-496` → v2 `plugins/opencode-vibeguard-v2.ts:504-508`); item 2 — `decisions/adaptive-review-requirements-relay.md:17` hard-deps name → `plan-execution-skill` with "(then plan-automation-loop-skill, merged #408)"; item 4-body — `patterns/phase-commit-ci-gate-ordering.md:3` same rename treatment as 1.3; item 5 — `decisions/skill-permission-allowlist.md:20-21` References aligned to the file's own numbers (106 allows = 105 deployable + 1 app-scoped; lean 70 post-#481)
+- [x] **2.1** In `/home/silentx/VSCODE/civiltekk-opencode-claude-skills/LEARNINGS/` (bodies are per-checkout, gitignored — the PR cannot carry them; this step edits the only live copy): item 1 — `anti-patterns/concurrent-execute-before-writers-event-input.md:12` add dated repoint note (v1 `plugins/vibeguard.ts:490-496` → v2 `plugins/opencode-vibeguard-v2.ts:504-508`); item 2 — `decisions/adaptive-review-requirements-relay.md:17` hard-deps name → `plan-execution-skill` with "(then plan-automation-loop-skill, merged #408)"; item 4-body — `patterns/phase-commit-ci-gate-ordering.md:3` same rename treatment as 1.3; item 5 — `decisions/skill-permission-allowlist.md:20-21` References aligned to the file's own numbers (106 allows = 105 deployable + 1 app-scoped; lean 70 post-#481)
     — **Why:** These four are the issue's items 1/2/4/5; gitignored bodies live only here, so the local checkout IS the canonical copy
     — **Done when:** All four edits applied; each carries a dated note or a live path per the #506 `Update <date> (#<ref>)` pattern
     — **Consumers affected:** session memory recall; issue #517 resolution completeness
-- [ ] **2.2** Item 7 decision — the `_index.md` generator is plugin-side (no `_index` generator exists in `plugins/` in-repo; grep verified): DEFER the ellipsis-marker idea to the plugin, record the decision in the resolution comment
+    — **Done:** 4 body edits applied in main checkout: vibeguard anchor dated-repointed to v2 :504-508, relay hard-deps renamed with #408 note, phase-commit context renamed, allowlist References aligned (106/70); files: 4 LEARNINGS bodies (gitignored, local-only); fixes: none
+- [x] **2.2** Item 7 decision — the `_index.md` generator is plugin-side (no `_index` generator exists in `plugins/` in-repo; grep verified): DEFER the ellipsis-marker idea to the plugin, record the decision in the resolution comment
     — **Why:** The issue asks for a decision, not necessarily a code change; the generator is not repo code, so an in-repo fix is impossible
     — **Done when:** Decision + rationale recorded in the issue resolution comment
     — **Consumers affected:** issue #517 readers; future plugin work
+    — **Done:** decision: DEFER to plugin — no _index generator exists in-repo (grep verified); rationale recorded in resolution comment; files: none (decision); fixes: none
 
 ### Phase 3: Verification + resolution
 - [ ] **3.1** Census: `grep -rn "plan-automation-loop" LEARNINGS/ opencode_app/opencode.json` (LEARNINGS against the main checkout where bodies live, opencode.json in the worktree) — every remaining match must be a dated historical mention

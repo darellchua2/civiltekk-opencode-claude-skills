@@ -626,7 +626,7 @@
     },
     "commands": {
         "run-plan": {
-            "description": "Fully-automated plan execution loop — implement PLAN*.md phase-by-phase (tiered verification gate per verification-loop-skill: light — scoped lint + typecheck + affected tests — per phase; full on critical-area anchors and the ticket exit gate; then commit + push per phase). Deliberate trigger; soft guardrails — for long hands-off runs prefer the runtime-guarded /goal path (@prevalentware/opencode-goal-plugin, user-space; Docker awaits #387).",
+            "description": "Fully-automated plan execution loop — implement PLAN*.md phase-by-phase (tiered verification gate per verification-loop-skill: light — scoped lint + typecheck + affected tests — per phase; full on critical-area anchors and the ticket exit gate; then commit + push per phase). Deliberate trigger; soft guardrails — for long hands-off runs prefer the runtime-guarded /goal path (@prevalentware/opencode-goal-plugin, user-space).",
             "template": "Load the skill `plan-execution-skill` in --gate mode and run it to fully implement the plan file given as the argument: $ARGUMENTS",
             "agent": "build"
         },
