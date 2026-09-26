@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.47.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.46.1...v9.47.0) (2026-09-26)
+
+### Features
+
+* **setup:** detect coding agents; seed Z.AI key into pi + codex ([#573](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/573)) ([#574](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/574)) ([5484395](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/54843955b5954b974c628dfa56bb5cb0ae03e2f6))
+
 ## [9.46.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.46.0...v9.46.1) (2026-09-26)
 
 ### Bug Fixes
