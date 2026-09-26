@@ -1659,3 +1659,19 @@
 - **Scope**: project
 - **Summary**: Every rebase site in a workflow contract needs its force-push story (`--force-with-lease`) or the first resume dies non-fast-forward at the next phase push (#560 code review)
 - **Date**: 2026-09-25
+
+### Parallel write path bypasses composition hook
+
+- **File**: `LEARNINGS/anti-patterns/parallel-write-path-bypasses-composition-hook.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: A composition hook added to one writer of deployed agent bytes (init.mjs add loop) silently regresses the other (setup.sh → resolve-models.mjs renderAgent) — enumerate ALL writers in the Consumer Map and route them through one shared helper with a byte-identity assertion (#576 plan review, BLOCK-1)
+
+### Composable vs documented-only target matrix
+
+- **File**: `LEARNINGS/decisions/composable-vs-documented-target-matrix.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: Overlay suffixes are valid only for targets with a TARGETS row (opencode/claude/agents/kimi/kilo); zcode/copilot/codex/pi/M365 are documented-only until a composition path exists — dead overlay files are guard-blocked (#576 requirements relay, REQ-BIND)
