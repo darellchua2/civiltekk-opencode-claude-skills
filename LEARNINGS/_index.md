@@ -1583,3 +1583,12 @@
 - **Scope**: project
 - **Summary**: process.exit after large stdout writes truncates at the ~8KB pipe boundary on pipes (files flush sync → CI-green/local-red flakes); gate on writableLength>0, await write("",cb) before exit, and pin with a JSON.parse-through-pipe test — file-redirect tests false-green (#564 exit gate)
 - **Date**: 2026-09-25
+
+### Globally-parsed flags silently ignore on unread verbs
+
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/globally-parsed-flags-silently-ignore-on-unread-verbs.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: parseArgs accepts every BOOL_FLAGS entry for every verb, so an unread flag on a mutating verb is a latent silent-ignore bug (#567: add ignored --prune); when honoring would be destructive (set-replace on a single-name add), fix with a first-statement rejection guard covering all entry paths and pin the exact exit code (#567 code review)
+- **Date**: 2026-09-26

@@ -41,6 +41,7 @@ LEARNINGS/**/*.md
 !LEARNINGS/anti-patterns/flag-conflict-guard-vs-value-flag-parser.md
 !LEARNINGS/anti-patterns/auto-detect-probe-reads-self-created-signal.md
 !LEARNINGS/solutions/process-exit-truncates-async-pipe-writes-drain-first.md
+!LEARNINGS/anti-patterns/globally-parsed-flags-silently-ignore-on-unread-verbs.md
 !LEARNINGS/conventions/docs-runnable-snippets-must-match-ci-invocation.md
 !LEARNINGS/anti-patterns/plan-exit-gate-narrower-than-pinned-consumers.md
 !LEARNINGS/anti-patterns/plan-element-lists-drop-unnamed-upstream-sections.md
