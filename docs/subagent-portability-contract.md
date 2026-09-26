@@ -40,7 +40,6 @@ Notes per target: **zcode** is user-scope only (the ZCode subagents Beta documen
 - Location: `agents/overlays/<stem>.<target>.md` (e.g. `agents/overlays/code-review-subagent.opencode.md`).
 - Content: **fragments, not documents** — no H1 title, no frontmatter; prose meant to be appended after the core body, separated by one blank line.
 - An overlay exists only when the target genuinely needs different words than the core; absent overlay = target receives the core unchanged.
-- Project-scope copilot installs split destinations: agents to `.claude/agents/` (documented Claude-format workspace dir) and skills to `.github/skills/` (documented workspace skills dir) — both load in VS Code, from different per-content-type conventions.
 
 ## Composition pipeline
 

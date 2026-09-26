@@ -23,7 +23,7 @@ opencode_app/
 └── .opencode/skills/      # Project-level skills (e.g. github-runners-setup-skill)
 ```
 
-Content (149 skill directories, 34 agents, plugins) lives at the **repo root**
+Content (153 skill directories, 34 agents, plugins) lives at the **repo root**
 (plus 1 project-level skill under `.opencode/skills/`) and is COPY'd
 into `/app/.opencode/` at build time — the container is the only runtime,
 so there is no local-serving bridge in the repo.

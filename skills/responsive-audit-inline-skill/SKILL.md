@@ -1,11 +1,11 @@
 ---
 name: responsive-audit-inline-skill
 description: >-
-  In-session responsive audit delegate — wraps the playwright-responsive-audit-
-  skill inline loop (detect → fix → re-verify) for current-diff frontend changes.
-  Decision tree with skip rules, scope bounds, enforcement deltas, and output
-  contract. Triggers: inline responsive audit, viewport check in-session,
-  /run-plan-v2 responsive step.
+  In-session responsive audit delegate — wraps the
+  playwright-responsive-audit-skill inline loop (detect → fix → re-verify) for
+  current-diff frontend changes. Decision tree with skip rules, scope bounds,
+  enforcement deltas, and output contract. Triggers: inline responsive audit,
+  viewport check in-session, /run-plan-v2 responsive step.
 license: Apache-2.0
 compatibility: opencode
 metadata:

@@ -668,7 +668,7 @@
         },
         "review-inline": {
             "description": "Architecture review pilot (A/B arm B, #582) — the SAME review executed in-session (no subagent): load the deployed architecture-review-subagent definition as your checklist and run the identical workflow in this context. Usage: /review-inline <review target — diff range, files, or PLAN>",
-            "template": "Load the deployed file ~/.config/opencode/agents/architecture-review-subagent.md and execute it as your checklist IN THIS SESSION for: $ARGUMENTS. Same workflow, same severity gates, same Return Contract — but in-session: state the review scope before starting and keep findings evidence-backed (file:line).",
+            "template": "Load the deployed file agents/architecture-review-subagent.md as your checklist IN THIS SESSION for: $ARGUMENTS. Deploy-mode path: CLI ~/.config/opencode/agents/architecture-review-subagent.md; Docker /app/.opencode/agents/architecture-review-subagent.md — if neither resolves, report the review as unavailable and stop. Same workflow, same severity gates, same Return Contract — but in-session: state the review scope before starting and keep findings evidence-backed (file:line).",
             "agent": "build",
             "subagent": false
         },
