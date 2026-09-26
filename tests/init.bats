@@ -426,3 +426,16 @@ EOC
   [ ! -e "${HOME}/.config/opencode/skills/solid-principles-skill" ]
   [ -d "${HOME}/.claude/skills/solid-principles-skill" ]
 }
+
+@test "add --prune is rejected explicitly on all add paths (#567)" {
+  run $INIT add tdd-workflow-skill --prune --yes
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q "'--prune' is not an add flag"
+  run $INIT add tdd-workflow-skill --project "$TMP_PROJ" --prune --yes
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q "'--prune' is not an add flag"
+  [ ! -d "$TMP_PROJ/.agents/skills/tdd-workflow-skill" ]
+  run $INIT add --all --prune --yes
+  [ "$status" -ne 0 ]
+  echo "$output" | grep -q "'--prune' is not an add flag"
+}
