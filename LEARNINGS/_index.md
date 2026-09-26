@@ -1691,3 +1691,11 @@
 - **Scope**: project
 - **Date**: 2026-09-26
 - **Summary**: Byte-identity gate iterating {opencode, claude} × both write-path seams was half-unsatisfiable — renderAgent is opencode-only; enumerate seam capabilities before writing the done-when (#576 re-review, New-2)
+
+### Container COPY ships new source subdirs into runtime dirs
+
+- **File**: `LEARNINGS/anti-patterns/container-copy-ships-new-source-subdirs.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Date**: 2026-09-26
+- **Summary**: New subdirs under agents/ or skills/ ride the Dockerfile's wildcard COPY into the runtime agent-discovery dir — audit container COPY consumers alongside CLI/resolver writers when adding source subdirs (#576 code review; Dockerfile:80)

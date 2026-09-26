@@ -1426,7 +1426,7 @@ async function cmdUpdate(args, opts) {
         }
         // Compose overlays so the update hash matches what the add loop wrote (#576) —
         // hashing raw source against a stored composed hash reports "updated" forever.
-        wouldContent = await composeAgentBody({ stem: name, body: wouldContent, agentsSrc: AGENTS_SRC, target, agentMode: cfg.agentMode, warn: () => {} });
+        wouldContent = await composeAgentBody({ stem: name, body: wouldContent, agentsSrc: AGENTS_SRC, target, agentMode: cfg.agentMode, warn: (m) => console.error(`  overlay (${name}): ${m}`) });
         wouldHash = sha256Hex(wouldContent);
       } else {
         if (!cfg.skillsDir) { console.error(`warning: '${name}' target '${target}' does not install skills — skipping`); continue; }

@@ -16,9 +16,14 @@ import { join } from "node:path";
 // Agent modes that must never compose. `verbatim` = the agents/ interchange
 // target; `.agents.md` overlay files are invalid by contract.
 const NO_COMPOSE_MODES = new Set(["verbatim"]);
+// Targets with a composition path (installer/init.mjs TARGETS rows minus the
+// verbatim `agents` row). Any other target is refused — overlay files for it
+// would be silently-uncomposed dead files (docs/subagent-portability-contract.md
+// §Binding matrix; guard test: tests/agent_lcd_pilot.bats orphan-overlay).
+const COMPOSABLE_TARGETS = new Set(["opencode", "claude", "kimi", "kilo"]);
 
 export async function composeAgentBody({ stem, body, agentsSrc, target, agentMode = "", warn = () => {} }) {
-  if (!target || NO_COMPOSE_MODES.has(agentMode)) return body;
+  if (!target || !COMPOSABLE_TARGETS.has(target) || NO_COMPOSE_MODES.has(agentMode)) return body;
   const file = join(agentsSrc, "overlays", `${stem}.${target}.md`);
   if (!existsSync(file)) return body;
   let overlay;
@@ -30,5 +35,8 @@ export async function composeAgentBody({ stem, body, agentsSrc, target, agentMod
   }
   warn(`composed overlay ${stem}.${target}.md`);
   const base = body.endsWith("\n") ? body : body + "\n";
-  return base + "\n" + overlay.trimEnd() + "\n";
+  // Normalize overlay line endings: the resolver seam's injectModel normalizes
+  // the whole file to LF while the init seam appends overlay bytes verbatim —
+  // a CRLF-committed overlay would break cross-seam byte identity (#576 review).
+  return base + "\n" + overlay.replace(/\r\n/g, "\n").trimEnd() + "\n";
 }

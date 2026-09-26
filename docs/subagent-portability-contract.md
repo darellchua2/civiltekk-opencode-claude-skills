@@ -50,7 +50,7 @@ source agents/<stem>.md
   → frontmatter transform   (per-target: model-injected | claude-translate | kimi-translate | kilo-translate)
   → body concat             (core + agents/overlays/<stem>.<target>.md, blank-line separated)
   → model injection         (renderAgent: compose BEFORE injectModel)
-  → config emit             (opencode.json / kilo.jsonc permission blocks)
+  → config emit             (opencode.json subagent allowlists — opencode target only)
 ```
 
 - Write paths: npx `add` (`installer/init.mjs` agent loop) and full deploy (`deploy/setup.sh` → `installer/resolve-models.mjs` `renderAgent`, including its `RESOLVER_CONFIG_ONLY` sub-mode which routes through init.mjs).

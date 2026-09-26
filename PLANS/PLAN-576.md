@@ -11,6 +11,7 @@ GATE 0ee91e2 tier=light lint=n.a. typecheck=n.a. build=- unit=n.a. e2e=n.a. — 
 GATE a10a5c1 tier=light lint=n.a. typecheck=n.a. build=t unit=n.a. e2e=n.a. — Phase 2: token-manifest greps green (7 banned=0, 9 required≥1), registry extraction build OK (restored; 4.1 owns diff)
 GATE 8388801 tier=light lint=n.a. typecheck=t build=t unit=t e2e=n.a. — Phase 3: node --check ×4; tests/agent_lcd_pilot.bats 12/12; tests/init.bats 42/42 (count parity with overlays, 3.2); seam-arg equivalence verified (init.mjs:907 vs resolve-models.mjs:411 ← setup.sh:97)
 GATE 6882e81 tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — ticket exit gate: full bats 608/608 exit 0 (after fixing 2 composition-caused failures: update+project paths unwired, claude byte-identity invariant); registry diff scoped (6882e81); README counts unchanged (34/149)
+GATE 37ce7b8 tier=full lint=n.a. typecheck=t build=t unit=t e2e=n.a. — post-review re-gate on fixed tree (review fixes: Dockerfile overlays exclusion, helper target set + CRLF normalize, cmdUpdate real warn, kilo.jsonc phantom dropped): full bats 608/608 exit 0
 
 ## Acceptance Criteria
 - [x] `docs/harness-landscape-2026-09.md` covers the harness comparison (OpenCode, Claude Code, Codex, Copilot, ZCode, Kilo, pi, M365 Copilot), the standards layer (Agent Skills / AGENTS.md / MCP / ACP), the standardization strategy, a pi section grounded in https://pi.dev/docs/latest, and a "Planned targets — not composable" note for zcode/copilot
