@@ -38,6 +38,7 @@ import { createHash } from "node:crypto";
 import os from "node:os";
 import { singleSelect, multiSelect, textInput, confirm } from "./tui-primitives.mjs";
 import { readAgent, readSkill } from "./source.mjs";
+import { composeAgentBody } from "./overlay.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = dirname(__dirname); // installer/.. = repo root
@@ -903,6 +904,7 @@ async function writeUserScopeInstall(sel, opts, reg, depMap) {
         } else if (cfg.agentMode === "claude-translate") {
           content = claudeAgentContent(content, stem, (m) => console.error(`  claude (${stem}): ${m}`));
         }
+        content = await composeAgentBody({ stem, body: content, agentsSrc: AGENTS_SRC, target: t, agentMode: cfg.agentMode, warn: (m) => console.error(`  overlay (${stem}): ${m}`) });
         await writeFile(join(cfg.agentsDir, `${stem}.md`), content, "utf8");
         newEntries[stem] = { type: "agent", targets: { ...(newEntries[stem]?.targets || {}), [t]: sha256Hex(content) } };
       }
