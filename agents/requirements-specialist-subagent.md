@@ -143,12 +143,12 @@ Invoke this subagent when the user uses phrases like:
 
 ## CRITICAL: Headless Execution Model
 
-**This subagent runs headlessly** — spawned via the Task tool in an isolated session with **no direct user interface**. The `question` tool is NOT available (it is `deny`'d in the frontmatter and is primary-session-only). **NEVER call `question`**, never emit interactive "Proceed?" prompts mid-run, and never hallucinate fallback tools like `read_mcp_resource` to "ask the user."
+**This subagent runs headlessly** — spawned by a delegating agent into an isolated session with **no direct user interface** and **no interactive clarification channel**. NEVER attempt to ask the user mid-run, never emit interactive "Proceed?" prompts, and never hallucinate fallback tools to reach a user.
 
 A requirements interview is **interactive by nature**, so this subagent cannot run the full grilling loop on its own. Use one of these two modes, determined by what the delegation prompt provides:
 
 ### Mode A — Synthesis from captured interview (preferred)
-The **primary agent** conducts the requirements interview (using its own `question` tool + `grilling-skill`: one question at a time, with a recommendation), resolves BRD-vs-SRS routing and section branches, then delegates to this subagent with the captured answers + the resolved doc type. This subagent synthesizes the BRD/SRS autonomously — no mid-run prompts.
+The **primary agent** conducts the requirements interview (using its own interactive-clarification mechanism + `grilling-skill`: one question at a time, with a recommendation), resolves BRD-vs-SRS routing and section branches, then delegates to this subagent with the captured answers + the resolved doc type. This subagent synthesizes the BRD/SRS autonomously — no mid-run prompts.
 
 ### Mode B — Relay questions via Return Contract
 If the delegation prompt lacks interview answers, this subagent drafts the **first round of section questions** and returns them in the Return Contract as `Questions for the user`. The primary agent relays them, collects answers, and re-delegates. Do NOT loop or stall waiting for answers that will never arrive mid-run.
@@ -244,6 +244,11 @@ If a referenced diagram/screenshot must be interpreted, **delegate to `image-ana
 - This subagent does NOT create tickets or branches — that is `ticket-creation-skill` / `worktree-pipeline-skill`'s job
 - This subagent does NOT execute implementation — it only creates the BRD/SRS document
 - For customer-facing discovery, use `discovery-specialist-subagent` instead
+
+## Harness bindings
+
+Capabilities (delegation, clarification, memory, vision) bind per harness via install-time overlays — see `docs/subagent-portability-contract.md`.
+Other/none: with no harness overlay, run the fallbacks inline — do delegation work inline, expect no mid-run clarification channel, recall patterns from `LEARNINGS/` when present, and use bundled fallback procedures when a native capability is missing.
 
 ## Return Contract
 

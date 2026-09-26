@@ -99,6 +99,6 @@ What each target drops, by design — degradation must be explicit, never silent
 
 Preliminary verdicts from advisory pre-composition (2.4) are marked `preliminary`; the authoritative gate (composer-invoked, byte-identity + token gate) replaces them.
 
-- **code-review-subagent**: _preliminary — superseded by 3.4_
-- **image-analyzer-subagent**: _preliminary — superseded by 3.4_
-- **requirements-specialist-subagent**: _preliminary — superseded by 3.4_
+- **code-review-subagent**: preliminary PASS — composed core+opencode-overlay restores memory-tool recall, explore/general/language-reviewer Task syntax, codegraph delegation request; core retains checklist, rubric, direct-caller gate, return contract, ponytail lens, voice; token greps green. _preliminary — superseded by 3.4_
+- **image-analyzer-subagent**: preliminary PASS — model pin, auth.json expectation, permission-rule delegability restored via overlay; core retains recipe, output budget, procedure, return contract; description de-pin is intentional (4.1 expects exactly that diff). _preliminary — superseded by 3.4_
+- **requirements-specialist-subagent**: preliminary PASS — question-deny explanation and Task syntax restored via overlay; headless clause generalized semantics-preserving; modes A/B/R, routing tree, workflow intact. _preliminary — superseded by 3.4_
