@@ -5,14 +5,14 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] Multi-ticket run: independent ticket #2's implementation starts while ticket #1's PR CI runs
-- [ ] Green-only merge; red PR keeps scene, reports failing checks, merges after bounded fix-and-re-watch
-- [ ] CI red no longer aborts remaining tickets; only `[goal:blocked]` on the active ticket halts
-- [ ] `blocked-by:` tickets hold and auto-resume on the blocker's merge notification
-- [ ] Overlap with an open in-run PR holds the later ticket until merge
-- [ ] `repo/KEY` refs work in sibling repos; bare `KEY` unchanged; `--dry-run` prints hold/async predictions
-- [ ] JIRA Done transition by main session post-notification; watcher script credential-free
-- [ ] Portability guard + skill-isolation bats tests pass
+- [x] Multi-ticket run: independent ticket #2's implementation starts while ticket #1's PR CI runs
+- [x] Green-only merge; red PR keeps scene, reports failing checks, merges after bounded fix-and-re-watch
+- [x] CI red no longer aborts remaining tickets; only `[goal:blocked]` on the active ticket halts
+- [x] `blocked-by:` tickets hold and auto-resume on the blocker's merge notification
+- [x] Overlap with an open in-run PR holds the later ticket until merge
+- [x] `repo/KEY` refs work in sibling repos; bare `KEY` unchanged; `--dry-run` prints hold/async predictions
+- [x] JIRA Done transition by main session post-notification; watcher script credential-free
+- [x] Portability guard + skill-isolation bats tests pass
 
 ## Dependency & Consumer Map
 
@@ -152,6 +152,17 @@ GATE e04f8ad tier=light lint=n.a typecheck=n.a build=n.a unit=t(scoped: tiered_g
 - **Notification boundaries (WARN, fixed):** drain at step/ticket boundaries only, never mid-Task, arrival order, exactly-once.
 - **Stale-base conflict window (re-review NOTE, fixed):** PR conflicts after an earlier in-run merge classify as overlap-hold, not ticket failure.
 - Mode R confirmed all 5 recommended answers; new gap (empty Consumer Map defusing the early leg) resolved with the advisory-fallback default.
+
+## Code-Review Adjudications (code review + Mode R relay, 2026-09-25)
+- **CRITICAL — resume references unreachable state (fixed):** blocked-by hold now evaluates at Step 3 body fetch, parks with existing state, and resumes at the first unexecuted step (rebase only if the branch exists); 6f/10a holds keep their post-PLAN resume. Mode R confirmed (Gap 1).
+- **MAJOR — watcher/cleanup scoping flags (fixed):** `-R <owner/name>` inlined into all three 10b gh commands (prose scoping never reaches an unattended shell); `git -C <ticket-repo>` on the 10a diff and the cleanup mutations.
+- **MAJOR — vacuous 6f re-gate (fixed):** re-gate on resume now conditional — iff the rebase touched implementation commits (PLAN-only tree at 6f).
+- **MAJOR — failure-policy contradiction (fixed):** "Halt triggers" → "Ticket-failure triggers"; pending-at-timeout fails immediately (Mode R confirmed: no fix loop on non-fixable pending CI), concluded-red alone enters the 2-round loop.
+- **MAJOR — lane release (fixed):** a held ticket releases the implementation lane (Step 1 execution model).
+- **MAJOR — force-push story (fixed):** `--force-with-lease` stated at every resume-rebase site.
+- **NOTEs (fixed):** `comm -12` inputs sorted (6f materialization clause + 10a `| sort`); WORKTREE_PIPELINE_ROOT asymmetry documented (applies to ALL tickets).
+- Post-review full re-gate: tier=full — see Gate Trace.
+- **Flake note (documented):** `plugin_inventory_and_defaults_agree_on_loadable_ts_plugins` failed twice in full-suite runs on this tree (JSON.parse "Bad control character at position 8192" — a chunk-boundary artifact in bats' combined-output capture), then passed on identical-tree rerun; direct `tui.mjs --print-plan` output verified clean (parses, empty stderr). Base and latest main also green. Pre-existing test fragility, not a regression of this diff.
 
 ## Risks & Mitigation
 

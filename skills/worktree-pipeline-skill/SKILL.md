@@ -72,17 +72,24 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   **one implementation runs at a time**. The next ticket's implementation
   starts once the active ticket has **created its PR (Step 10a)** — not once
   it merges — AND this ticket's own blockers (below) have merged; unblocked
-  tickets never wait on CI. Each PR ships with a **background merge
+  tickets never wait on CI. A held ticket (blocked-by, 6f, or 10a overlap)
+  **releases the implementation lane** — the next implementable ticket
+  starts immediately. Each PR ships with a **background merge
   watcher** (Step 10b), so any number of PRs may be awaiting merge
   concurrently while the next implementation proceeds.
 - **`blocked-by:` hold, not skip**: if a ticket's body contains
   `blocked-by: <ref>` naming a ticket that is not yet merged (an open PR
-  counts as unmerged), **hold** it — report as held, keep it in run order —
-  and **auto-resume** when the blocker's merge notification arrives: rebase
-  `feat/<KEY>` onto the updated base and continue at Step 7 (Step 2's
-  leftover ask covers the pre-existing branch/worktree). Tickets still held
-  when nothing else is runnable are reported deferred at run end, not
-  failed. (No JIRA link traversal in v1 — body text only.)
+  counts as unmerged), **hold** it — report as held, keep it in run order.
+  Evaluation point: the Step 3 body fetch (dry-run predicts it earlier); a
+  blocked-by hold parks with whatever state exists — typically none, before
+  branch/worktree/PLAN. **Auto-resume** when the blocker's merge
+  notification arrives: re-enter at the first unexecuted step — rebase
+  `feat/<KEY>` onto the updated base **only if the branch already exists**
+  (push `--force-with-lease` after a resume rebase). Contrast: 6f/10a
+  overlap holds park AFTER PLAN authoring, so their resume continues at
+  Step 7 / 10a. Tickets still held when nothing else is runnable are
+  reported deferred at run end, not failed. (No JIRA link traversal in v1 —
+  body text only.)
 
 ## Steps 2-10 — per ticket (in order)
 
@@ -95,7 +102,8 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    branch or worktree already exists (mid-pipeline failure leftovers OR a
    held ticket resuming), report state and ask: prune / resume / refuse —
    never clobber silently; **resume** is the held path (Step 1): rebase
-   `feat/<KEY>` onto the updated `origin/<base>` and continue at Step 7.
+   `feat/<KEY>` onto the updated `origin/<base>` (push `--force-with-lease`
+   after the rebase) and re-enter at the first unexecuted step.
 3. **Ticket fetch/create**: existing ref → fetch its description (`gh issue
    view [-R <owner/name>]` / JIRA). JIRA access follows the **MCP Availability
    Guard** (policy: `jira-git-integration-skill` §MCP Availability Guard):
@@ -108,7 +116,8 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    (NOT `$(git rev-parse --show-toplevel)` — that nests when invoked from a
    worktree). Create `git worktree add <root>/<KEY> feat/<KEY>` — **always,
    even when the ticket is in this repo**. `<root>` is
-   `$WORKTREE_PIPELINE_ROOT` when set (session repo), else
+   `$WORKTREE_PIPELINE_ROOT` when set (applies to ALL tickets — foreign
+   repos included, a documented asymmetry), else
    `<ticket-repo>/../worktrees/` — derived from the ticket's repo, so
    `repo/KEY` tickets get a worktree root beside their own checkout.
    Pre-flight `git worktree list` for stale `<KEY>` entries.
@@ -194,10 +203,13 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 10. **PR + merge watching** — split: 10a foreground, 10b background.
     **10a — PR creation (foreground).** First the **authoritative overlap
     re-check** (the §6f early leg is advisory only): `comm -12` of
-    `git diff --name-only origin/<base>...feat/<KEY>` against each earlier
-    in-run ticket's still-open PR diff (per repo) — non-empty → hold ticket
+    `git -C <ticket-repo> diff --name-only origin/<base>...feat/<KEY> | sort`
+    against each earlier
+    in-run ticket's still-open PR diff (per repo, likewise sorted) —
+    non-empty → hold ticket
     N pre-PR (worktree kept); auto-resume on that PR's merge notification:
-    rebase, re-run the full gate (the SHA changes), then create the PR. A PR
+    rebase, re-run the full gate (the SHA changes), push
+    `--force-with-lease`, then create the PR. A PR
     that would show merge conflicts because an earlier in-run PR merged
     inside the 6e→10a window (stale base) classifies the same way —
     overlap-hold, never a failed ticket. Clear → `pr-workflow-subagent`
@@ -218,13 +230,17 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
     next implementable ticket** — it does NOT wait for CI (Step 1 execution
     model).
     **10b — merge watcher (background).** Spawn a background shell (harness
-    binding below) that: `timeout 1800 gh pr checks <num> --watch` (GNU
+    binding below) that: `timeout 1800 gh pr checks -R <owner/name> <num>
+    --watch` (GNU
     coreutils; macOS: `gtimeout`) — 30-minute timeout; merge only when green
-    with `gh pr merge <num> --squash` — the `feat/<KEY>` head is
+    with `gh pr merge -R <owner/name> <num> --squash` — the `feat/<KEY>` head is
     short-lived, so squash is the classifier verdict
     (`pr-merge-workflow-skill` Phase 1 head-class rule); capture the merge
-    SHA via `gh pr view <num> --json mergeCommit`; report the outcome to the
+    SHA via `gh pr view -R <owner/name> <num> --json mergeCommit`; report the outcome to the
     main session (merge SHA on success; the failing check names on red).
+    The `-R <owner/name>` flags are mandatory — the watcher runs
+    unattended, so prose scoping rules elsewhere never reach it (session
+    repo ≠ ticket repo for `repo/KEY` tickets).
     Zero configured checks (exits non-zero with "no checks reported") →
     merge directly with a "no CI configured" note. Red or
     pending-at-timeout → report and stop. The watcher performs **gh-side
@@ -236,8 +252,9 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
     only (never mid-Task: a Step 8 run-plan or Step 9 review may run many
     minutes), in arrival order, each notification exactly once. On a merge
     notification: report the merge SHA, then run the cleanup the watcher
-    must not — `git worktree remove <root>/<KEY>`, delete the remote
-    branch, and `git fetch` in the main checkout (**fetch-only** — never
+    must not — `git -C <ticket-repo> worktree remove <root>/<KEY>`, delete
+    the remote branch, and `git -C <ticket-repo> fetch` in the ticket
+    repo's main checkout (**fetch-only** — never
     `pull` in the user's main worktree; uncommitted state may conflict);
     JIRA tickets: ensure exactly one `jira-status-updater` transition to
     Done — check the ticket status first, transition only if still open. On
@@ -439,22 +456,30 @@ step pushes it.
 
 **Early leg (advisory)**: while any earlier in-run ticket still has an open
 PR, intersect that PR's branch diff with THIS ticket's PLAN **Dependency &
-Consumer Map touch-set** (the map 6d just validated — at this boundary the
-branch diff contains only the PLAN commit, so a `comm -12` on branch diffs
-would be vacuous here). Non-empty intersection → **hold** ticket N: keep the
-worktree, report held, and auto-resume when that PR's merge notification
-arrives — rebase `feat/<KEY>` onto the updated base, re-run the **full**
-gate (the SHA changes), continue at Step 7. Advisory default: an empty or
-missing Consumer Map skips the early leg — worst case is a late hold at the
-10a authoritative check, never a wrong merge.
+Consumer Map touch-set** (materialize the map's first-column file paths,
+normalize, `sort` — `comm -12` needs sorted input; the map 6d just
+validated — at this boundary the branch diff contains only the PLAN commit,
+so a `comm -12` on branch diffs would be vacuous here). Non-empty
+intersection → **hold** ticket N: keep the worktree, report held, and
+auto-resume when that PR's merge notification arrives — rebase `feat/<KEY>`
+onto the updated base (push `--force-with-lease` after the rebase) and
+continue at Step 7, re-running the **full** gate iff the rebase touched
+implementation commits (at this boundary the tree is PLAN-only — Step 8's
+exit gate re-gates the real tree). Advisory default: an empty or missing
+Consumer Map skips the early leg — worst case is a late hold at the 10a
+authoritative check, never a wrong merge.
 
 ## Failure Policy
 
-- **Halt triggers**: the executor's `[goal:blocked]` terminal marker on the
-  active ticket (Step 8), review-fix exhaustion after 2 iterations (Step 9),
-  PR creation failure (Step 10a), or watcher exhaustion — 2
-  fix-and-re-watch rounds without a green watch (Step 10b). CI red is
-  **not** a run-level abort: a red or timed-out watcher fails that ticket
+- **Ticket-failure triggers** (per ticket — nothing aborts the remaining
+  run): the executor's `[goal:blocked]` terminal marker on the active
+  ticket (Step 8), review-fix exhaustion after 2 iterations (Step 9), PR
+  creation failure (Step 10a), or watcher exhaustion (Step 10b) — a
+  pending-at-timeout watch fails the ticket immediately (pending CI has no
+  concluded failure to fix; keep the worktree, report under Issues), while
+  a concluded-red watch enters the 2 fix-and-re-watch rounds and fails the
+  ticket once exhausted. CI red is
+  **not** a run-level abort: a failed watcher fails that ticket
   only.
 - **Keep the scene**: the failed ticket's worktree + `feat/<KEY>` branch
   stay in place for inspection (Step 2's prune/resume/refuse ask handles

@@ -1616,3 +1616,30 @@
 - **Scope**: project
 - **Summary**: Overlap guards keyed to still-open PRs miss the stale-base class — a branch cut before an earlier in-run PR merged conflicts at PR time with no open PR at check time; classify that as overlap-hold (rebase + re-gate), not watcher failure (#560 re-review)
 - **Date**: 2026-09-25
+
+### Hold/resume rules must match parked state
+
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/hold-resume-rules-must-match-parked-state.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: A hold/resume rule may only reference artifacts the held item can have at its hold point — copy-pasting "rebase and continue at Step 7" across holds at different boundaries instructs executors to review PLANs that were never authored (#560 code review)
+- **Date**: 2026-09-25
+
+### Background command templates inline scoping flags
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/background-command-templates-inline-scoping-flags.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: Literal background-shell templates must inline their scoping flags (`gh -R`, `git -C`) — prose scoping rules elsewhere in the doc never reach the unattended runtime artifact (#560 code review)
+- **Date**: 2026-09-25
+
+### Contracts adding rebases must state force-push
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/contracts-adding-rebases-must-state-force-push.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: Every rebase site in a workflow contract needs its force-push story (`--force-with-lease`) or the first resume dies non-fast-forward at the next phase push (#560 code review)
+- **Date**: 2026-09-25
