@@ -110,9 +110,9 @@ function detectInstalledHarnesses() {
 // ─────────────────────────── arg parsing ────────────────────────────────
 const BOOL_FLAGS = new Set(["yes", "dryRun", "force", "prune", "help", "verbose", "permit", "noDeps", "global"]);
 // Single home for the short-flag set: the alias arms AND the value-eat guard
-// both consume this list — a fourth short updates one place or it gets eaten
-// as a flag value (#564 review).
-const SHORT_FLAGS = { "-g": "global", "-y": "yes", "-p": "project" };
+// both consume this list — another short alias updates one place or it gets
+// eaten as a flag value (#564 review).
+const SHORT_FLAGS = { "-g": "global", "-y": "yes", "-p": "project", "-h": "help" };
 function parseArgs(argv) {
   const opts = { rest: [] };
   for (let i = 0; i < argv.length; i++) {
@@ -1688,6 +1688,13 @@ USAGE
   opencode-skill ... --dry-run                     preview, write nothing
   opencode-skill ... --prune                       remove previously-installed entries not in the set (preset flow / prune-only; add rejects it)
   opencode-skill --help
+
+EXAMPLES (npx invocation — copy-paste)
+  npx github:darellchua2/civiltekk-opencode-claude-skills --list categories
+  npx github:darellchua2/civiltekk-opencode-claude-skills add api-design-skill
+  npx github:darellchua2/civiltekk-opencode-claude-skills add pdf-specialist-skill --dry-run
+  npx github:darellchua2/civiltekk-opencode-claude-skills add code-review-subagent --project .
+  npx github:darellchua2/civiltekk-opencode-claude-skills add gsap-core --target claude
 
 SCOPE
   User scope (default for 'add'): drops files into ~/.config/opencode/{agents,skills}/.
