@@ -14,6 +14,8 @@
 #           invocations (-Help prints via bash alone — no node needed).
 #           OpenCode CLI v2 — install with: npm install -g @opencode/cli
 #           (the legacy opencode-ai npm package is the frozen v1 line; #499).
+#           Coding-agent detection + pi/codex Z.AI key seeding (#573) are
+#           inherited the same way — they live in setup.sh only.
 # Previous native-PowerShell behavior is preserved through the flag mapping
 # below; old flags keep working as aliases. setup.sh remains the single
 # validator — values are forwarded, never re-checked here.

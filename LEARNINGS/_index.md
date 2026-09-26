@@ -15,6 +15,22 @@
 
 ## Entries
 
+### A `grep -c` in a pipeline's last position only asserts "at least one"
+
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/grep-c-last-in-pipeline-is-at-least-one-pin.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Pin counts with `count=$(...); [ "$count" -eq N ]` — a trailing `grep -c` passes at ≥1; and multibyte bracket classes (`[✓✗]`) match nothing under LC_ALL=C, use `(✓|✗)` alternation (#573 review).
+
+### Export a captured secret before restarting the daemon that needs it
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/export-captured-secrets-before-daemon-restart.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: Env-capturing daemons only see prompted secrets if the capturing shell exports them pre-restart — `read -s VAR` stays shell-local while the restart logs success (#573 review Major 2).
+
 ### By-reference docs mechanize no-duplication with sentinel greps
 
 - **Category**: patterns

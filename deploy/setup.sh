@@ -699,6 +699,16 @@ USAGE:
                          CONFIGURED FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+   CODING AGENT DETECTION (#573):
+    Setup probes for installed coding agents (opencode, pi, codex, claude,
+    kimi, kilo) and prints a found/missing table in the banner + summary.
+    With pi/codex present and a Z.AI key captured, it seeds a zai provider:
+      pi    -> ~/.pi/agent/models.json (apiKey via $ZAI_API_KEY interpolation)
+      codex -> ~/.codex/config.toml    (env_key; activate: codex --profile zai)
+    After key seeding the opencode background service is restarted so
+    {env:} MCP substitution picks up the key. (setup.ps1 inherits this via
+    delegation to setup.sh.)
+
    AGENTS ($(count_agents "${REPO_DIR}/agents")):
     build (default)      Full-featured coding agent with all tools
     plan                 Planning agent (read-only, edits need approval)
@@ -1954,6 +1964,44 @@ download_file() {
 ################################################################################
 # SETUP FUNCTIONS
 ################################################################################
+
+# Report one coding agent's presence (helper for detect_installed_agents).
+agent_report() {
+    local name="$1" found="$2"
+    if [ "$found" = true ]; then
+        echo "  ✓ ${name}: found"
+    else
+        echo "  ✗ ${name}: not found"
+    fi
+}
+
+# Detect installed coding-agent harnesses (#573). Read-only and idempotent —
+# callable from print_summary without the plan step having run (quick and
+# skills-only epilogues included). Sets the boolean globals the seed step
+# consumes (PI_INSTALLED, CODEX_INSTALLED) and prints a found/missing table.
+# Binary probe OR config-dir fallback: an installed-but-off-PATH agent still
+# reports (and still seeds — the config dir is where the seed writes).
+detect_installed_agents() {
+    local opencode_ok=false pi_ok=false codex_ok=false claude_ok=false kimi_ok=false kilo_ok=false
+    command_exists opencode && opencode_ok=true
+    { command_exists pi || [ -d "${HOME}/.pi/agent" ]; } && pi_ok=true
+    { command_exists codex || [ -d "${HOME}/.codex" ]; } && codex_ok=true
+    { command_exists claude || [ -d "${HOME}/.claude" ]; } && claude_ok=true
+    [ -d "${HOME}/.kimi-code" ] && kimi_ok=true
+    { [ -d "${HOME}/.kilo" ] || [ -d "${HOME}/.config/kilo" ]; } && kilo_ok=true
+
+    PI_INSTALLED="$pi_ok"
+    CODEX_INSTALLED="$codex_ok"
+
+    echo "Coding Agents Detected:"
+    agent_report "opencode" "$opencode_ok"
+    agent_report "pi" "$pi_ok"
+    agent_report "codex" "$codex_ok"
+    agent_report "claude" "$claude_ok"
+    agent_report "kimi" "$kimi_ok"
+    agent_report "kilo" "$kilo_ok"
+    return 0
+}
 
 # Check GitHub CLI
 setup_github_cli() {
@@ -3767,6 +3815,7 @@ build_plan() {
     else
         PLAN_MODE="full"
         PLAN_STEPS+=("true|deps|Dependency check|check_dependencies_strict")
+        PLAN_STEPS+=("false|detect-agents|Detect installed coding agents|detect_installed_agents")
         if [ -n "$LOAD_PRESET_NAME" ]; then
             PLAN_STEPS+=("true|load-preset|Load preset ${LOAD_PRESET_NAME}|load_user_preset")
         fi
@@ -3782,6 +3831,7 @@ build_plan() {
         PLAN_STEPS+=("false|vllm|Configure vLLM|setup_vllm")
         PLAN_STEPS+=("false|provider|Select model provider|setup_model_provider")
         PLAN_STEPS+=("false|credentials|Capture provider credentials|setup_provider_credentials")
+        PLAN_STEPS+=("false|seed-agent-keys|Seed Z.AI key into detected agents|seed_agent_keys")
         if [ "$SELECT_ITEMS" = true ]; then
             # Per-item picker (#473): selection replaces the blanket content
             # deploy. Steps APPEND here (never interleave — deploy_delegate
@@ -3871,6 +3921,110 @@ update_manifest() {
         # #379 contract: pre-#379 installs warn-and-continue (non-critical).
         log_warn "manifest update skipped (exit ${rc}) — pre-#379 installs: one full ./deploy/setup.sh run adopts the manifest"
     fi
+    return 0
+}
+
+# Seed the Z.AI provider into the pi coding agent's config (#573). Gated on
+# detection + a captured key; delegates the merge to deploy/seed-pi-provider.mjs
+# (merge-never-clobber, dry-run aware, 0600 output). Non-fatal on every path.
+seed_pi_provider() {
+    if [ "${PI_INSTALLED:-false}" != true ]; then
+        log_info "pi not detected - skipping Z.AI provider seed"
+        return 0
+    fi
+    if [ -z "${ZAI_API_KEY:-}" ]; then
+        log_warn "pi detected but no ZAI_API_KEY captured - skipping provider seed"
+        return 0
+    fi
+    local pi_config="${HOME}/.pi/agent/models.json"
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Would run: node ${DEPLOY_DIR}/seed-pi-provider.mjs --config ${pi_config}"
+        return 0
+    fi
+    log_info "Seeding Z.AI provider into pi (${pi_config})"
+    if ! node "${DEPLOY_DIR}/seed-pi-provider.mjs" --config "$pi_config"; then
+        log_warn "pi provider seed failed - pi remains unconfigured (non-fatal)"
+        return 0
+    fi
+    log_success "pi: zai provider seeded (apiKey resolves from \$ZAI_API_KEY at runtime)"
+    # Best-effort verification: pi reloads models.json on every /model open;
+    # the probe confirms the file parses from pi's perspective.
+    if command_exists pi && command_exists timeout; then
+        if timeout 15 pi --list-models >/dev/null 2>&1; then
+            log_success "pi --list-models OK (provider visible)"
+        else
+            log_warn "pi --list-models probe failed (non-fatal - check ~/.pi/agent/models.json)"
+        fi
+    fi
+    return 0
+}
+
+# Seed the Z.AI provider into the codex CLI's config (#573). Guarded TOML
+# append — never rewrites user content, never sets the global default model
+# (activation is opt-in via `codex --profile zai`). Guards on BOTH section
+# headers: appending a table that already exists is a TOML parse error, so a
+# user-defined zai provider or profile skips with a note instead of
+# corrupting the file. Non-fatal on every path.
+seed_codex_provider() {
+    if [ "${CODEX_INSTALLED:-false}" != true ]; then
+        log_info "codex not detected - skipping Z.AI provider seed"
+        return 0
+    fi
+    if [ -z "${ZAI_API_KEY:-}" ]; then
+        log_warn "codex detected but no ZAI_API_KEY captured - skipping provider seed"
+        return 0
+    fi
+    local codex_config="${HOME}/.codex/config.toml"
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Would append Z.AI provider block to ${codex_config}"
+        return 0
+    fi
+    if grep -q '^\[model_providers\.zai\]' "$codex_config" 2>/dev/null \
+        || grep -q '^model_providers\.zai\.' "$codex_config" 2>/dev/null; then
+        log_info "codex config already defines [model_providers.zai] - leaving ${codex_config} untouched"
+        return 0
+    fi
+    if grep -q '^\[profiles\.zai\]' "$codex_config" 2>/dev/null \
+        || grep -q '^profiles\.zai\.' "$codex_config" 2>/dev/null; then
+        log_info "codex config already defines [profiles.zai] - leaving ${codex_config} untouched"
+        return 0
+    fi
+    mkdir -p "${HOME}/.codex"
+    if cat >> "$codex_config" <<'EOF'
+
+# --- Z.AI provider (added by opencode setup, #573) ---
+# codex supports wire_api = "responses" only, so base_url points at Z.AI's
+# OpenAI Responses endpoint. Source of truth for the endpoint (verified
+# 2026-09-26): Z.AI devpack docs "Coding Endpoint" table lists
+#   Protocol "OpenAI Responses" -> base https://api.z.ai/api/v1
+# (https://docs.z.ai/devpack/tool/others). NOT the PAAS chat-completions
+# base pi uses (api/paas/v4 speaks openai-completions, not Responses).
+# If Z.AI revises this, update here + tests + README together.
+# env_key names the env var codex reads per invocation - the key itself is
+# never stored in this file.
+[model_providers.zai]
+name = "Z.AI"
+base_url = "https://api.z.ai/api/v1"
+env_key = "ZAI_API_KEY"
+
+# Opt-in activation: `codex --profile zai` (global default model untouched).
+[profiles.zai]
+model_provider = "zai"
+model = "glm-5.3"
+EOF
+    then
+        log_success "codex: zai provider appended to ${codex_config} (activate: codex --profile zai)"
+    else
+        log_warn "codex: failed to append Z.AI provider block to ${codex_config} (non-fatal)"
+    fi
+    return 0
+}
+
+# Plan-step entry: seed the captured provider key into every detected agent
+# (#573). Future agents (claude, kimi, kilo) join as additional calls here.
+seed_agent_keys() {
+    seed_pi_provider
+    seed_codex_provider
     return 0
 }
 
@@ -3989,6 +4143,28 @@ setup_provider_credentials() {
         fi
     else
         log_warn "opencode not found - skipping credential verification"
+    fi
+
+    # #573: the v2 background service captures its environment at start, so a
+    # freshly seeded key does not reach {env:ZAI_API_KEY} MCP servers
+    # (zai-web-reader/search) until the service restarts. Best-effort and
+    # bounded — a failed restart never fails setup. Only reached on the path
+    # where a key was seeded this run (earlier returns skip it by design).
+    if command_exists opencode; then
+        # The restarted service inherits the CLI's environment, so the key
+        # must be EXPORTED here — a read-captured (prompted) ZAI_API_KEY is
+        # shell-local and otherwise never reaches the spawned service, while
+        # the success log below would still print (review #573 Major 2).
+        [ -n "${ZAI_API_KEY:-}" ] && export ZAI_API_KEY
+        local restart_cmd=(opencode service restart)
+        command_exists timeout && restart_cmd=(timeout 15 "${restart_cmd[@]}")
+        if [ "$DRY_RUN" = true ]; then
+            log_info "[DRY-RUN] Would restart the opencode background service (env pickup for {env:} MCP vars)"
+        elif "${restart_cmd[@]}" >/dev/null 2>&1; then
+            log_success "opencode service restarted - MCP {env:} substitution now sees the new key"
+        else
+            log_warn "opencode service restart failed - run 'opencode service restart' manually so MCP servers pick up ZAI_API_KEY"
+        fi
     fi
     return 0
 }
@@ -4573,6 +4749,11 @@ print_summary() {
     echo "✓ Detected OS: ${DETECTED_OS} ${OS_VERSION:+(${OS_VERSION})}"
     echo "✓ Detected Shell: ${DETECTED_SHELL}"
     echo "✓ Shell Config: ${SHELL_CONFIG_FILE}"
+    echo ""
+
+    # Coding-agent detection (#573) — read-only, idempotent; works in every
+    # epilogue even when the detect-agents plan step never ran.
+    detect_installed_agents
     echo ""
 
     # nvm status (Unix-like systems only)
