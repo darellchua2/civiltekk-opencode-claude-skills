@@ -47,20 +47,23 @@ No config (`opencode.json`), agent, skill, or MCP surfaces change — the AGENTS
 
 ### Phase 2: Regression tests (tests/test_provider_credentials.bats)
 
-- [ ] **2.1** Add `same_key_env_set_skips_reseed_and_restart`: temp HOME, auth.json pre-seeded with `key=testkey123` for BOTH `zai` and `zai-coding-plan`, `ZAI_API_KEY=testkey123` exported, `opencode()` stubbed to append its args to a recording file (with `command_exists(){ return 0; }` and `timeout(){ shift; "$@"; }` stubs per the existing `verification_runs_via_opencode_when_installed` pattern). Assert: status 0, auth.json md5 unchanged, recording file absent (zero `opencode` invocations), output matches "unchanged".
+- [x] **2.1** Add `same_key_env_set_skips_reseed_and_restart`: temp HOME, auth.json pre-seeded with `key=testkey123` for BOTH `zai` and `zai-coding-plan`, `ZAI_API_KEY=testkey123` exported, `opencode()` stubbed to append its args to a recording file (with `command_exists(){ return 0; }` and `timeout(){ shift; "$@"; }` stubs per the existing `verification_runs_via_opencode_when_installed` pattern). Assert: status 0, auth.json md5 unchanged, recording file absent (zero `opencode` invocations), output matches "unchanged".
     — **Why:** Pins the exact regression from the ticket — the every-run restart with an exported key.
     — **Done when:** `bats tests/test_provider_credentials.bats` passes with the new test green.
     — **Consumers affected:** CI bats suite.
+    — **Done:** test added and green — auth.json byte-identical, zero `opencode` invocations (no verify, no restart), "credentials unchanged" logged; files: tests/test_provider_credentials.bats; fixes: none
 
-- [ ] **2.2** Add `changed_key_reseeds_and_restarts`: same setup but auth.json holds `oldkey` while env holds `newkey`. Assert: both auth_ids now hold `newkey` (merge, both ids), recording file contains `service restart`, and output contains the interruption announcement from 1.2.
+- [x] **2.2** Add `changed_key_reseeds_and_restarts`: same setup but auth.json holds `oldkey` while env holds `newkey`. Assert: both auth_ids now hold `newkey` (merge, both ids), recording file contains `service restart`, and output contains the interruption announcement from 1.2.
     — **Why:** Proves the restart path survives the new gate for genuine credential changes, with the required announcement.
     — **Done when:** Test green; restart recorded exactly once.
     — **Consumers affected:** CI bats suite.
+    — **Done:** both ids re-seeded to `newkey-9`, `service restart` recorded exactly once, announcement line asserted; files: tests/test_provider_credentials.bats; fixes: none
 
-- [ ] **2.3** Add `fresh_seed_restarts_service`: no auth.json present, env key set. Assert: auth.json created with both ids, `service restart` recorded, announcement printed.
+- [x] **2.3** Add `fresh_seed_restarts_service`: no auth.json present, env key set. Assert: auth.json created with both ids, `service restart` recorded, announcement printed.
     — **Why:** First-run behavior (#573's original case) must not regress behind the new gate.
     — **Done when:** Test green.
     — **Consumers affected:** CI bats suite.
+    — **Done:** auth.json created with both ids at `freshkey-7`, `service restart` recorded, announcement asserted; files: tests/test_provider_credentials.bats; fixes: none
 
 ### Phase 3: Verification gate
 
@@ -91,3 +94,6 @@ No config (`opencode.json`), agent, skill, or MCP surfaces change — the AGENTS
 GATE 5625e87 tier=full lint=t(bash -n) typecheck=n.a build=n.a unit=t(629 ok, 47/47 files) e2e=n.a
 Note: Phase 1 escalated full — anchor: deploy file (deploy/setup.sh) per §Tiered gating (1). No build target exists in this repo (CI = bats + bash -n only); bash -n + the full CI-parity suite substitute for the build axis. e2e: backend-only change (E2E rule skip).
 WORK LOG: 1.1 smoke — same-key: "credentials unchanged" log + zero opencode invocations + auth.json byte-identical; changed-key: announcement → `service restart`, both auth_ids reseeded, `auth list` verify recorded.
+
+GATE 75ac71e tier=light lint=n.a typecheck=n.a build=- unit=t(12/12 tests/test_provider_credentials.bats) e2e=n.a
+Note: changed file is a .bats file — no applicable bash linter in repo/CI (CI runs `bash -n` on deploy/setup.sh only, never tests/); the bats run is the parse+execute check. deploy/setup.sh untouched this phase (Phase 1 tree already gated full).
