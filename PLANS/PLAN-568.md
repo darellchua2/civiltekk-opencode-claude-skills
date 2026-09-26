@@ -90,3 +90,6 @@ GATE e6762b7 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 
 ## Gate Trace (review-fix round)
 GATE c6719c3 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+## Gate Trace (post-merge main)
+
+GATE eeb0dbe tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (merged origin/main 5484395..ed69adf; 600 ok / 0 not ok)
