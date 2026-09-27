@@ -85,7 +85,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills --project . --preset rev
 | Preset | Use for |
 |--------|---------|
 | `core` | Minimal baseline (explorer + civiltekk-git-commits, continuous-learning, codegraph) |
-| `review` | Code quality gates (code/architecture/language reviewers + 21 skills) |
+| `review` | Code quality gates (code/architecture/language reviewers + 26 skills) |
 | `frontend` | Web frontend (Next.js/React/a11y + uiux-reviewer, responsive-audit) |
 | `backend` | Server / devops-lite (Python/DB/API/security + language-reviewer) |
 | `docs` | Document generation (documentation + coverage + office docs) |
