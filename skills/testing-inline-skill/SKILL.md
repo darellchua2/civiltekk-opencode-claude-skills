@@ -5,13 +5,12 @@ description: >-
   language/framework test discovery, scoped test writing for current-diff files,
   execution and failure triage. Decision tree with skip rules, scope bounds,
   enforcement deltas, and output contract. Triggers: inline testing, write
-  tests in-session, /run-plan-v2 testing step.
+  tests in-session, plan-execution-inline-skill testing step.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  experiment: inline-family
   mirrors: testing-subagent
-category: experiment
+category: Code Quality
 ---
 
 # Testing (inline)

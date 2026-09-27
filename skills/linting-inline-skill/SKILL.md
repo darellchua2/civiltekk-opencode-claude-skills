@@ -5,13 +5,12 @@ description: >-
   touched files only, applies gate semantics from verification-loop-skill, and
   fixes or reports findings inline. Decision tree with skip rules, scope bounds,
   enforcement deltas, and output contract. Triggers: inline lint, lint
-  in-session, /run-plan-v2 linting step.
+  in-session, plan-execution-inline-skill linting step.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  experiment: inline-family
   mirrors: linting-subagent
-category: experiment
+category: Code Quality
 ---
 
 # Linting (inline)

@@ -4,14 +4,13 @@ description: >-
   In-session documentation delegate — docstrings and docs for new/changed
   symbols only, following per-language standards via technical-writing-skill.
   Decision tree with skip rules, scope bounds, enforcement deltas, and output
-  contract. Triggers: inline docs, docstrings in-session, /run-plan-v2
-  documentation step.
+  contract. Triggers: inline docs, docstrings in-session,
+  plan-execution-inline-skill documentation step.
 license: Apache-2.0
 compatibility: opencode
 metadata:
-  experiment: inline-family
   mirrors: documentation-subagent
-category: experiment
+category: Documentation
 ---
 
 # Documentation (inline)

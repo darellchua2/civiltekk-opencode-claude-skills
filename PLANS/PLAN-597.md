@@ -45,14 +45,16 @@ Phase ordering follows the map: skill before wiring; wiring before guard-test co
 
 ### Phase 1: Inline executor skill + worker de-branding
 
-- [ ] **1.1** Create `skills/plan-execution-inline-skill/SKILL.md` — self-contained inline `--gate` loop with the all-inline delegate matrix, per the frontmatter contract (bare-name sibling references only; bash snippets carry the bash-requirement note; no `background: true` literals, no unix-only idioms, no experiment/A-B wording; `metadata: harness: "opencode"` declared and harness mechanisms presented via the capability-binding block with Other/none fallback)
+- [x] **1.1** Create `skills/plan-execution-inline-skill/SKILL.md` — self-contained inline `--gate` loop with the all-inline delegate matrix, per the frontmatter contract (bare-name sibling references only; bash snippets carry the bash-requirement note; no `background: true` literals, no unix-only idioms, no experiment/A-B wording; `metadata: harness: "opencode"` declared and harness mechanisms presented via the capability-binding block with Other/none fallback)
     — **Why:** everything downstream (installer edge, guard allowlist, commands, preset, README) references this skill, so it must exist first
     — **Done when:** file exists; `name` equals dir; description ≤50 words; `rg -i "A/B|#582|#585|experiment" skills/plan-execution-inline-skill/SKILL.md` is empty; structural greps all non-empty: the four inline delegate targets (`testing-inline-skill`, `linting-inline-skill`, `documentation-inline-skill`, `responsive-audit-inline-skill`), guardrail literals `12` and `20`, `[goal:evidence]` + `[goal:complete]` + `[goal:blocked]`, tier wording `light`, `critical anchor`, `exit gate`, `full`; sibling-ref scan stays green (bare names only)
     — **Consumers affected:** dependency-map (2.1), guard (2.2), opencode.json commands (3.1), preset (3.3), README (3.2), registry (4.1)
-- [ ] **1.2** De-brand the four inline worker SKILL.md frontmatters — `category: experiment` → `Code Quality` (testing, linting), `Documentation` (documentation), `Responsive & Visual Testing` (responsive-audit); drop `experiment: inline-family` metadata keeping `mirrors:`; replace `/run-plan-v2 … step` trigger phrases with neutral inline-execution phrasing
+    — **Done:** skill created with full inline gate loop + all-inline matrix + capability-binding block; files: skills/plan-execution-inline-skill/SKILL.md; fixes: self-caught branding-grep hit ("experiment" in prose) reworded to "trial variant"
+- [x] **1.2** De-brand the four inline worker SKILL.md frontmatters — `category: experiment` → `Code Quality` (testing, linting), `Documentation` (documentation), `Responsive & Visual Testing` (responsive-audit); drop `experiment: inline-family` metadata keeping `mirrors:`; replace `/run-plan-v2 … step` trigger phrases with neutral inline-execution phrasing
     — **Why:** the family graduates from A/B harness to production skills; real categories feed the README table and registry
     — **Done when:** `grep -rl "category: experiment" skills/` is empty; each of the four keeps a `mirrors:` metadata line; no `run-plan-v2` trigger strings remain in the four files
     — **Consumers affected:** README catalog rows (3.2), registry (4.1)
+    — **Done:** categories reassigned (Code Quality ×2, Documentation, Responsive & Visual Testing), experiment metadata dropped, triggers neutralized; files: skills/{testing,linting,documentation,responsive-audit}-inline-skill/SKILL.md; fixes: none
 
 ### Phase 2: Installer edge + guard coupling
 
