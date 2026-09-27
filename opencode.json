@@ -1,0 +1,43 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "atlassian": {
+        "type": "local",
+        "command": [
+          "npx",
+          "-y",
+          "mcp-remote",
+          "https://mcp.atlassian.com/v1/mcp"
+        ],
+        "disabled": false
+      }
+    }
+  },
+  "providers": {
+    "zai-coding-plan": {
+      "models": {
+        "glm-5.3-flashx": {
+          "name": "GLM-5.3 FlashX (custom)",
+          "capabilities": {
+            "tools": true,
+            "input": ["text", "image", "video", "pdf"],
+            "output": ["text"]
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 131072
+          },
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          }
+        }
+      }
+    }
+  }
+}
