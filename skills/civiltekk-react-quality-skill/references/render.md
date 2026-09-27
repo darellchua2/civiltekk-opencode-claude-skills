@@ -1,41 +1,8 @@
----
-name: react-render-antipatterns-skill
-description: >-
-  Detect and fix React render anti-patterns — missing fragment keys, unsafe
-  JSON.parse, revalidatePath/redirect swallowing, ssr:false hydration.
-license: Apache-2.0
-compatibility: opencode
-category: Framework-Specific
----
+# Route `render-antipatterns` — React render anti-patterns
 
-<!-- Provenance: canvastekk-frontend-nextjs LEARNINGS. Split from react-nextjs-antipatterns-skill. PLAN-GIT-312. -->
-
-## What I do
-
-I detect and fix anti-patterns specific to React render-time behavior that cause production incidents:
-
-1. **JSX Render Pitfalls**: Missing fragment keys in `.map()`, unsafe JSON.parse in drag-and-drop handlers
-2. **State-Driven Render Issues**: Inconsistent visibility toggle strategies mixing hard-removal with runtime filtering
-3. **Recommended Pattern**: Theme-driven component design using CSS custom properties only
-
-## When to use me
-
-Use this skill when:
-- Debugging React key warnings in list rendering
-- Fixing UI crashes from malformed drag-and-drop data
-- Auditing inconsistent component visibility patterns
-- Implementing theme-driven (light/dark mode) component design
-- Reviewing React render-time code for production-readiness
-
-## Related Skills
-
-- **react-hooks-antipatterns-skill**: Peer — covers hook lifecycle anti-patterns (stale state, StrictMode double-execution, useCallback/useMemo traps). This skill covers render-time anti-patterns.
-- **react-best-practices-skill**: Peer — performance best practices (waterfalls, bundle size, re-renders, rendering). This skill covers render-time correctness.
-- **accessibility-a11y-skill**: ARIA patterns for dynamic error banners. This skill handles React render correctness.
-- **frontend-design-skill**: UI aesthetics and layout. This skill handles runtime correctness.
-- **uiux-review-skill**: Visual/UX review of rendered output. This skill handles the code-level anti-patterns that cause render bugs.
-
----
+Values for `civiltekk-react-quality-skill` route `render-antipatterns`.
+Provenance: canvastekk-frontend-nextjs LEARNINGS; split from
+react-nextjs-antipatterns-skill (PLAN-GIT-312).
 
 ## A. JSX Render Pitfalls
 
@@ -89,8 +56,6 @@ function onDrop(e: DragEvent) {
 }
 ```
 
----
-
 ## B. State-Driven Render Issues
 
 ### B1. `inconsistent-visibility-toggle-strategy` — Mixed Hide Approaches
@@ -113,8 +78,6 @@ const visibleItems = items.filter(i => isVisible(i.id))
 {visibleItems.map(...)}
 ```
 
----
-
 ## C. Recommended Pattern
 
 ### C1. `folder-tabs-theme-driven` — CSS Custom Properties
@@ -135,8 +98,6 @@ CSS custom properties only — no hardcoded colors, automatic light/dark mode.
 :root[data-theme="dark"] { --color-primary: #6366f1; }
 :root[data-theme="light"] { --color-primary: #4f46e5; }
 ```
-
----
 
 ## D. Next.js Runtime Patterns
 

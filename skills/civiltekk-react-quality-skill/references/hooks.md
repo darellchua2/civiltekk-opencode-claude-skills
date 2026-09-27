@@ -1,43 +1,8 @@
----
-name: react-hooks-antipatterns-skill
-description: >-
-  Detect and fix React hooks anti-patterns — stale useState from props,
-  StrictMode double-execution, dependency traps, stale refs, toast.promise
-  leaks.
-license: Apache-2.0
-compatibility: opencode
-category: Framework-Specific
----
+# Route `hooks-antipatterns` — React hooks anti-patterns
 
-<!-- Provenance: canvastekk-frontend-nextjs LEARNINGS. Split from react-nextjs-antipatterns-skill. PLAN-GIT-312. -->
-
-## What I do
-
-I detect and fix anti-patterns specific to React hooks that cause production incidents:
-
-1. **State & Ref Pitfalls**: Stale derived state, StrictMode double-execution, stale ref accumulators
-2. **Dependency Trap Anti-Patterns**: useCallback/useMemo dependency issues that cause unnecessary recreation or stale closures
-3. **Async Hook Pitfalls**: toast.promise double-consumer Sentry noise
-4. **Recommended Pattern**: Hook decomposition for complex components
-
-## When to use me
-
-Use this skill when:
-- Debugging stale state after external data mutations
-- Investigating StrictMode double-execution bugs
-- Fixing useCallback/useMemo dependency warnings or stale closures
-- Auditing toast.promise usage for double-error-reporting
-- Decomposing large components into focused hooks
-- Reviewing React hooks code for production-readiness
-
-## Related Skills
-
-- **react-render-antipatterns-skill**: Peer — covers render-time anti-patterns (fragment keys, JSON.parse in handlers, visibility toggle inconsistencies, theme-driven design). This skill covers hook lifecycle anti-patterns.
-- **typescript-dry-principle-skill**: Duplicate type definitions and status mappings (redistributed from original skill).
-- **performance-optimization-skill**: Module-scope cache leaks (redistributed from original skill).
-- **react-best-practices-skill**: Peer — performance best practices (waterfalls, bundle size, re-renders, rendering). This skill covers hook-lifecycle correctness.
-
----
+Values for `civiltekk-react-quality-skill` route `hooks-antipatterns`.
+Provenance: canvastekk-frontend-nextjs LEARNINGS; split from
+react-nextjs-antipatterns-skill (PLAN-GIT-312).
 
 ## A. State & Ref Pitfalls
 
@@ -96,8 +61,6 @@ function useInit() {
   }, [])
 }
 ```
-
----
 
 ## B. Dependency Trap Anti-Patterns
 
@@ -164,8 +127,6 @@ useEffect(() => {
 }, [dependency])
 ```
 
----
-
 ## C. Async Hook Pitfalls
 
 ### C1. `toast-promise-await-without-catch` — Double Consumer on toast.promise
@@ -214,8 +175,6 @@ rg "toast\.promise" --type ts --type tsx -A 8 | rg "await" | rg -v "catch|try"
 ```
 
 **Rule:** `toast.promise()` and a bare `await` of the same promise are two independent consumers. If the toast handles the error UI, add `.catch(() => {})` to the await (or drop the await) to prevent the rejection from being re-surfaced as Sentry noise for an error the user has already seen.
-
----
 
 ## D. Recommended Pattern
 

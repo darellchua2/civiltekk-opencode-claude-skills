@@ -599,20 +599,20 @@ extract_section_range() {
   [ "$in_section" -eq "$total" ]
 }
 
-# --- typescript-dry-principle ---
-@test "default_behavior_typescript-dry-principle_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/typescript-dry-principle-skill/SKILL.md"
+# --- civiltekk-react-quality ---
+@test "default_behavior_civiltekk-react-quality_has_imperative_gating_preamble" {
+  skill_md="$SKILLS_DIR/civiltekk-react-quality-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'DO NOT execute any of the following unless' "$skill_md"
 }
-@test "default_behavior_typescript-dry-principle_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/typescript-dry-principle-skill/SKILL.md"
+@test "default_behavior_civiltekk-react-quality_preamble_appears_exactly_once" {
+  skill_md="$SKILLS_DIR/civiltekk-react-quality-skill/SKILL.md"
   [ -f "$skill_md" ]
   count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
   [ "$count" -eq 1 ]
 }
-@test "default_behavior_typescript-dry-principle_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/typescript-dry-principle-skill/SKILL.md"
+@test "default_behavior_civiltekk-react-quality_evaluator_token_in_section_only" {
+  skill_md="$SKILLS_DIR/civiltekk-react-quality-skill/SKILL.md"
   [ -f "$skill_md" ]
   range=$(extract_section_range "$skill_md")
   start=$(echo "$range" | awk '{print $1}')

@@ -83,16 +83,10 @@ permissions:
     resource: complexity-management-skill
     effect: allow
   - action: skill
-    resource: react-hooks-antipatterns-skill
-    effect: allow
-  - action: skill
-    resource: react-render-antipatterns-skill
+    resource: civiltekk-react-quality-skill
     effect: allow
   - action: skill
     resource: security-audit-skill
-    effect: allow
-  - action: skill
-    resource: typescript-dry-principle-skill
     effect: allow
   - action: skill
     resource: continuous-learning-skill
@@ -117,7 +111,7 @@ category: review
 
 ## Reviewer Baseline (load first)
 
-Load `reviewer-baseline-skill` — its Prompt Defense Baseline, Epistemic Honesty & Verification Baseline, Mandatory Post-Review Learning Gate, and Web-lookups policy apply in full to this review. For the learning gate's anti-pattern scan, your domain skills are: `react-hooks-antipatterns-skill`, `react-render-antipatterns-skill`, `code-smells-skill`, `security-audit-skill`, `clean-code-skill`.
+Load `reviewer-baseline-skill` — its Prompt Defense Baseline, Epistemic Honesty & Verification Baseline, Mandatory Post-Review Learning Gate, and Web-lookups policy apply in full to this review. For the learning gate's anti-pattern scan, your domain skills are: `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns` + `ts-dry`), `code-smells-skill`, `security-audit-skill`, `clean-code-skill`.
 
 You are a tech lead performing pre-commit code review. Judge the diff the way a
 hands-on lead would before merge: correctness at the changed lines, SOLID and
@@ -136,10 +130,8 @@ Skills:
 - code-smells: Detection and refactoring guidance
 - object-design: Object stereotypes, value objects, aggregates
 - complexity-management: Cyclomatic/cognitive complexity assessment
-- react-hooks-antipatterns: React hooks anti-patterns (stale state, StrictMode, useCallback/useMemo traps)
-- react-render-antipatterns: React render-time anti-patterns (fragment keys, JSON.parse, visibility toggle)
+- civiltekk-react-quality: React hooks anti-patterns — stale state, StrictMode, useCallback/useMemo traps (route `hooks-antipatterns`); render-time anti-patterns — fragment keys, JSON.parse, visibility toggle (route `render-antipatterns`); DRY violations in TypeScript code (route `ts-dry`)
 - security-audit: Security vulnerability detection during review
-- typescript-dry-principle: DRY violations in TypeScript code
 - continuous-learning: Persist code review findings across sessions
 
 ## Review Checklist

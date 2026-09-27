@@ -34,10 +34,7 @@ permissions:
     resource: error-resolver-workflow-skill
     effect: allow
   - action: skill
-    resource: react-hooks-antipatterns-skill
-    effect: allow
-  - action: skill
-    resource: react-render-antipatterns-skill
+    resource: civiltekk-react-quality-skill
     effect: allow
   - action: skill
     resource: continuous-learning-skill

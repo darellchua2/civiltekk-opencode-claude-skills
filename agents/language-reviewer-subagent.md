@@ -64,13 +64,7 @@ permissions:
     resource: database-migration-skill
     effect: allow
   - action: skill
-    resource: react-hooks-antipatterns-skill
-    effect: allow
-  - action: skill
-    resource: react-render-antipatterns-skill
-    effect: allow
-  - action: skill
-    resource: typescript-dry-principle-skill
+    resource: civiltekk-react-quality-skill
     effect: allow
   - action: skill
     resource: deprecated-code-cleanup-skill

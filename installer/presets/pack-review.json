@@ -11,6 +11,7 @@
     "authentication-authorization-skill",
     "civiltekk-context-optimization-skill",
     "civiltekk-python-backend-skill",
+    "civiltekk-react-quality-skill",
     "clean-architecture-skill",
     "clean-code-skill",
     "code-smells-skill",
@@ -24,12 +25,9 @@
     "logging-observability-skill",
     "object-design-skill",
     "performance-optimization-skill",
-    "react-hooks-antipatterns-skill",
-    "react-render-antipatterns-skill",
     "search-first-skill",
     "security-audit-skill",
     "solid-principles-skill",
-    "typescript-dry-principle-skill",
     "verification-loop-skill"
   ],
   "mcps": [

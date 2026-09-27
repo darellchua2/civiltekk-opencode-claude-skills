@@ -262,22 +262,26 @@ Consumers: agents/technical-design-specialist-subagent.md, deploy/skill-profiles
 ### Phase 10: civiltekk-react-quality-skill
 Absorbs: `react-best-practices-skill` (already has references/ — move tree in) + `react-hooks-antipatterns-skill` + `react-render-antipatterns-skill` + `typescript-dry-principle-skill`. references/: existing best-practices tree + `hooks.md`, `render.md`, `dry.md`. Routes: perf | hooks-antipatterns | render-antipatterns | TS-DRY.
 Consumers: agents/language-reviewer-subagent.md + agents/error-resolver-subagent.md + agents/code-review-subagent.md + agents/nextjs-specialist-subagent.md (all four members across these), deploy/skill-profiles.json, presets pack-frontend + pack-review, tests/test_default_behavior.bats + test_autoresearch_protocol.bats (typescript-dry literals), README.md.
-- [ ] **10.1** Author host + references per template (4 variants)
+- [x] **10.1** Author host + references per template (4 variants)
     — **Why:** one React/TS quality family, four detection/fix recipes; biggest agent fan-in
     — **Done when:** template satisfied; four trigger sets intact; isolation green
     — **Consumers affected:** 4 reviewer/specialist agents
-- [ ] **10.2** Delete + repoint (4 agents' allowlists+bodies, skill-profiles, presets, bats literals, README)
+    — **Done:** routes perf|hooks-antipatterns|render-antipatterns|ts-dry; best-practices references tree moved byte-identical (1 catalog self-ref line); 4-way trigger union; files: skills/civiltekk-react-quality-skill/{SKILL.md,references/perf/,references/hooks.md,references/render.md,references/dry.md}; fixes: none
+- [x] **10.2** Delete + repoint (4 agents' allowlists+bodies, skill-profiles, presets, bats literals, README)
     — **Why:** reviewers allowlist each member by name — all four names must collapse
     — **Done when:** residue clean; affected bats green
     — **Consumers affected:** review lattice, packs, CI
-- [ ] **10.3** Registry + scoped gate + count (136)
+    — **Done:** 4 dirs git-rm; 17 files repointed: 4 agents (allowlists+bodies with per-route annotations), skill-profiles lean 69->67 + six literals (deduped double-add caught in-verification), opencode.json 4->1, 2 presets, 2 bats literal sets, README 139->136 (Framework-Specific 11->8), setup.sh; residue exempt-only; fixes: none
+- [x] **10.3** Registry + scoped gate + count (136)
     — **Why:** per-commit green; 4 dirs removed (139→136 hits the ticket's 136 target early only if Phase-6 arithmetic offset — reconcile running count at gate and record actual)
     — **Done when:** count verified; `bats tests/` for touched files green
     — **Consumers affected:** installer
-- [ ] **10.4** Commit + push
+    — **Done:** registry rebuilt (skills=136); scoped gate green incl. isolation; count 136 (ladder matches); fixes: none
+- [x] **10.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 11: civiltekk-documentation-inline-skill (isolation-contract touchpoint — last)
 Absorbs: `documentation-inline-skill` (host renames) + `docstring-generator-skill`. references/: `docstring-formats.md` (PEP 257/Javadoc/JSDoc/XML tables); host keeps the inline decision-tree method. Routes: inline-docs delegate | docstring-format lookup.
@@ -345,3 +349,4 @@ GATE 4f1ca75 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE e1174fd tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 15dbf7e tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE eeeccb4 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 18c988c tier=light lint=- typecheck=- build=- unit=t e2e=n.a

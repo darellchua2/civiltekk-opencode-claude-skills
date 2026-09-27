@@ -139,7 +139,7 @@ per-language.
 | **Node.js** | Stream handling, proper error events, graceful shutdown, no synchronous I/O |
 | **Express/Fastify** | Middleware ordering, error handling middleware, request validation |
 
-**React Anti-Pattern**: `react-hooks-antipatterns-skill` (hooks) + `react-render-antipatterns-skill` (render). **TypeScript DRY**: `typescript-dry-principle-skill`.
+**React Anti-Pattern**: `civiltekk-react-quality-skill` routes `hooks-antipatterns` (hooks) + `render-antipatterns` (render). **TypeScript DRY**: same skill, route `ts-dry`.
 
 ## Go Review Checklist
 
