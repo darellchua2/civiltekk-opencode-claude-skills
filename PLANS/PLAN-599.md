@@ -4,37 +4,41 @@
 **Issue**: https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/599
 **Base**: main
 
+**Revision 2** — architecture review + Mode R adjudication applied: `opencode_app/opencode.json` (full-profile single source) added as consumer + step; all sync surfaces folded into the same commit as the disk change (release.yml runs `build-registry.mjs --check` + every bats file per push — each commit below leaves CI green); corrected count arithmetic (Git/Workflow 16→14, JIRA (3) row removed, total 155→150, lean stays 78); 12th consumer `grilling-skill:144`; AC8 LEARNINGS disposition buckets adjudicated.
+
 ## Acceptance Criteria
 
 - [ ] AC1: `skills/ticketing-skill/` (SKILL.md + `references/{github,jira}.md` + README.md w/ Mermaid diagram + moved `templates/`) replaces the six dirs, removed in the same commit
 - [ ] AC2: `§MCP Availability Guard` and `§Attribution` headings preserved verbatim so external §-pointers are one-token renames
 - [ ] AC3: SKILL.md description ≤50 words preserving the trigger surface (ticket/issue × create·label·update·close, bug report, feature request, ticket-key↔branch) plus negative scope ("no branches, PLANs, execution")
 - [ ] AC4: `references/github.md` has the 3-tier gh fallback with an honest per-operation capability matrix; `references/jira.md` has MCP + REST fallback per policy
-- [ ] AC5: Reference sweep done: `repo-ops-specialist` (6→1 allow rules), `pr-workflow-subagent`, prose pointers in requirements/technical-design/discovery specialists, and the consumer skills (plan-execution, plan-execution-inline, pr-creation, pr-merge, wayfinder, worktree-pipeline, dev-uat-promotion, mermaid-diagram-creator, semantic-release-convention, opencode-repo-setup, gh-cli-setup)
-- [ ] AC6: Installer synced: `registry.json` rebuilt, `pack-devops.json` 6→1, `skill-profiles.json` lean swap; count literals updated in `skill_profiles.bats`, `test_count_drift.bats`, `init.bats`, `test_markitdown_skill.bats`, README rows (Git/Workflow recount, JIRA row removed), `opencode_app/README.md`, `deploy/setup.sh`/`setup.ps1` comments — derived from disk + delta, never stale doc numbers
-- [ ] AC7: `tests/test_issue_template_byte_identity.bats` path swapped; full bats suite green
-- [ ] AC8: Repo-wide grep for the six old skill names → zero unjustified hits (migration note excepted)
+- [ ] AC5: Reference sweep: `repo-ops-specialist` (6→1 allow rules), `pr-workflow-subagent`, prose pointers in requirements/technical-design/discovery specialists, and the 12 consumer skills (plan-execution, plan-execution-inline, pr-creation, pr-merge, wayfinder, worktree-pipeline, dev-uat-promotion, mermaid-diagram-creator, semantic-release-convention, opencode-repo-setup, gh-cli-setup, grilling)
+- [ ] AC6: Installer synced: `registry.json` rebuilt, `pack-devops.json` 6→1, `skill-profiles.json` lean swap, **`opencode_app/opencode.json` swept in the same commit** (6 allow rules → one `ticketing-skill` allow + `/create-ticket` template retarget — Mode R strengthening; gated by skill_profiles.bats :54 subset AND :63 dead-allow); count literals updated (skill_profiles.bats, init.bats, test_markitdown_skill.bats, README rows, opencode_app/README.md, deploy/setup.sh + setup.ps1 comments — disk + delta, never stale doc numbers; test_count_drift.bats is dynamic → no-op)
+- [ ] AC7: `tests/test_issue_template_byte_identity.bats` path swapped (in the consolidation commit); full bats suite green
+- [ ] AC8: Repo-wide grep for the six old names → zero hits outside the adjudicated disposition (Phase 5 buckets): **update** mcp-guard-single-homed, blocked-by-format-single-home:14, policy-single-home-pointer-shape:3, section-pins-target-heading-anchors:10 (live pins — retarget to ticketing-skill), `_index.md` mirrors :252,:258,:741,:1002; **grandfather as justified** CHANGELOG.md:645, PLANS/PLAN-{512,560,595}.md, rule-added-example-stale:8, gh-issue-edit-body-replaces-not-appends.md:23, `_index.md`:894
 
 ## Dependency & Consumer Map
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `skills/ticketing-skill/SKILL.md` (new) | Phase 1 audit outputs (dispositions, preserved §-bodies) | repo-ops + pr-workflow allowlists; 11 consumer SKILL.md pointers; `registry.json`; `pack-devops.json`; `skill-profiles.json`; README rows | high |
+| `skills/ticketing-skill/SKILL.md` (new) | Phase 1 audit outputs (dispositions, preserved §-bodies) | repo-ops + pr-workflow allowlists; 12 consumer SKILL.md pointers; `registry.json`; `pack-devops.json`; `skill-profiles.json`; `opencode_app/opencode.json` allow + `/create-ticket` template; README rows | high |
 | `skills/ticketing-skill/references/github.md` (new) | SKILL.md §-skeleton (load rules) | SKILL.md load rule; `gh-cli-setup-skill` reciprocal pointer | med |
-| `skills/ticketing-skill/references/jira.md` (new) | SKILL.md §-skeleton; §MCP Availability Guard body | SKILL.md load rule; policy pointers from pr-creation/pr-merge/wayfinder/worktree-pipeline/dev-uat/plan-execution(-inline)/mermaid/opencode-repo-setup | high |
+| `skills/ticketing-skill/references/jira.md` (new) | SKILL.md §-skeleton; §MCP Availability Guard body | SKILL.md load rule; policy pointers from 8 consumer skills | high |
 | `skills/ticketing-skill/README.md` (new) | SKILL.md method (diagram mirrors it) | humans only | low |
-| `skills/ticketing-skill/templates/*.yml` (moved) | Phase 2 commit ordering (mv before rm) | `tests/test_issue_template_byte_identity.bats`; `opencode-repo-setup-skill` template-copy offer | med |
-| six old `skills/` dirs (deleted) | ticketing-skill authored first | every Phase 3/4 consumer | high |
-| `agents/repo-ops-specialist-subagent.md` | ticketing-skill existing | `deploy/setup.sh` agent copy; `installer/agent-tiers.json` unchanged; frontmatter = dependency-map primary source | high |
-| `agents/pr-workflow-subagent.md` | ticketing-skill existing | same as above | med |
+| `skills/ticketing-skill/templates/*.yml` (moved) | Phase 2 ordering (mv before rm) | `tests/test_issue_template_byte_identity.bats`; `opencode-repo-setup-skill` template-copy offer | med |
+| six old `skills/` dirs (deleted) | ticketing-skill authored first | every Phase 3/5 consumer | high |
+| `opencode_app/opencode.json` | ticketing-skill existing; **same commit** as lean swap + dir swap (skill_profiles.bats :54 subset + :63 dead-allow gate both directions) | Docker app runtime; `tests/skill_profiles.bats` | high |
+| `installer/registry.json` | all skill-dir + frontmatter changes (rebuilt in BOTH the Phase 2 and Phase 3 commits — `--check` runs per push) | `installer/init.mjs`; `tests/init.bats` | high |
+| `installer/presets/pack-devops.json`, `deploy/skill-profiles.json` | skill-dir changes final; same commit as dir swap | installer presets; setup.sh profiles; `tests/skill_profiles.bats` | med |
+| `README.md` rows + counts | disk state final; **same commit** as dir swap (test_markitdown cross-file count is per-push) | `tests/test_markitdown_skill.bats`; humans | med |
+| `opencode_app/README.md` count | same commit as dir swap | CI bats count match | med |
+| `agents/repo-ops-specialist-subagent.md` | ticketing-skill existing | deploy/setup.sh agent copy; runtime delegation; dependency-map primary source | high |
+| `agents/pr-workflow-subagent.md` | ticketing-skill existing | same | med |
 | `agents/{requirements,technical-design,discovery}-specialist-subagent.md` | ticketing-skill name settled | prose only | low |
-| 11 consumer `skills/*/SKILL.md` pointers | ticketing-skill §-anchors settled (AC2) | each skill's own docs | med |
-| `installer/registry.json` | all skill-dir changes final | `installer/init.mjs`; `tests/init.bats` | high |
-| `installer/presets/pack-devops.json` | skill-dir changes final | installer preset installs | med |
-| `deploy/skill-profiles.json` | skill-dir changes final | `deploy/setup.sh` profiles; `tests/skill_profiles.bats` | med |
-| `README.md` rows + counts | disk state final | `tests/test_markitdown_skill.bats` cross-file count; `test_count_drift.bats` | med |
-| `opencode_app/README.md`, `deploy/setup.sh`, `deploy/setup.ps1` literals | disk state final | CI bats suite | med |
-| `tests/{skill_profiles,test_count_drift,init,test_markitdown_skill,test_issue_template_byte_identity}.bats` | disk + doc state final | release CI | med |
+| 12 consumer `skills/*/SKILL.md` pointers | §-anchors settled (AC2) | each skill's own docs | med |
+| `deploy/setup.sh`, `deploy/setup.ps1` comment literals | disk state final (not CI-gated — drift only) | humans | low |
+| `LEARNINGS/` live docs + `_index.md` mirrors | ticketing-skill §-anchors settled | auto-injected manifest every session | med |
+| `tests/*.bats` literals | disk + doc + config state final | release CI | med |
 
 ## Implementation Phases
 
@@ -45,92 +49,94 @@
     — **Done when:** Technical Notes carries a table covering all six skills' sections with zero "undecided" rows
     — **Consumers affected:** Phase 2 authoring steps
 - [ ] **1.2** Extract byte-exact §MCP Availability Guard (from jira-git-integration) and §Attribution (from ticket-creation) bodies plus the consolidated trigger-phrase inventory into Technical Notes
-    — **Why:** AC2 requires verbatim headings/bodies; having them pinned pre-authoring prevents drift during the merge
+    — **Why:** AC2 requires verbatim headings/bodies; pinning them pre-authoring prevents drift during the merge
     — **Done when:** Technical Notes contains both verbatim blocks and the trigger inventory (incl. the two skills that had no trigger lists)
     — **Consumers affected:** step 2.4
 
-### Phase 2: Author `skills/ticketing-skill/` and remove the six dirs
+### Phase 2: Author `skills/ticketing-skill/` + CI-green atomic swap (ONE commit)
 
-- [ ] **2.1** `mkdir -p skills/ticketing-skill/references` and `git mv skills/ticket-creation-skill/templates skills/ticketing-skill/templates`
+_All of 2.1–2.10 lands in a single commit so release.yml (build-registry --check + full bats per push) stays green at that SHA._
+
+- [ ] **2.1** `mkdir -p skills/ticketing-skill/references`; `git mv skills/ticket-creation-skill/templates skills/ticketing-skill/templates`
     — **Why:** git mv preserves template history and lands the byte-identical files the byte-identity test pins, before the source dir is removed
     — **Done when:** `git status` shows renamed `templates/*.yml` under `skills/ticketing-skill/`
-    — **Consumers affected:** `tests/test_issue_template_byte_identity.bats`, `opencode-repo-setup-skill` template-copy offer
-- [ ] **2.2** Write `skills/ticketing-skill/references/github.md` — gh values + LABELS vocabulary (GitHub defaults, priority, semver PR-only), issue key format, and the 3-tier tooling fallback with per-operation capability matrix (gh → prompt-install via gh-cli-setup-skill → git-only tier: create=paste-ready body+web URL, label/comment=skip+note, close=`Closes #N` keyword, plumbing=full), skeleton per skill-generalizer side-file contract
-    — **Why:** AC4's GitHub half; platform values live in the side file, never the main doc
-    — **Done when:** file exists with fixed skeleton, load-rule-ready intro, citations/verify-locally notes on values, no method content
-    — **Consumers affected:** SKILL.md load rule; `gh-cli-setup-skill` reciprocal pointer (step 3.4)
-- [ ] **2.3** Write `skills/ticketing-skill/references/jira.md` — atlassian_* MCP tool names + REST fallback endpoints (`/rest/api/3/...`), type/priority/component vocabularies, idempotent transition contract, `PROJ-123` key regex, skeleton per side-file contract
-    — **Why:** AC4's JIRA half; REST fallback carries the MCP-guard policy pointers
+    — **Consumers affected:** byte-identity test, opencode-repo-setup template-copy offer
+- [ ] **2.2** Write `skills/ticketing-skill/references/github.md` — gh values + LABELS vocabulary (GitHub defaults, priority, semver PR-only), issue key format, 3-tier tooling fallback with per-operation capability matrix (gh → prompt-install via gh-cli-setup-skill → git-only tier: create=paste-ready body+web URL, label/comment=skip+note, close=`Closes #N` keyword, plumbing=full), skeleton per side-file contract
+    — **Why:** AC4 GitHub half; platform values live in the side file, never the main doc
+    — **Done when:** file exists with fixed skeleton, citations/verify-locally notes on values, no method content
+    — **Consumers affected:** SKILL.md load rule; gh-cli-setup reciprocal pointer (3.4)
+- [ ] **2.3** Write `skills/ticketing-skill/references/jira.md` — atlassian_* MCP tools + REST fallback endpoints (`/rest/api/3/...`), type/priority/component vocabularies, idempotent transition contract, `PROJ-123` key regex, skeleton per side-file contract
+    — **Why:** AC4 JIRA half; REST fallback carries the MCP-guard policy
     — **Done when:** file exists with skeleton, vocab with verify-locally leads, transition idempotency rule, no method content
-    — **Consumers affected:** SKILL.md load rule; policy pointers retargeted in step 3.4
-- [ ] **2.4** Write `skills/ticketing-skill/SKILL.md` — frontmatter (name, ≤50-word trigger-preserving description with negative scope, Apache-2.0, compatibility opencode, category Git/Workflow, license + metadata per house contract); §Platform Detection gate (explicit → repo signals → ask); §Lifecycle routing (create / classify-label / update / close / git-plumbing); §MCP Availability Guard (canonical home, verbatim body from 1.2); §Attribution (verbatim from 1.2); semver rule "PRs get exactly one semver label; issues get type + priority"; side-file load rules; attribution/self-assign rules
-    — **Why:** the method body; AC1+AC2+AC3 all land here
-    — **Done when:** all three ACs' SKILL.md clauses checkable true; `metadata` values are double-quoted comma-separated strings; description ≤50 words
-    — **Consumers affected:** all Phase 3/4 consumers
-- [ ] **2.5** Write `skills/ticketing-skill/README.md` with the Mermaid workflow diagram (platform gate → lifecycle ops → side-file loads; github branch shows the 3 tooling tiers; jira branch shows MCP/REST)
-    — **Why:** human-facing map of the method; diagram must mirror SKILL.md routing exactly
-    — **Done when:** fenced ```mermaid block renders (flowchart TD), covers both platforms, both lifecycle dimensions, 3-tier fallback
+    — **Consumers affected:** SKILL.md load rule; policy pointers retargeted in 3.4
+- [ ] **2.4** Write `skills/ticketing-skill/SKILL.md` — frontmatter (name, ≤50-word trigger-preserving description with negative scope, Apache-2.0, compatibility opencode, category Git/Workflow, metadata per house contract); §Platform Detection gate (explicit → repo signals → ask); §Lifecycle routing (create / classify-label / update / close / git-plumbing); §MCP Availability Guard (canonical home, verbatim from 1.2); §Attribution (verbatim from 1.2); semver rule "PRs get exactly one semver label; issues get type + priority"; side-file load rules
+    — **Why:** the method body; AC1+AC2+AC3 land here
+    — **Done when:** AC1–AC3 SKILL.md clauses checkable true; metadata values double-quoted comma-separated strings; description ≤50 words
+    — **Consumers affected:** all Phase 3/5 consumers
+- [ ] **2.5** Write `skills/ticketing-skill/README.md` with the Mermaid workflow diagram (platform gate → lifecycle ops → side-file loads; github branch shows 3 tooling tiers; jira branch shows MCP/REST)
+    — **Why:** human-facing map; diagram must mirror SKILL.md routing exactly
+    — **Done when:** fenced ```mermaid flowchart covers both platforms, both lifecycle dimensions, 3-tier fallback
     — **Consumers affected:** none (inert to installer/registry/tests)
-- [ ] **2.6** `git rm -r` the six old dirs; commit `refactor(skills): consolidate six ticket skills into ticketing-skill` (renames + new files + removals in one commit)
-    — **Why:** AC1 requires same-commit replacement; atomic swap keeps every intermediate tree consistent
-    — **Done when:** commit contains 6 dir deletions + templates renames + 4 new files; tree builds (no dangling references inside the new skill)
-    — **Consumers affected:** all Phase 3/4 files (they now reference a name that exists)
+- [ ] **2.6** Sweep `opencode_app/opencode.json`: the six allow rules (`:130,:195,:200,:205,:210,:215`) → one `ticketing-skill` allow; retarget the `/create-ticket` command template (`:665`) to load `ticketing-skill`
+    — **Why:** full-profile single source (deploy/skill-profiles.json `_comment`); unswept, skill_profiles.bats :54 (lean ⊆ app allows) AND :63 (dead-allow guard) both fail — Mode R strengthening
+    — **Done when:** zero old names in the file; `node -e JSON.parse` validates; both gating tests green at this SHA
+    — **Consumers affected:** Docker app runtime, tests/skill_profiles.bats
+- [ ] **2.7** Installer sync: `node installer/build-registry.mjs` (regenerate); `installer/presets/pack-devops.json` six entries → `ticketing-skill`; `deploy/skill-profiles.json` lean: `ticket-creation-skill` → `ticketing-skill` (1:1, lean count stays 78)
+    — **Why:** `--check` runs per push — registry must match disk in THIS commit; presets/profiles would pull dead dirs otherwise
+    — **Done when:** `build-registry.mjs --check` exits 0; both JSONs reference only existing dirs
+    — **Consumers affected:** installer/init.mjs, tests/init.bats, tests/skill_profiles.bats
+- [ ] **2.8** Docs counts (disk + delta): README Git/Workflow row 16→**14** (row holds only ticket-creation/git-issue-labeler/git-issue-updater of the six), JIRA (3) row removed, tree-comment + hand-maintained counts + running totals **155→150**; migration note naming the six old names with `npx add ticketing-skill` replacement; `opencode_app/README.md` count literal same delta
+    — **Why:** test_markitdown cross-file count is per-push; LEARNINGS new-skill-count-literal-gates — derive from disk, never stale doc numbers (review caught 16→11 as wrong-base arithmetic)
+    — **Done when:** README counts equal `ls skills/ | wc -l` at HEAD; migration note present
+    — **Consumers affected:** tests/test_markitdown_skill.bats, humans
+- [ ] **2.9** `tests/test_issue_template_byte_identity.bats`: TEMPLATES_DIR/SKILL_MD → `skills/ticketing-skill/`
+    — **Why:** AC7 first half; the pinned cmp must target the moved dir in this commit or the push is red
+    — **Done when:** `bats tests/test_issue_template_byte_identity.bats` passes at this tree
+    — **Consumers affected:** release CI
+- [ ] **2.10** `git rm -r` the six old dirs; single commit `refactor(skills): consolidate six ticket skills into ticketing-skill` (renames + new files + removals + 2.6–2.9 + Phase 1 PLAN edits)
+    — **Why:** AC1 same-commit replacement; every per-push gate green at this SHA (registry --check, skill_profiles :54/:63, markitdown count, byte-identity, count_drift, init)
+    — **Done when:** commit lands; `bats tests/skill_profiles.bats tests/test_issue_template_byte_identity.bats tests/test_markitdown_skill.bats tests/test_count_drift.bats tests/init.bats` all green at this SHA
+    — **Consumers affected:** all downstream consumers
 
-### Phase 3: Reference sweep (agents + consumer skills)
+### Phase 3: Reference sweep (agents + 12 consumer skills)
 
-- [ ] **3.1** `agents/repo-ops-specialist-subagent.md`: replace the 6 skill-allow rules (`:59-74`) with one `ticketing-skill` allow (gh-cli-setup already allowed at `:53`); update prose `:166` policy pointer
-    — **Why:** frontmatter skill-allows are the dependency-map's primary source; stale names = silently un-loadable skill at runtime
-    — **Done when:** frontmatter has zero old-name resources; prose cites ticketing-skill §MCP Availability Guard
-    — **Consumers affected:** deploy/setup.sh agent copy; runtime delegation
-- [ ] **3.2** `agents/pr-workflow-subagent.md`: allow rule `:57` → `ticketing-skill`; prose `:121-123` (§Attribution + policy pointers + delegation contracts)
-    — **Why:** same runtime-allow requirement + the §-anchors AC2 preserved must be cited by their new home
-    — **Done when:** zero old names in file; §-citations resolve inside ticketing-skill
+- [ ] **3.1** `agents/repo-ops-specialist-subagent.md`: 6 skill-allow rules (`:59-74`) → one `ticketing-skill` allow (gh-cli-setup already at `:53`); prose `:166` policy pointer
+    — **Why:** frontmatter skill-allows are the dependency-map primary source; stale names = silently un-loadable skill
+    — **Done when:** zero old names in file; prose cites ticketing-skill §MCP Availability Guard
+    — **Consumers affected:** deploy/setup.sh agent copy, runtime delegation
+- [ ] **3.2** `agents/pr-workflow-subagent.md`: allow rule `:57` → `ticketing-skill`; prose `:121-123` (§Attribution + policy + delegation contracts)
+    — **Why:** same runtime-allow requirement; AC2 anchors must be cited by their new home
+    — **Done when:** zero old names; §-citations resolve inside ticketing-skill
     — **Consumers affected:** PR flow delegation
-- [ ] **3.3** Prose-only pointers in `requirements-specialist` (`:110,:244`), `technical-design-specialist` (`:108`), `discovery-specialist` (`:109`)
-    — **Why:** "that is ticket-creation-skill" sentences must name the surviving skill or readers hit a dead reference
+- [ ] **3.3** Prose pointers in `requirements-specialist` (`:110,:244`), `technical-design-specialist` (`:108`), `discovery-specialist` (`:109`)
+    — **Why:** dead references misroute readers
     — **Done when:** `grep -rn` old names across `agents/` returns nothing
     — **Consumers affected:** doc readers
-- [ ] **3.4** Consumer-skill pointer sweep: plan-execution (`:35,:135,:181`), plan-execution-inline (`:34`), pr-creation (`:27,:29`), pr-merge (`:198`), wayfinder (`:35,:133`), worktree-pipeline (`:20,:69,:109,:112`), dev-uat-promotion (`:29,:54`), mermaid-diagram-creator (`:91,:336`), semantic-release-convention (`:48`), opencode-repo-setup (`:65,:176,:195`), gh-cli-setup (`:17`) — each becomes a ticketing-skill §-pointer; commit `refactor(agents,skills): point ticket consumers at ticketing-skill`
-    — **Why:** AC5; §-anchors survive via AC2 so each is a one-token rename; templates path in opencode-repo-setup `:65` follows the moved dir
-    — **Done when:** repo-wide `grep -rn "ticket-creation-skill\|git-issue-labeler-skill\|git-issue-updater-skill\|jira-git-integration-skill\|jira-status-updater-skill\|jira-ticket-labeler-skill"` hits only `skills/ticketing-skill/` history-free prose (i.e., migration note) — zero otherwise
-    — **Consumers affected:** every downstream flow that loads these by name
+- [ ] **3.4** Consumer sweep (12 skills): plan-execution (`:35,:135,:181`), plan-execution-inline (`:34`), pr-creation (`:27,:29`), pr-merge (`:198`), wayfinder (`:35,:133`), worktree-pipeline (`:20,:69,:109,:112`), dev-uat-promotion (`:29,:54`), mermaid-diagram-creator (`:91,:336`), semantic-release-convention (`:48`), opencode-repo-setup (`:65,:176,:195`), gh-cli-setup (`:17`), **grilling (`:144`)** — each a ticketing-skill §-pointer; run `build-registry.mjs`, include any diff; commit `refactor(agents,skills): point ticket consumers at ticketing-skill`
+    — **Why:** AC5; grilling was the review-caught 12th consumer; registry re-check because agent/frontmatter-adjacent files changed in this commit
+    — **Done when:** repo-wide old-name grep hits only the Phase 5 adjudicated buckets (LEARNINGS/CHANGELOG/PLANS)
+    — **Consumers affected:** every downstream flow loading these by name
 
-### Phase 4: Installer, deploy, docs sync
+### Phase 4: Deploy comment literals
 
-- [ ] **4.1** `node installer/build-registry.mjs`; commit regenerated `installer/registry.json`
-    — **Why:** frontmatter/dir changes must reach the installer registry (AGENTS.md §frontmatter contract)
-    — **Done when:** registry contains ticketing-skill, not the six; committed
-    — **Consumers affected:** installer/init.mjs, tests/init.bats
-- [ ] **4.2** `installer/presets/pack-devops.json` 6→1; `deploy/skill-profiles.json` lean: replace `ticket-creation-skill` with `ticketing-skill` (verify whether any other profile lists the six)
-    — **Why:** preset/profile installs would otherwise pull dead dirs or miss the new skill
-    — **Done when:** both files reference only existing skill dirs; JSON valid
-    — **Consumers affected:** installer presets, setup.sh profiles, tests/skill_profiles.bats
-- [ ] **4.3** `README.md`: Git/Workflow row recount (16→11), JIRA (3) row removed, tree-comment + hand-maintained counts (`<!-- count: hand-maintained -->` sites, running totals) recomputed from disk + delta; add the six removed names to the breaking/migration note; same treatment for `opencode_app/README.md` count literal
-    — **Why:** AC6 doc half; LEARNINGS new-skill-count-literal-gates — derive from disk+delta, never stale doc numbers
-    — **Done when:** counts equal `ls skills/ | wc -l` at HEAD; migration note names all six old names with their `npx add` replacement
-    — **Consumers affected:** tests/test_markitdown_skill.bats cross-file count, test_count_drift.batch, humans
-- [ ] **4.4** `deploy/setup.sh` + `deploy/setup.ps1`: profile comment literals ("N primary-visible skills" / "N-allow allowlist" prose above profile functions — search anchors, not line numbers); commit `docs(installer,deploy): sync counts and listings for ticketing-skill`
-    — **Why:** AC6 deploy half; comments drift functionally otherwise
-    — **Done when:** comment literals match the recomputed numbers
-    — **Consumers affected:** release CI grep gates if any; humans
+- [ ] **4.1** `deploy/setup.sh` + `deploy/setup.ps1`: profile comment literals ("N primary-visible skills" / "N-allow allowlist" prose above profile functions — search anchors, not line numbers); commit `docs(deploy): sync setup comment literals for ticketing-skill`
+    — **Why:** AC6 deploy half; functional counts auto-derive, comments drift
+    — **Done when:** comment literals match recomputed numbers (derive from disk + delta)
+    — **Consumers affected:** humans
 
-### Phase 5: Tests + verification gates
+### Phase 5: LEARNINGS adjudication + verification gates
 
-- [ ] **5.1** `tests/test_issue_template_byte_identity.bats`: TEMPLATES_DIR/SKILL_MD paths → `skills/ticketing-skill/`
-    — **Why:** AC7 first half; the pinned cmp must target the moved dir
-    — **Done when:** test passes standalone: `bats tests/test_issue_template_byte_identity.bats`
-    — **Consumers affected:** release CI
-- [ ] **5.2** Count literals in `tests/skill_profiles.bats` (lean count arithmetic + expected strings — note: lean nets 0 if ticketing-skill replaces ticket-creation-skill 1:1, verify against actual lean array), `tests/init.bats` (registry counts), `tests/test_markitdown_skill.bats` (if literal), `tests/test_count_drift.bats` (verify dynamic vs literal)
-    — **Why:** AC6 test half; each literal is an invisible CI red per the LEARNINGS
-    — **Done when:** each test passes standalone after the bump
-    — **Consumers affected:** release CI
-- [ ] **5.3** Full gate: run the entire `bats tests/` suite in the worktree; fix any red (fix commits follow the same atomic scope)
-    — **Why:** verification-loop contract — the ticket exit gate is full-tier
+- [ ] **5.1** LEARNINGS update bucket per Mode R: `decisions/mcp-guard-single-homed.md` (canonical home → ticketing-skill, evidence-add), `conventions/blocked-by-format-single-home.md:14` (producer → ticketing-skill), `conventions/policy-single-home-pointer-shape.md:3` (context note: home moved in #599), `conventions/section-pins-target-heading-anchors.md:10` (**live pins retargeted** to ticketing-skill — manifest is auto-injected, stale pins misroute), `_index.md` mirrors `:252,:258,:741,:1002`; commit `chore(learnings): retarget ticket-skill pins to ticketing-skill`
+    — **Why:** AC8 update bucket; live convention docs become factually wrong at merge otherwise
+    — **Done when:** update-bucket files contain zero old names (except explicitly marked historical narrative)
+    — **Consumers affected:** every future session's auto-injected manifest
+- [ ] **5.2** Full gate: entire `bats tests/` suite in the worktree; fix any red
+    — **Why:** verification-loop contract — ticket exit gate is full-tier
     — **Done when:** `bats tests/` exits 0
     — **Consumers affected:** release CI, PR gate citation
-- [ ] **5.4** AC8 sweep: `grep -rn` the six old names across the repo → zero unjustified hits (migration note excepted); tick all PLAN checkboxes ride this commit; final commit `test(tickets): sync gates for ticketing-skill consolidation`
-    — **Why:** the acceptance gate the issue demands; tick updates fold into this commit per the no-standalone-tick rule
-    — **Done when:** grep clean; all ACs checked; gate memo `tier=full` recorded with final SHA
+- [ ] **5.3** AC8 adjudicated sweep: old-name grep repo-wide → zero hits outside the grandfather list (CHANGELOG.md:645; PLANS/PLAN-{512,560,595}.md; rule-added-example-stale:8; gh-issue-edit-body-replaces-not-appends.md:23; `_index.md`:894); tick checkboxes ride this commit; final commit `test(tickets): adjudicate AC8 sweep for ticketing-skill consolidation`
+    — **Why:** the acceptance gate with a pre-adjudicated disposition so it cannot stall
+    — **Done when:** grep clean per buckets; all ACs checked; gate memo `tier=full` recorded with final SHA
     — **Consumers affected:** PR Step 10a citation
 
 ## Technical Notes
@@ -144,11 +150,13 @@ _Disposition table and verbatim §-bodies land here before Phase 2 begins._
 **Draft description (AC3, 36 words):**
 > Ticket lifecycle for GitHub Issues and JIRA — create, classify/label, update from commits, close (post-merge, idempotent), ticket-key↔branch plumbing. CRUD only: no branches, PLANs, execution. Triggers: any ticket/issue create·label·update·close, bug report, feature request.
 
-**Semver boundary:** PRs get exactly one semver label (major/minor/patch) derived from the Conventional Commit prefix of the PR title; issues get type + priority only. Tagging/version-bump belong to semantic-release-convention-skill + release tooling. Definitions follow semantic-release-convention-skill — cited, never redefined.
+**Semver boundary:** PRs get exactly one semver label (major/minor/patch) from the PR title's Conventional Commit prefix; issues get type + priority only. Tagging/version-bump belong to semantic-release-convention-skill + release tooling. Definitions follow semantic-release-convention-skill — cited, never redefined.
 
 **Workflow skills stay external:** worktree-pipeline, wayfinder, dev-uat-promotion consume ticketing-skill; none of their method content is absorbed.
 
-**v2 execution:** Step 8 runs plan-execution-inline-skill (inline workers) per the invoking command's `-v2` suffix.
+**Count arithmetic (corrected per review):** Git/Workflow row holds 3 of the six (ticket-creation, git-issue-labeler, git-issue-updater) → 16−3+1=**14**; JIRA (3) row removed; total skills 155−6+1=**150**; lean 78 unchanged (1:1 swap).
+
+**Execution mode:** Pipeline Step 8 (execute) runs `plan-execution-inline-skill` (inline workers) per the invoking command's `-v2` suffix; per-phase commits follow this PLAN's commit boundaries (Phase 2 = one commit).
 
 ## Dependencies
 
@@ -156,8 +164,9 @@ _Disposition table and verbatim §-bodies land here before Phase 2 begins._
 
 ## Risks & Mitigation
 
-- **Count-literal CI reds beyond the listed tests** — mitigate: sweep per LEARNINGS new-skill-count-literal-gates verification greps (`-eq [0-9]` arithmetic, "skill director" matches, "primary-visible/allow" literals) before 5.3.
-- **Trigger regression from description compression** — mitigate: phrase inventory pinned in Technical Notes; AC3 enforces ≤50 words + surface coverage; post-merge real-session check suggested.
-- **Missed pointer / dangling §-anchor** — mitigate: AC8 grep is the gate; anchors preserved verbatim (AC2) so renames stay mechanical.
-- **Breaking change for `npx add` users pinning old names** — mitigate: major release + migration note in README (4.3).
-- **Byte-identity test path drift** — mitigate: git mv (rename detection) + 5.1 standalone run before the full suite.
+- **Per-push CI reds from unsynced surfaces** — mitigated structurally: every sync surface (registry, lean, app config, README counts, byte-test path) rides the SAME commit as the disk change (Phase 2 single commit; registry re-check in 3.4).
+- **Count-literal misses beyond listed tests** — mitigate: run the LEARNINGS verification greps (`-eq [0-9]` arithmetic, "skill director" matches, "primary-visible/allow" literals) before 5.2.
+- **Trigger regression from description compression** — mitigate: phrase inventory pinned above; AC3 enforces ≤50 words + surface coverage.
+- **Missed pointer / dangling §-anchor** — mitigate: AC8 adjudicated buckets make the final grep decidable; anchors preserved verbatim (AC2).
+- **Breaking change for `npx add` users pinning old names** — mitigate: major release + migration note (2.8).
+- **Byte-identity test path drift** — mitigate: git mv rename detection + 2.9 standalone run inside the Phase 2 commit.
