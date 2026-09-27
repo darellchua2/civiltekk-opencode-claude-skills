@@ -50,6 +50,7 @@
     — **Why:** the current "method steps never move" wording actively prevents the router pattern this ticket teaches (AC 3) — and the doctrine is restated in three places (never-moves list, what-moves list, anti-pattern bullet), so flipping one site leaves the revised skill failing its own contradiction pass.
     — **Done when:** `grep -c "workflow step exiled" skills/skill-generalizer/SKILL.md` = 0; never-moves list contains gates/tolerances/schemas/decision-tree and not "method steps"; the what-moves bullet names step mechanics, verbatim artifacts, and human docs; the side-file contract is labeled (d)-scoped; phases/, templates/, README.md each appear with a one-line role; README marked human-facing.
     — **Consumers affected:** none (method text consumed by future generalization runs).
+    — **Done:** doctrine swept at all four sites; all five Done-when greps pass. Deviation traced: the anti-pattern bullet shipped with the label "Modularizing the contract" (body text as specified) rather than the literal "Exiling the contract" quoted above — same substance, label kept parallel to the sibling anti-pattern names. Files: skills/skill-generalizer/SKILL.md. Fixes: none.
 - [x] **1.6** Extend §Output contract: deliverables include the router-shaped main file + load-ruled side files (+ README when human docs moved); add the weight line — body chars/~tokens before→after and description word count before→after
     — **Why:** AC 4; makes the weight reduction auditable per run instead of implicit.
     — **Done when:** the output contract lists both additions verbatim-checkable.
@@ -103,3 +104,4 @@ None. Single-ticket run; no `blocked-by:`.
 
 GATE 783a0a5 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 61f10cd tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE e420e4c tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (review-fix re-gate)

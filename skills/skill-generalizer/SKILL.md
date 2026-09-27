@@ -3,6 +3,8 @@ name: skill-generalizer
 description: Generalize a skill beyond its origin: strip names, parameterize case-local constants, move domain-locked values to opt-in side files, split oversized bodies into load-rule'd routers, enforce ≤50-word descriptions. Use for generalize skill, de-specify skill, make skill generic, skill audit for specificity, skill consistency review, split region-specific rules into reference files.
 license: Apache-2.0
 compatibility: opencode
+metadata:
+  harness: "opencode"
 category: OpenCode Meta
 ---
 
@@ -46,7 +48,7 @@ flowchart TD
     D --> V
     B --> V
     C --> V
-    S --> W{"body weight: detail inline / over ceiling?"}
+    S --> W{"body weight: would a split benefit the skill?"}
     W -- yes --> E["(e) routerize: contract stays, detail moves behind load rules"]
     W -- no --> V
     E --> V
@@ -109,7 +111,10 @@ flowchart TD
    pass 3; verbatim artifacts move to `templates/`; human usage and extension docs move
    to `README.md`, which is never read at load. A skill whose whole method fits one
    screen needs no split — force-splitting a small skill manufactures indirection. The
-   ceiling forces the question; it is never the reason to split.
+   ceiling forces the question; it is never the reason to split. (This document
+   itself sits over the ceiling — justified: every section is a detector rule, a gate,
+   or a disposition, none is step detail; the ceiling exists to force exactly this
+   sentence, not to forbid growth.)
 7. **Contradiction pass**: the same rule stated twice with different numbers; ordering
    claims ("run this FIRST") that conflict with another step's claim to be first;
    thresholds in mixed units without a conversion note; a module pointer whose load rule
@@ -153,8 +158,8 @@ flowchart TD
 
 ## Output contract
 
-- The rewritten skill file — router-shaped when pass 6 ran: contract, load table,
-  one-liner rules.
+- The rewritten skill file — router-shaped when disposition (e) fired: contract,
+  load table, one-liner rules.
 - Any created side files, each with its load rule as wired into the main document.
 - A weight line: body chars and ~tokens before → after, and description word count
   before → after.
@@ -175,8 +180,9 @@ flowchart TD
   concrete number and a "confirm locally" lead is transferable; "varies by region" is not.
 - Modularizing the contract — gates, tolerances, schemas, and the decision tree
   fracture in exile, router one-liner or not; step mechanics may move behind load
-  rules only once the router carries their contract (load-table row + hard-rule
-  one-liner) — a step exiled without its router line is the same fracture.
+  rules only once the router carries their contract (load-table row; hard-rule
+  one-liner where the rule is cross-cutting) — a step exiled without its router line
+  is the same fracture.
 - Side files without a load rule — an orphan module is dead weight the reader never
   finds, and an uncited regulation is worse than none.
 - Monolithic load — keeping step detail inline "because it might be needed"; detail
@@ -186,7 +192,6 @@ flowchart TD
 - README mirroring the router — human docs that restate rules drift; link, don't
   duplicate. (pass 6)
 - Trimming the description into unfindable — cutting word count by deleting trigger
-  phrases; a concise description nothing matches is a lost skill. (description
-  discipline)
+  phrases; a concise description nothing matches is a lost skill. (pass 9)
 - Renaming the skill or its directory as part of generalizing — identity is separate
   from specificity; changing the id breaks every reference to the skill.
