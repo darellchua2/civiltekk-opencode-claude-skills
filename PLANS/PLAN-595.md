@@ -6,11 +6,11 @@
 
 ## Acceptance Criteria
 
-- [ ] `grep -rn IBIS skills/ agents/ --include='SKILL.md'` returns zero hits (authored skill sources; census-derived gate — literal `-ri` over the whole tree false-matches vendored cad-viewer sourcemaps, case-sensitive count 0 there; deviation from ticket wording noted in gate memo)
-- [ ] No `atlassian_*` strings remain in non-JIRA-family skills (`wayfinder-skill`, `worktree-pipeline-skill` are the in-scope mechanical surface)
-- [ ] Each JIRA rule has exactly one home (ownership map: branch naming / key parsing / MCP guard / REST → `jira-git-integration-skill`; taxonomy → `jira-ticket-labeler-skill`; transitions → `jira-status-updater-skill`; intake → `ticket-creation-skill`); generic skills pin to it instead of restating
-- [ ] `dev-uat-promotion-skill` identity lines are tracker-neutral
-- [ ] Repo bats guards pass; `node installer/build-registry.mjs` produces no diff (no frontmatter changes)
+- [x] `grep -rn IBIS skills/ agents/ --include='SKILL.md'` returns zero hits (authored skill sources; census-derived gate — literal `-ri` over the whole tree false-matches vendored cad-viewer sourcemaps, case-sensitive count 0 there; deviation from ticket wording noted in gate memo)
+- [x] No `atlassian_*` strings remain in non-JIRA-family skills (`wayfinder-skill`, `worktree-pipeline-skill` are the in-scope mechanical surface)
+- [x] Each JIRA rule has exactly one home (ownership map: branch naming / key parsing / MCP guard / REST → `jira-git-integration-skill`; taxonomy → `jira-ticket-labeler-skill`; transitions → `jira-status-updater-skill`; intake → `ticket-creation-skill`); generic skills pin to it instead of restating
+- [x] `dev-uat-promotion-skill` identity lines are tracker-neutral
+- [x] Repo bats guards pass; `node installer/build-registry.mjs` produces no diff (no frontmatter changes)
 
 ## Dependency & Consumer Map
 
@@ -35,6 +35,8 @@ GATE 45bd3b7 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — grep
 GATE bd0bca6 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — IBIS=0 in 4 Phase-2 files; pins resolve (plan-execution ×2, pr-creation ×1, mermaid ×1); pr-creation frontmatter byte-identical
 GATE 72284bb tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — atlassian_=0 in pipeline/pr-merge/wayfinder; ticket regex intact; pr-merge frontmatter untouched
 GATE 2ea94c1 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — permissions byte-identical (both agents); JIRA MCP call-sheet removed; guard paragraph verbatim
+GATE 2c56b15 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — dev-uat identity tracker-neutral; hygiene pin present; frontmatter untouched
+GATE (exit, pre-final-commit tree) tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a — AC1 grep IBIS SKILL.md-scope=0; AC2 allowlist exact (5 JIRA-family files); 6.2 pins resolve ×8, call-sheets none; bats 632/632 ok; registry content no-diff (generatedAt-only, restored). Final pushed SHA: b89b111 (amended only to attach this memo — gated content identical)
 
 ## Implementation Phases
 
@@ -125,18 +127,21 @@ GATE 2ea94c1 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — perm
 
 ### Phase 6: Verification gates
 
-- [ ] **6.1** Run mechanical gates: `grep -rn IBIS skills/ agents/ --include='SKILL.md'` (expect 0 hits); `grep -l "atlassian_" skills/*/SKILL.md` shows only JIRA-family files (`jira-git-integration`, `jira-status-updater`, `jira-ticket-labeler`, `ticket-creation`, `git-issue-updater`)
+- [x] **6.1** Run mechanical gates: `grep -rn IBIS skills/ agents/ --include='SKILL.md'` (expect 0 hits); `grep -l "atlassian_" skills/*/SKILL.md` shows only JIRA-family files (`jira-git-integration`, `jira-status-updater`, `jira-ticket-labeler`, `ticket-creation`, `git-issue-updater`)
     — **Why:** AC1 and AC2 are mechanical and must be proven. Census-derived scoping excludes vendored assets whose minified payloads coincidentally match; family boundary is user-approved (session plan).
     — **Done when:** both greps exit with expected results, quoted in the gate memo.
     — **Consumers affected:** none.
-- [ ] **6.2** Run one-home check: every edited generic skill names its convention owner where JIRA mechanics were removed; no restated call-sheets remain (`grep -n "atlassian_"` per Phase 3 files)
+    — **Done:** AC1 = 0 hits; AC2 allowlist exactly the 5 JIRA-family files; files: none (verification); fixes: none
+- [x] **6.2** Run one-home check: every edited generic skill names its convention owner where JIRA mechanics were removed; no restated call-sheets remain (`grep -n "atlassian_"` per Phase 3 files)
     — **Why:** AC3 — pins must resolve to real files and sections.
     — **Done when:** each pin target file exists and carries the pinned section.
     — **Consumers affected:** none.
-- [ ] **6.3** Run repo guards: the repo's bats suite (or its test entry point) and `node installer/build-registry.mjs` + `git diff --exit-code registry.json` (expect no diff — no frontmatter changes)
+    — **Done:** 8 pin references across 7 edited skills; guard section present in owner (2 self-declarations); restated call-sheets = none; files: none (verification); fixes: none
+- [x] **6.3** Run repo guards: the repo's bats suite (or its test entry point) and `node installer/build-registry.mjs` + `git diff --exit-code registry.json` (expect no diff — no frontmatter changes)
     — **Why:** AC5 — CI-equivalent local proof; registry must not drift.
     — **Done when:** bats suite passes (or pre-existing failures explicitly listed) and registry diff is empty.
     — **Consumers affected:** CI, installer consumers.
+    — **Done:** bats 632/632 ok (0 failures); registry regenerated — diff was generatedAt-timestamp-only (counts 34/154 and all entries identical), file restored; files: none (verification); fixes: none
 
 ## Technical Notes
 
