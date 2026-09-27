@@ -36,7 +36,7 @@ GATE bd0bca6 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — IBIS
 GATE 72284bb tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — atlassian_=0 in pipeline/pr-merge/wayfinder; ticket regex intact; pr-merge frontmatter untouched
 GATE 2ea94c1 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — permissions byte-identical (both agents); JIRA MCP call-sheet removed; guard paragraph verbatim
 GATE 2c56b15 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — dev-uat identity tracker-neutral; hygiene pin present; frontmatter untouched
-GATE (exit, pre-final-commit tree) tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a — AC1 grep IBIS SKILL.md-scope=0; AC2 allowlist exact (5 JIRA-family files); 6.2 pins resolve ×8, call-sheets none; bats 632/632 ok; registry content no-diff (generatedAt-only, restored). Final pushed SHA: b89b111 (amended only to attach this memo — gated content identical)
+GATE (exit) tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a — AC1 grep IBIS SKILL.md-scope=0; AC2 allowlist exact (5 JIRA-family files); 6.2 pins resolve ×8, call-sheets none; bats 632/632 ok; registry content no-diff (generatedAt-only, restored). Exit gate ran on the identical tree committed as ca5a5a0; this correction commit carries only this memo fix (self-referential SHA resolved fix-forward, no force-push)
 
 ## Implementation Phases
 
