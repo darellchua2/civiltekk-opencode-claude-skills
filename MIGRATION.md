@@ -283,29 +283,15 @@ Sources: opencode.ai/v2/docs/compaction, /v2/docs/config,
 
 ---
 
-## Docker
+## Provider Packs (MCP toggle, #268)
 
-Models are resolved at **build time**. To build with a non-default provider:
-
-```bash
-docker compose build --build-arg OPENCODE_PROVIDER=anthropic
-```
-
-(Defaults to Z.AI if the build-arg is omitted.)
-
-### Provider Packs (build-time MCP toggle, #268)
-
-v2.0 also adds **provider packs** — build-time toggles that enable groups of opt-in MCP servers (Autodesk, `markitdown`, `next-devtools`) in one shot. The merge runs after model resolution and only sets `mcp.servers.<name>.disabled: false` and appends `permissions`-array allow rules (`{ "action": "<ns>*", "resource": "*", "effect": "allow" }`); it never disables an already-enabled server.
+v2.0 also adds **provider packs** — toggles that enable groups of opt-in MCP servers (Autodesk, `markitdown`, `next-devtools`) in one shot. The merge runs after model resolution and only sets `mcp.servers.<name>.disabled: false` and appends `permissions`-array allow rules (`{ "action": "<ns>*", "resource": "*", "effect": "allow" }`); it never disables an already-enabled server.
 
 ```bash
-# Enable one or more packs at build time
-docker compose build --build-arg OPENCODE_PACKS=autodesk,markitdown
-
-# User-space equivalent
 ./deploy/setup.sh --enable-pack autodesk,markitdown
 ```
 
-No migration impact — packs default to OFF, so existing builds are unchanged unless the build-arg is set. See root `README.md` § Provider Packs for the full pack list.
+No migration impact — packs default to OFF, so existing deploys are unchanged unless the flag is set. See root `README.md` § Provider Packs for the full pack list.
 
 ---
 

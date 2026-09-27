@@ -8,7 +8,7 @@
 
 SKILL_MD="skills/docling-mcp-skill/SKILL.md"
 AGENTS_DIR="agents"
-CONFIG="opencode_app/opencode.json"
+CONFIG="deploy/opencode.json"
 PACKS_DIR="deploy/packs"
 MERGE_SCRIPT="deploy/merge-packs.mjs"
 

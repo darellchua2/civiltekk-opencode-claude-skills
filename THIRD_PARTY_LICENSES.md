@@ -160,10 +160,9 @@ SOFTWARE.
 ### How we consume it (#487)
 
 - **`markitdown-mcp` (PyPI, pinned `==0.0.1a7`)** — the official MCP server is
-  installed from PyPI at deploy time (setup.sh / setup.ps1) and baked into the
-  Docker image. **No upstream markitdown or markitdown-mcp source code lives in
-  this repo** — the former in-repo wrapper (`opencode_app/mcp-servers/
-  markitdown-local-mcp/`) was retired in #487.
+  installed from PyPI at deploy time (setup.sh / setup.ps1).
+  **No upstream markitdown or markitdown-mcp source code lives in
+  this repo** — the former in-repo wrapper was retired in #487.
 - The server pulls `markitdown[all]`; its cloud-capable extras are present but
   dormant (Azure converters require constructor kwargs that are never passed).
   Accepted residual: audio inputs upload to Google Speech, YouTube URLs contact

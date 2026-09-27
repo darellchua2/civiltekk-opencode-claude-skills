@@ -3,7 +3,7 @@
 # ONE interactive implementation lives in deploy/setup.sh (bash). This file is
 # a thin Windows bootstrap: it translates PowerShell parameters and forwards
 # EVERYTHING to setup.sh via Git-Bash or WSL — named flags through params,
-# subcommands (install|update|rollback|peonping|llm|plan|check-catalog) and
+# subcommands (install|update|rollback|peonping|plan|check-catalog) and
 # other positionals verbatim via $args. It performs no deployment selection
 # logic of its own — the #470 plan model, the #471 credential capture, the
 # #473 picker, and the #470 D2 decline contract are inherited by delegation
@@ -47,10 +47,6 @@ param(
     [switch]$Force,
     [switch]$Help,
     [switch]$Peonping,
-    [switch]$EnableLocalLlm,
-    [switch]$EnableVllm,
-    [switch]$LocalLlm,
-    [switch]$Vllm,
     [switch]$EnableAutoUpdate,
     [switch]$DisableAutoUpdate
 )
@@ -132,10 +128,6 @@ if ($ScheduleUpdate)   { $forward += @("--schedule-update", $ScheduleUpdate) }
 if ($NoZipBackup)      { $forward += "--no-zip-backup" }
 if ($Force)            { $forward += "--force" }
 if ($Peonping)         { $forward += "--peonping" }
-if ($EnableLocalLlm)   { $forward += "--enable-local-llm" }
-if ($EnableVllm)       { $forward += "--enable-vllm" }
-if ($LocalLlm)         { $forward += "--local-llm" }
-if ($Vllm)             { $forward += "--vllm" }
 if ($EnableAutoUpdate) { $forward += "--enable-auto-update" }
 if ($DisableAutoUpdate){ $forward += "--disable-auto-update" }
 if ($Rollback -or $RollbackTarget) {
@@ -146,7 +138,7 @@ if ($Rollback -or $RollbackTarget) {
     else { $forward += "--rollback" }
 }
 
-# Positional subcommands (install|update|rollback|peonping|llm|plan|
+# Positional subcommands (install|update|rollback|peonping|plan|
 # check-catalog) and their trailing args forward verbatim — setup.sh parses
 # its own subcommand tokens, so no translation table is needed. Without this
 # they were silently dropped and `.\setup.ps1 rollback latest` fell through

@@ -1867,3 +1867,12 @@
 - **Scope**: project
 - **Date**: 2026-09-27
 - **Summary**: When a diff adds a normative gate to a SKILL.md method doc, apply the new gate to the post-state file before merge — skill-generalizer outgrew its own new ceiling in the introducing commit (#605).
+
+### Decision: Docker surface removal — single skill surface + deploy-homed config
+
+- **Category**: decision
+- **File**: `LEARNINGS/decisions/docker-surface-removal.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: Docker standalone mode fully removed (#607); supersedes the #486 two-surface contract — one skill surface (root skills/, root-only dead-allow guard) and the config source of truth now lives at deploy/opencode.json. Provider presets local-llm/vllm/ollama survive (model routing, not containers).

@@ -200,7 +200,6 @@ Earlier releases carried the opt-in denies under a nested `permission.tool` key,
 The server binary isn't on PATH. Fix:
 - Linux/macOS: run `./deploy/setup.sh` (installs via `pip install --user` from PyPI); ensure `~/.local/bin` is on PATH
 - Windows: run `.\deploy\setup.ps1`; ensure `%APPDATA%\Python\Scripts` is on PATH
-- Docker: the server is baked into the image at `/opt/python-env/bin/markitdown-mcp` (already on PATH)
 
 ### Audio file / YouTube URL conversion silently contacts Google/YouTube
 

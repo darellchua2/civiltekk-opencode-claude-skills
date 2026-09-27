@@ -8,7 +8,7 @@
 //
 // v2 `permissions` arrays use last-match-wins, so the deny-all skill rule is
 // emitted first and the allows after it.
-// Never edits the source `opencode_app/opencode.json` (single source of truth).
+// Never edits the source `deploy/opencode.json` (single source of truth).
 // Mirrors merge-packs.mjs CLI conventions so setup.sh can call it the same way.
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";

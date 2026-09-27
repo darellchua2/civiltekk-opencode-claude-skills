@@ -7,7 +7,7 @@
 REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
 INIT="node ${REPO}/installer/init.mjs"
 REG="${REPO}/installer/registry.json"
-OC="${REPO}/opencode_app/opencode.json"
+OC="${REPO}/deploy/opencode.json"
 
 # JSON helper: extract a value/length via python3 (already a setup.sh dependency).
 jq_len() { python3 -c "import sys,json; print(len(json.load(sys.stdin)))"; }

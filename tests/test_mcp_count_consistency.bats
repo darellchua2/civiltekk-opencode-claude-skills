@@ -3,7 +3,7 @@
 # Tests for MCP server count consistency across documentation surfaces.
 # Catches the latent off-by-one bug fixed in PLAN-GIT-262 Phase 6.
 #
-# Source of truth: opencode_app/opencode.json `mcp` block length.
+# Source of truth: deploy/opencode.json `mcp` block length.
 # Documentation surfaces that must match:
 #   - README.md "ships N MCP server entries"
 #   - deploy/setup.sh "MCP SERVERS (N):"
@@ -23,7 +23,7 @@
 # direct-API fallback recipe). setup.sh banner "(N)" counts non-pack
 # servers (auto-start + atlassian) = 4.
 
-CONFIG="opencode_app/opencode.json"
+CONFIG="deploy/opencode.json"
 
 # Compute the actual count from the source of truth.
 # Uses python3 (already a setup.sh dependency for codegraph init).

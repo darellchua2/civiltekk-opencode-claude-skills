@@ -21,7 +21,8 @@ INIT_MJS="installer/init.mjs"
 @test "setup_sh_markitdown_bump_comment_names_only_pin_carriers" {
   # The ps1 carries no pin since #474; the ritual comment must not instruct
   # writing one there (test_setup_ps1_vars.bats fails the ps1 if it appears).
-  grep -qF 'deploy/setup.sh and opencode_app/Dockerfile — bump both' "$SETUP_SH"
+  # #607: the Dockerfile surface is gone — the pin lives in setup.sh only.
+  grep -qF 'the pin lives in deploy/setup.sh only' "$SETUP_SH"
 }
 
 # ── installer/init.mjs help UX (#571 AC2/AC3) ──
@@ -83,10 +84,6 @@ INIT_MJS="installer/init.mjs"
     'Mix:--mix'
     'EnablePack:--enable-pack'
     'SkillProfile:--skill-profile'
-    'EnableLocalLlm:--enable-local-llm'
-    'EnableVllm:--enable-vllm'
-    'LocalLlm:--local-llm'
-    'Vllm:--vllm'
     'ListItems:--list-items'
     'SavePreset:--save-preset'
     'Preset:--preset'

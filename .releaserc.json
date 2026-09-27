@@ -130,7 +130,7 @@
           "installer/init.mjs",
           "installer/source.mjs",
           "installer/build-site.mjs",
-          "opencode_app/opencode.json",
+          "deploy/opencode.json",
           "agents/**/*",
           "skills/**/*"
         ],

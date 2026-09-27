@@ -201,16 +201,13 @@ EOF
 @test "no_doc_teaches_dead_permission_keys" {
   # Class regression guard (#269, #310, #370): no doc may instruct users to
   # write the dead keys (nested permission.tool, legacy top-level tools).
-  # Covers the skills/agents tree, repo-root docs, and the Dockerfile.
+  # Covers the skills/agents tree and repo-root docs.
   # markitdown-mcp-skill/SKILL.md is whitelisted — it carries the explanatory
   # migration note.
   local hits
   hits="$(grep -rnE 'permission\.tool|tools\."|tools\["|"tools"[[:space:]]*:|`tools` block|`tools` map|tools\.<ns>|`tools\.\*`' \
     --include='*.md' skills agents MIGRATION.md README.md deploy/.AGENTS.md 2>/dev/null \
     | grep -v 'skills/markitdown-mcp-skill/SKILL.md' || true)"
-  hits+="
-$(grep -nE 'permission\.tool|tools\."|tools\["|"tools"[[:space:]]*:|`tools` block|`tools` map|tools\.<ns>|`tools\.\*`' \
-    opencode_app/Dockerfile 2>/dev/null || true)"
   if [ -n "${hits//[[:space:]]/}" ]; then echo "$hits" >&2; fi
   [ -z "${hits//[[:space:]]/}" ]
 }

@@ -32,11 +32,6 @@
         },
         {
             "action": "skill",
-            "resource": "github-runners-setup-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
             "resource": "zai-image-generation-skill",
             "effect": "allow"
         },

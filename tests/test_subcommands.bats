@@ -15,8 +15,6 @@ SETUP_PS1="deploy/setup.ps1"
     run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1; parse_arguments $sub; [ \"\$$flag\" = true ]"
     [ "$status" -eq 0 ]
   done
-  run bash -c "export HOME='$d'; source '$SETUP_SH' >/dev/null 2>&1; parse_arguments llm; [ \"\$ENABLE_LOCAL_LLM\" = true ] && [ \"\$ENABLE_VLLM\" = true ]"
-  [ "$status" -eq 0 ]
   rm -rf "$d"
 }
 
@@ -80,7 +78,7 @@ SETUP_PS1="deploy/setup.ps1"
 @test "help_documents_subcommands_and_new_flags" {
   run bash "$SETUP_SH" --help
   [ "$status" -eq 0 ]
-  [[ "$output" == *"install | update | rollback | peonping | llm | plan | check-catalog"* ]]
+  [[ "$output" == *"install | update | rollback | peonping | plan | check-catalog"* ]]
   [[ "$output" == *"--list-items"* ]]
   [[ "$output" == *"--save-preset"* ]]
 }

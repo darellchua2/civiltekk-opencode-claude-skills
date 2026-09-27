@@ -7,7 +7,7 @@ plugin loader — no registration needed.
 
 | Prefix | Meaning | Deployed to OpenCode? |
 |--------|---------|----------------------|
-| `opencode-*.ts` | OpenCode runtime plugin (v2 `{ id, setup }` local port) | Yes — `deploy_plugins()` copies them to `~/.config/opencode/plugins/`; the Docker image `COPY`s the whole dir |
+| `opencode-*.ts` | OpenCode runtime plugin (v2 `{ id, setup }` local port) | Yes — `deploy_plugins()` copies them to `~/.config/opencode/plugins/` |
 | `kimi-*` | Reserved: future Kimi Code plugin ports | No (once the rule-4 filter lands) |
 | `kilo-*` | Reserved: future Kilo Code plugin ports | No (once the rule-4 filter lands) |
 
@@ -20,7 +20,7 @@ Rules:
    in logs and debug greps; do not rename them when renaming files.
 3. **`vibeguard.config.json` stays put.** The plugin resolves it via a search
    path (<project>/.opencode/ → deployed copies); renaming it breaks the
-   Docker, setup.sh, and setup.ps1 legs at once.
+   setup.sh and setup.ps1 legs at once.
 4. **Before the first `kimi-*`/`kilo-*` plugin lands**, restrict
    `deploy_plugins()` (deploy/setup.sh) to `opencode-*.ts` + non-code support
    files (`ponytail/` vendored dir, `ATTRIBUTION.md` — it holds the MIT license

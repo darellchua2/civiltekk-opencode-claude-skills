@@ -41,8 +41,8 @@ This directory (`plugins/ponytail/`) contains code vendored and adapted from the
     `skills/ponytail-debt/SKILL.md` (house frontmatter; sibling/command refs renamed)
   - Upstream satellite command wrappers (`.opencode/command/*.md`) NOT vendored —
     the scoped plugin owns the `/ponytail*` command namespace.
-- **Adaptation rationale:** vendoring (vs `require("@dietrichgebert/ponytail")`) keeps
-  the Docker container air-gapped (no runtime npm fetch), removes the stock OpenCode
+- **Adaptation rationale:** vendoring (vs `require("@dietrichgebert/ponytail")`) removes
+  the stock OpenCode
   adapter from the dependency tree (double-injection guard), and lets the wrapper
   plugin (`../opencode-ponytail-scoped.ts`) add agent-type-aware scoping that the upstream
   adapter does not support on OpenCode.
