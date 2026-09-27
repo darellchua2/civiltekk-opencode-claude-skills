@@ -235,7 +235,8 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
     coreutils; macOS: `gtimeout`) — 30-minute timeout; merge only when green
     with `gh pr merge -R <owner/name> <num> --squash` — the `feat/<KEY>` head is
     short-lived, so squash is the classifier verdict
-    (`pr-merge-workflow-skill` Phase 1 head-class rule); capture the merge
+    (`civiltekk-pr-workflow-skill` merge route, `references/merge.md`
+    §Phase 1 head-class rule); capture the merge
     SHA via `gh pr view -R <owner/name> <num> --json mergeCommit`; report the outcome to the
     main session (merge SHA on success; the failing check names on red).
     The `-R <owner/name>` flags are mandatory — the watcher runs

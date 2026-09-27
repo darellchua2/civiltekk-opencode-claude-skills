@@ -48,7 +48,7 @@ permissions:
     resource: semantic-release-convention-skill
     effect: allow
   - action: skill
-    resource: pr-creation-workflow-skill
+    resource: civiltekk-pr-workflow-skill
     effect: allow
   - action: skill
     resource: gh-cli-setup-skill
@@ -107,16 +107,16 @@ Invoke this subagent when the user uses phrases like:
 - "pr to [branch]" / "pr for [branch]"
 - "create a pr" / "make a pr"
 
-Do NOT trigger for "merge the PR" / "pr merge to [branch]" / "merge it" — those trigger the pr-merge-workflow-skill instead (post-merge execution).
+Do NOT trigger for "merge the PR" / "pr merge to [branch]" / "merge it" — those trigger the merge route of `civiltekk-pr-workflow-skill` instead (post-merge execution).
 
 Common target branch patterns: main, master, develop, dev, staging, production
 
 PR Workflows by Framework:
-- pr-creation-workflow: Generic PR creation with configurable quality checks and image handling
+- civiltekk-pr-workflow (`create` route): Generic PR creation with configurable quality checks and image handling
 
 Quality Checks — defer to the contract:
 - Gate commands come from manifest discovery per `verification-loop-skill` §The gate contract — this agent owns no framework command table.
-- PR-boundary execution is `pr-creation-workflow-skill` steps 2-3 (framework detect + gate contract/memo check); coverage badges via `coverage-readme-workflow` on the standalone path only; docstring validation via `civiltekk-documentation-inline-skill` (route `docstring-formats`).
+- PR-boundary execution is `civiltekk-pr-workflow-skill` `references/create.md` §Steps (2–3) (framework detect + gate contract/memo check); coverage badges via `coverage-readme-workflow` on the standalone path only; docstring validation via `civiltekk-documentation-inline-skill` (route `docstring-formats`).
 
 JIRA Integration (policy per `ticketing-skill` §MCP Availability Guard):
 - Attribution: self-assign the linked ticket (see ticketing-skill §Attribution); PR author = the `gh auth` user by construction
@@ -140,18 +140,18 @@ Built-in Subagent Delegation:
   - Reviewing generated diagram or screenshot diffs when they appear in the PR
 - Use `explore` via Task tool with subagent_type="explore" for discovery, `general` via subagent_type="general" for parallel work
 
-Note: Subagent-to-subagent chaining is not used here. Use `explore` for discovery tasks, `general` for parallel quality checks, `documentation-subagent` for the diff-scope docstring sweep, and `image-analyzer-subagent` for image-heavy PR artifacts. Skills handle the actual PR creation workflows (pr-creation-workflow).
+Note: Subagent-to-subagent chaining is not used here. Use `explore` for discovery tasks, `general` for parallel quality checks, `documentation-subagent` for the diff-scope docstring sweep, and `image-analyzer-subagent` for image-heavy PR artifacts. Skills handle the actual PR creation workflows (civiltekk-pr-workflow `create` route).
 
 Workflow:
 1. Detect project framework (Next.js, Python, or other)
-2. Run quality checks per the gate contract (`verification-loop-skill` §The gate contract; execution via `pr-creation-workflow-skill` steps 2-3)
+2. Run quality checks per the gate contract (`verification-loop-skill` §The gate contract; execution via `civiltekk-pr-workflow-skill` `references/create.md` §Steps (2–3))
 2.5. Docstring sweep (delegate to documentation-subagent — division of labor, the delegate has `bash: deny`):
     - Compute the PR-diff file list yourself (`git diff --name-only <base>...HEAD`) and pass ONLY that list in the Task prompt
     - documentation-subagent scans those files for new/changed public symbols missing docstrings and fills them per language standard (Python PEP 257, Javadoc, JSDoc/TSDoc, C# XML) — docstrings only, no README/coverage work
     - Re-run lint (and tests where doctests exist) after the edits, then commit docstring additions with semantic format before PR creation
 3. Generate coverage badges if applicable
 4. Update branch-specific PLAN.md (invoke plan-execution-skill in --update mode)
-5. Create PR using `pr-creation-workflow` (gate contract + memo check per `verification-loop-skill`)
+5. Create PR using `civiltekk-pr-workflow-skill` `create` route (gate contract + memo check per `verification-loop-skill`)
 6. Update tracker ticket with PR link (if applicable)
 7. Use skills for specialized tasks (linting, testing, docs as needed)
 8. Inform user to say "pr merge to [branch]" when ready to merge

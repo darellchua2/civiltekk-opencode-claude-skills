@@ -16,7 +16,8 @@ Set up the GitHub CLI so ticket- and PR-creation flows can continue in
 environments where `gh` is missing or unauthenticated. I am the fallback
 referenced by `ticketing-skill` (§Platform Detection tooling tier;
 `references/github.md` §Tooling fallback) and
-`pr-creation-workflow-skill` (step 6): they invoke me when
+`civiltekk-pr-workflow-skill` (`references/create.md` §Steps
+step 6, the create route): they invoke me when
 `command -v gh` fails, then resume their flow.
 
 ## When to use me

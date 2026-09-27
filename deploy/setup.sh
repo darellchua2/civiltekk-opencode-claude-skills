@@ -1255,7 +1255,7 @@ create_zip_backup() {
 
     if [ "$DRY_RUN" = true ]; then
         if command_exists zip; then
-            echo "[DRY-RUN] Would execute: zip -rj ${zip_path} ${BACKUP_DIR}/"
+            echo "[DRY-RUN] Would execute: zip -qr ${zip_path} ${BACKUP_DIR}/"
         else
             echo "[DRY-RUN] Would execute: tar -czf ${zip_path}.tar.gz -C ${HOME} ${archive_name}"
         fi
@@ -1264,8 +1264,10 @@ create_zip_backup() {
 
     if command_exists zip; then
         log_info "Creating zip archive: ${zip_path}"
-        # -j: junk paths (store filenames only); -q: quiet
-        if zip -qrj "$zip_path" "$BACKUP_DIR"/; then
+        # -r: recursive, paths KEPT (a backup tree contains many same-named
+        # files — e.g. every skill's SKILL.md — and junking paths (-j) makes
+        # zip abort with "cannot repeat names in zip file"; seen 2026-09-27)
+        if zip -qr "$zip_path" "$BACKUP_DIR"/; then
             log_success "Zip archive created: ${zip_path}"
             return 0
         else

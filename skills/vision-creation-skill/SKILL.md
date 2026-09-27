@@ -23,7 +23,7 @@ I provide the **Vision Document** template and workflow for the **customer-facin
 Use this skill when:
 - A customer discovery session is running and needs its output captured
 - Someone says "create vision", "vision document", "concept brief", "solution vision", "discovery output"
-- You need a **customer-facing** artifact to align stakeholders and get sign-off (NOT an internal requirements spec — that is `srs-creation-skill`)
+- You need a **customer-facing** artifact to align stakeholders and get sign-off (NOT an internal requirements spec — that is `civiltekk-requirements-specs-skill`, route `srs`)
 
 **Trigger phrases**: "create vision", "vision document", "concept brief", "solution vision", "discovery output", "capture the vision", "write a vision doc"
 
@@ -37,7 +37,7 @@ The Vision is **customer-facing**. Keep tone non-technical where possible, avoid
 - **`interactive-document-rendering-skill`** — the shared HTML + DOCX rendering standard (living HTML for Vision)
 - **`wireframer-skill`** — generates the wireframes co-located at `docs/vision/{slug}/`
 - **`pptx-specialist-subagent`** — optional customer presentation deck distilled from the Vision (routes internally to `pptx-generate-slide-skill` + `pptx-generate-template-skill`)
-- **`srs-creation-skill`** — the DOWNSTREAM internal doc; the signed Vision feeds into the SRS (different audience, different skill)
+- **`civiltekk-requirements-specs-skill`** (route `srs`) — the DOWNSTREAM internal doc; the signed Vision feeds into the SRS (different audience, different skill)
 
 ---
 

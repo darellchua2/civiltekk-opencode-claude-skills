@@ -361,49 +361,20 @@ extract_section_range() {
   [ "$in_section" -eq "$total" ]
 }
 
-# --- pr-creation-workflow ---
-@test "default_behavior_pr-creation-workflow_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/pr-creation-workflow-skill/SKILL.md"
+# --- pr-workflow (both former PR member skills' preamble pins now target the host, #604) ---
+@test "default_behavior_pr-workflow_has_imperative_gating_preamble" {
+  skill_md="$SKILLS_DIR/civiltekk-pr-workflow-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'DO NOT execute any of the following unless' "$skill_md"
 }
-@test "default_behavior_pr-creation-workflow_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/pr-creation-workflow-skill/SKILL.md"
+@test "default_behavior_pr-workflow_preamble_appears_exactly_once" {
+  skill_md="$SKILLS_DIR/civiltekk-pr-workflow-skill/SKILL.md"
   [ -f "$skill_md" ]
   count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
   [ "$count" -eq 1 ]
 }
-@test "default_behavior_pr-creation-workflow_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/pr-creation-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  range=$(extract_section_range "$skill_md")
-  start=$(echo "$range" | awk '{print $1}')
-  end=$(echo "$range" | awk '{print $2}')
-  [ "$start" -gt 0 ] || skip "no Iteration Protocol section"
-  # PLAN intent (line 217): tokens "appear ONLY inside the Iteration Protocol
-  # section". The literal `>= 1` assertion from the prompt template is too strict
-  # for Tier 2/3 partial-pattern retrofits (e.g. plan-execution-skill cites
-  # stuck-detection.md only and legitimately never mentions results.tsv).
-  # Correct semantics: every occurrence in the file must be inside the section.
-  total=$(grep -c 'results.tsv' "$skill_md" || true)
-  in_section=$(awk -v s="$start" -v e="$end" 'NR>=s && NR<=e' "$skill_md" | grep -c 'results.tsv' || true)
-  [ "$in_section" -eq "$total" ]
-}
-
-# --- pr-merge-workflow ---
-@test "default_behavior_pr-merge-workflow_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/pr-merge-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q 'DO NOT execute any of the following unless' "$skill_md"
-}
-@test "default_behavior_pr-merge-workflow_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/pr-merge-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
-  [ "$count" -eq 1 ]
-}
-@test "default_behavior_pr-merge-workflow_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/pr-merge-workflow-skill/SKILL.md"
+@test "default_behavior_pr-workflow_evaluator_token_in_section_only" {
+  skill_md="$SKILLS_DIR/civiltekk-pr-workflow-skill/SKILL.md"
   [ -f "$skill_md" ]
   range=$(extract_section_range "$skill_md")
   start=$(echo "$range" | awk '{print $1}')
@@ -686,78 +657,20 @@ extract_section_range() {
   [ "$in_section" -eq "$total" ]
 }
 
-# --- test-generator-framework ---
-@test "default_behavior_test-generator-framework_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/test-generator-framework-skill/SKILL.md"
+# --- test-generation (all three former member skills' preamble pins now target the host, #604) ---
+@test "default_behavior_test-generation_has_imperative_gating_preamble" {
+  skill_md="$SKILLS_DIR/civiltekk-test-generation-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'DO NOT execute any of the following unless' "$skill_md"
 }
-@test "default_behavior_test-generator-framework_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/test-generator-framework-skill/SKILL.md"
+@test "default_behavior_test-generation_preamble_appears_exactly_once" {
+  skill_md="$SKILLS_DIR/civiltekk-test-generation-skill/SKILL.md"
   [ -f "$skill_md" ]
   count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
   [ "$count" -eq 1 ]
 }
-@test "default_behavior_test-generator-framework_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/test-generator-framework-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  range=$(extract_section_range "$skill_md")
-  start=$(echo "$range" | awk '{print $1}')
-  end=$(echo "$range" | awk '{print $2}')
-  [ "$start" -gt 0 ] || skip "no Iteration Protocol section"
-  # PLAN intent (line 217): tokens "appear ONLY inside the Iteration Protocol
-  # section". The literal `>= 1` assertion from the prompt template is too strict
-  # for Tier 2/3 partial-pattern retrofits (e.g. plan-execution-skill cites
-  # stuck-detection.md only and legitimately never mentions results.tsv).
-  # Correct semantics: every occurrence in the file must be inside the section.
-  total=$(grep -c 'results.tsv' "$skill_md" || true)
-  in_section=$(awk -v s="$start" -v e="$end" 'NR>=s && NR<=e' "$skill_md" | grep -c 'results.tsv' || true)
-  [ "$in_section" -eq "$total" ]
-}
-
-# --- python-pytest-creator ---
-@test "default_behavior_python-pytest-creator_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/python-pytest-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q 'DO NOT execute any of the following unless' "$skill_md"
-}
-@test "default_behavior_python-pytest-creator_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/python-pytest-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
-  [ "$count" -eq 1 ]
-}
-@test "default_behavior_python-pytest-creator_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/python-pytest-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  range=$(extract_section_range "$skill_md")
-  start=$(echo "$range" | awk '{print $1}')
-  end=$(echo "$range" | awk '{print $2}')
-  [ "$start" -gt 0 ] || skip "no Iteration Protocol section"
-  # PLAN intent (line 217): tokens "appear ONLY inside the Iteration Protocol
-  # section". The literal `>= 1` assertion from the prompt template is too strict
-  # for Tier 2/3 partial-pattern retrofits (e.g. plan-execution-skill cites
-  # stuck-detection.md only and legitimately never mentions results.tsv).
-  # Correct semantics: every occurrence in the file must be inside the section.
-  total=$(grep -c 'results.tsv' "$skill_md" || true)
-  in_section=$(awk -v s="$start" -v e="$end" 'NR>=s && NR<=e' "$skill_md" | grep -c 'results.tsv' || true)
-  [ "$in_section" -eq "$total" ]
-}
-
-# --- nextjs-unit-test-creator ---
-@test "default_behavior_nextjs-unit-test-creator_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/nextjs-unit-test-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q 'DO NOT execute any of the following unless' "$skill_md"
-}
-@test "default_behavior_nextjs-unit-test-creator_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/nextjs-unit-test-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
-  [ "$count" -eq 1 ]
-}
-@test "default_behavior_nextjs-unit-test-creator_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/nextjs-unit-test-creator-skill/SKILL.md"
+@test "default_behavior_test-generation_evaluator_token_in_section_only" {
+  skill_md="$SKILLS_DIR/civiltekk-test-generation-skill/SKILL.md"
   [ -f "$skill_md" ]
   range=$(extract_section_range "$skill_md")
   start=$(echo "$range" | awk '{print $1}')

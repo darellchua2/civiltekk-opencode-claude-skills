@@ -37,28 +37,19 @@ permissions:
     resource: '*'
     effect: deny
   - action: skill
-    resource: nextjs-standard-setup-skill
+    resource: civiltekk-nextjs-skill
     effect: allow
   - action: skill
     resource: civiltekk-documentation-inline-skill
     effect: allow
   - action: skill
-    resource: nextjs-image-usage-skill
-    effect: allow
-  - action: skill
     resource: civiltekk-react-quality-skill
-    effect: allow
-  - action: skill
-    resource: nextjs-devtools-mcp-skill
     effect: allow
   - action: skill
     resource: amplify-nextjs-deployment-skill
     effect: allow
   - action: skill
     resource: monorepo-management-skill
-    effect: allow
-  - action: skill
-    resource: threejs-nextjs-skill
     effect: allow
 category: frontend
 ---
@@ -90,7 +81,7 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 
 **Trigger phrases:** "create next.js app", "next.js setup", "scaffold next.js", "new next.js project", "initialize next.js"
 
-**Skill:** Load `nextjs-standard-setup-skill`. Cross-reference `nextjs-image-usage-skill` for image config, `civiltekk-documentation-inline-skill` (route `docstring-formats`) for TSDoc, `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns`) to avoid common pitfalls.
+**Skill:** Load `civiltekk-nextjs-skill` (route `scaffold`). Cross-reference its route `image-usage` for image config, `civiltekk-documentation-inline-skill` (route `docstring-formats`) for TSDoc, `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns`) to avoid common pitfalls.
 
 **Workflow:**
 1. Initialize Next.js 16 with TypeScript and Tailwind v4
@@ -106,19 +97,19 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 
 **Trigger phrases:** "next.js errors", "nextjs debugging", "debug next.js", "next.js build failing", "server action not working", "next.js hydration error", "nextjs mcp"
 
-**Skill:** Load `nextjs-devtools-mcp-skill`.
+**Skill:** Load `civiltekk-nextjs-skill` (route `runtime-diagnosis`).
 
 **MCP dependency:** Mode 2 requires the `next-devtools-mcp` server configured in `opencode.json` under the `mcp` key AND the root-level `permission` pattern `"next-devtools*": "allow"`. A running Next.js dev server (`npm run dev`) is also required for live features.
 
 **If MCP unavailable:** Fall back to file-based inspection via `glob`/`grep`/`read` and `webfetch` the Next.js docs. Note this limitation in the Return Contract.
 
-**Workflow:** Follow the diagnosis workflows in `nextjs-devtools-mcp-skill` (initial assessment → error diagnosis → server action debugging). Cross-reference `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns`) when prescribing fixes.
+**Workflow:** Follow the diagnosis workflows in `civiltekk-nextjs-skill` route `runtime-diagnosis` (initial assessment → error diagnosis → server action debugging). Cross-reference `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns`) when prescribing fixes.
 
 ### Mode 3 — Project Audit
 
 **Trigger phrases:** "am I using next.js correctly", "review my next.js project", "next.js best practices", "next.js routes", "audit my next.js app", "migrate pages router to app router"
 
-**Skills:** Load `nextjs-devtools-mcp-skill` (for `get_routes`, `get_page_metadata`, `get_project_metadata`) + `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns` for anti-pattern detection; route `perf` for performance findings).
+**Skills:** Load `civiltekk-nextjs-skill` (route `runtime-diagnosis`, for `get_routes`, `get_page_metadata`, `get_project_metadata`) + `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns` for anti-pattern detection; route `perf` for performance findings).
 
 **Workflow:** Map project structure → identify anti-patterns → recommend improvements → optionally plan migrations. If MCP unavailable, use file-based route discovery (scan `app/` and `pages/` directories).
 

@@ -33,7 +33,7 @@ Use this skill when:
 
 ## Related Skills
 
-- **opentofu-provisioning-workflow-skill**: Handles infrastructure provisioning. This skill handles container image building and composition.
+- **civiltekk-opentofu-skill** (route `plan-apply`): Handles infrastructure provisioning. This skill handles container image building and composition.
 - **security-audit-skill**: Handles application-level security auditing. This skill handles container-specific security (image scanning, hadolint).
 
 ---

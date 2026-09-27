@@ -47,13 +47,10 @@ permissions:
     resource: semantic-release-convention-skill
     effect: allow
   - action: skill
-    resource: pr-creation-workflow-skill
+    resource: civiltekk-pr-workflow-skill
     effect: allow
   - action: skill
     resource: gh-cli-setup-skill
-    effect: allow
-  - action: skill
-    resource: pr-merge-workflow-skill
     effect: allow
   - action: skill
     resource: ticketing-skill
@@ -132,8 +129,7 @@ Load these skills to apply the correct standards and conventions:
 
 - **version-bump-standard**: The CanvasTekk release standard (dev → uat → main, PR-label-driven versioning, workflow templates, onboarding/audit scripts)
 - **semantic-release-convention**: Single source of truth for commit → PR → merge → release → CI/CD conventions, versioning labels, changelog generation
-- **pr-creation-workflow**: Framework for creating PRs with quality checks and semantic versioning labels
-- **pr-merge-workflow**: Post-merge workflow — merge, CI monitoring, auto-fix, JIRA status update, branch cleanup
+- **civiltekk-pr-workflow** (`create` + `merge` routes): PR creation with quality checks and semver labels; post-merge — merge, CI monitoring, auto-fix, JIRA status update, branch cleanup
 - **ticketing-skill**: Full ticket lifecycle on GitHub Issues or JIRA — create, classify/label (incl. semver labels, PR-only), update from commits, close post-merge, ticket-key↔branch plumbing
 - **changelog-python-cliff**: Generate changelogs via git-cliff with PEP 440 versioning
 - **civiltekk-documentation-sync**: Keep docs synchronized when adding skills/subagents and audit doc drift (counts, PLAN-vs-reality, orphans)

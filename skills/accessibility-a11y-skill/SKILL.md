@@ -37,7 +37,7 @@ Use this skill when:
 
 - **frontend-design-skill**: UI creation and visual design. This skill ensures that UI is accessible.
 - **uiux-review-skill**: Peer — surfaces a11y basics at axis 10 of its 13-axis rubric (alt text, labels, contrast samples, axe-core checks) and **delegates deep WCAG 2.1 compliance work here**. If a UI/UX review surfaces a Critical a11y finding, follow up with this skill for the full fix pattern.
-- **nextjs-standard-setup-skill**: Project scaffolding. This skill adds accessibility to the built components.
+- **civiltekk-nextjs-skill** (route `scaffold`): Project scaffolding. This skill adds accessibility to the built components.
 - **testing-subagent**: Can generate accessibility-specific tests.
 
 ---

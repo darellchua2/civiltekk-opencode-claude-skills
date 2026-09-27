@@ -102,7 +102,7 @@ Text-only sessions delegate screenshots to `image-analyzer-subagent` for the vis
 
 ## Technology Notes
 
-React → Motion for animation, CSS custom properties for theming, scoped styles (CSS modules/styled-components). HTML/CSS → CSS-only animation, Grid/Flexbox, `@keyframes`. Vue → `<Transition>`/`<TransitionGroup>` + custom properties. Next.js image handling → `nextjs-image-usage-skill`.
+React → Motion for animation, CSS custom properties for theming, scoped styles (CSS modules/styled-components). HTML/CSS → CSS-only animation, Grid/Flexbox, `@keyframes`. Vue → `<Transition>`/`<TransitionGroup>` + custom properties. Next.js image handling → `civiltekk-nextjs-skill` (route `image-usage`).
 
 ## Common Issues
 

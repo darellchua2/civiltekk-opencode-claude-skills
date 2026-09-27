@@ -32,22 +32,7 @@
         },
         {
             "action": "skill",
-            "resource": "zai-image-generation-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "zai-video-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "zai-asr-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "zai-ocr-skill",
+            "resource": "civiltekk-zai-media-skill",
             "effect": "allow"
         },
         {
@@ -142,12 +127,7 @@
         },
         {
             "action": "skill",
-            "resource": "srs-creation-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "brd-creation-skill",
+            "resource": "civiltekk-requirements-specs-skill",
             "effect": "allow"
         },
         {
@@ -177,12 +157,7 @@
         },
         {
             "action": "skill",
-            "resource": "pr-creation-workflow-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "pr-merge-workflow-skill",
+            "resource": "civiltekk-pr-workflow-skill",
             "effect": "allow"
         },
         {
@@ -307,7 +282,7 @@
         },
         {
             "action": "skill",
-            "resource": "nextjs-devtools-mcp-skill",
+            "resource": "civiltekk-nextjs-skill",
             "effect": "allow"
         },
         {
@@ -393,11 +368,6 @@
         {
             "action": "skill",
             "resource": "monorepo-management-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "threejs-nextjs-skill",
             "effect": "allow"
         },
         {

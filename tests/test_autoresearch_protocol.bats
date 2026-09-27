@@ -232,40 +232,21 @@ CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
   done
 }
 
-# --- pr-creation-workflow (evaluator-contract) ---
-@test "tier2_pr-creation-workflow_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/pr-creation-workflow-skill/SKILL.md"
+# --- pr-workflow (both former PR member skills' protocol obligations now in the host, #604) ---
+@test "tier2_pr-workflow_has_iteration_protocol_section" {
+  skill_md="$SKILLS_DIR/civiltekk-pr-workflow-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
 }
-@test "tier2_pr-creation-workflow_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/pr-creation-workflow-skill/SKILL.md"
+@test "tier2_pr-workflow_has_opt_in_metadata" {
+  skill_md="$SKILLS_DIR/civiltekk-pr-workflow-skill/SKILL.md"
   [ -f "$skill_md" ]
   python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
 }
-@test "tier2_pr-creation-workflow_cites_expected_references" {
-  skill_md="$SKILLS_DIR/pr-creation-workflow-skill/SKILL.md"
+@test "tier2_pr-workflow_cites_expected_references" {
+  skill_md="$SKILLS_DIR/civiltekk-pr-workflow-skill/SKILL.md"
   [ -f "$skill_md" ]
-  for ref in evaluator-contract; do
-    grep -q "autoresearch-core-skill/references/${ref}.md" "$skill_md"
-  done
-}
-
-# --- pr-merge-workflow (crash-recovery) ---
-@test "tier2_pr-merge-workflow_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/pr-merge-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
-}
-@test "tier2_pr-merge-workflow_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/pr-merge-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
-}
-@test "tier2_pr-merge-workflow_cites_expected_references" {
-  skill_md="$SKILLS_DIR/pr-merge-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  for ref in crash-recovery; do
+  for ref in evaluator-contract crash-recovery; do
     grep -q "autoresearch-core-skill/references/${ref}.md" "$skill_md"
   done
 }
@@ -432,53 +413,19 @@ CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
   grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
 }
 
-# --- test-generator-framework ---
-@test "tier3_test-generator-framework_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/test-generator-framework-skill/SKILL.md"
+# --- test-generation (all three former member skills' protocol obligations now in the host, #604) ---
+@test "tier3_test-generation_has_iteration_protocol_section" {
+  skill_md="$SKILLS_DIR/civiltekk-test-generation-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
 }
-@test "tier3_test-generator-framework_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/test-generator-framework-skill/SKILL.md"
+@test "tier3_test-generation_has_opt_in_metadata" {
+  skill_md="$SKILLS_DIR/civiltekk-test-generation-skill/SKILL.md"
   [ -f "$skill_md" ]
   python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
 }
-@test "tier3_test-generator-framework_cites_iteration_safety" {
-  skill_md="$SKILLS_DIR/test-generator-framework-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
-}
-
-# --- python-pytest-creator ---
-@test "tier3_python-pytest-creator_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/python-pytest-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
-}
-@test "tier3_python-pytest-creator_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/python-pytest-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
-}
-@test "tier3_python-pytest-creator_cites_iteration_safety" {
-  skill_md="$SKILLS_DIR/python-pytest-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
-}
-
-# --- nextjs-unit-test-creator ---
-@test "tier3_nextjs-unit-test-creator_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/nextjs-unit-test-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
-}
-@test "tier3_nextjs-unit-test-creator_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/nextjs-unit-test-creator-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
-}
-@test "tier3_nextjs-unit-test-creator_cites_iteration_safety" {
-  skill_md="$SKILLS_DIR/nextjs-unit-test-creator-skill/SKILL.md"
+@test "tier3_test-generation_cites_iteration_safety" {
+  skill_md="$SKILLS_DIR/civiltekk-test-generation-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
 }

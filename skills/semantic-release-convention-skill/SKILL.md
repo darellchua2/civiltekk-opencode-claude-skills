@@ -15,7 +15,7 @@ I define the standardized conventions for the entire release pipeline from commi
 1. **Commit Message Convention**: Conventional Commits format with types, scopes, and breaking change indicators
 2. **PR Title Convention**: PR titles must follow Conventional Commits format
 3. **PR Label Rules**: Every PR requires exactly one semver label (`major`/`minor`/`patch`) as the version bump decision factor
-4. **Merge Strategy**: feature/fix heads squash-merge with conventional commit title and PR description as body; long-lived heads merge with merge commits (head-class rule, same as `pr-merge-workflow-skill`)
+4. **Merge Strategy**: feature/fix heads squash-merge with conventional commit title and PR description as body; long-lived heads merge with merge commits (head-class rule, same as `civiltekk-pr-workflow-skill` merge route)
 5. **Release Tag Convention**: Branch-aware versioned tags with prerelease suffixes
 6. **GitHub Actions Requirements**: Four CI/CD workflows for enforcement
 
@@ -34,7 +34,7 @@ This is a **governance skill** - it defines conventions that other skills and ag
 | Skill | What It Consumes |
 |-------|-----------------|
 | `civiltekk-git-commits` | Commit type definitions and format rules; length budgets (72-char subject, 150-word body), semantic grouping strategy, commitlint config authority |
-| `pr-creation-workflow` | PR title format, label mapping, merge conventions, image handling |
+| `civiltekk-pr-workflow-skill` (create route) | PR title format, label mapping, merge conventions, image handling |
 | `ticketing-skill` | Semver label definitions and detection |
 | `changelog-python-cliff` | Changelog category structure from commit types |
 | `version-bump-standard` | Release tag formats, branch-aware pre-release suffixes, workflow templates for dev/uat/main flow |
@@ -207,7 +207,8 @@ exists when the head branch survives the merge):
   promotion branches (dev→uat, uat→main) stop converging. Matching is exact
   and case-sensitive; an environment-shaped name not listed → treat as
   long-lived or ask. Same rule (and user override) as
-  `pr-merge-workflow-skill`.
+  `civiltekk-pr-workflow-skill` merge route (`references/merge.md`
+  §Phase 1).
 
 ### Merge Commit Format (squash-merged PRs)
 

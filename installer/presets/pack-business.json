@@ -10,9 +10,9 @@
     "technical-design-specialist-subagent"
   ],
   "skills": [
-    "brd-creation-skill",
     "civiltekk-api-spec-skill",
     "civiltekk-context-optimization-skill",
+    "civiltekk-requirements-specs-skill",
     "civiltekk-startup-docs-skill",
     "clean-architecture-skill",
     "complexity-management-skill",
@@ -31,7 +31,6 @@
     "pptx-template-modifier-skill",
     "search-first-skill",
     "security-audit-skill",
-    "srs-creation-skill",
     "technical-design-creation-skill",
     "verification-loop-skill",
     "vision-creation-skill",
