@@ -6,7 +6,7 @@
 
 ## Acceptance Criteria
 
-- [ ] `grep -ri IBIS skills/ agents/` returns zero hits (source dirs)
+- [ ] `grep -rn IBIS skills/ agents/ --include='SKILL.md'` returns zero hits (authored skill sources; census-derived gate — literal `-ri` over the whole tree false-matches vendored cad-viewer sourcemaps, case-sensitive count 0 there; deviation from ticket wording noted in gate memo)
 - [ ] No `atlassian_*` strings remain in non-JIRA-family skills (`wayfinder-skill`, `worktree-pipeline-skill` are the in-scope mechanical surface)
 - [ ] Each JIRA rule has exactly one home (ownership map: branch naming / key parsing / MCP guard / REST → `jira-git-integration-skill`; taxonomy → `jira-ticket-labeler-skill`; transitions → `jira-status-updater-skill`; intake → `ticket-creation-skill`); generic skills pin to it instead of restating
 - [ ] `dev-uat-promotion-skill` identity lines are tracker-neutral
@@ -20,7 +20,7 @@
 | `skills/plan-execution-skill/SKILL.md` | Tier 1 swap in own file | `worktree-pipeline-skill` Step 8 (invokes its PLAN path), `plan-execution` users | low |
 | `skills/mermaid-diagram-creator-skill/SKILL.md` | — | PLAN-authoring flows citing its PLAN-dir table | low |
 | `skills/pr-creation-workflow-skill/SKILL.md` | — | `semantic-release-convention-skill` framework table (row must stay in sync), `pr-workflow-subagent.md` | medium |
-| `skills/semantic-release-convention-skill/SKILL.md` | — | semver-label consumers, `git-issue-labeler-skill` (sync contract) | low |
+| `skills/semantic-release-convention-skill/SKILL.md` | 2.3's final pr-creation-workflow wording (table-row sync) | semver-label consumers, `git-issue-labeler-skill` (sync contract) | low |
 | `skills/worktree-pipeline-skill/SKILL.md` | pin wording matches `jira-git-integration-skill` §guard name | this pipeline itself, `dev-uat-promotion-skill` (delegation spec) | medium |
 | `skills/pr-merge-workflow-skill/SKILL.md` | `jira-status-updater-skill` (already referenced) | `repo-ops-specialist-subagent.md` inventory | low |
 | `skills/wayfinder-skill/SKILL.md` | pin wording matches `jira-git-integration-skill` §guard name | frontier-ticket runs | low |
@@ -60,13 +60,13 @@
     — **Why:** Directory-structure illustration stays (neutral placeholder); JIRA how-to framing goes.
     — **Done when:** zero `IBIS`; L91 table row names `jira-git-integration-skill` for key format.
     — **Consumers affected:** PLAN-dir table readers.
-- [ ] **2.3** In `skills/pr-creation-workflow-skill/SKILL.md` (L5/27/29), replace `IBIS-123` example and JIRA how-to phrasing with a pin to the convention owner
-    — **Why:** PR tracking-ref step keeps the generic mechanism (`#123`/key detection), drops restated JIRA detail.
-    — **Done when:** zero `IBIS`; tracking step references the convention owner; prose matches the `semantic-release-convention-skill` framework-table row (which 2.4 syncs).
-    — **Consumers affected:** `semantic-release-convention-skill` table row, `pr-workflow-subagent.md`.
-- [ ] **2.4** In `skills/semantic-release-convention-skill/SKILL.md` (L137-140), neutralize `[IBIS-456]`-style commit examples (placeholder or pin) and sync the L38 framework-table row with 2.3's new wording
-    — **Why:** Commit-format examples keep their shape with a neutral key; cross-skill table must not drift.
-    — **Done when:** zero `IBIS`; table row matches pr-creation-workflow's new description.
+- [ ] **2.3** In `skills/pr-creation-workflow-skill/SKILL.md` (L27/L29 **body only** — L5 is frontmatter description, embedded verbatim in `installer/registry.json`; editing it would fail 6.3), replace the `IBIS-123` example and JIRA how-to phrasing with a pin to the convention owner
+    — **Why:** PR tracking-ref step keeps the generic mechanism (`#123`/key detection), drops restated JIRA detail; frontmatter descriptions are registry events and out of AC scope.
+    — **Done when:** body has zero `IBIS`; tracking step references the convention owner; frontmatter block byte-identical to `origin/main`.
+    — **Consumers affected:** `semantic-release-convention-skill` table row (synced in 2.4), `pr-workflow-subagent.md`.
+- [ ] **2.4** In `skills/semantic-release-convention-skill/SKILL.md` (L137-140), neutralize `[IBIS-456]`-style commit examples (placeholder or pin) and sync the L38 framework-table row with 2.3's final body wording
+    — **Why:** Commit-format examples keep their shape with a neutral key; cross-skill table must not drift (this step owns the match assertion).
+    — **Done when:** zero `IBIS`; L38 table row matches pr-creation-workflow's post-2.3 body description.
     — **Consumers affected:** `git-issue-labeler-skill` sync contract (unaffected — label lists untouched).
 
 ### Phase 3: Tier 2 — compress restated JIRA how-tos into convention pins (generic skills)
@@ -104,8 +104,8 @@
 
 ### Phase 6: Verification gates
 
-- [ ] **6.1** Run mechanical gates: `grep -ri IBIS skills/ agents/` (expect 0 hits, source dirs); `grep -l "atlassian_" skills/*/SKILL.md` shows only JIRA-family + `ticket-creation` + `git-issue-updater` + `opencode-repo-setup`
-    — **Why:** AC1 and AC2 are mechanical and must be proven.
+- [ ] **6.1** Run mechanical gates: `grep -rn IBIS skills/ agents/ --include='SKILL.md'` (expect 0 hits); `grep -l "atlassian_" skills/*/SKILL.md` shows only JIRA-family files (`jira-git-integration`, `jira-status-updater`, `jira-ticket-labeler`, `ticket-creation`, `git-issue-updater`)
+    — **Why:** AC1 and AC2 are mechanical and must be proven. Census-derived scoping excludes vendored assets whose minified payloads coincidentally match; family boundary is user-approved (session plan).
     — **Done when:** both greps exit with expected results, quoted in the gate memo.
     — **Consumers affected:** none.
 - [ ] **6.2** Run one-home check: every edited generic skill names its convention owner where JIRA mechanics were removed; no restated call-sheets remain (`grep -n "atlassian_"` per Phase 3 files)
@@ -120,6 +120,9 @@
 ## Technical Notes
 
 - Session directive: for JIRA tickets, reference the JIRA conventions (the owning skills) instead of quoting how-to examples inline.
+- AC2 family boundary (user-approved session plan): JIRA-family = {`jira-git-integration`, `jira-status-updater`, `jira-ticket-labeler`, `ticket-creation`} plus dual-platform delegating pin-holder `git-issue-updater`; `opencode-repo-setup` out of scope by contract (zero `atlassian_` occurrences today, census-verified).
+- AC1 gate deviation from ticket's literal wording: `-ri` over the full tree false-matches vendored cad-viewer sourcemaps (`iBis` substrings in minified payloads; case-sensitive count 0 there); authored-source gate `--include='SKILL.md'` preserves intent, deviation recorded in gate memo.
+- Guard-literal census (architecture review): zero overlap between edit regions and pinned literals in `tests/*.bats`; `agents/pr-workflow-subagent.md` `permissions` block and `Closes <TICKET_ID>` instruction are preserve-listed (byte-identity assertions in 4.1/4.2).
 - Convention ownership map (single home per rule): branch naming / key parsing / MCP guard / REST fallback → `jira-git-integration-skill`; taxonomy & priorities → `jira-ticket-labeler-skill`; transitions → `jira-status-updater-skill`; intake → `ticket-creation-skill`.
 - Out of scope (approved exclusions): `construction-bd-skill` (JIRA prose but zero `atlassian_*` calls; not in approved list), `git-issue-labeler-skill` (mentions are already pins/sync contract), `opencode-repo-setup-skill` (Jira-MCP enablement IS its contract), `jira-*` family mechanics, vendored `scripts/_common` trees, `gsap-*`, frontmatter `category` fields.
 - No behavioral change is intended anywhere: pins delegate to the same policies that were restated.
