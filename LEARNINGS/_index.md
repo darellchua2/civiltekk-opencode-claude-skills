@@ -1840,3 +1840,30 @@
 - **Scope**: project
 - **Date**: 2026-09-27
 - **Summary**: Consolidated multi-platform skills split METHOD (SKILL.md, frozen § headings, idempotency contracts) from VALUES (references/<platform>.md with load rules + verify-locally markers); unknown platform → detect-and-ask + "contribute a side file, never improvise endpoints". Replicate for future multi-platform consolidations (#599).
+
+### Doctrine flips need a whole-file restatement sweep
+
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/doctrine-flips-need-whole-file-restatement-sweep.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: Revising a doctrine stated in multiple sections requires sweeping every restatement site (list, anti-pattern, contract clause) — flipping one leaves the artifact failing its own contradiction pass (#605).
+
+### Registry generatedAt always drifts
+
+- **Category**: conventions
+- **File**: `LEARNINGS/conventions/registry-generatedat-always-drifts.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: build-registry.mjs rewrites generatedAt every run; pre-declare it in registry-diff done-whens and gate with `--check` (normalizes the timestamp, proves frontmatter parity) (#605).
+
+### Skill edits must pass their own gates
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/skill-edits-must-pass-their-own-gates.md`
+- **Confidence**: high
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: When a diff adds a normative gate to a SKILL.md method doc, apply the new gate to the post-state file before merge — skill-generalizer outgrew its own new ceiling in the introducing commit (#605).
