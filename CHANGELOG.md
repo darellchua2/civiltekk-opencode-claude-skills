@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.1.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.0.0...v12.1.0) (2026-09-27)
+
+### Features
+
+* **opencode:** make /run-worktree-pipeline-v2 fully inline — zero subagents end to end ([#618](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/618)) ([c6d1d09](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/c6d1d091021362f23a4c78ba333b713024a633bd)), closes [#613](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/613) [614/#616](https://github.com/614/civiltekk-opencode-claude-skills/issues/616)
+
 ## [12.0.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v11.0.0...v12.0.0) (2026-09-27)
 
 ### ⚠ BREAKING CHANGES
