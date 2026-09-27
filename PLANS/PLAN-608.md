@@ -6,10 +6,10 @@
 
 ## Acceptance Criteria
 
-- [ ] A redeploy (full or `--skills-only` — both route through `deploy_content()`) prunes manifest-tracked entries whose names have left `installer/registry.json`: both the installed files and the manifest rows are removed.
-- [ ] The prune pass is dry-run safe: under `DRY_RUN=true` nothing is mutated, and the `--dry-run` flag is wired with the explicit-comparison spelling (the `${DRY_RUN:+…}` form is banned by `tests/test_dry_run_leaks.bats`).
-- [ ] The prune pass is non-fatal on pre-#379 manifest-less installs (`init.mjs update` exits 2 with its adoption hint) — warn and continue, per the #379 contract.
-- [ ] Entries still in the registry survive the prune pass untouched; regression tests cover convergence and the dry-run wiring.
+- [x] A redeploy (full or `--skills-only` — both route through `deploy_content()`) prunes manifest-tracked entries whose names have left `installer/registry.json`: both the installed files and the manifest rows are removed.
+- [x] The prune pass is dry-run safe: under `DRY_RUN=true` nothing is mutated, and the `--dry-run` flag is wired with the explicit-comparison spelling (the `${DRY_RUN:+…}` form is banned by `tests/test_dry_run_leaks.bats`).
+- [x] The prune pass is non-fatal on pre-#379 manifest-less installs (`init.mjs update` exits 2 with its adoption hint) — warn and continue, per the #379 contract.
+- [x] Entries still in the registry survive the prune pass untouched; regression tests cover convergence and the dry-run wiring.
 
 ## Dependency & Consumer Map
 
@@ -51,10 +51,11 @@
 
 ### Phase 3: Gate + validation
 
-- [ ] **3.1** Run the gate: `bash -n deploy/setup.sh`, then `bats tests/deploy_delegate.bats tests/test_dry_run_leaks.bats tests/init.bats tests/update.bats tests/test_skills_only_parity.bats tests/test_default_behavior.bats tests/test_subcommands.bats` (every suite that sources or pins `deploy_content()`); fix any failure before push
+- [x] **3.1** Run the gate: `bash -n deploy/setup.sh`, then `bats tests/deploy_delegate.bats tests/test_dry_run_leaks.bats tests/init.bats tests/update.bats tests/test_skills_only_parity.bats tests/test_default_behavior.bats tests/test_subcommands.bats` (every suite that sources or pins `deploy_content()`); fix any failure before push
     — **Why:** the touched function sits on the deploy path with existing structure/spelling pins — the pinned suites are the blast-radius proof
     — **Done when:** all listed bats suites green and `bash -n` clean on the final tree
     — **Consumers affected:** none runtime — evidence for the exit gate
+    — **Done:** `bash -n` clean; full-tier exit gate ran the ENTIRE bats suite (632 tests, 0 failures) plus the PLAN-listed suites; files: none; fixes: none
 
 ## Technical Notes
 
@@ -74,3 +75,4 @@ None. (`init.mjs update --prune` already shipped and tested at `tests/update.bat
 
 GATE 31c4830 tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 75126e2 tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
+GATE b9eb7c9 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 632/632 — ticket exit gate)
