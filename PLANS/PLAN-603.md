@@ -2,7 +2,7 @@
 
 **Branch**: feat/603
 **Issue**: https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/603
-**Base**: main (8478774 — includes #609 Docker-mode removal; `opencode_app/` no longer exists, sweeps target `README.md` only)
+**Base**: main (0549005 — includes #609 Docker removal + #612 HANDOFF3 guard lines; `opencode_app/` gone, sweeps target `README.md` only; `tests/test_skill_isolation.bats` now has HANDOFF3 lines above HANDOFF2 — Phase 11 edits HANDOFF2 only)
 
 ## Acceptance Criteria
 
@@ -11,7 +11,7 @@
 - [ ] deploy/.AGENTS.md granularity + api-design exception lines cite civiltekk- names; repo AGENTS.md doc-sync row updated
 - [ ] docstring fold repoints done: documentation-subagent, nextjs-specialist-subagent, pack-docs.json, pack-frontend.json
 - [ ] registry.json rebuilt per merge; `bats tests/` green; LEARNINGS count-literal sweep clean
-- [ ] All member triggers preserved in host descriptions; skill count = 136 after this wave (150 - 14)
+- [ ] All member triggers preserved in host descriptions; skill count = 135 after this wave (150 − 15: 26 members → 11 hosts; AC amended from 136 per Mode R — 136 was the transient Phase-10 ladder value)
 
 ## Pattern template (every host follows — ticketing-skill shape)
 
@@ -20,11 +20,13 @@ Host SKILL.md = METHOD only (~≤140 lines): first body line `Consolidates <memb
 ## Standard phase skeleton (each phase = one merge = one commit)
 
 - **N.1** Author host SKILL.md + `references/` (method+values; trigger-union description)
-- **N.2** `git rm` absorbed dirs + repoint ALL consumers listed for that merge
+- **N.2** `git rm` absorbed dirs + repoint ALL consumers listed for that merge — ALWAYS including the member's `permissions` skill-allow rules in `deploy/opencode.json` (~25 member edges across phases 1–11; the deny-all-first allowlist silently drops new `civiltekk-*` hosts otherwise — BLOCK-1)
 - **N.3** `node installer/build-registry.mjs` + scoped gate (affected bats files + count sweep + `ls -d skills/*/ | wc -l`)
 - **N.4** Atomic commit + push (PLAN ticks ride it — no standalone docs commits)
 
-Count sweep per phase (adapted post-#609): `grep -rn 'skill director\|lean has exactly\|deny-ok\|primary-visible\|allows)' tests/ deploy/ README.md` — every literal the decrement touches gets fixed in the SAME commit; plus `bats tests/skill_profiles.bats tests/test_select_items.bats tests/test_ships_plugins.bats` (whichever the phase touches) and the phase's other affected test files.
+Count sweep per phase (adapted post-#609): `grep -rn 'skill director\|lean has exactly\|deny-ok\|primary-visible\|allows)' tests/ deploy/ README.md` — every literal the decrement touches gets fixed in the SAME commit; PLUS the README per-category parenthetical counts (README.md:260-276, mutated by every phase — WARN-3); PLUS `bats tests/skill_profiles.bats tests/test_select_items.bats tests/test_ships_plugins.bats` (whichever the phase touches) and the phase's other affected test files.
+
+Residue rule (orchestrator constant — issued verbatim to every N.2 delegate): sweep BOTH the full `-skill` name AND its suffix-stripped stem (catches `git-semantic-commits` in README:87, `documentation-sync-workflow` in AGENTS.md:69 — WARN-2). Residue exemptions (never rewrite): `CHANGELOG.md`, `docs/` research snapshots, historical `PLANS/`, `LEARNINGS/`, `installer/registry.json` pre-rebuild. Live-path residue (MUST repoint, not exempt): `plugins/ATTRIBUTION.md` ponytail paths (Phase 8).
 
 ## Dependency & Consumer Map
 
@@ -36,17 +38,16 @@ Count sweep per phase (adapted post-#609): `grep -rn 'skill director\|lean has e
 | `installer/dependency-map.json` (requiresSkills entry, shipsPlugins ponytail edge) | Phases 2, 11 | init.mjs, pin test | high |
 | `agents/*.md` allowlists+bodies | each merge | subagent routing | med |
 | `installer/presets/pack-*.json` | each merge | installer packs | med |
-| `deploy/skill-profiles.json`, `opencode.json` | phases touching primary-visible skills | primary visibility | med |
-| `deploy/.AGENTS.md` | Phases 1, 7 | user-level deployed config | med |
+| `deploy/skill-profiles.json`, `deploy/opencode.json`, `opencode.json` | every phase (profiles; ~25 member allow rules in deploy/opencode.json:70-565) | primary visibility + routing | med |
+| `deploy/.AGENTS.md` | Phases 2 (granularity line :53), 9 (api-design exception :9) | user-level deployed config | med |
 | `AGENTS.md` (repo) | Phase 4 (doc-sync row) | agents | low |
 | `README.md`, `deploy/setup.sh`, `deploy/setup.ps1` | every phase | counts/banners | low |
-| `deploy/opencode.json` | — (post-#609 impliesMcp reference target) | none here | — |
 
 ## Implementation Phases
 
 ### Phase 1: civiltekk-opencode-creation-skill (smallest risk — warm-up)
 Absorbs: `opencode-agent-creation-skill` (11.4K) + `opencode-skill-creation-skill`. references/: `agent.md`, `skill.md`.
-Consumers: agents/opencode-tooling-subagent.md (allowlist + body), deploy/skill-profiles.json, installer/presets/pack-core.json (agent-creation only — verify), README.md.
+Consumers: agents/opencode-tooling-subagent.md (allowlist + body), deploy/skill-profiles.json, deploy/opencode.json (both members' allow rules), README.md. (pack-core holds no creation-skill — its member hit is git-semantic, Phase 2's.)
 - [ ] **1.1** Author host + references per template (shared frontmatter-contract knowledge is the shared method; per-artifact values split by variant)
     — **Why:** biggest body (agent-creation 11.4K) is mostly per-artifact values — the split is the token win
     — **Done when:** host ≤140 lines; both members' triggers present in description; `bats tests/test_skill_isolation.bats` green (new dir self-contained)
@@ -106,7 +107,7 @@ Consumers: agents/autoresearch-{code,ml,research}-subagent.md (strategic-compact
 
 ### Phase 4: civiltekk-documentation-sync-skill
 Absorbs: `documentation-sync-workflow-skill` + `documentation-consistency-skill`. references/: `sync-on-add.md`, `drift-audit.md`. Routes: on-add sync | drift audit/fix.
-Consumers: agents/repo-ops-specialist-subagent.md, agents/opencode-tooling-subagent.md, agents/opencode-v2-migration-subagent.md, deploy/skill-profiles.json, presets pack-devops (both), tests/test_default_behavior.bats + test_autoresearch_protocol.bats (consistency literals), README.md, repo `AGENTS.md` (sync-rules row names documentation-sync-workflow).
+Consumers: agents/repo-ops-specialist-subagent.md, agents/opencode-tooling-subagent.md, agents/opencode-v2-migration-subagent.md, deploy/skill-profiles.json, deploy/opencode.json (both members' allow rules), presets pack-devops (both), tests/test_default_behavior.bats + test_autoresearch_protocol.bats (consistency literals), README.md (incl. category-table rows — host lands in **OpenCode Meta**, per Mode R; remove the Documentation-row member entry), repo `AGENTS.md` (sync-rules row names documentation-sync-workflow).
 - [ ] **4.1** Author host + references per template
     — **Why:** same object (docs counts/drift), two situations (adding vs auditing)
     — **Done when:** template satisfied; triggers intact; isolation green
@@ -186,7 +187,7 @@ Consumers: agents/documentation-subagent.md (ascii), agents/startup-founder-suba
 
 ### Phase 8: civiltekk-ponytail-audit-skill
 Absorbs: `ponytail-audit-skill` (host renames) + `ponytail-review-skill` + `ponytail-debt-skill`. references/: `audit.md`, `review.md`, `debt.md`. Routes: whole-repo audit | diff review | debt ledger. `shipsPlugins` edges in dependency-map.json: three entries collapse to one under the new name (same plugin artifacts); `pluginCompanions` unchanged (plugin-keyed).
-Consumers: agents/code-review-subagent.md (review), agents/repo-ops-specialist-subagent.md (debt), deploy/skill-profiles.json, tests/test_ships_plugins.bats (pins per-skill shipsPlugins — three assertions become one), README.md.
+Consumers: agents/code-review-subagent.md (review), agents/architecture-review-subagent.md (ponytail-audit allow), agents/repo-ops-specialist-subagent.md (debt), deploy/skill-profiles.json, deploy/opencode.json (trio's allow rules), tests/test_ships_plugins.bats (~15 invocation lines across ~10 tests pin the three names), plugins/ATTRIBUTION.md:36-40 (LIVE relative paths `../skills/ponytail-*-skill/SKILL.md` — repoint, not exempt), README.md.
 - [ ] **8.1** Rename + author host + references per template
     — **Why:** one ponytail family, three scopes; mode skill (vendored `ponytail`) is untouched — different directory
     — **Done when:** template satisfied; three trigger sets intact; isolation green
@@ -206,7 +207,7 @@ Consumers: agents/code-review-subagent.md (review), agents/repo-ops-specialist-s
 
 ### Phase 9: civiltekk-api-spec-skill
 Absorbs: `api-design-skill` + `openapi-contract-adherence-skill`. references/: `design.md`, `adherence.md`. Routes: author spec | diff/review contract. §Authoring Quality Gate stays in host method (it is the method).
-Consumers: agents/technical-design-specialist-subagent.md, deploy/skill-profiles.json, deploy/.AGENTS.md (skill-not-subagent exception names api-design-skill → cite new name; semantics unchanged), presets pack-business + pack-backend, tests/test_default_behavior.bats + test_help_parity.bats + test_autoresearch_protocol.bats, README.md.
+Consumers: agents/technical-design-specialist-subagent.md, deploy/skill-profiles.json, deploy/opencode.json (pair's allow rules), deploy/.AGENTS.md (skill-not-subagent exception names api-design-skill → cite new name; semantics unchanged), presets pack-business + pack-backend, tests/test_default_behavior.bats + test_autoresearch_protocol.bats, **lockstep pair (BLOCK-3): `installer/init.mjs:1826` usage example string ↔ `tests/test_help_parity.bats:36` grep -F pin — rename rides BOTH in this commit**, installer/templates/api-quality/README.md:4 (shipped template cites the api-design gate), README.md.
 - [ ] **9.1** Author host + references per template
     — **Why:** same artifact (OpenAPI spec), two lifecycle ops (author vs adherence-diff)
     — **Done when:** template satisfied; triggers intact; isolation green
@@ -247,7 +248,7 @@ Consumers: agents/language-reviewer-subagent.md + agents/error-resolver-subagent
 ### Phase 11: civiltekk-documentation-inline-skill (isolation-contract touchpoint — last)
 Absorbs: `documentation-inline-skill` (host renames) + `docstring-generator-skill`. references/: `docstring-formats.md` (PEP 257/Javadoc/JSDoc/XML tables); host keeps the inline decision-tree method. Routes: inline-docs delegate | docstring-format lookup.
 Contract lockstep (same fail-closed unit, one commit): `tests/test_skill_isolation.bats` HANDOFF2_TARGETS renames `documentation-inline-skill` → `civiltekk-documentation-inline-skill`; `installer/dependency-map.json` plan-execution-inline requiresSkills entry renames same (pin test derives from guard — no third copy); `skills/plan-execution-inline-skill/SKILL.md` body references the four inline skills — rename the documentation one; HANDOFF3 (post-#612) untouched.
-Consumers: agents/documentation-subagent.md + agents/nextjs-specialist-subagent.md (docstring-generator), plan-execution-inline-skill body, presets pack-docs + pack-frontend (docstring), deploy/skill-profiles.json + opencode.json (documentation-inline primary-visible — check lean array), README.md.
+Consumers: agents/documentation-subagent.md + agents/nextjs-specialist-subagent.md (docstring-generator), plan-execution-inline-skill body, presets pack-docs + pack-frontend (docstring) **+ pack-inline-workers.json (documentation-inline entry — BLOCK-2)**, deploy/skill-profiles.json + deploy/opencode.json + opencode.json (documentation-inline allow rules), README.md. **Lockstep prose mirror (Mode R Q3): repo `AGENTS.md` §Skill Isolation Contract brace-shorthand `{testing,linting,documentation,responsive-audit}-inline-skill` at AGENTS.md:22 rewords in this same commit — grep-invisible, checklist-enforced.**
 - [ ] **11.1** Rename + author host + fold docstring values into references/
     — **Why:** documentation-inline already owns "docstrings for new/changed symbols"; the generator's format tables are values it lacked
     — **Done when:** template satisfied; both trigger sets intact; isolation green
@@ -281,15 +282,15 @@ Consumers: agents/documentation-subagent.md + agents/nextjs-specialist-subagent.
 
 ## Technical Notes
 
-- Skill count bookkeeping: 150 at base; M1 −1 (149), M2 −1 (148), M3 −1 (147), M4 −1 (146), M5 −1 (145), M6 −2 (143), M7 −1 (142), M8 −2 (140), M9 −1 (139), M10 −3 (136), M11 −1 (135). Reconcile at each gate — the ticket says 136 (150−14); if actual is 135 the Done line explains (24 members → 11 hosts = −13... verify: members M1..M11 = 2+2+2+2+2+3+2+3+4+2+... count: M1:2, M2:3, M3:2, M4:2, M5:2, M6:3, M7:2, M8:3, M9:2, M10:4, M11:2 = 27? No: Wave 1 = 24 members → 11 hosts = −13; 150−13 = 137, not 136. The ticket's "136 (150-14)" counts the docstring fold as a member (25th) — reconcile honestly at execution and record the true arithmetic in 11.3/12.2 Done lines.)
-- `deploy/opencode.json` is the post-#609 impliesMcp target; not touched by Wave 1 (no impliesMcp edges among members).
-- Primary-visibility renames (documentation-inline in lean array, zai/others NOT in this wave) — check `deploy/skill-profiles.json` + `opencode.json` per phase and fix literals.
-- Delegation: each phase's N.1–N.2 may run in a general-subagent given this PLAN phase block + the pattern template; N.3–N.4 (gate+commit) stay with the orchestrator for memo discipline.
-- Rebase hazard: #612 (feat/602) may merge mid-run touching HANDOFF3-adjacent context in the guard/map/pin files — Phase 11 edits those same files; if #612 merges before Phase 11, rebase feat/603 first (union resolution precedent: #602 rebase).
+- **Count arithmetic (definitive, arch-review + Mode R verified): 26 members → 11 hosts = −15 → 135.** The ticket's original "136 (150−14)" was the transient Phase-10 ladder value; ticket AC amended to 135 and #604's to 118 (135−17) pre-execution. Ladder: 149·148·147·146·145·143·142·140·139·136·135.
+- ~20 fellow-skill cross-references (agent-introspection, skills-maintainer, search-first, eval-harness, grilling, plan-execution, semantic-release, version-bump, database-migration, nextjs-standard-setup, technical-design-creation, authn-authz, monorepo, horseshoe, language-review-checklists, uiux-review, frontend-design, amplify, complexity) name Wave-1 members — all suffixed, all residue-grep-catchable; no per-phase enumeration, the sweep is the net (WARN-5).
+- Delegation: each phase's N.1–N.2 may run in a general-subagent given this PLAN phase block + the pattern template + the residue-rule constant (skeleton §Residue rule — issue verbatim, subagents never improvise carve-outs); N.3–N.4 (gate+commit) stay with the orchestrator for memo discipline.
+- `deploy/opencode.json` `permissions` allow rules are a per-phase repoint surface (deny-all-first: missing allow = invisible skill) — folded into N.2 and every phase's consumer list.
+- Rebase hazard: concurrent main churn (observed #606, #609, #612) — rebase at boundaries; Phase 11 shares files with recently-landed HANDOFF3 context (union-resolution precedent from #602's rebase).
 
 ## Dependencies
 
-Held-vs-#612 at 6f: feat/602's open-PR diff intersects this PLAN's touch-set (test_skill_isolation.bats, dependency-map.json, test_requires_skills.bats, AGENTS.md). Auto-resume on #612 merge notification: rebase feat/603 onto updated main, continue at Step 7 (Phase 1 execution).
+None active. (The pre-#612 overlap hold is resolved — feat/602 merged as 0549005 and feat/603 was rebased onto it before PLAN commit.) Phases are ordered risk-ascending; Phase 11 (isolation-contract lockstep) intentionally last.
 
 ## Risks & Mitigation
 
