@@ -2,7 +2,7 @@
 
 A personal software-development skills collection — the agents, skills, and pipeline tooling I use daily — shared so you can take **a single skill** or adopt **the whole stack**.
 
-- **135 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
+- **134 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
 - **Same skills install to other harnesses**: Claude Code, Kimi Code, Kilo Code, and the cross-tool `~/.agents/` standard (Agent Skills open format)
 - A **robust application-development pipeline**: ticket → PLAN → gated execution → review → merged PR, driven by a handful of slash commands
 
@@ -73,7 +73,7 @@ Provider swap (Z.AI default): `./deploy/setup.sh --provider anthropic|openai|ope
 
 ### 3. Per-project subset — presets
 
-Not every project needs 34 agents + 135 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
+Not every project needs 34 agents + 134 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
 
 ```bash
 opencode-init --list categories                              # introspect (JSON)
@@ -98,7 +98,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills --project . --preset rev
 
 ```
 civiltekk-opencode-claude-skills/
-├── skills/                      # 135 skill directories (source of truth)
+├── skills/                      # 134 skill directories (source of truth)
 ├── agents/                      # 34 subagent .md files (source of truth)
 ├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings, auto-continue, question-repair)
 │   └── vibeguard.config.json    # Secret-masking regex patterns
@@ -214,7 +214,7 @@ Globally: set `"disabled": false` in `~/.config/opencode/opencode.json`, or use 
 
 Default state of every pack is **OFF**. Design history: [issue #268](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/268).
 
-**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (67 primary-visible skills + deny-all); subagents are profile-immune and all 135 skills stay on disk:
+**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (67 primary-visible skills + deny-all); subagents are profile-immune and all 134 skills stay on disk:
 
 ```bash
 ./deploy/setup.sh                     # default: lean
@@ -251,13 +251,13 @@ Attribution: `plugins/ATTRIBUTION.md`; skill-level attributions in `THIRD_PARTY_
 </details>
 
 <details>
-<summary><strong>Skill catalog — 135 skills by category</strong></summary>
+<summary><strong>Skill catalog — 134 skills by category</strong></summary>
 
-Current count: **135** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563; the six ticket skills were consolidated into `ticketing-skill` in #599 — `npx … add ticket-creation-skill|git-issue-labeler-skill|git-issue-updater-skill|jira-git-integration-skill|jira-status-updater-skill|jira-ticket-labeler-skill` are removed, use `add ticketing-skill`; the two creation skills were consolidated into `civiltekk-opencode-creation-skill` in #603 — their `add` names are removed, use `add civiltekk-opencode-creation-skill`; the two commits skills were consolidated into `civiltekk-git-commits-skill` in #603 — their `add` names are removed, use `add civiltekk-git-commits-skill`; the two context skills were consolidated into `civiltekk-context-optimization-skill` in #603 — their `add` names are removed, use `add civiltekk-context-optimization-skill`; the two documentation skills were consolidated into `civiltekk-documentation-sync-skill` in #603 — their `add` names are removed, use `add civiltekk-documentation-sync-skill`; the two startup docs skills were consolidated into `civiltekk-startup-docs-skill` in #603 — their `add` names are removed, use `add civiltekk-startup-docs-skill`; the three Python backend skills were consolidated into `civiltekk-python-backend-skill` in #603 — `npx … add python-backend-skill|python-packaging-skill|fastapi-pydantic-orm-patterns-skill` are removed, use `add civiltekk-python-backend-skill`; the two diagram skills were consolidated into `civiltekk-diagram-skill` in #603 — `npx … add ascii-diagram-creator-skill|mermaid-diagram-creator-skill` are removed, use `add civiltekk-diagram-skill`; the three ponytail skills were consolidated into `civiltekk-ponytail-audit-skill` in #603 — `npx … add ponytail-audit-skill|ponytail-review-skill|ponytail-debt-skill` are removed, use `add civiltekk-ponytail-audit-skill`; the two API skills were consolidated into `civiltekk-api-spec-skill` in #603 — `npx … add api-design-skill|openapi-contract-adherence-skill` are removed, use `add civiltekk-api-spec-skill`; the four React/TS quality skills were consolidated into `civiltekk-react-quality-skill` in #603 — `npx … add react-best-practices-skill|react-hooks-antipatterns-skill|react-render-antipatterns-skill|typescript-dry-principle-skill` are removed, use `add civiltekk-react-quality-skill`; the inline documentation and docstring skills were consolidated into `civiltekk-documentation-inline-skill` in #603 — `npx … add documentation-inline-skill|docstring-generator-skill` are removed, use `add civiltekk-documentation-inline-skill`).
+Current count: **134** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563; the six ticket skills were consolidated into `ticketing-skill` in #599 — `npx … add ticket-creation-skill|git-issue-labeler-skill|git-issue-updater-skill|jira-git-integration-skill|jira-status-updater-skill|jira-ticket-labeler-skill` are removed, use `add ticketing-skill`; the two creation skills were consolidated into `civiltekk-opencode-creation-skill` in #603 — their `add` names are removed, use `add civiltekk-opencode-creation-skill`; the two commits skills were consolidated into `civiltekk-git-commits-skill` in #603 — their `add` names are removed, use `add civiltekk-git-commits-skill`; the two context skills were consolidated into `civiltekk-context-optimization-skill` in #603 — their `add` names are removed, use `add civiltekk-context-optimization-skill`; the two documentation skills were consolidated into `civiltekk-documentation-sync-skill` in #603 — their `add` names are removed, use `add civiltekk-documentation-sync-skill`; the two startup docs skills were consolidated into `civiltekk-startup-docs-skill` in #603 — their `add` names are removed, use `add civiltekk-startup-docs-skill`; the three Python backend skills were consolidated into `civiltekk-python-backend-skill` in #603 — `npx … add python-backend-skill|python-packaging-skill|fastapi-pydantic-orm-patterns-skill` are removed, use `add civiltekk-python-backend-skill`; the two diagram skills were consolidated into `civiltekk-diagram-skill` in #603 — `npx … add ascii-diagram-creator-skill|mermaid-diagram-creator-skill` are removed, use `add civiltekk-diagram-skill`; the three ponytail skills were consolidated into `civiltekk-ponytail-audit-skill` in #603 — `npx … add ponytail-audit-skill|ponytail-review-skill|ponytail-debt-skill` are removed, use `add civiltekk-ponytail-audit-skill`; the two API skills were consolidated into `civiltekk-api-spec-skill` in #603 — `npx … add api-design-skill|openapi-contract-adherence-skill` are removed, use `add civiltekk-api-spec-skill`; the four React/TS quality skills were consolidated into `civiltekk-react-quality-skill` in #603 — `npx … add react-best-practices-skill|react-hooks-antipatterns-skill|react-render-antipatterns-skill|typescript-dry-principle-skill` are removed, use `add civiltekk-react-quality-skill`; the inline documentation and docstring skills were consolidated into `civiltekk-documentation-inline-skill` in #603 — `npx … add documentation-inline-skill|docstring-generator-skill` are removed, use `add civiltekk-documentation-inline-skill`; the two requirements skills were consolidated into `civiltekk-requirements-specs-skill` in #604 — `npx … add brd-creation-skill|srs-creation-skill` are removed, use `add civiltekk-requirements-specs-skill`).
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (18) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, xlsx-specialist, pdf-specialist, frontend-design, uiux-review-skill, civiltekk-api-spec-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design + review, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
+| **Framework** (17) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, xlsx-specialist, pdf-specialist, frontend-design, uiux-review-skill, civiltekk-api-spec-skill, performance-optimization-skill, civiltekk-requirements-specs-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design + review, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
 | **Presentation** (3) | pptx-generate-slide-skill, pptx-generate-template-skill, pptx-template-modifier-skill | Template-driven PowerPoint generation — extract, fill, extend |
 | **Office Utilities** (2) | ooxml-editing-skill, office-thumbnail-skill | Generic Office OOXML surgical edits and visual thumbnail/conversion |
 | **Language-Specific** (4) | python-pytest-creator, language-linting, changelog-python-cliff, civiltekk-python-backend-skill | Language-specific test, linting (Ruff/ESLint/Checkstyle/dotnet format), and Python backend engineering — scaffolding, packaging, and production patterns (one consolidated skill) |

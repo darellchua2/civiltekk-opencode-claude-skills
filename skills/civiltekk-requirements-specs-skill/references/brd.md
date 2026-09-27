@@ -1,51 +1,18 @@
----
-name: brd-creation-skill
-description: >-
-  Create and review BRDs (BABOK/IIBA) — the sponsor-level 'why' between customer
-  Vision and internal SRS. Triggers: create brd, business requirements,
-  stakeholder requirements, business need.
-license: Apache-2.0
-compatibility: opencode
-category: Framework
----
+# BRD route (values)
 
-## What I do
+Business Requirements Document knowledge — the BABOK/IIBA sponsor-level "why" document. The host SKILL.md carries the METHOD (detect → route → interview → write → render); this file carries the VALUES for the `brd` route.
 
-I provide a structured **Business Requirements Document (BRD)** creation workflow following the **BABOK / IIBA** standard — the recognized sponsor-level "why" document in the document ladder.
+**Authority:** this route owns the BABOK template, the `docs/brd/` naming convention, and the sponsor-facing audience contract; `references/srs.md` in this skill owns the IEEE 830 internal "what" (the two were formerly peer skills — the boundary is internal now).
 
-1. **BABOK BRD Template** — 4-part structure (Business Requirements / Stakeholder Requirements / Solution Requirements Summary / Transition Requirements)
-2. **docs/brd/ Naming Convention** — draft files (`BRD-draft-{slug}.md`) renamed to ticket-keyed files (`BRD-{key}.md`) after ticket creation
-3. **PLAN Back-Linkage** — bidirectional traceability between BRD and PLAN files
-4. **Discovery Interview Workflow** — prompt-first flow that gathers content section-by-section with user confirmation
-
-> **Position in the document ladder:** the BRD is the **sponsor-level** document. It captures the business problem/opportunity, objectives, stakeholder needs, and a high-level solution summary — it is NOT a detailed functional spec (that is the SRS). Flow: **Vision** (customer-facing) → **BRD** (sponsor/stakeholder scope) → **SRS** (internal functional/technical scope). BRD is a **new** document type — there is no "prd" back-compat alias (prd routes to SRS).
-
-## When to use me
-
-Use this skill when:
-- A sponsor or business owner needs a **business-level** requirements document (the "why" and "what for", at the business/stakeholder scope)
-- Someone says "create brd", "business requirements", "stakeholder requirements", "business need", "business requirements document"
-- The customer-facing Vision is signed off and the business case/objectives must be formalized before detailed functional requirements (SRS)
-- You need a high-level solution summary + transition requirements (training, migration, org change) — NOT detailed functional acceptance criteria
-
-**Do NOT use for:** detailed functional requirements / acceptance criteria (use `srs-creation-skill`); customer-facing vision (use `vision-creation-skill`).
-
-**Trigger phrases**: "create brd", "business requirements", "stakeholder requirements", "business need", "business requirements document", "write a brd"
+**Position in the document ladder:** the BRD is the **sponsor-level** document. It captures the business problem/opportunity, objectives, stakeholder needs, and a high-level solution summary — it is NOT a detailed functional spec (that is route `srs`). Flow: **Vision** (customer-facing) → **BRD** (sponsor/stakeholder scope) → **SRS** (internal functional/technical scope). BRD is a **new** document type — there is no "prd" back-compat alias (prd routes to `srs`).
 
 ## Audience
 
-The BRD is **sponsor/stakeholder-facing**. It encodes business objectives, success criteria, business value, stakeholder needs, a high-level solution summary, and transition requirements (migration, training, organizational change). It is written in business language, not technical specification language. The detailed functional/technical requirements live in the downstream SRS (`srs-creation-skill`).
+The BRD is **sponsor/stakeholder-facing**. It encodes business objectives, success criteria, business value, stakeholder needs, a high-level solution summary, and transition requirements (migration, training, organizational change). It is written in business language, not technical specification language. The detailed functional/technical requirements live in the downstream SRS (route `srs` of this skill).
 
-## Related
+## Interview part sequence (route `brd`)
 
-- **`requirements-specialist-subagent`** — the agent that authors the BRD (this skill is its template)
-- **`srs-creation-skill`** — the downstream document; the BRD's Solution Requirements Summary feeds INTO the SRS's detailed functional requirements
-- **`vision-creation-skill`** — the upstream customer-facing doc; the signed Vision feeds INTO the BRD's Business Requirements
-- **`interactive-document-rendering-skill`** — shared HTML + DOCX rendering standard (snapshot HTML for BRD)
-- **`worktree-pipeline-skill`** — auto-detects draft BRD in `docs/brd/` during PLAN authoring (§6b), renames to ticket key, links in PLAN header
-- **`worktree-pipeline-skill`** — downstream consumer; BRD feeds into the PLAN file
-
----
+Business Requirements → Stakeholder Requirements → Solution Requirements Summary → Transition Requirements. The interview itself (title → iterate parts → confirm-before-write) is the host's shared method.
 
 ## BRD Template (BABOK / IIBA)
 
@@ -293,49 +260,15 @@ docs/brd/BRD-{ticket-key}.md
 
 ---
 
-## Rendering
+## Rendering (route `brd`)
 
 **Render dual outputs per `interactive-document-rendering-skill` (snapshot for BRD):**
 - **Interactive HTML** — rendered once at wrap (`docs/brd/{slug}/BRD-{slug}.interactive.html`), snapshot (not living)
 - **Word .docx** — formal deliverable for sponsor/stakeholder review & sign-off (`docs/brd/BRD-{slug}.docx`), auto-TOC + hyperlinked headers + section page-breaks
 
-**Image routing:** if a referenced diagram/screenshot must be interpreted, delegate to `image-analyzer-subagent` (do not interpret inline).
-
 ---
 
-## Discovery Interview Workflow
-
-The `requirements-specialist-subagent` follows this prompt-first flow (after the doc-type routing decision tree resolves to BRD):
-
-### Step 1: Gather Title & Overview
-```
-Subagent: "What is the title and brief overview of the business initiative you want a BRD for?"
-User: {provides title and overview}
-Subagent: "I'll use: Title: '{title}'. Proceed?"
-```
-
-### Step 2: Iterate Through BABOK Parts
-```
-For each part/section (Business Requirements → Stakeholder Requirements → Solution Requirements Summary → Transition Requirements):
-  Subagent: "Next: {Section} (e.g. 1.2 Business Objectives & Success Criteria). {Purpose}. What content?"
-  User: {provides content or says "skip" — skip keeps the heading}
-  Subagent: "Got it. Here's what I'll write: {summary}. Correct?"
-```
-
-### Step 3: Confirm Full BRD Before Writing
-```
-Subagent: "Here's a summary of the BRD:
-  - Title: {title}
-  - Parts: 1–4 (BABOK, with content)
-  - File: docs/brd/BRD-draft-{slug}.md
-
-  Proceed to write?"
-User: {yes → write file; no → revise}
-```
-
----
-
-## Return Contract
+## Return Contract (route `brd`)
 
 ```
 **Status:** [success | partial | failed]

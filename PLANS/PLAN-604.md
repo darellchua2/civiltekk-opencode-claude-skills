@@ -36,22 +36,26 @@ Method-only host ≤140 lines; `Consolidates <members> (#604)` first body line; 
 Absorbs: `brd-creation-skill` + `srs-creation-skill`. references/: `brd.md`, `srs.md`. Routes: brd (BABOK/IIBA sponsor-level why) | srs (IEEE 830 internal what; PRD back-compat triggers preserved verbatim in description).
 MUST: host body carries old-name alias line ("formerly brd-creation-skill / srs-creation-skill") — citing skills and drafts reference the old names.
 Consumers: agents/requirements-specialist-subagent.md (2 allowlists + 4 body routes), presets pack-docs + pack-business, deploy/opencode.json (srs-creation :145 + brd-creation :150 allow rules → one host rule), README (category Framework), citing skills: interactive-document-rendering, technical-design-creation, vision-creation (grep stems `brd-creation` / `srs-creation` and repoint live hits; worktree-pipeline §6b cites concepts only — no stem hits, verify by grep).
-- [ ] **1.1** Author host + references per template (alias line included)
+- [x] **1.1** Author host + references per template (alias line included)
     — **Why:** same interview/render/linkage pipeline, two template variants — the cleanest Wave-2 merge warms up the run
     — **Done when:** host ≤140 lines; both trigger sets + PRD back-compat preserved; isolation bats green
     — **Consumers affected:** requirements-specialist, 4 citing skills
-- [ ] **1.2** Delete + repoint (specialist agent, presets, README, citing skills)
+    — **Done:** method host + brd|srs routes, alias line, 447-char union description incl. all PRD back-compat triggers; files: skills/civiltekk-requirements-specs-skill/{SKILL.md,references/brd.md,references/srs.md}; fixes: none
+- [x] **1.2** Delete + repoint (specialist agent, presets, README, citing skills)
     — **Why:** stale names break the doc-ladder routing (vision → brd → srs → plan)
     — **Done when:** lookbehind residue sweep clean
     — **Consumers affected:** doc-ladder chain
-- [ ] **1.3** Registry rebuild + scoped gate + count (134)
+    — **Done:** 2 dirs git-rm; repointed: specialist agent (2 allows + 4 body routes), 2 presets, opencode.json 2->1, README 135->134 + Framework 18->17 + history note, 3 citing skills; lean untouched (neither member lean - verified); residue sanctioned-only; fixes: none
+- [x] **1.3** Registry rebuild + scoped gate + count (134)
     — **Why:** per-commit green
     — **Done when:** registry skills=134; affected bats green; sweep clean
     — **Consumers affected:** installer
-- [ ] **1.4** Commit + push
+    — **Done:** registry rebuilt (skills=134); scoped gate green (103 incl. requires_skills pin); count 134; fixes: none
+- [x] **1.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed single commit with PLAN ticks
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 2: civiltekk-nextjs-skill
 Absorbs: `nextjs-standard-setup-skill` + `nextjs-devtools-mcp-skill` + `nextjs-image-usage-skill` + `threejs-nextjs-skill` (amplify stays standalone; unit-test-creator belongs to Phase 6). references/: `setup.md`, `devtools-mcp.md`, `image.md`, `threejs.md`. Routes: scaffold | runtime-diagnosis | image-usage | threejs-integration.
@@ -188,3 +192,5 @@ None active (the #614 hold resolved — Wave 1 merged as 7a725c5 before this PLA
 - **Phase 6 pinned-literal migration** — six bats blocks; any literal landing twice/zero times trips `appears_exactly_once` or a failed grep; per-block verification in 6.2.
 - **impliesMcp key rename** — test_requires_skills asserts values ⊆ deploy/opencode.json servers; value unchanged, key renamed — green by construction, verified in 2.3.
 - **Count arithmetic** — 22−6=−16 → 119; re-derive from disk at 7.2, never from this note.
+WORK LOG - W2 base 8cf5b6c
+GATE 8cf5b6c tier=light lint=- typecheck=- build=- unit=t e2e=n.a

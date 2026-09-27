@@ -142,12 +142,7 @@
         },
         {
             "action": "skill",
-            "resource": "srs-creation-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "brd-creation-skill",
+            "resource": "civiltekk-requirements-specs-skill",
             "effect": "allow"
         },
         {

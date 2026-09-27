@@ -11,9 +11,9 @@
     "office-document-router-subagent"
   ],
   "skills": [
-    "brd-creation-skill",
     "civiltekk-diagram-skill",
     "civiltekk-documentation-inline-skill",
+    "civiltekk-requirements-specs-skill",
     "civiltekk-startup-docs-skill",
     "coverage-readme-workflow-skill",
     "docling-mcp-skill",
@@ -28,7 +28,6 @@
     "pptx-generate-template-skill",
     "pptx-template-modifier-skill",
     "research-paper-generation-skill",
-    "srs-creation-skill",
     "technical-design-creation-skill",
     "vision-creation-skill",
     "xlsx-specialist-skill"

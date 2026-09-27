@@ -1,51 +1,18 @@
----
-name: srs-creation-skill
-description: >-
-  Create and review SRS (IEEE 830) — the internal 'what' stage after BRD.
-  Triggers: create srs, software requirements, functional spec, feature spec,
-  specification, legacy 'create prd'.
-license: Apache-2.0
-compatibility: opencode
-category: Framework
----
+# SRS route (values)
 
-## What I do
+Software Requirements Specification knowledge — the IEEE 830 internal "what" document. The host SKILL.md carries the METHOD (detect → route → interview → write → render); this file carries the VALUES for the `srs` route.
 
-I provide a structured **Software Requirements Specification (SRS)** creation workflow following the **IEEE 830** standard — the recognized BA-to-developer requirements document. The SRS is an **internal** document (audience = development team), distinct from the customer-facing Vision Document.
+**Authority:** this route owns the IEEE 830 template, the `docs/srs/` naming convention, and the xlsx peer-artifact contract; `references/brd.md` in this skill owns the BABOK sponsor-level "why" (the two were formerly peer skills — the boundary is internal now).
 
-1. **IEEE 830 SRS Template** — 4-part structure (Introduction / Overall Description / Specific Requirements / Supporting Information) preserving the valuable sections of the prior PRD template (acceptance criteria, NFRs, MoSCoW priorities, risks) by mapping them into the IEEE structure
-2. **docs/srs/ Naming Convention** — draft files (`SRS-draft-{slug}.md`) renamed to ticket-keyed files (`SRS-{key}.md`) after ticket creation
-3. **PLAN Back-Linkage** — bidirectional traceability between SRS and PLAN files
-4. **Discovery Interview Workflow** — prompt-first flow that gathers content section-by-section with user confirmation
-
-> **Back-compat:** the legacy triggers "create prd", "product requirement", "product requirement document", "product doc", "PRD" route to **this** SRS skill. PRD was the wrong label for BA→dev handoff; SRS (IEEE 830) is the proper-software-house standard.
-
-## When to use me
-
-Use this skill when:
-- A feature needs **internal requirements engineering** for the development team (NOT a customer-facing doc — that is `vision-creation-skill`)
-- Someone says "create srs", "software requirements", "functional spec", "feature spec", "specification", "write srs"
-- You want a structured artifact that feeds into the PLAN file via `worktree-pipeline-skill` §6b draft linking
-- The customer-facing Vision is signed off and must be translated into developer-ready requirements
-- Reviewing/updating an existing SRS
-
-**Trigger phrases**: "create srs", "software requirements", "functional spec", "feature spec", "specification", "write srs", "srs doc" — plus back-compat "create prd", "product requirement", "product doc", "PRD"
+**Back-compat:** the legacy triggers "create prd", "product requirement", "product requirement document", "product doc", "PRD" route to **this** `srs` route. PRD was the wrong label for BA→dev handoff; SRS (IEEE 830) is the proper-software-house standard.
 
 ## Audience
 
 The SRS is **internal — for the development team**. It encodes tradeoffs, non-goals, MoSCoW priorities, build-vs-buy rationale, performance targets, and traceability that you would NOT put in front of a customer. The customer-facing equivalent is the Vision Document (`vision-creation-skill`).
 
-## Related
+## Interview part sequence (route `srs`)
 
-- **`requirements-specialist-subagent`** — the agent that authors the SRS (this skill is its template)
-- **`vision-creation-skill`** — the upstream customer-facing doc; the signed Vision feeds INTO the SRS
-- **`interactive-document-rendering-skill`** — shared HTML + DOCX rendering standard (snapshot HTML for SRS)
-- **`worktree-pipeline-skill`** — auto-detects draft SRS in `docs/srs/` during PLAN authoring (§6b), renames to ticket key, links in PLAN header
-- **`worktree-pipeline-skill`** — downstream consumer; SRS feeds into the PLAN file
-- **`xlsx-specialist-skill` / `xlsx-specialist-subagent`** — peer tabular deliverables (RTM, data dictionary)
-- **`verification-loop-skill`** — acceptance-criteria alignment between SRS and implementation
-
----
+Introduction → Overall Description → Specific Requirements → Supporting Information. The interview itself (title → iterate parts → confirm-before-write) is the host's shared method.
 
 ## SRS Template (IEEE 830)
 
@@ -365,49 +332,15 @@ Small tables stay inline in the Markdown. The `.xlsx` files are **peer deliverab
 
 ---
 
-## Rendering
+## Rendering (route `srs`)
 
 **Render dual outputs per `interactive-document-rendering-skill` (snapshot for SRS):**
 - **Interactive HTML** — rendered once at wrap (`docs/srs/{slug}/SRS-{slug}.interactive.html`), snapshot (not living)
 - **Word .docx** — formal deliverable for review/sign-off (`docs/srs/SRS-{slug}.docx`), auto-TOC + hyperlinked headers + section page-breaks
 
-**Image routing:** if a referenced diagram/screenshot must be interpreted, delegate to `image-analyzer-subagent` (do not interpret inline).
-
 ---
 
-## Discovery Interview Workflow
-
-The `requirements-specialist-subagent` follows this prompt-first flow:
-
-### Step 1: Gather Title & Overview
-```
-Subagent: "What is the title and brief overview of the feature you want an SRS for?"
-User: {provides title and overview}
-Subagent: "I'll use: Title: '{title}'. Proceed?"
-```
-
-### Step 2: Iterate Through IEEE 830 Parts
-```
-For each part/section (Introduction → Supporting Information):
-  Subagent: "Next: {Section} (e.g. 3.2 Functional Requirements). {Purpose}. What content?"
-  User: {provides content or says "skip" — skip keeps the heading}
-  Subagent: "Got it. Here's what I'll write: {summary}. Correct?"
-```
-
-### Step 3: Confirm Full SRS Before Writing
-```
-Subagent: "Here's a summary of the SRS:
-  - Title: {title}
-  - Parts: 1–4 (IEEE 830, with content)
-  - File: docs/srs/SRS-draft-{slug}.md
-
-  Proceed to write?"
-User: {yes → write file; no → revise}
-```
-
----
-
-## Return Contract
+## Return Contract (route `srs`)
 
 ```
 **Status:** [success | partial | failed]
