@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.54.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.54.0...v9.54.1) (2026-09-27)
+
+### Code Refactoring
+
+* **skills:** consolidate six ticket skills into ticketing-skill ([#599](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/599)) ([#600](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/600)) ([dd0d60f](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/dd0d60f634d61b5e1c3cd65e8b35b5d8590c7e31))
+
 ## [9.54.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.53.1...v9.54.0) (2026-09-27)
 
 ### Features
