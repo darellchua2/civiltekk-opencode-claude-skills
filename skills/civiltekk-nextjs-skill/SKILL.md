@@ -97,13 +97,8 @@ availability gate and file-based fallback above.
 ## Boundaries
 
 - The four routes were formerly peer skills that cross-referenced each
-<<<<<<< Updated upstream
-  other (`nextjs-standard-setup` pointed at `nextjs-image-usage`; the
-  image and threejs rules interact) — that boundary is internal now; the
-=======
   other (the setup member pointed at the image member; the image and
   Three.js rules interact) — that boundary is internal now; the
->>>>>>> Stashed changes
   route table above is the boundary logic.
 - Internal exception: inside drei `<Html>` portals, plain `<img>` is
   sanctioned (route `threejs` pitfall `next-image-inside-drei-html`) —
