@@ -13,12 +13,16 @@
 
 # Declared cross-skill dependencies. #437: the modifier extends templates,
 # the slide engine fills. #597: the inline plan executor routes its delegate
-# matrix to the four inline worker skills. Any other edge must be declared
-# the same way or duplicated.
+# matrix to the four inline worker skills. #602: the autoresearch loop skills
+# cite the core protocol host's references at runtime (multi-owner pair —
+# every owner in HANDOFF3_OWNERS maps to every target in HANDOFF3_TARGETS).
+# Any other edge must be declared the same way or duplicated.
 HANDOFF1_OWNER="pptx-template-modifier-skill"
 HANDOFF1_TARGETS="pptx-generate-slide-skill"
 HANDOFF2_OWNER="plan-execution-inline-skill"
 HANDOFF2_TARGETS="testing-inline-skill linting-inline-skill documentation-inline-skill responsive-audit-inline-skill"
+HANDOFF3_OWNERS="autoresearch-code-skill autoresearch-ml-skill autoresearch-research-skill"
+HANDOFF3_TARGETS="autoresearch-core-skill"
 
 @test "skill_isolation_no_shared_common_references" {
   # Catches both repo paths (skills/_common/...) and deploy strings
@@ -94,15 +98,17 @@ PYEOF
 }
 
 @test "skill_isolation_no_sibling_skill_paths_outside_declared_handoff" {
-  run python3 - "$HANDOFF1_OWNER" "$HANDOFF1_TARGETS" "$HANDOFF2_OWNER" "$HANDOFF2_TARGETS" <<'PYEOF'
+  run python3 - "$HANDOFF1_OWNER" "$HANDOFF1_TARGETS" "$HANDOFF2_OWNER" "$HANDOFF2_TARGETS" "$HANDOFF3_OWNERS" "$HANDOFF3_TARGETS" <<'PYEOF'
 import re, sys
 from pathlib import Path
 
-owner1, targets1, owner2, targets2 = sys.argv[1:5]
+owner1, targets1, owner2, targets2, owners3, targets3 = sys.argv[1:7]
 allowed = {
     owner1: set(targets1.split()),
     owner2: set(targets2.split()),
 }
+for o in owners3.split():
+    allowed[o] = set(targets3.split())
 root = Path("skills")
 catalog = {d.name for d in root.iterdir()
            if d.is_dir() and not d.name.startswith("_")}
