@@ -4,7 +4,7 @@
 #   2. lean ⊆ shipped skill allows in deploy/opencode.json (typo guard)
 #   3. lean count == 67
 #   4. apply-skill-profile.mjs lean rewrites a scratch deployed config to
-#      exactly 67 allow rules + a skill deny-all-first; full leaves the
+#      exactly 68 allow rules + a skill deny-all-first; full leaves the
 #      shipped permissions array verbatim. Non-skill rules are never touched.
 #   5. every shipped skill allow resolves on the root skills/ surface (#607
 #      retired the Docker-app second surface; single-surface contract)
@@ -38,9 +38,9 @@ const c=require('$1');
 console.log(c.permissions.filter(r=>r.action==='skill'&&r.effect==='allow'&&r.resource!=='*').map(r=>r.resource).filter(r=>!union.has(r)).join(' '));"
 }
 
-@test "skill-profiles: lean has exactly 67 keys" {
+@test "skill-profiles: lean has exactly 68 keys" {
     count=$(lean_keys | wc -l)
-    [ "$count" -eq 67 ]
+    [ "$count" -eq 68 ]
 }
 
 @test "skill-profiles: every lean key matches a skill dir on disk" {

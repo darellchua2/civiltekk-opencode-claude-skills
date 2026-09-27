@@ -40,26 +40,30 @@
 
 ## Gate Trace
 
-GATE <phase-1-sha> tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (bats 615/615 — phase 1, cross-module anchor; SKILL.md-only change, no linter target)
+GATE 311c868 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (bats 615/615 — phase 1, cross-module anchor; SKILL.md-only change, no linter target)
 
 ### Phase 2: #613-comment follow-ups
 
-- [ ] **2.1** Prune the Docker dead-letter path `/app/.opencode/agents/` from both command templates in `deploy/opencode.json` (v2 entry, `review-inline`) — keep the CLI path + unresolvable handling as the sole resolution branch
+- [x] **2.1** Prune the Docker dead-letter path `/app/.opencode/agents/` from both command templates in `deploy/opencode.json` (v2 entry, `review-inline`) — keep the CLI path + unresolvable handling as the sole resolution branch
     — **Why:** #506 removed the Docker staging surface; the leg is dead-letter (Mode R adjudication recommended pruning in a follow-up — this is it); pruned BEFORE the guard lands so the guard's no-Docker assertion is green at its own Done-when
     — **Done when:** `rg -c "app/.opencode/agents" deploy/opencode.json` returns 0 matches
     — **Consumers affected:** runtime command templates (CLI resolution unchanged)
-- [ ] **2.2** Add `tests/test_v2_pipeline_contract.bats`: assert the v2 command entry contains "spawn NO subagents" and `"subagent": false`, asserts NO Docker `/app/.opencode/agents` path remains in any command template, and asserts every `installer/presets/pack-inline-workers.json` skill exists as `skills/<name>/SKILL.md`
+    — **Done:** both templates pruned to CLI-only resolution ("if it does not resolve" phrasing); zero `app/.opencode/agents` matches in deploy/opencode.json; files: deploy/opencode.json; fixes: none
+- [x] **2.2** Add `tests/test_v2_pipeline_contract.bats`: assert the v2 command entry contains "spawn NO subagents" and `"subagent": false`, asserts NO Docker `/app/.opencode/agents` path remains in any command template, and asserts every `installer/presets/pack-inline-workers.json` skill exists as `skills/<name>/SKILL.md`
     — **Why:** the v2 entry has been reshaped 3 times (#585→#591→#613) with no drift guard; the preset gained 7 members with no membership guard (review NOTE-5)
     — **Done when:** `bats tests/test_v2_pipeline_contract.bats` exits 0 on the changed tree
     — **Consumers affected:** CI / local bats runs
-- [ ] **2.3** Make `playwright-responsive-audit-skill` loadable on lean deploys — FOUR coordinated surfaces (Step 7 review WARN-1): (a) add to the shipped skill allows in `deploy/opencode.json` (currently absent — lean must stay a subset of shipped allows), (b) add to the `lean` array in `deploy/skill-profiles.json`, (c) update the count pin in `tests/skill_profiles.bats` ("exactly 67 keys" → 68), (d) update the README skill-profile prose count (line ~217 "67 primary-visible")
+    — **Done:** 7-test guard added (subagent:false pin, zero-subagent directive, checklist mechanics, no-Docker, no-caveat, preset membership on disk, arm-aware preflight) — 7/7 green; files: tests/test_v2_pipeline_contract.bats; fixes: none
+- [x] **2.3** Make `playwright-responsive-audit-skill` loadable on lean deploys — FOUR coordinated surfaces (Step 7 review WARN-1): (a) add to the shipped skill allows in `deploy/opencode.json` (currently absent — lean must stay a subset of shipped allows), (b) add to the `lean` array in `deploy/skill-profiles.json`, (c) update the count pin in `tests/skill_profiles.bats` ("exactly 67 keys" → 68), (d) update the README skill-profile prose count (line ~217 "67 primary-visible")
     — **Why:** `responsive-audit-inline-skill` (lean ✓) defers to it in-session; on lean deploys that load hits a denied skill (review NOTE-4); the two-file + two-count coupling was missed in the original step (review WARN-1)
     — **Done when:** all four surfaces updated; `bats tests/skill_profiles.bats` green; `rg -c "67 primary-visible" README.md` returns 0
     — **Consumers affected:** lean-profile deploys; count-pin tests; README accuracy
-- [ ] **2.4** Remove the caveat clause " — pack-only installs lack the pipeline skill's hard dependency preflight" from `installer/presets/pack-inline-workers.json` description (keep the "on full deploys" scoping only if still accurate post-1.1 — if preflight is now arm-aware, drop the whole caveat)
+    — **Done:** shipped allow added adjacent to responsive-audit-inline-skill; lean array +1; count pin 67→68 (test + comment header); README prose 67→68; skill_profiles.bats green; files: deploy/opencode.json, deploy/skill-profiles.json, tests/skill_profiles.bats, README.md; fixes: none
+- [x] **2.4** Remove the caveat clause " — pack-only installs lack the pipeline skill's hard dependency preflight" from `installer/presets/pack-inline-workers.json` description (keep the "on full deploys" scoping only if still accurate post-1.1 — if preflight is now arm-aware, drop the whole caveat)
     — **Why:** #617 AC3 — the caveat is false once the preflight resolves per arm
     — **Done when:** the description carries no preflight caveat; 2.1 membership guard still green
     — **Consumers affected:** preset installs (description only)
+    — **Done:** preflight caveat dropped; "on full deploys" scoping kept (pack still ships no agent definition files, so the inline arm's Step 9 checklist still needs a full deploy for those); files: installer/presets/pack-inline-workers.json; fixes: none
 
 ### Phase 3: user-space refresh + exit gate
 
