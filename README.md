@@ -94,15 +94,6 @@ npx github:darellchua2/civiltekk-opencode-claude-skills --project . --preset rev
 | `research` | Autonomous loops (autoresearch ml/code/research; ml needs GPU) |
 | `cad` | CAD / robotics / hardware (cad-specialist + 15 CAD skills) |
 
-### Docker — the whole setup as a browser endpoint
-
-```bash
-cp .env.example .env   # set ZAI_API_KEY=…
-docker compose up -d   # → http://localhost:4097
-```
-
-See [Docker: run the whole setup in a browser](#docker-run-the-whole-setup-in-a-browser).
-
 ## Directory structure
 
 ```
@@ -111,40 +102,16 @@ civiltekk-opencode-claude-skills/
 ├── agents/                      # 34 subagent .md files (source of truth)
 ├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings, auto-continue, question-repair)
 │   └── vibeguard.config.json    # Secret-masking regex patterns
-├── deploy/                      # User-space deployment (setup.sh = bin: opencode-setup)
+├── deploy/                      # User-space deployment (setup.sh = bin: opencode-setup; opencode.json = config source of truth)
 ├── installer/                   # npx installer (init.mjs = bin: opencode-skill; registry, tiers, presets)
-├── opencode_app/                # Docker standalone mode (see Docker section)
 ├── tests/                       # bats test suite (guards counts, isolation, portability)
 ├── PLANS/                       # Execution plans per ticket (git-committed history)
 ├── LEARNINGS/                   # Knowledge-persistence skeleton (auto-provisioned in target projects)
-├── docker-compose.yml           # Docker Compose service definition
-├── restart-opencode-docker.sh   # Pull main + redeploy the container (compose up -d --build)
-├── .env.example                 # Environment variable template
 ├── MIGRATION.md                 # v1.x → v2.0 migration guide
-├── THIRD_PARTY_LICENSES.md      # Vendored-skill attributions (MIT/Apache-2.0)
-└── .env                         # Local environment (git-ignored)
+└── THIRD_PARTY_LICENSES.md      # Vendored-skill attributions (MIT/Apache-2.0)
 ```
 
 `skills/` and `agents/` are the single source of truth — edit there, then redeploy. Never edit deployed `~/.config/opencode/` copies. Every skill directory is fully self-contained (the `npx add` copy model — enforced by `tests/test_skill_isolation.bats`).
-
-## Docker: run the whole setup in a browser
-
-`opencode_app/` exists for one purpose: **run this entire repository as a self-hosted OpenCode web endpoint** — a browser UI over the full stack (all agents, skills, plugins) with zero local install. The container builds the repo content into `/app/.opencode/`, injects your API key from `.env`, serves `opencode serve` on port 4097, and health-checks itself.
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `ZAI_API_KEY` | Yes | — | Z.AI API key (primary LLM provider) |
-| `GEMINI_API_KEY` | No | — | Gemini API key (secondary provider) |
-| `OPENCODE_PORT` | No | `4097` | External port mapping |
-
-```bash
-docker compose up -d            # start
-docker compose logs -f          # logs
-docker compose build --no-cache # rebuild after changes
-./restart-opencode-docker.sh    # pull main + redeploy + health-check (maintainer convenience)
-```
-
-Full details: [`opencode_app/README.md`](./opencode_app/README.md).
 
 ## Support & reporting issues
 
@@ -191,7 +158,7 @@ Override precedence (highest first):
 | `~/.config/opencode/models.json` | tier map, global (written by `--provider`) |
 | `installer/models.default.json` | Z.AI defaults |
 
-> **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` + `uiux-reviewer-subagent` + `zai-media-subagent` run on `zai-coding-plan/glm-5.3-flash` (native multimodal — image/video/pdf input, 1M ctx). When native perception is unavailable, they fall back to the inline recipe embedded in `image-analyzer-subagent`, calling the same model via direct API. Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY` (auto-injected in Docker).
+> **Vision tier (Z.AI):** `image-analyzer-subagent` + `error-resolver-subagent` + `uiux-reviewer-subagent` + `zai-media-subagent` run on `zai-coding-plan/glm-5.3-flash` (native multimodal — image/video/pdf input, 1M ctx). When native perception is unavailable, they fall back to the inline recipe embedded in `image-analyzer-subagent`, calling the same model via direct API. Requires `opencode auth login` (Z.AI) or `ZAI_API_KEY`.
 
 | Tier | Use for |
 |------|---------|
@@ -237,13 +204,12 @@ Globally: set `"disabled": false` in `~/.config/opencode/opencode.json`, or use 
 | `alpha-vantage` | alpha-vantage | Remote; `ALPHA_VANTAGE_API_KEY` env var (free tier: 25 req/day) — market/macro/commodities data |
 | `nanobanana` | nanobanana | `GEMINI_API_KEY` env var — Google Nano Banana image generation (4K, multi-reference editing) |
 
-> **Troubleshooting:** `--enable-pack` fails with "no full definition" when the deployed config predates the pack — re-run `setup.sh` and answer **y** to the overwrite prompt (or re-copy `opencode_app/opencode.json`), then re-run the enable. Applies to `--dry-run` previews too.
+> **Troubleshooting:** `--enable-pack` fails with "no full definition" when the deployed config predates the pack — re-run `setup.sh` and answer **y** to the overwrite prompt (or re-copy `deploy/opencode.json`), then re-run the enable. Applies to `--dry-run` previews too.
 
 > **Autodesk MCP policy (official-only):** no Autodesk MCP pack ships. The former pack pointed at `mcp.autodesk.com` endpoints that do not resolve. Autodesk MCP may only be re-admitted once an **official** Autodesk MCP server's connection details are verifiable from Autodesk's own documentation — the archived `autodesk-platform-services/aps-mcp-server-nodejs` sample (clone-based, archived 2026-05) does not qualify. Until then, use the Autodesk Platform Services REST APIs via `autodesk-aps-skill`.
 
 ```bash
 ./deploy/setup.sh --enable-pack markitdown,docling   # multiple packs, comma-separated
-docker compose build --build-arg OPENCODE_PACKS=markitdown,docling   # Docker build-time
 ```
 
 Default state of every pack is **OFF**. Design history: [issue #268](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/268).
@@ -343,7 +309,7 @@ Browse live: the [GitHub Pages catalog](https://darellchua2.github.io/civiltekk-
 
 Some subagents recognize natural-language triggers (e.g. "create pr", "pitch deck", "design review", "PowerPoint") — the trigger surface is each agent's `description` frontmatter in `agents/*.md`; per-class model assignments and delegation guidance: `AGENTS.md` § Subagent Model Tiering.
 
-**Subagent nesting:** `opencode_app/opencode.json` sets `subagent_depth: 3` (opencode default is 1) — required for the autoresearch delegation chains. Each level multiplies token cost; lower to 2 for tighter runs.
+**Subagent nesting:** the shipped config (`deploy/opencode.json`) sets `subagent_depth: 3` (opencode default is 1) — required for the autoresearch delegation chains. Each level multiplies token cost; lower to 2 for tighter runs.
 
 **Iteration protocol (opt-in):** a 5-stage autoresearch loop (Understand → Hypothesize → Experiment → Evaluate → Log) that 29 skills can opt into — off by default; enable via `AUTORESEARCH_PROTOCOL=1` or `ar-enable`. Retrofitted skills emit mechanical `{"pass":bool,"score":N}` output and auto-revert failed experiments. Safety: `skills/autoresearch-core-skill/references/iteration-safety.md`.
 </details>
@@ -452,7 +418,7 @@ Two setup scripts: `setup.sh` (macOS/Linux/WSL/Git Bash — full feature set) an
 | `--skill-profile <p>` | `-SkillProfile <p>` | lean (default) \| full |
 | `--help` | `-Help` | Detailed help + examples |
 
-**What setup does:** copies `deploy/.AGENTS.md` → `~/.config/opencode/AGENTS.md`; copies `skills/` and agents; copies `opencode_app/opencode.json` → `~/.config/opencode/opencode.json` (single source of truth — v2 reads only `opencode.json`/`opencode.jsonc`; a coexisting `opencode.jsonc` is parked as `.legacy-ignored`, never deleted); backs up before overwriting. Installed `opencode-setup` symlinks back to the clone it deployed from — edit files there, re-run here.
+**What setup does:** copies `deploy/.AGENTS.md` → `~/.config/opencode/AGENTS.md`; copies `skills/` and agents; copies `deploy/opencode.json` → `~/.config/opencode/opencode.json` (single source of truth — v2 reads only `opencode.json`/`opencode.jsonc`; a coexisting `opencode.jsonc` is parked as `.legacy-ignored`, never deleted); backs up before overwriting. Installed `opencode-setup` symlinks back to the clone it deployed from — edit files there, re-run here.
 </details>
 
 ## License

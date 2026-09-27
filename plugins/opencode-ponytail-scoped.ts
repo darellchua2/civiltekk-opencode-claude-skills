@@ -25,8 +25,8 @@
 //
 // Persisted default (v4.9.0 upstream feature): `/ponytail default <mode>` writes
 // { "defaultMode": "<mode>" } to ~/.local/share/opencode/ponytail-config.json
-// (XDG data dir — the only path volume-mounted in the docker setup, so the
-// default survives container recreation). Resolution: env var → config file → full.
+// (XDG data dir — the opencode data dir is the durable location for plugin
+// state). Resolution: env var → config file → full.
 // Bare `/ponytail` reports the active level; it never resets.
 //
 // Vendored from @dietrichgebert/ponytail v4.10.0 (MIT). See ../ATTRIBUTION.md.
@@ -48,9 +48,9 @@ const {
 
 // ── Configuration (read once at load) ──────────────────────────────────────────
 
-// Persisted-default config: under the opencode data dir, NOT ~/.config — the
-// docker compose setup volume-mounts only ~/.local/share/opencode, so a config
-// anywhere else dies on container recreation (goal-plugin precedent).
+// Persisted-default config: under the opencode data dir, NOT ~/.config —
+// plugin-persisted state belongs in the data dir so it survives config
+// redeploys and reinstalls (goal-plugin precedent).
 const CONFIG_PATH = path.join(os.homedir(), '.local', 'share', 'opencode', 'ponytail-config.json');
 
 // Strip a UTF-8 BOM before JSON.parse (upstream #378: a BOM'd config must not

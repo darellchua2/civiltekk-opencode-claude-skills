@@ -55,11 +55,10 @@ Scan all component directories and estimate token consumption.
 **Rules / Instructions** (AGENTS.md chain)
 - Path 1: `AGENTS.md` (repo-level instructions)
 - Path 2: `deploy/.AGENTS.md` (user-space deployment)
-- Path 3: `opencode_app/AGENTS.md` (Docker mode)
 - Measure file size, section count
 - Flag: combined total >500 lines
 
-**MCP Servers** (`opencode_app/opencode.json` → `mcpServers`)
+**MCP Servers** (`deploy/opencode.json` → `mcpServers`)
 - Count configured servers
 - Estimate schema overhead at ~100-200 tokens per server
 - Flag: servers with >20 tools, servers that wrap simple CLI commands

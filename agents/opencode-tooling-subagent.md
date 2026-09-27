@@ -277,9 +277,9 @@ When a user wants to create their own OpenCode configurator repo (to manage and 
     ├── AGENTS.md               # Repo-level instructions
     ├── LICENSE
     ├── README.md               # Auto-generated with skill/agent counts and tables
-    ├── opencode_app/           # Docker standalone mode
-    │   ├── Dockerfile
-    │   └── opencode.json
+    ├── deploy/                 # User-space deployment
+    │   ├── setup.sh
+    │   └── opencode.json       # Config source of truth
     ├── skills/                 # Skills (single source of truth, deployed to user space)
     │   └── <example-skill>/SKILL.md
     ├── agents/                 # Global subagents (single source of truth, deployed to user space)

@@ -125,26 +125,31 @@
 
 ### Phase 5: Docs sweep
 
-- [ ] **5.1** `README.md`: remove §"Docker — the whole setup as a browser endpoint" + §"Docker: run the whole setup in a browser", dir-tree entries (`opencode_app/`, `docker-compose.yml`, `restart-opencode-docker.sh`, `.env.example`, `.env`), the "auto-injected in Docker" note (≈194), the `docker compose build --build-arg` MCP line (≈246), and the Docker-mode mentions at ≈240, ≈346, ≈455 (plan-review Issue 3)
+- [x] **5.1** `README.md`: remove §"Docker — the whole setup as a browser endpoint" + §"Docker: run the whole setup in a browser", dir-tree entries (`opencode_app/`, `docker-compose.yml`, `restart-opencode-docker.sh`, `.env.example`, `.env`), the "auto-injected in Docker" note (≈194), the `docker compose build --build-arg` MCP line (≈246), and the Docker-mode mentions at ≈240, ≈346, ≈455 (plan-review Issue 3)
     — **Why:** docs must not teach deleted flows.
     — **Done when:** `grep -niE 'docker compose|opencode_app|\.env\.example' README.md` returns no stale hits; `bats tests/test_count_drift.bats` passes (counts untouched: 150/34).
     — **Consumers affected:** README readers; count-drift guard.
-- [ ] **5.2** `AGENTS.md`: rewrite §Repository Purpose to two modes (user-space deploy, individual install); drop the `opencode_app/README.md` row from the sync table; `CONTRIBUTING.md:15` drop the same from the sync list
+    — **Done:** both Docker sections, 5 dir-tree entries, 4 inline mentions removed (incl. ≈240/346/455 repointed to deploy/opencode.json); count-drift green (150/34 unchanged); files: README.md; fixes: none
+- [x] **5.2** `AGENTS.md`: rewrite §Repository Purpose to two modes (user-space deploy, individual install); drop the `opencode_app/README.md` row from the sync table; `CONTRIBUTING.md:15` drop the same from the sync list
     — **Why:** agent-facing contract must match the real repo shape.
     — **Done when:** `grep -n 'opencode_app\|Docker standalone' AGENTS.md CONTRIBUTING.md` empty.
     — **Consumers affected:** agents following repo instructions.
-- [ ] **5.3** `MIGRATION.md`: remove §Docker (≈286-302) and the three-surface `OPENCODE_VERSION` pin note
+    — **Done:** AGENTS.md purpose rewritten to 2 modes, sync-table row dropped; CONTRIBUTING sync list updated; files: AGENTS.md, CONTRIBUTING.md; fixes: none
+- [x] **5.3** `MIGRATION.md`: remove §Docker (≈286-302) and the three-surface `OPENCODE_VERSION` pin note
     — **Why:** both describe the deleted image build.
     — **Done when:** no `docker compose` / `OPENCODE_VERSION` references remain.
     — **Consumers affected:** migration readers.
-- [ ] **5.4** Prose fixes: `agents/opencode-tooling-subagent.md` tree (≈280-281), `THIRD_PARTY_LICENSES.md:164` ("baked into the Docker image" → pip-installed on demand), `skills/markitdown-mcp-skill/SKILL.md` Docker-baking paragraphs, AND the two skills carrying stale infra references to THIS repo's deleted Docker mode (plan-review Issue 3 / GAP 4): `skills/context-budget-skill/SKILL.md` (drop Path 3 `opencode_app/AGENTS.md` at ≈58; repoint the MCP-block inventory at ≈62 to `deploy/opencode.json`) and `skills/opencode-repo-setup-skill/SKILL.md` (repoint the source-of-truth table row at ≈202) — body prose only, no frontmatter changes, so 6.1's registry no-diff holds
+    — **Done:** §Docker removed; Provider Packs kept as user-space-only section; files: MIGRATION.md; fixes: none
+- [x] **5.4** Prose fixes: `agents/opencode-tooling-subagent.md` tree (≈280-281), `THIRD_PARTY_LICENSES.md:164` ("baked into the Docker image" → pip-installed on demand), `skills/markitdown-mcp-skill/SKILL.md` Docker-baking paragraphs, AND the two skills carrying stale infra references to THIS repo's deleted Docker mode (plan-review Issue 3 / GAP 4): `skills/context-budget-skill/SKILL.md` (drop Path 3 `opencode_app/AGENTS.md` at ≈58; repoint the MCP-block inventory at ≈62 to `deploy/opencode.json`) and `skills/opencode-repo-setup-skill/SKILL.md` (repoint the source-of-truth table row at ≈202) — body prose only, no frontmatter changes, so 6.1's registry no-diff holds
     — **Why:** stale references to deleted infrastructure mislead agents and users; without these, the 6.4 exit audit fails its own grep.
     — **Done when:** `grep -rn 'opencode_app' agents/ THIRD_PARTY_LICENSES.md skills/markitdown-mcp-skill/ skills/context-budget-skill/ skills/opencode-repo-setup-skill/` empty.
     — **Consumers affected:** tooling subagent, license readers, three skill consumers. `skills/docker-containerization-skill` remains untouched (teaches Docker generically; references nothing of this repo's hosting).
-- [ ] **5.5** `plugins/`: reword Docker-volume rationale comments in `plugins/README.md:10`, `plugins/ATTRIBUTION.md:45`, `plugins/opencode-ponytail-scoped.ts` (≈28, 52) — keep the XDG-data-path rule, drop the compose-volume rationale
+    — **Done:** tooling-subagent tree repointed; THIRD_PARTY markitdown Docker-baking prose trimmed; markitdown skill Docker bullet dropped; context-budget Path 3 removed + MCP inventory repointed; repo-setup table row repointed; files: agents/opencode-tooling-subagent.md, THIRD_PARTY_LICENSES.md, skills/markitdown-mcp-skill/SKILL.md, skills/context-budget-skill/SKILL.md, skills/opencode-repo-setup-skill/SKILL.md; fixes: none
+- [x] **5.5** `plugins/`: reword Docker-volume rationale comments in `plugins/README.md:10`, `plugins/ATTRIBUTION.md:45`, `plugins/opencode-ponytail-scoped.ts` (≈28, 52) — keep the XDG-data-path rule, drop the compose-volume rationale
     — **Why:** the path rule survives (LEARNINGS index row `plugin-persisted-state-needs-volume-backed-path` — the rule is also stated inline in the plugin comments); only the Docker justification is stale.
     — **Done when:** `grep -niE 'docker' plugins/` returns no compose/image references.
     — **Consumers affected:** plugin maintainers.
+    — **Done:** plugins README x2 + ATTRIBUTION + ponytail-scoped comments reworded to data-dir rationale; files: plugins/README.md, plugins/ATTRIBUTION.md, plugins/opencode-ponytail-scoped.ts; fixes: none
 
 ### Phase 6: Verification + knowledge capture
 
@@ -191,3 +196,4 @@ GATE 48ea788 tier=light lint=n.a typecheck=n.a build=n.a unit=t(84/84 affected b
 GATE e847380 tier=light lint=n.a typecheck=n.a build=n.a unit=t(22/22 affected bats; no orphan refs) e2e=n.a
 GATE aff8c4f tier=light lint=n.a typecheck=n.a build=n.a unit=t(help-parity+ps1-vars+select-items 0 fails) e2e=n.a
 GATE f99dcb6 tier=light lint=n.a typecheck=n.a build=n.a unit=t(resolver dry-run smoke) e2e=n.a
+GATE 555c737 tier=light lint=n.a typecheck=n.a build=n.a unit=t(count-drift+ships-plugins 0 fails; doc grep clean) e2e=n.a

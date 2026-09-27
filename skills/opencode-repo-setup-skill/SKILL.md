@@ -199,7 +199,7 @@ State exactly:
 
 | Aspect | Source of truth |
 |--------|----------------|
-| Server inventory + default enable states | `opencode_app/opencode.json` `mcp` block of the configurator repo |
+| Server inventory + default enable states | `deploy/opencode.json` `mcp` block of the configurator repo |
 | Config layering (project wins) | opencode docs — config merge semantics |
 | Builtin agent IDs + agent-definition merge semantics (`model` pin safety) | opencode v2 agents docs — https://opencode.ai/v2/docs/agents |
 | CodeGraph init | CodeGraph server's own MCP instructions + this skill's Step 4 / Rule blocks |
