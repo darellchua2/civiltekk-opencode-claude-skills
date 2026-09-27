@@ -105,7 +105,7 @@ availability gate and file-based fallback above.
   route `image-usage`'s auto-convert rule does not apply there.
 - React correctness/perf (hooks/render anti-patterns, bundle size,
   re-renders) → `civiltekk-react-quality-skill`; unit tests →
-  `nextjs-unit-test-creator-skill`; AWS Amplify deployment →
+  `civiltekk-test-generation-skill` (route `nextjs`); AWS Amplify deployment →
   `amplify-nextjs-deployment-skill`; accessibility →
   `accessibility-a11y-skill`; Python backend equivalent →
   `civiltekk-python-backend-skill` (route `scaffold`).

@@ -14,7 +14,7 @@ Run coverage, generate a Shields.io badge, and land it (+ percentage + optional 
 
 ## When to use me
 
-After adding tests; before PR (feeds `civiltekk-pr-workflow-skill`'s create-route Quality Checks slot); refreshing a stale badge. Companion to `test-generator-framework`, `nextjs-unit-test-creator`, `python-pytest-creator`.
+After adding tests; before PR (feeds `civiltekk-pr-workflow-skill`'s create-route Quality Checks slot); refreshing a stale badge. Companion to `civiltekk-test-generation-skill`.
 
 ## Steps
 

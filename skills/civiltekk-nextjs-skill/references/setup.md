@@ -24,6 +24,6 @@ structure.
 
 **OpenCode LSP**: root `opencode.json` with `"lsp": {"typescript": {}, "eslint": {}}` — ambient cross-package diagnostics; check into git (refs: opencode.ai/docs/lsp, /docs/config).
 
-**Related**: route `image-usage` of this skill (Image rules) · `nextjs-unit-test-creator-skill` (tests) · `civiltekk-python-backend-skill` (Python equivalent).
+**Related**: route `image-usage` of this skill (Image rules) · `civiltekk-test-generation-skill` route `nextjs` (tests) · `civiltekk-python-backend-skill` (Python equivalent).
 
 > Removed 2026-09: step-by-step scaffolding transcripts (init, shadcn add, Tailwind v4 config, tsconfig alias edits), full directory trees, worked component examples, verification checklists — create-next-app/shadcn CLI flows are model-known; kept the house structure, naming/export rules, and the LSP wiring.

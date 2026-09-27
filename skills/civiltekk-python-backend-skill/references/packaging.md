@@ -4,7 +4,7 @@ Configure Python packaging for applications and libraries. The host SKILL.md car
 
 **Scope:** choosing a build tool; writing/restructuring pyproject.toml; app-vs-library dependency strategy; PyPI publishing; entry points; Python monorepo packages. The app scaffolding baseline (pinned FastAPI pyproject standard) lives in `references/scaffold.md` in this skill.
 
-**Related:** `python-ruff-linter-skill` / `python-pytest-creator-skill` (tool config sections) · `monorepo-management-skill` (JS/TS side).
+**Related:** `python-ruff-linter-skill` / `civiltekk-test-generation-skill` route `python` (tool config sections) · `monorepo-management-skill` (JS/TS side).
 
 ## House decision rules
 

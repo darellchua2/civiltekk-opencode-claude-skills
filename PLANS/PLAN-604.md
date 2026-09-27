@@ -160,22 +160,26 @@ Consumers: agents/pr-workflow-subagent.md + agents/repo-ops-specialist-subagent.
 Absorbs: `test-generator-framework-skill` (the values host) + `python-pytest-creator-skill` + `nextjs-unit-test-creator-skill`. references/: `framework.md` (language/framework matrix + MagicMock pitfall — deduped here ONCE), `python.md` (pytest scenario taxonomies + template), `nextjs.md` (Next-16 render/action/route patterns). Routes: framework-matrix | python | nextjs.
 MUSTS: (a) exactly ONE Iteration Protocol section (bats pin `appears_exactly_once`); (b) MagicMock-headers pitfall exists once (framework reference), cited by both stack references; (c) the creators' undeclared-prereq gap is ELIMINATED by the merge (dirs gone; no requiresSkills entry needed — note in commit body); (d) pinned bats blocks repointed (inventory re-derived from disk — review-corrected): test_default_behavior.bats L690-707 + L718-736 (pytest-creator) + L747-766 (nextjs-unit-test-creator — preamble + appears_exactly_once + evaluator-token pins) and test_autoresearch_protocol.bats L437-448 + L452-485 (pytest + unit-test Iteration-Protocol/metadata/reference-cite pins); the L366-377 and L237-247 blocks are pr-creation's (Phase 5 scope).
 Consumers: agents/testing-subagent.md (3 allowlists → 1 + body), agents/tdd-subagent.md (grep — review found no live cites; skip if clean), presets pack-frontend (unit-test-creator), deploy/opencode.json (grep — review found no rules for these members; skip if clean), README (category Testing/Framework), fellow skills (grep stems `test-generator-framework` / `python-pytest-creator` / `nextjs-unit-test-creator`).
-- [ ] **6.1** Author host + references per template (ONE Iteration Protocol; pitfall deduped)
+- [x] **6.1** Author host + references per template (ONE Iteration Protocol; pitfall deduped)
     — **Why:** the framework was always the method host; the creators were stack values — the merge completes the shape and kills the latent isolation gap
     — **Done when:** host ≤140; three trigger sets preserved; `grep -c '## Iteration Protocol (opt-in)'` in host = 1; isolation green
     — **Consumers affected:** testing-subagent, tdd-subagent
-- [ ] **6.2** Delete + repoint (testing-subagent, tdd-subagent if citing, preset, opencode.json, README, 6 bats blocks, fellow skills)
+    — **Done:** routes framework-matrix|python|nextjs; ONE Iteration Protocol; MagicMock pitfall once in framework.md cited by both stack refs; requiresSkills gap eliminated (no map entry - verified none existed); category Framework (judgment: engine route wins, pr-workflow precedent); files: skills/civiltekk-test-generation-skill/{SKILL.md,references/{framework,python,nextjs}.md}; fixes: none
+- [x] **6.2** Delete + repoint (testing-subagent, tdd-subagent if citing, preset, opencode.json, README, 6 bats blocks, fellow skills)
     — **Why:** every pinned block must find its literal in the host or CI lies
     — **Done when:** default_behavior + autoresearch_protocol green; residue clean
     — **Consumers affected:** CI, testing lattice
-- [ ] **6.3** Registry rebuild + scoped gate + count (119)
+    — **Done:** 3 dirs git-rm; bats blocks disk-derived and consolidated 3x3 -> 1x3 per file (default_behavior L660+, autoresearch_protocol L416+); testing-subagent 3->1; pack-frontend swap; README 121->119; tdd-subagent + opencode.json verified clean; 7 fellow-skill files repointed; residue sanctioned-only (1 coincidental role-label stem match documented); fixes: none
+- [x] **6.3** Registry rebuild + scoped gate + count (119)
     — **Why:** per-commit green; final ladder step hits the amended AC
     — **Done when:** registry skills=119; scoped bats green; count verified
     — **Consumers affected:** installer
-- [ ] **6.4** Commit + push
+    — **Done:** registry rebuilt (skills=119); scoped gate green; count 119 = amended AC; fixes: none
+- [x] **6.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 7: Exit — full suite, final counts, sweep
 - [ ] **7.1** Full gate: `bats tests/` exit=0 zero failures; LEARNINGS count sweep (lookbehind residue for all 22 members); registry committed clean
@@ -215,3 +219,4 @@ GATE 0814744 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 1dea685 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 2b5a870 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE d1d0abe tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE c1e8db3 tier=light lint=- typecheck=- build=- unit=t e2e=n.a

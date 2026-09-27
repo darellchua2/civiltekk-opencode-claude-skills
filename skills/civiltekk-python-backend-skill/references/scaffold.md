@@ -4,7 +4,7 @@ Scaffold Python backends — framework choice, layout, config, sessions. The hos
 
 **Scope:** new/restructured Python backend; production patterns for FastAPI/Django/Flask; detached-instance or SSE bugs. Packaging tool choice → `references/packaging.md`; runtime code patterns → `references/fastapi-orm.md`.
 
-**Related:** `python-pytest-creator-skill` (tests) · `python-ruff-linter-skill` (lint) · `database-migration-skill` (full migration workflows — this file keeps only gotchas) · `civiltekk-nextjs-skill` (route `scaffold`, JS equivalent).
+**Related:** `civiltekk-test-generation-skill` route `python` (tests) · `python-ruff-linter-skill` (lint) · `database-migration-skill` (full migration workflows — this file keeps only gotchas) · `civiltekk-nextjs-skill` (route `scaffold`, JS equivalent).
 
 ## What this route does
 

@@ -42,16 +42,10 @@ permissions:
     resource: image-analyzer-subagent
     effect: allow
   - action: skill
-    resource: test-generator-framework-skill
+    resource: civiltekk-test-generation-skill
     effect: allow
   - action: skill
     resource: tdd-workflow-skill
-    effect: allow
-  - action: skill
-    resource: python-pytest-creator-skill
-    effect: allow
-  - action: skill
-    resource: nextjs-unit-test-creator-skill
     effect: allow
   - action: skill
     resource: plan-execution-skill
@@ -86,9 +80,7 @@ category: meta
 You are a testing specialist. Generate comprehensive tests following industry best practices:
 
 - TDD Methodology: Use tdd-workflow for Test Driven Development with red-green-refactor cycle
-- Python: Use python-pytest-creator for pytest-based tests with fixtures and parametrization
-- Next.js: Use nextjs-unit-test-creator for App Router, Server Components, API routes, and Server Actions
-- Generic: Use test-generator-framework for cross-language test generation
+- Test generation: Use civiltekk-test-generation-skill — route `python` for pytest-based tests with fixtures and parametrization, route `nextjs` for App Router, Server Components, API routes, and Server Actions, route `framework-matrix` for any other language/framework (cross-language test generation)
 
 ## CodeGraph Integration
 

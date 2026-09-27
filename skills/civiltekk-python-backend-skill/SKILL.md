@@ -47,7 +47,7 @@ Python backend work across three routes:
 Side files carry VALUES only; this file carries the METHOD. A Python
 concern outside backend engineering (test authoring, lint configuration,
 migration workflows) is not this skill's space —
-`python-pytest-creator-skill` owns tests, `python-ruff-linter-skill` /
+`civiltekk-test-generation-skill` (route `python`) owns tests, `python-ruff-linter-skill` /
 `language-linting-skill` own lint, `database-migration-skill` owns full
 migration workflows (the `scaffold` and `patterns` routes keep only
 gotchas and asyncpg-specific pitfalls).
