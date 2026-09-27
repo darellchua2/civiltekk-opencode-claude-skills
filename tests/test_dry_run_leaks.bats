@@ -48,3 +48,12 @@ SETUP_PS1="deploy/setup.ps1"
   run grep -qF 'Invoke-Resolver' "$SETUP_PS1"
   [ "$status" -ne 0 ]
 }
+
+@test "prune_pass_carries_dry_run_arg" {
+  # #608: the convergence pass mutates user config (deletes files + manifest
+  # rows) — its invocation must carry $dry_arg fed by the pinned
+  # explicit-comparison assignment, never the banned ${DRY_RUN:+…} spelling.
+  grep -q 'init.mjs" update --prune $provider_arg $dry_arg' "$SETUP_SH"
+  run grep -Fc '${DRY_RUN:+--dry-run}' "$SETUP_SH"
+  [ "$output" -eq 0 ]
+}

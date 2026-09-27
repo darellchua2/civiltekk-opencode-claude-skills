@@ -37,15 +37,17 @@
 
 ### Phase 2: Regression net
 
-- [ ] **2.1** Add `update --prune converges deployed agents to the registry` to `tests/deploy_delegate.bats`: full `add --all --yes` into temp HOME, plant a fake registry-removed agent (file + manifest `entries`/`agents` rows for `office-document-primary-agent`), run `update --prune`, assert the planted file and manifest rows are gone while a real agent (e.g. `code-review-subagent`) survives
+- [x] **2.1** Add `update --prune converges deployed agents to the registry` to `tests/deploy_delegate.bats`: full `add --all --yes` into temp HOME, plant a fake registry-removed agent (file + manifest `entries`/`agents` rows for `office-document-primary-agent`), run `update --prune`, assert the planted file and manifest rows are gone while a real agent (e.g. `code-review-subagent`) survives
     — **Why:** the delegation regression net must prove the prune arm's mechanics — this is the exact machine state from the ticket
     — **Done when:** the new bats test passes on the fixed tree and fails if `init.mjs`'s prune arm breaks (mechanics guard; the wiring itself is guarded by 2.2's source-level anchor)
     — **Consumers affected:** dev/CI regression coverage; no runtime consumers
+    — **Done:** test added — full `add --all` into temp HOME, planted `office-document-primary-agent` (file + manifest rows), `update --prune` removes both, `code-review-subagent` survives, wiring grep embedded; files: tests/deploy_delegate.bats; fixes: none (draft from the overreaching review delegate, verified + adopted)
 
-- [ ] **2.2** Add a wiring pin to `tests/test_dry_run_leaks.bats`: anchor the invocation site in `deploy/setup.sh` — `grep -F 'init.mjs" update --prune'` matches, and that line carries `$dry_arg` (fed by the existing pinned explicit-comparison spelling) — mirroring the `setup_sh_models_only_passes_dry_run_to_manifest_update` pin style
+- [x] **2.2** Add a wiring pin to `tests/test_dry_run_leaks.bats`: anchor the invocation site in `deploy/setup.sh` — `grep -F 'init.mjs" update --prune'` matches, and that line carries `$dry_arg` (fed by the existing pinned explicit-comparison spelling) — mirroring the `setup_sh_models_only_passes_dry_run_to_manifest_update` pin style
     — **Why:** dependency-level tests (2.1) prove mechanics, not wiring — removing the prune call from `deploy_content()` would keep 2.1 green, so the wiring needs a source-level anchor (review finding); the #467 leak class must stay pinned at the wiring site
     — **Done when:** the pin test passes (anchor line found, `$dry_arg` on it) and `grep -Fc '${DRY_RUN:+--dry-run}' deploy/setup.sh` still finds zero occurrences
     — **Consumers affected:** dev/CI regression coverage; no runtime consumers
+    — **Done:** pin added — anchors the literal `init.mjs" update --prune $provider_arg $dry_arg` invocation site and asserts zero banned `${DRY_RUN:+--dry-run}` spellings; files: tests/test_dry_run_leaks.bats; fixes: none
 
 ### Phase 3: Gate + validation
 
@@ -71,3 +73,4 @@ None. (`init.mjs update --prune` already shipped and tested at `tests/update.bat
 ## Trace
 
 GATE 31c4830 tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 75126e2 tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
