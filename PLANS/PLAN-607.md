@@ -71,22 +71,26 @@
 
 ### Phase 2: Delete Docker artifacts + coupled test reads
 
-- [ ] **2.1** `git rm -r opencode_app/` (Dockerfile, docker-entrypoint.sh, README.md, AGENTS.md, `.opencode/skills/github-runners-setup-skill`)
+- [x] **2.1** `git rm -r opencode_app/` (Dockerfile, docker-entrypoint.sh, README.md, AGENTS.md, `.opencode/skills/github-runners-setup-skill`)
     — **Why:** the container/image implementation is the removal target; zero external references confirmed at review.
     — **Done when:** `opencode_app/` absent from tree; `git ls-files opencode_app` empty.
     — **Consumers affected:** test_markitdown_skill count block (2.3), test_pack_permissions sweep (2.4).
-- [ ] **2.2** `git rm docker-compose.yml restart-opencode-docker.sh .dockerignore .env.example`
+    — **Done:** opencode_app/ removed (git rm -r); git ls-files empty for the path; files: opencode_app/; fixes: none
+- [x] **2.2** `git rm docker-compose.yml restart-opencode-docker.sh .dockerignore .env.example`
     — **Why:** compose (all 4 services), the maintainer redeploy script, build-context ignore, and the compose env template are Docker-only surfaces.
     — **Done when:** files absent; `git ls-files` confirms.
     — **Consumers affected:** setup.sh LLM flags (Phase 3), README Docker sections (Phase 5).
-- [ ] **2.3** `tests/test_markitdown_skill.bats`: remove the `opencode_app/README.md` skill-count check (≈96-99)
+    — **Done:** docker-compose.yml, restart-opencode-docker.sh, .dockerignore, .env.example removed; files: (those four); fixes: none
+- [x] **2.3** `tests/test_markitdown_skill.bats`: remove the `opencode_app/README.md` skill-count check (≈96-99)
     — **Why:** the assertion reads a file deleted in 2.1; keeping it would fail every run.
     — **Done when:** `bats tests/test_markitdown_skill.bats` passes.
     — **Consumers affected:** CI bats suite.
-- [ ] **2.4** `tests/test_pack_permissions.bats`: drop `opencode_app/Dockerfile` from the permission sweep (≈204, 213)
+    — **Done:** app-README count block removed; bats 22/22 green incl. pack perms; files: tests/test_markitdown_skill.bats; fixes: none
+- [x] **2.4** `tests/test_pack_permissions.bats`: drop `opencode_app/Dockerfile` from the permission sweep (≈204, 213)
     — **Why:** the sweep greps a deleted file; `|| true` would mask it, but the reference must not outlive the file.
     — **Done when:** `bats tests/test_pack_permissions.bats` passes; no `opencode_app` refs in the file.
     — **Consumers affected:** CI bats suite.
+    — **Done:** Dockerfile leg dropped from the dead-key sweep; comment updated; files: tests/test_pack_permissions.bats; fixes: none
 
 ### Phase 3: setup.sh Docker/LLM surgery
 
@@ -179,3 +183,4 @@ None — single executable ticket, no `blocked-by`.
 ## Gate Trace
 
 GATE 48ea788 tier=light lint=n.a typecheck=n.a build=n.a unit=t(84/84 affected bats) e2e=n.a
+GATE e847380 tier=light lint=n.a typecheck=n.a build=n.a unit=t(22/22 affected bats; no orphan refs) e2e=n.a

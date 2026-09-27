@@ -93,11 +93,6 @@ assert any(r['action']=='skill' and r['resource']=='markitdown-mcp-skill' and r[
   run grep -q 'function Get-SkillCount' deploy/setup.ps1
   [ "$status" -ne 0 ]
 
-  # opencode_app/README.md skill directory count
-  docker_count=$(grep -oE '[0-9]+ skill director(y|ies)' opencode_app/README.md | grep -oE '[0-9]+' | head -1)
-  echo "opencode_app/README.md count: $docker_count" >&3
-  [ "$docker_count" = "$actual" ]
-
   # README.md skill directory count
   readme_count=$(grep -oE '[0-9]+ skill director(y|ies)' README.md | grep -oE '[0-9]+' | head -1)
   echo "README.md count: $readme_count" >&3
