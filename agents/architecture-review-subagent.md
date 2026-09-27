@@ -68,7 +68,7 @@ permissions:
     resource: blast-radius-skill
     effect: allow
   - action: skill
-    resource: ponytail-audit-skill
+    resource: civiltekk-ponytail-audit-skill
     effect: allow
   - action: skill
     resource: unslop-skill
@@ -144,7 +144,7 @@ Run the gate defined in `reviewer-baseline-skill` §Mandatory Post-Review Learni
 
 Actively scan for these architecture-relevant patterns during review:
 
-- **Global singleton mutation** — `global _service` pattern hides coupling, no lifecycle management; prefer FastAPI `Depends()` with `app.state` (see `python-backend-skill` → Prefer DI Over Global Singletons)
+- **Global singleton mutation** — `global _service` pattern hides coupling, no lifecycle management; prefer FastAPI `Depends()` with `app.state` (see `civiltekk-python-backend-skill` scaffold route — Prefer DI Over Global Singletons)
 - **Claim-check pattern for secrets** — in workflow orchestrators, plaintext credentials must never touch durable history; use opaque UUID claim IDs with TTL cache + single-read `pop()` (see `security-audit-skill` A02 → claim-check-ephemeral-secret-cache)
 - **Atomic conditional UPDATE** — race-free state transitions via `UPDATE ... WHERE expected_state RETURNING cols` as optimistic lock; avoids read-then-write TOCTOU races (see `design-patterns-skill` → Concurrency Patterns)
 
@@ -228,6 +228,8 @@ Apply YAGNI at the architecture layer, not just the code layer:
 - When two architectures hold, the boring, fewer-component one wins unless you can name the concrete future need the richer one would block.
 
 This complements `clean-architecture-skill`'s dependency rule. It does **not** weaken boundary discipline or the Mandatory Blast-Radius & Consumer Traversal Gate.
+
+The allowlisted `civiltekk-ponytail-audit-skill` backs repo-wide sweeps via its `whole-repo-audit` route (`references/audit.md`) when a ranked findings report is wanted.
 
 ## Return Contract
 

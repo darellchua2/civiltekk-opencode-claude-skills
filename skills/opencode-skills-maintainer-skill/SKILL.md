@@ -36,7 +36,7 @@ done
 node installer/build-registry.mjs --check  # from repo root
 ```
 
-## Bloat check (lean standard — from `opencode-skill-creation-skill`)
+## Bloat check (lean standard — from `civiltekk-opencode-creation-skill`)
 
 A skill encodes only house-specific content; model-known textbook/vendor docs are bloat. Flag:
 

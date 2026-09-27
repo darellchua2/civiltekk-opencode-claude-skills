@@ -61,10 +61,7 @@ permissions:
     resource: domain-modeling-skill
     effect: allow
   - action: skill
-    resource: api-design-skill
-    effect: allow
-  - action: skill
-    resource: openapi-contract-adherence-skill
+    resource: civiltekk-api-spec-skill
     effect: allow
   - action: skill
     resource: markitdown-mcp-skill

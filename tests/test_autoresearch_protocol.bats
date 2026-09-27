@@ -156,19 +156,19 @@ CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
 # Each Tier 2 skill cites a SPECIFIC subset of references (not all 5).
 # =============================================================================
 
-# --- documentation-consistency (audit-trail + crash-recovery) ---
-@test "tier2_documentation-consistency_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+# --- civiltekk-documentation-sync (audit-trail + crash-recovery) ---
+@test "tier2_civiltekk-documentation-sync_has_iteration_protocol_section" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
 }
-@test "tier2_documentation-consistency_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+@test "tier2_civiltekk-documentation-sync_has_opt_in_metadata" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
 }
-@test "tier2_documentation-consistency_cites_expected_references" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+@test "tier2_civiltekk-documentation-sync_cites_expected_references" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   for ref in audit-trail crash-recovery; do
     grep -q "autoresearch-core-skill/references/${ref}.md" "$skill_md"
@@ -313,19 +313,19 @@ CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
   grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
 }
 
-# --- api-design ---
-@test "tier3_api-design_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/api-design-skill/SKILL.md"
+# --- civiltekk-api-spec ---
+@test "tier3_civiltekk-api-spec_has_iteration_protocol_section" {
+  skill_md="$SKILLS_DIR/civiltekk-api-spec-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
 }
-@test "tier3_api-design_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/api-design-skill/SKILL.md"
+@test "tier3_civiltekk-api-spec_has_opt_in_metadata" {
+  skill_md="$SKILLS_DIR/civiltekk-api-spec-skill/SKILL.md"
   [ -f "$skill_md" ]
   python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
 }
-@test "tier3_api-design_cites_iteration_safety" {
-  skill_md="$SKILLS_DIR/api-design-skill/SKILL.md"
+@test "tier3_civiltekk-api-spec_cites_iteration_safety" {
+  skill_md="$SKILLS_DIR/civiltekk-api-spec-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
 }
@@ -381,19 +381,19 @@ CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
   grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
 }
 
-# --- typescript-dry-principle ---
-@test "tier3_typescript-dry-principle_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/typescript-dry-principle-skill/SKILL.md"
+# --- civiltekk-react-quality ---
+@test "tier3_civiltekk-react-quality_has_iteration_protocol_section" {
+  skill_md="$SKILLS_DIR/civiltekk-react-quality-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
 }
-@test "tier3_typescript-dry-principle_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/typescript-dry-principle-skill/SKILL.md"
+@test "tier3_civiltekk-react-quality_has_opt_in_metadata" {
+  skill_md="$SKILLS_DIR/civiltekk-react-quality-skill/SKILL.md"
   [ -f "$skill_md" ]
   python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
 }
-@test "tier3_typescript-dry-principle_cites_iteration_safety" {
-  skill_md="$SKILLS_DIR/typescript-dry-principle-skill/SKILL.md"
+@test "tier3_civiltekk-react-quality_cites_iteration_safety" {
+  skill_md="$SKILLS_DIR/civiltekk-react-quality-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
 }
@@ -483,19 +483,19 @@ CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
   grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
 }
 
-# --- mermaid-diagram-creator ---
-@test "tier3_mermaid-diagram-creator_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/mermaid-diagram-creator-skill/SKILL.md"
+# --- civiltekk-diagram ---
+@test "tier3_civiltekk-diagram_has_iteration_protocol_section" {
+  skill_md="$SKILLS_DIR/civiltekk-diagram-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
 }
-@test "tier3_mermaid-diagram-creator_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/mermaid-diagram-creator-skill/SKILL.md"
+@test "tier3_civiltekk-diagram_has_opt_in_metadata" {
+  skill_md="$SKILLS_DIR/civiltekk-diagram-skill/SKILL.md"
   [ -f "$skill_md" ]
   python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
 }
-@test "tier3_mermaid-diagram-creator_cites_iteration_safety" {
-  skill_md="$SKILLS_DIR/mermaid-diagram-creator-skill/SKILL.md"
+@test "tier3_civiltekk-diagram_cites_iteration_safety" {
+  skill_md="$SKILLS_DIR/civiltekk-diagram-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'autoresearch-core-skill/references/iteration-safety.md' "$skill_md"
 }

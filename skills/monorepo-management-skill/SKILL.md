@@ -17,7 +17,7 @@ Structure JS/TS monorepos: tool selection (Turborepo vs Nx vs pnpm-only), worksp
 - Setting up or restructuring a monorepo (apps/ + packages/ split, shared configs)
 - Cross-package breakage risk, cache misses, or boundary drift (apps importing package internals)
 
-**Related:** `performance-optimization-skill` (profiling/bundles) · `documentation-consistency-skill` (doc sync across packages).
+**Related:** `performance-optimization-skill` (profiling/bundles) · `civiltekk-documentation-sync-skill` (doc sync across packages).
 
 ## House conventions
 

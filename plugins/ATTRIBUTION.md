@@ -33,12 +33,11 @@ This directory (`plugins/ponytail/`) contains code vendored and adapted from the
   - `instructions.cjs` — adapted from `hooks/ponytail-instructions.js` and
     `hooks/ponytail-config.js` (mode-filtering logic preserved; Claude-Code-specific
     config-file paths dropped; reads the co-located `SKILL.md`)
-  - `../skills/ponytail-audit-skill/SKILL.md` — verbatim from
-    `skills/ponytail-audit/SKILL.md` (house frontmatter; sibling/command refs renamed)
-  - `../skills/ponytail-review-skill/SKILL.md` — verbatim from
-    `skills/ponytail-review/SKILL.md` (house frontmatter; sibling/command refs renamed)
-  - `../skills/ponytail-debt-skill/SKILL.md` — verbatim from
-    `skills/ponytail-debt/SKILL.md` (house frontmatter; sibling/command refs renamed)
+  - `../skills/civiltekk-ponytail-audit-skill/SKILL.md` (+ its
+    `references/{audit,review,debt}.md` values) — consolidates
+    `skills/ponytail-audit/SKILL.md`, `skills/ponytail-review/SKILL.md`, and
+    `skills/ponytail-debt/SKILL.md` (house frontmatter; sibling/command refs
+    renamed; #603)
   - Upstream satellite command wrappers (`.opencode/command/*.md`) NOT vendored —
     the scoped plugin owns the `/ponytail*` command namespace.
 - **Adaptation rationale:** vendoring (vs `require("@dietrichgebert/ponytail")`) removes

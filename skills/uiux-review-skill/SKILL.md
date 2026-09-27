@@ -391,4 +391,4 @@ This skill adapts patterns from the following open-source projects. No code was 
 - **frontend-design-skill**: Peer — creates new UI; this skill reviews existing UI
 - **accessibility-a11y-skill**: Deep-dive delegation target for axis 10 surface findings
 - **wireframer-skill**: Produces baselines for structural drift comparison
-- **react-hooks-antipatterns-skill** + **react-render-antipatterns-skill**: Source for axis 12 (Nielsen heuristic 4) findings in React/Next.js projects
+- **civiltekk-react-quality-skill** (routes `hooks-antipatterns` + `render-antipatterns`): Source for axis 12 (Nielsen heuristic 4) findings in React/Next.js projects

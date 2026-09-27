@@ -351,4 +351,4 @@ This skill is governed by **`semantic-release-convention-skill`** — the single
 | Label colors (`patch=#0e8a16`, `minor=#fbca04`, `major=#d73a4a`) | `semantic-release-convention-skill` |
 | Semver label requirement (exactly one per PR) | `semantic-release-convention-skill` |
 | Branch-aware tag formats (`vX.Y.Z-dev.N`, `vX.Y.Z-uat.N`, `vX.Y.Z`) | `semantic-release-convention-skill` |
-| Commit message fallback for version bump | `git-semantic-commits-skill` |
+| Commit message fallback for version bump | `civiltekk-git-commits-skill` |

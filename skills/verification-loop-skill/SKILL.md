@@ -78,7 +78,7 @@ Beyond the gate, verify implementations against acceptance criteria: parse crite
 
 - `eval-harness-skill` — score-based evaluation rubrics
 - `error-resolver-workflow-skill` — failure diagnosis when a gate goes red
-- `git-semantic-commits-skill` — commit discipline the gate protects
+- `civiltekk-git-commits-skill` — commit discipline the gate protects
 - `plan-execution-skill` (--update) — PLAN progress ticks
 
 ## Iteration Protocol (opt-in)

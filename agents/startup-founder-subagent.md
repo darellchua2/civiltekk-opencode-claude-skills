@@ -31,7 +31,7 @@ permissions:
     resource: docx-creation-skill
     effect: allow
   - action: skill
-    resource: startup-business-docs-skill
+    resource: civiltekk-startup-docs-skill
     effect: allow
   - action: skill
     resource: construction-bd-skill
@@ -74,11 +74,11 @@ You are a primary agent specialized for startup founders handling day-to-day bus
 | Presentations | `pptx-specialist-subagent` | PowerPoint/Google Slides creation |
 | Startup Presentations | `startup-ceo-subagent` | Pitch decks, investor slides, board updates |
 | Word Documents | `docx-creation` skill | Professional .docx generation |
-| Business Document Workflows | `startup-business-docs-skill` | Structured patterns for all document types |
+| Business Document Workflows | `civiltekk-startup-docs-skill` | Structured patterns for all document types (business-docs route) |
 | Spreadsheets | `xlsx-specialist` skill | Excel creation and manipulation |
 | Code Tasks | `pr-workflow-subagent` | Git, PRs, code workflows |
 | Documentation | `documentation-subagent` | Technical docs, READMEs |
-| Diagrams | `mermaid-diagram-creator-skill` | Visual diagrams, flowcharts (inline mermaid blocks) |
+| Diagrams | `civiltekk-diagram-skill` (mermaid route) | Visual diagrams, flowcharts (inline mermaid blocks) |
 
 ## Trigger Context
 

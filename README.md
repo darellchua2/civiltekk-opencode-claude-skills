@@ -2,7 +2,7 @@
 
 A personal software-development skills collection — the agents, skills, and pipeline tooling I use daily — shared so you can take **a single skill** or adopt **the whole stack**.
 
-- **150 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
+- **135 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
 - **Same skills install to other harnesses**: Claude Code, Kimi Code, Kilo Code, and the cross-tool `~/.agents/` standard (Agent Skills open format)
 - A **robust application-development pipeline**: ticket → PLAN → gated execution → review → merged PR, driven by a handful of slash commands
 
@@ -73,7 +73,7 @@ Provider swap (Z.AI default): `./deploy/setup.sh --provider anthropic|openai|ope
 
 ### 3. Per-project subset — presets
 
-Not every project needs 34 agents + 150 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
+Not every project needs 34 agents + 135 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
 
 ```bash
 opencode-init --list categories                              # introspect (JSON)
@@ -84,7 +84,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills --project . --preset rev
 
 | Preset | Use for |
 |--------|---------|
-| `core` | Minimal baseline (explorer + git-semantic-commits, continuous-learning, codegraph) |
+| `core` | Minimal baseline (explorer + civiltekk-git-commits, continuous-learning, codegraph) |
 | `review` | Code quality gates (code/architecture/language reviewers + 31 skills) |
 | `frontend` | Web frontend (Next.js/React/a11y + uiux-reviewer, responsive-audit) |
 | `backend` | Server / devops-lite (Python/DB/API/security + language-reviewer) |
@@ -98,7 +98,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills --project . --preset rev
 
 ```
 civiltekk-opencode-claude-skills/
-├── skills/                      # 150 skill directories (source of truth)
+├── skills/                      # 135 skill directories (source of truth)
 ├── agents/                      # 34 subagent .md files (source of truth)
 ├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings, auto-continue, question-repair)
 │   └── vibeguard.config.json    # Secret-masking regex patterns
@@ -214,7 +214,7 @@ Globally: set `"disabled": false` in `~/.config/opencode/opencode.json`, or use 
 
 Default state of every pack is **OFF**. Design history: [issue #268](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/268).
 
-**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (78 primary-visible skills + deny-all); subagents are profile-immune and all 150 skills stay on disk:
+**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (67 primary-visible skills + deny-all); subagents are profile-immune and all 135 skills stay on disk:
 
 ```bash
 ./deploy/setup.sh                     # default: lean
@@ -251,29 +251,29 @@ Attribution: `plugins/ATTRIBUTION.md`; skill-level attributions in `THIRD_PARTY_
 </details>
 
 <details>
-<summary><strong>Skill catalog — 150 skills by category</strong></summary>
+<summary><strong>Skill catalog — 135 skills by category</strong></summary>
 
-Current count: **150** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563; the six ticket skills were consolidated into `ticketing-skill` in #599 — `npx … add ticket-creation-skill|git-issue-labeler-skill|git-issue-updater-skill|jira-git-integration-skill|jira-status-updater-skill|jira-ticket-labeler-skill` are removed, use `add ticketing-skill`).
+Current count: **135** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563; the six ticket skills were consolidated into `ticketing-skill` in #599 — `npx … add ticket-creation-skill|git-issue-labeler-skill|git-issue-updater-skill|jira-git-integration-skill|jira-status-updater-skill|jira-ticket-labeler-skill` are removed, use `add ticketing-skill`; the two creation skills were consolidated into `civiltekk-opencode-creation-skill` in #603 — their `add` names are removed, use `add civiltekk-opencode-creation-skill`; the two commits skills were consolidated into `civiltekk-git-commits-skill` in #603 — their `add` names are removed, use `add civiltekk-git-commits-skill`; the two context skills were consolidated into `civiltekk-context-optimization-skill` in #603 — their `add` names are removed, use `add civiltekk-context-optimization-skill`; the two documentation skills were consolidated into `civiltekk-documentation-sync-skill` in #603 — their `add` names are removed, use `add civiltekk-documentation-sync-skill`; the two startup docs skills were consolidated into `civiltekk-startup-docs-skill` in #603 — their `add` names are removed, use `add civiltekk-startup-docs-skill`; the three Python backend skills were consolidated into `civiltekk-python-backend-skill` in #603 — `npx … add python-backend-skill|python-packaging-skill|fastapi-pydantic-orm-patterns-skill` are removed, use `add civiltekk-python-backend-skill`; the two diagram skills were consolidated into `civiltekk-diagram-skill` in #603 — `npx … add ascii-diagram-creator-skill|mermaid-diagram-creator-skill` are removed, use `add civiltekk-diagram-skill`; the three ponytail skills were consolidated into `civiltekk-ponytail-audit-skill` in #603 — `npx … add ponytail-audit-skill|ponytail-review-skill|ponytail-debt-skill` are removed, use `add civiltekk-ponytail-audit-skill`; the two API skills were consolidated into `civiltekk-api-spec-skill` in #603 — `npx … add api-design-skill|openapi-contract-adherence-skill` are removed, use `add civiltekk-api-spec-skill`; the four React/TS quality skills were consolidated into `civiltekk-react-quality-skill` in #603 — `npx … add react-best-practices-skill|react-hooks-antipatterns-skill|react-render-antipatterns-skill|typescript-dry-principle-skill` are removed, use `add civiltekk-react-quality-skill`; the inline documentation and docstring skills were consolidated into `civiltekk-documentation-inline-skill` in #603 — `npx … add documentation-inline-skill|docstring-generator-skill` are removed, use `add civiltekk-documentation-inline-skill`).
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (19) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, xlsx-specialist, pdf-specialist, frontend-design, uiux-review-skill, api-design-skill, openapi-contract-adherence-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design + review, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
+| **Framework** (18) | test-generator-framework, linting-workflow, pr-creation-workflow, pr-merge-workflow, error-resolver-workflow, tdd-workflow, docx-creation, xlsx-specialist, pdf-specialist, frontend-design, uiux-review-skill, civiltekk-api-spec-skill, performance-optimization-skill, srs-creation-skill, brd-creation-skill, technical-design-creation-skill, vision-creation-skill, interactive-document-rendering-skill | Generic workflows, testing patterns, document creation, UI design + review, API design, contract adherence, performance, and the document ladder (BRD/SRS/vision + technical design documents) |
 | **Presentation** (3) | pptx-generate-slide-skill, pptx-generate-template-skill, pptx-template-modifier-skill | Template-driven PowerPoint generation — extract, fill, extend |
 | **Office Utilities** (2) | ooxml-editing-skill, office-thumbnail-skill | Generic Office OOXML surgical edits and visual thumbnail/conversion |
-| **Language-Specific** (6) | python-pytest-creator, language-linting, changelog-python-cliff, python-backend-skill, python-packaging-skill, fastapi-pydantic-orm-patterns-skill | Language-specific test, linting (Ruff/ESLint/Checkstyle/dotnet format), project scaffolding, packaging, and backend patterns |
-| **Framework-Specific** (11) | nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-best-practices-skill, react-hooks-antipatterns-skill, react-render-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment |
+| **Language-Specific** (4) | python-pytest-creator, language-linting, changelog-python-cliff, civiltekk-python-backend-skill | Language-specific test, linting (Ruff/ESLint/Checkstyle/dotnet format), and Python backend engineering — scaffolding, packaging, and production patterns (one consolidated skill) |
+| **Framework-Specific** (8) | nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, civiltekk-react-quality-skill, accessibility-a11y-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment — React performance, hooks/render anti-patterns, and TypeScript DRY in one consolidated react-quality skill |
 | **Frontend Animation** (8) | gsap-core, gsap-timeline, gsap-scrolltrigger, gsap-plugins, gsap-utils, gsap-react, gsap-frameworks, gsap-performance | GSAP web-animation guidance — tweens/easing/stagger, timeline sequencing, ScrollTrigger, plugins, utils helpers, React (`useGSAP`) and Vue/Svelte integration, performance. Vendored from official greensock/gsap-skills (MIT) |
-| **OpenCode Meta** (7) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, opencode-repo-setup, documentation-consistency-skill, opencode-v2-migration, skill-generalizer | Agent and skill creation/maintenance, documentation consistency auditing, per-repo MCP/project-config setup, v1→v2 migration detect/triage, skill generalization auditing |
+| **OpenCode Meta** (6) | civiltekk-opencode-creation, opencode-skills-maintainer, opencode-repo-setup, civiltekk-documentation-sync, opencode-v2-migration, skill-generalizer | Agent and skill creation/maintenance (one consolidated creation skill), documentation sync + drift auditing (one consolidated doc-sync skill), per-repo MCP/project-config setup, v1→v2 migration detect/triage, skill generalization auditing |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
 
-| **Git/Workflow** (14) | ascii-diagram-creator, mermaid-diagram-creator, dev-uat-promotion-skill, ticketing-skill, plan-execution-skill, plan-execution-inline-skill, worktree-pipeline-skill, wayfinder-skill, gh-cli-setup-skill, git-semantic-commits, semantic-release-convention, git-compact-commits, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, dev→uat promotion batching, release conventions, version bumping, compact commits, branch workflow orchestration, the full ticket lifecycle (create/classify/update/close on GitHub Issues or JIRA) via `/create-ticket`, fully-automated per-phase plan execution via `/run-plan` (subagent workers) or `/run-plan-v2` (inline workers), the tracker-ticket-to-merged-PR worktree pipeline via `/run-worktree-pipeline`, and oversized-work planning as decision-ticket maps |
-| **Documentation** (6) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow, unslop-skill, technical-writing-skill, documentation-inline-skill | Documentation generation |
+| **Git/Workflow** (12) | civiltekk-diagram, dev-uat-promotion-skill, ticketing-skill, plan-execution-skill, plan-execution-inline-skill, worktree-pipeline-skill, wayfinder-skill, gh-cli-setup-skill, civiltekk-git-commits, semantic-release-convention, version-bump-standard, git-branch-workflow-setup-skill | Diagrams (ASCII-to-image and Mermaid fenced blocks, one consolidated diagram skill), git operations, dev→uat promotion batching, release conventions, version bumping, commit discipline — conventional format plus compact budgets (one consolidated commits skill), branch workflow orchestration, the full ticket lifecycle (create/classify/update/close on GitHub Issues or JIRA) via `/create-ticket`, fully-automated per-phase plan execution via `/run-plan` (subagent workers) or `/run-plan-v2` (inline workers), the tracker-ticket-to-merged-PR worktree pipeline via `/run-worktree-pipeline`, and oversized-work planning as decision-ticket maps |
+| **Documentation** (4) | coverage-readme-workflow, unslop-skill, technical-writing-skill, civiltekk-documentation-inline-skill | Documentation generation — per-language docstrings (PEP 257, Javadoc, JSDoc, XML) and the in-session docs delegate (one consolidated skill) |
 | **Communication** (1) | email-drafter-skill | Business-email drafting — process, tone frames, slop checklist |
 | **Academic & Research Writing** (2) | horseshoe-paper-writing-skill, research-paper-generation-skill | Academic & research paper writing (Horseshoe Diagram Method, journal-submission formats; codebase→paper generation) |
-| **Code Quality** (16) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill, blast-radius-skill, ponytail-audit-skill, ponytail-review-skill, ponytail-debt-skill, language-review-checklists-skill, reviewer-baseline-skill, testing-inline-skill, linting-inline-skill | Code quality analysis, patterns, @deprecated code cleanup, and the inline testing/linting delegates |
-| **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
+| **Code Quality** (14) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill, blast-radius-skill, civiltekk-ponytail-audit-skill, language-review-checklists-skill, reviewer-baseline-skill, testing-inline-skill, linting-inline-skill | Code quality analysis, patterns, @deprecated code cleanup, over-engineering audits and `ponytail:` debt ledgers (one consolidated ponytail skill), and the inline testing/linting delegates |
+| **Agent Optimization** (6) | continuous-learning, eval-harness, verification-loop, search-first, civiltekk-context-optimization, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing and compaction strategy (one consolidated context skill), and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Mechanical `{"pass":bool,"score":N}` evaluators — no LLM self-judgment |
-| **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
+| **Startup/Business** (2) | civiltekk-startup-docs-skill, construction-bd-skill | Startup pitch decks and founder business documentation (one consolidated startup-docs skill), construction proposals |
 | **Configuration** (3) | markitdown-mcp-skill, docling-mcp-skill, mcp-install-assistant-skill | markitdown and docling MCP setup; guided MCP install assistant (inventory, precheck, enable, verify) |
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
 | **DevOps** (5) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill, aws-iac-safety-skill | Containerization, monorepos, database migrations, observability, and IaC safety |

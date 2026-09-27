@@ -40,19 +40,13 @@ permissions:
     resource: nextjs-standard-setup-skill
     effect: allow
   - action: skill
-    resource: docstring-generator-skill
+    resource: civiltekk-documentation-inline-skill
     effect: allow
   - action: skill
     resource: nextjs-image-usage-skill
     effect: allow
   - action: skill
-    resource: react-hooks-antipatterns-skill
-    effect: allow
-  - action: skill
-    resource: react-render-antipatterns-skill
-    effect: allow
-  - action: skill
-    resource: react-best-practices-skill
+    resource: civiltekk-react-quality-skill
     effect: allow
   - action: skill
     resource: nextjs-devtools-mcp-skill
@@ -96,7 +90,7 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 
 **Trigger phrases:** "create next.js app", "next.js setup", "scaffold next.js", "new next.js project", "initialize next.js"
 
-**Skill:** Load `nextjs-standard-setup-skill`. Cross-reference `nextjs-image-usage-skill` for image config, `docstring-generator-skill` for TSDoc, `react-hooks-antipatterns-skill` + `react-render-antipatterns-skill` to avoid common pitfalls.
+**Skill:** Load `nextjs-standard-setup-skill`. Cross-reference `nextjs-image-usage-skill` for image config, `civiltekk-documentation-inline-skill` (route `docstring-formats`) for TSDoc, `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns`) to avoid common pitfalls.
 
 **Workflow:**
 1. Initialize Next.js 16 with TypeScript and Tailwind v4
@@ -105,7 +99,7 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 4. Enable React Compiler
 5. Create Tekk-prefixed component architecture
 6. Configure imports/exports
-7. Add TSDoc standards via `docstring-generator-skill`
+7. Add TSDoc standards via `civiltekk-documentation-inline-skill` (route `docstring-formats`)
 8. Post-scaffold: run branch-workflow detection per `git-branch-workflow-setup-skill` §Detection Logic and the `.opencode/branch-workflow-skipped` marker. If all signals absent, include `NEEDS_GIT_BRANCH_SETUP: true` in the Return Contract.
 
 ### Mode 2 — Runtime Diagnosis
@@ -118,13 +112,13 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 
 **If MCP unavailable:** Fall back to file-based inspection via `glob`/`grep`/`read` and `webfetch` the Next.js docs. Note this limitation in the Return Contract.
 
-**Workflow:** Follow the diagnosis workflows in `nextjs-devtools-mcp-skill` (initial assessment → error diagnosis → server action debugging). Cross-reference `react-hooks-antipatterns-skill` + `react-render-antipatterns-skill` when prescribing fixes.
+**Workflow:** Follow the diagnosis workflows in `nextjs-devtools-mcp-skill` (initial assessment → error diagnosis → server action debugging). Cross-reference `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns`) when prescribing fixes.
 
 ### Mode 3 — Project Audit
 
 **Trigger phrases:** "am I using next.js correctly", "review my next.js project", "next.js best practices", "next.js routes", "audit my next.js app", "migrate pages router to app router"
 
-**Skills:** Load `nextjs-devtools-mcp-skill` (for `get_routes`, `get_page_metadata`, `get_project_metadata`) + `react-hooks-antipatterns-skill` + `react-render-antipatterns-skill`.
+**Skills:** Load `nextjs-devtools-mcp-skill` (for `get_routes`, `get_page_metadata`, `get_project_metadata`) + `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns` for anti-pattern detection; route `perf` for performance findings).
 
 **Workflow:** Map project structure → identify anti-patterns → recommend improvements → optionally plan migrations. If MCP unavailable, use file-based route discovery (scan `app/` and `pages/` directories).
 

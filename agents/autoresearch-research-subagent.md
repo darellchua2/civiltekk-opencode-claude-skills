@@ -61,7 +61,7 @@ permissions:
     resource: search-first-skill
     effect: allow
   - action: skill
-    resource: strategic-compact-skill
+    resource: civiltekk-context-optimization-skill
     effect: allow
 category: research
 ---
@@ -176,7 +176,7 @@ Per `autoresearch-core-skill/references/stuck-detection.md`:
 - Load `autoresearch-core-skill` for the canonical methodology text.
 - Load `autoresearch-research-skill` for research-specific overrides and templates.
 - Load `search-first-skill` for the search-before-citing pattern.
-- Load `strategic-compact-skill` if your context exceeds 60% mid-loop.
+- Load `civiltekk-context-optimization-skill` (compaction-strategy route) if your context exceeds 60% mid-loop.
 
 ## Return Contract
 

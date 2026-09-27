@@ -42,7 +42,7 @@ permissions:
     resource: opencode-v2-migration-skill
     effect: allow
   - action: skill
-    resource: documentation-consistency-skill
+    resource: civiltekk-documentation-sync-skill
     effect: allow
 category: meta
 ---

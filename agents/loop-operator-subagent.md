@@ -46,7 +46,7 @@ permissions:
     resource: continuous-learning-skill
     effect: allow
   - action: skill
-    resource: strategic-compact-skill
+    resource: civiltekk-context-optimization-skill
     effect: allow
   - action: skill
     resource: blast-radius-skill
@@ -166,7 +166,7 @@ After each iteration, update progress:
 - Delegate general multi-step work to `general` subagent for parallel tasks
 - Use `verification-loop` skill for structured verification of results
 - Use `continuous-learning` skill to persist findings from failed attempts
-- Use `strategic-compact` skill if context is becoming large mid-loop
+- Use `civiltekk-context-optimization-skill` (compaction-strategy route) if context is becoming large mid-loop
 
 ## CodeGraph Integration
 

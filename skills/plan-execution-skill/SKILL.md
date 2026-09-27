@@ -95,7 +95,7 @@ Rules: `fixes:` MUST list every gate fix for that step; one logical line; only t
 
 ### Commit + push
 
-`git add <phase files> PLANS/PLAN-*.md` → `git commit -m "<type>(<scope>): implement Phase N — <summary>" -m "Plan: <file>. Gate: … green. Trace: per-step Done lines."` → `git push`. PLAN ticks, Done lines, and gate memos ride inside this one atomic commit — a standalone `docs(plan)` commit mid-run is never allowed. Conventions per `git-semantic-commits-skill`; project commitlint overrides; never mix style-only with logic. Push rejected (non-FF) → stop and ask, never force-push.
+`git add <phase files> PLANS/PLAN-*.md` → `git commit -m "<type>(<scope>): implement Phase N — <summary>" -m "Plan: <file>. Gate: … green. Trace: per-step Done lines."` → `git push`. PLAN ticks, Done lines, and gate memos ride inside this one atomic commit — a standalone `docs(plan)` commit mid-run is never allowed. Conventions per `civiltekk-git-commits-skill`; project commitlint overrides; never mix style-only with logic. Push rejected (non-FF) → stop and ask, never force-push.
 
 ### Final validation
 
@@ -177,11 +177,11 @@ This is the reusable primitive `worktree-pipeline-skill` §6d atomicity self-che
 |-------|-------------|
 | `worktree-pipeline-skill` | Step 8 invokes `--gate` via `/run-plan` with an explicit PLAN path; §6d reuses the malformed-step flag primitive |
 | `verification-loop-skill` | Canonical gate contract + memo format — `--gate` defers there |
-| `git-semantic-commits-skill` | Commit formats for `--gate` (4f) and `--update` (step 6) |
+| `civiltekk-git-commits-skill` | Commit formats for `--gate` (4f) and `--update` (step 6) |
 | `ticketing-skill` | A resolved plan feeds ticket creation upstream |
 | `error-resolver-workflow-skill` | Gate-red diagnosis during `--gate` fix-on-fail |
 | `tdd-workflow-skill` | `--gate` 4b mandates tests for new code before the gate |
-| `strategic-compact-skill` | PLAN.md files are natural compaction anchors |
+| `civiltekk-context-optimization-skill` | PLAN.md files are natural compaction anchors |
 
 ## Iteration Protocol (opt-in)
 

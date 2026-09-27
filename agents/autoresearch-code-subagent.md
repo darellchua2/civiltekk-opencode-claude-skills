@@ -51,7 +51,7 @@ permissions:
     resource: continuous-learning-skill
     effect: allow
   - action: skill
-    resource: strategic-compact-skill
+    resource: civiltekk-context-optimization-skill
     effect: allow
   - action: skill
     resource: blast-radius-skill
@@ -208,7 +208,7 @@ Per `autoresearch-core-skill/references/crash-recovery.md`:
 - Load `autoresearch-core-skill` for the canonical methodology text.
 - Load `autoresearch-code-skill` for code-specific overrides and templates.
 - Load `continuous-learning-skill` to persist findings from failed experiments.
-- Load `strategic-compact-skill` if your context exceeds 60% mid-loop.
+- Load `civiltekk-context-optimization-skill` (compaction-strategy route) if your context exceeds 60% mid-loop.
 
 ## CodeGraph Integration
 

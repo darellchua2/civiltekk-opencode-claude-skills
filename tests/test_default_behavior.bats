@@ -250,20 +250,20 @@ extract_section_range() {
 # Tier 2 — 8 skills × 3 assertions = 24 tests
 # =============================================================================
 
-# --- documentation-consistency ---
-@test "default_behavior_documentation-consistency_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+# --- civiltekk-documentation-sync ---
+@test "default_behavior_civiltekk-documentation-sync_has_imperative_gating_preamble" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'DO NOT execute any of the following unless' "$skill_md"
 }
-@test "default_behavior_documentation-consistency_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+@test "default_behavior_civiltekk-documentation-sync_preamble_appears_exactly_once" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
   [ "$count" -eq 1 ]
 }
-@test "default_behavior_documentation-consistency_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+@test "default_behavior_civiltekk-documentation-sync_evaluator_token_in_section_only" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   range=$(extract_section_range "$skill_md")
   start=$(echo "$range" | awk '{print $1}')
@@ -483,20 +483,20 @@ extract_section_range() {
   [ "$in_section" -eq "$total" ]
 }
 
-# --- api-design ---
-@test "default_behavior_api-design_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/api-design-skill/SKILL.md"
+# --- civiltekk-api-spec ---
+@test "default_behavior_civiltekk-api-spec_has_imperative_gating_preamble" {
+  skill_md="$SKILLS_DIR/civiltekk-api-spec-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'DO NOT execute any of the following unless' "$skill_md"
 }
-@test "default_behavior_api-design_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/api-design-skill/SKILL.md"
+@test "default_behavior_civiltekk-api-spec_preamble_appears_exactly_once" {
+  skill_md="$SKILLS_DIR/civiltekk-api-spec-skill/SKILL.md"
   [ -f "$skill_md" ]
   count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
   [ "$count" -eq 1 ]
 }
-@test "default_behavior_api-design_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/api-design-skill/SKILL.md"
+@test "default_behavior_civiltekk-api-spec_evaluator_token_in_section_only" {
+  skill_md="$SKILLS_DIR/civiltekk-api-spec-skill/SKILL.md"
   [ -f "$skill_md" ]
   range=$(extract_section_range "$skill_md")
   start=$(echo "$range" | awk '{print $1}')
@@ -599,20 +599,20 @@ extract_section_range() {
   [ "$in_section" -eq "$total" ]
 }
 
-# --- typescript-dry-principle ---
-@test "default_behavior_typescript-dry-principle_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/typescript-dry-principle-skill/SKILL.md"
+# --- civiltekk-react-quality ---
+@test "default_behavior_civiltekk-react-quality_has_imperative_gating_preamble" {
+  skill_md="$SKILLS_DIR/civiltekk-react-quality-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'DO NOT execute any of the following unless' "$skill_md"
 }
-@test "default_behavior_typescript-dry-principle_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/typescript-dry-principle-skill/SKILL.md"
+@test "default_behavior_civiltekk-react-quality_preamble_appears_exactly_once" {
+  skill_md="$SKILLS_DIR/civiltekk-react-quality-skill/SKILL.md"
   [ -f "$skill_md" ]
   count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
   [ "$count" -eq 1 ]
 }
-@test "default_behavior_typescript-dry-principle_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/typescript-dry-principle-skill/SKILL.md"
+@test "default_behavior_civiltekk-react-quality_evaluator_token_in_section_only" {
+  skill_md="$SKILLS_DIR/civiltekk-react-quality-skill/SKILL.md"
   [ -f "$skill_md" ]
   range=$(extract_section_range "$skill_md")
   start=$(echo "$range" | awk '{print $1}')
@@ -773,20 +773,20 @@ extract_section_range() {
   [ "$in_section" -eq "$total" ]
 }
 
-# --- mermaid-diagram-creator ---
-@test "default_behavior_mermaid-diagram-creator_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/mermaid-diagram-creator-skill/SKILL.md"
+# --- civiltekk-diagram ---
+@test "default_behavior_civiltekk-diagram_has_imperative_gating_preamble" {
+  skill_md="$SKILLS_DIR/civiltekk-diagram-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'DO NOT execute any of the following unless' "$skill_md"
 }
-@test "default_behavior_mermaid-diagram-creator_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/mermaid-diagram-creator-skill/SKILL.md"
+@test "default_behavior_civiltekk-diagram_preamble_appears_exactly_once" {
+  skill_md="$SKILLS_DIR/civiltekk-diagram-skill/SKILL.md"
   [ -f "$skill_md" ]
   count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
   [ "$count" -eq 1 ]
 }
-@test "default_behavior_mermaid-diagram-creator_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/mermaid-diagram-creator-skill/SKILL.md"
+@test "default_behavior_civiltekk-diagram_evaluator_token_in_section_only" {
+  skill_md="$SKILLS_DIR/civiltekk-diagram-skill/SKILL.md"
   [ -f "$skill_md" ]
   range=$(extract_section_range "$skill_md")
   start=$(echo "$range" | awk '{print $1}')

@@ -28,6 +28,6 @@ New Next.js 16 demo/prototype; standardizing an existing project onto the house 
 
 **OpenCode LSP**: root `opencode.json` with `"lsp": {"typescript": {}, "eslint": {}}` — ambient cross-package diagnostics; check into git (refs: opencode.ai/docs/lsp, /docs/config).
 
-**Related**: `nextjs-image-usage-skill` (Image rules) · `nextjs-unit-test-creator-skill` (tests) · `python-backend-skill` (Python equivalent).
+**Related**: `nextjs-image-usage-skill` (Image rules) · `nextjs-unit-test-creator-skill` (tests) · `civiltekk-python-backend-skill` (Python equivalent).
 
 > Removed 2026-09: step-by-step scaffolding transcripts (init, shadcn add, Tailwind v4 config, tsconfig alias edits), full directory trees, worked component examples, verification checklists — create-next-app/shadcn CLI flows are model-known; kept the house structure, naming/export rules, and the LSP wiring.

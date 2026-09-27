@@ -17,7 +17,7 @@ setup() {
 teardown() { rm -rf "$SANDBOX" "$TMP_PROJ"; }
 
 @test "user-scope ponytail skill install ships plugin artifacts + manifest records them" {
-  run $ADD ponytail-audit-skill --yes
+  run $ADD civiltekk-ponytail-audit-skill --yes
   [ "$status" -eq 0 ]
   # the three artifacts landed under the sandboxed global plugin dir
   [ -f "$SANDBOX/.config/opencode/plugins/opencode-ponytail-scoped.ts" ]
@@ -30,21 +30,21 @@ teardown() { rm -rf "$SANDBOX" "$TMP_PROJ"; }
 }
 
 @test "user-scope install is idempotent (second run re-copies cleanly)" {
-  run $ADD ponytail-audit-skill --yes
+  run $ADD civiltekk-ponytail-audit-skill --yes
   [ "$status" -eq 0 ]
-  run $ADD ponytail-review-skill --yes
+  run $ADD civiltekk-ponytail-audit-skill --yes
   [ "$status" -eq 0 ]
   [ -f "$SANDBOX/.config/opencode/plugins/opencode-ponytail-scoped.ts" ]
 }
 
 @test "--no-deps skips plugin shipping" {
-  run $ADD ponytail-audit-skill --yes --no-deps
+  run $ADD civiltekk-ponytail-audit-skill --yes --no-deps
   [ "$status" -eq 0 ]
   [ ! -e "$SANDBOX/.config/opencode/plugins" ]
 }
 
 @test "dry-run lists plugins without writing" {
-  run $ADD ponytail-audit-skill --yes --dry-run
+  run $ADD civiltekk-ponytail-audit-skill --yes --dry-run
   [ "$status" -eq 0 ]
   echo "$output" | grep -q '"plugins"'
   echo "$output" | grep -q 'opencode-ponytail-scoped.ts'
@@ -52,7 +52,7 @@ teardown() { rm -rf "$SANDBOX" "$TMP_PROJ"; }
 }
 
 @test "non-opencode user target (--target claude) prints notice, ships nothing" {
-  run $ADD ponytail-audit-skill --yes --target claude
+  run $ADD civiltekk-ponytail-audit-skill --yes --target claude
   [ "$status" -eq 0 ]
   echo "$output" | grep -q "skipped for target 'claude'"
   [ ! -e "$SANDBOX/.config/opencode/plugins" ]
@@ -66,7 +66,7 @@ teardown() { rm -rf "$SANDBOX" "$TMP_PROJ"; }
 }
 
 @test "project-scope install ships plugins into .opencode/plugins/" {
-  run $ADD ponytail-debt-skill --yes --project "$TMP_PROJ"
+  run $ADD civiltekk-ponytail-audit-skill --yes --project "$TMP_PROJ"
   [ "$status" -eq 0 ]
   [ -f "$TMP_PROJ/.opencode/plugins/opencode-ponytail-scoped.ts" ]
   [ -f "$TMP_PROJ/.opencode/plugins/ponytail/instructions.cjs" ]
@@ -76,7 +76,7 @@ teardown() { rm -rf "$SANDBOX" "$TMP_PROJ"; }
 @test "project-scope non-owned differing plugin artifact is a conflict, never clobbered" {
   mkdir -p "$TMP_PROJ/.opencode/plugins"
   echo "# team's own attribution file" > "$TMP_PROJ/.opencode/plugins/ATTRIBUTION.md"
-  run $ADD ponytail-debt-skill --yes --project "$TMP_PROJ"
+  run $ADD civiltekk-ponytail-audit-skill --yes --project "$TMP_PROJ"
   [ "$status" -eq 0 ]
   echo "$output" | grep -q "conflict (skipped, use --force)"
   # the team's file survived verbatim
@@ -86,17 +86,17 @@ teardown() { rm -rf "$SANDBOX" "$TMP_PROJ"; }
 }
 
 @test "project-scope manifest-owned plugin artifacts refresh silently (idempotent re-install)" {
-  run $ADD ponytail-debt-skill --yes --project "$TMP_PROJ"
+  run $ADD civiltekk-ponytail-audit-skill --yes --project "$TMP_PROJ"
   [ "$status" -eq 0 ]
   [ -f "$TMP_PROJ/.opencode/plugins/ATTRIBUTION.md" ]
   # second install: manifest owns it now → refreshed, no conflict
-  run $ADD ponytail-debt-skill --yes --project "$TMP_PROJ"
+  run $ADD civiltekk-ponytail-audit-skill --yes --project "$TMP_PROJ"
   [ "$status" -eq 0 ]
   ! echo "$output" | grep -q "conflict (skipped, use --force)"
 }
 
 @test "update re-ships plugin artifacts for opencode-target entries (stale artifact repaired)" {
-  run $ADD ponytail-audit-skill --yes
+  run $ADD civiltekk-ponytail-audit-skill --yes
   [ "$status" -eq 0 ]
   [ -f "$SANDBOX/.config/opencode/plugins/ponytail/SKILL.md" ]
   # simulate a stale artifact (pre-#533 install / old version)
@@ -108,7 +108,7 @@ teardown() { rm -rf "$SANDBOX" "$TMP_PROJ"; }
 }
 
 @test "update --dry-run lists would-ship plugins without writing" {
-  run $ADD ponytail-audit-skill --yes
+  run $ADD civiltekk-ponytail-audit-skill --yes
   [ "$status" -eq 0 ]
   rm -rf "$SANDBOX/.config/opencode/plugins"
   run node "${REPO}/installer/init.mjs" update --dry-run
@@ -118,7 +118,7 @@ teardown() { rm -rf "$SANDBOX" "$TMP_PROJ"; }
 }
 
 @test "update --no-deps does not adopt plugin shipping (unrecorded installs stay plugin-free)" {
-  run $ADD ponytail-audit-skill --yes --no-deps
+  run $ADD civiltekk-ponytail-audit-skill --yes --no-deps
   [ "$status" -eq 0 ]
   [ ! -e "$SANDBOX/.config/opencode/plugins" ]
   run node "${REPO}/installer/init.mjs" update --no-deps
@@ -127,7 +127,7 @@ teardown() { rm -rf "$SANDBOX" "$TMP_PROJ"; }
 }
 
 @test "update refreshes manifest-recorded plugin artifacts even with --no-deps (already managed)" {
-  run $ADD ponytail-audit-skill --yes
+  run $ADD civiltekk-ponytail-audit-skill --yes
   [ "$status" -eq 0 ]
   rm -rf "$SANDBOX/.config/opencode/plugins"
   run node "${REPO}/installer/init.mjs" update --no-deps
@@ -136,7 +136,7 @@ teardown() { rm -rf "$SANDBOX" "$TMP_PROJ"; }
 }
 
 @test "project-scope non-opencode target (--project --target kimi) prints notice, ships nothing" {
-  run $ADD ponytail-debt-skill --yes --project "$TMP_PROJ" --target kimi
+  run $ADD civiltekk-ponytail-audit-skill --yes --project "$TMP_PROJ" --target kimi
   [ "$status" -eq 0 ]
   echo "$output" | grep -q "skipped for kimi project target"
   [ ! -e "$TMP_PROJ/.opencode/plugins" ]

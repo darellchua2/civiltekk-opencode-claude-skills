@@ -45,16 +45,13 @@ permissions:
     resource: image-analyzer-subagent
     effect: allow
   - action: skill
-    resource: opencode-agent-creation-skill
-    effect: allow
-  - action: skill
-    resource: opencode-skill-creation-skill
+    resource: civiltekk-opencode-creation-skill
     effect: allow
   - action: skill
     resource: opencode-skills-maintainer-skill
     effect: allow
   - action: skill
-    resource: documentation-sync-workflow-skill
+    resource: civiltekk-documentation-sync-skill
     effect: allow
 category: meta
 ---
@@ -131,10 +128,9 @@ If in a configurator repo and user says "user level", the artifact goes into the
 
 | Task | Skill |
 |------|-------|
-| Create new skill | `opencode-skill-creation` |
-| Create new agent | `opencode-agent-creation` |
+| Create new skill or agent | `civiltekk-opencode-creation` (routes to its agent/skill variant) |
 | Audit/validate skills | `opencode-skills-maintainer` |
-| Sync docs (configurator only) | `documentation-sync-workflow` |
+| Sync docs (configurator only) | `civiltekk-documentation-sync` |
 
 ## File Locations Reference
 
@@ -338,7 +334,7 @@ When a user wants to create their own OpenCode configurator repo (to manage and 
 6. If project uses `opencode.json`, suggest `instructions` field for external file references
 
 ### Creating Agents/Subagents
-1. Ask scope -> load `opencode-agent-creation` skill
+1. Ask scope -> load `civiltekk-opencode-creation` skill (agent variant)
 2. Gather: name, description, mode, permissions, purpose
 3. Fetch latest docs from opencode.ai/docs/agents/
 4. Create with `permission` (not `tools`), `steps` (not `maxSteps`)
@@ -388,7 +384,7 @@ permissions:
 - Using Task tool to invoke skills — skills must be loaded via the Skill tool
 
 ### Creating Skills
-1. Ask scope → load `opencode-skill-creation` skill
+1. Ask scope → load `civiltekk-opencode-creation` skill (skill variant)
 2. Gather: name, description, purpose, audience, workflow type
 3. Fetch latest docs from opencode.ai/docs/skills/
 4. Validate name against naming rules
@@ -402,7 +398,7 @@ permissions:
 4. Report inconsistencies with fixes
 
 ### Synchronizing Documentation (Configurator Repo Only)
-1. Load `documentation-sync-workflow` skill
+1. Load `civiltekk-documentation-sync` skill (`drift-audit` route)
 2. Count actual skills/subagents vs documented counts
 3. Fix discrepancies across: `deploy/setup.sh`, `deploy/setup.ps1`, `README.md`, `AGENTS.md`
 4. Validate counts match
