@@ -14,3 +14,12 @@ guard moved to uniform HANDOFF{1,2}_OWNER/TARGETS pairs, and the map
 equality test derives from both. The decision's guidance still holds for
 future OPT-IN experiments without ticket authorization: preset membership
 first, requiresSkills only when the handoff is meant to be durable.
+
+**Update 2026-09-27 (#602):** the handoff grammar generalized beyond uniform
+single-owner pairs — `HANDOFF3_OWNERS`/`HANDOFF3_TARGETS` is a multi-owner
+pair (cartesian owner→target fold at tests/test_skill_isolation.bats:24-25
+and in the pin test), with the exact-match pin plus a one-representative-edge
+live test extended in lockstep (fail-closed: map + guard + pin + live test
+ride one commit). Future handoffs with N owners should reuse the multi-owner
+shape rather than minting HANDOFF4..N single-owner pairs; the trailing
+positional in the pin heredoc should become `sys.argv[-1]` when next touched.
