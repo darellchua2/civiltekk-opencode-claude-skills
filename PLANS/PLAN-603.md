@@ -48,22 +48,26 @@ Residue rule (orchestrator constant — issued verbatim to every N.2 delegate): 
 ### Phase 1: civiltekk-opencode-creation-skill (smallest risk — warm-up)
 Absorbs: `opencode-agent-creation-skill` (11.4K) + `opencode-skill-creation-skill`. references/: `agent.md`, `skill.md`.
 Consumers: agents/opencode-tooling-subagent.md (allowlist + body), deploy/skill-profiles.json, deploy/opencode.json (both members' allow rules), README.md. (pack-core holds no creation-skill — its member hit is git-semantic, Phase 2's.)
-- [ ] **1.1** Author host + references per template (shared frontmatter-contract knowledge is the shared method; per-artifact values split by variant)
+- [x] **1.1** Author host + references per template (shared frontmatter-contract knowledge is the shared method; per-artifact values split by variant)
     — **Why:** biggest body (agent-creation 11.4K) is mostly per-artifact values — the split is the token win
     — **Done when:** host ≤140 lines; both members' triggers present in description; `bats tests/test_skill_isolation.bats` green (new dir self-contained)
     — **Consumers affected:** opencode-tooling-subagent routing
-- [ ] **1.2** Delete absorbed dirs + repoint: tooling-subagent allowlist/body, skill-profiles, pack-core/pack-devops entries, README table
+    — **Done:** host 79 lines, union description 310 chars, metadata.harness preserved, category OpenCode Meta; files: skills/civiltekk-opencode-creation-skill/{SKILL.md, references/agent.md, references/skill.md}; fixes: none
+- [x] **1.2** Delete absorbed dirs + repoint: tooling-subagent allowlist/body, skill-profiles, pack-core/pack-devops entries, README table
     — **Why:** stale names break agent routing + installer packs
     — **Done when:** `grep -rn 'opencode-agent-creation-skill\|opencode-skill-creation-skill' --exclude-dir=.git .` returns only registry.json (pre-rebuild), historical PLANS/LEARNINGS
     — **Consumers affected:** opencode-tooling-subagent, installer packs
-- [ ] **1.3** Registry rebuild + scoped gate + count check (149)
+    — **Done:** 2 dirs git-rm'd; repointed: opencode-tooling-subagent (2 allows→1), skill-profiles (lean 78→77), deploy/opencode.json (2 rules→1), README (150→149 ×6 sites + category row), setup.sh, skills-maintainer + agent-introspection fellow-refs (WARN-5 net worked); residue = template-mandated Consolidates line + registry + historical only; fixes: none
+- [x] **1.3** Registry rebuild + scoped gate + count check (149)
     — **Why:** registry is installer input; counts must stay green per commit
     — **Done when:** `node installer/build-registry.mjs` clean diff (only expected entries); affected bats green; sweep clean; count 149
     — **Consumers affected:** installer/init.mjs
-- [ ] **1.4** Commit `refactor(skills): consolidate opencode creation skills into civiltekk-opencode-creation-skill` + push
+    — **Done:** registry rebuilt (agents=34, skills=149); scoped gate 123/123 green; fixes: skill_profiles lean literals 78→77 at all six pin sites (fix #1); count 149 verified
+- [x] **1.4** Commit `refactor(skills): consolidate opencode creation skills into civiltekk-opencode-creation-skill` + push
     — **Why:** atomic, reversible merge unit; PLAN ticks ride it
     — **Done when:** pushed; `git log -1` shows phase files + PLAN in one commit
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a. (this step)
 
 ### Phase 2: civiltekk-git-commits-skill
 Absorbs: `git-semantic-commits-skill` + `git-compact-commits-skill`. references/: `semantic.md`, `compact.md`. Routes: conventional-format | brevity-budget (descriptions already cross-reference as alternatives).
@@ -298,3 +302,8 @@ None active. (The pre-#612 overlap hold is resolved — feat/602 merged as 05490
 - **Count literals trip six-site bats pins** — per-phase sweep + skill_profiles run inside every merge commit (LEARNINGS: skill-dir-consolidation-count-literals).
 - **Trigger-phrase loss shrinks discovery** — description union verified per phase against member descriptions before dir deletion (checklist in N.1 Done-when).
 - **Phase 11 contract lockstep** — same-commit rule; #602 precedent.
+
+## Trace
+
+WORK LOG — Phase 1: lean literal fix (78→77, six sites in tests/skill_profiles.bats) caught by the scoped gate on first run — the count-literal LEARNINGS recurring as predicted; WARN-5 sweep-net caught two unlisted fellow-skill consumers (skills-maintainer, agent-introspection). Template-mandated `Consolidates … (#603)` line is standing accepted residue for every host (ticketing-skill #599 precedent).
+GATE eeb509f tier=light lint=- typecheck=- build=- unit=t e2e=n.a

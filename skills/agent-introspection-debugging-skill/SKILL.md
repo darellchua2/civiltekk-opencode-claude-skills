@@ -87,13 +87,12 @@ Config first (most common), permissions second (quick win), behavior last. One c
 
 - `context-budget-skill` — context bloat is a diagnosis outcome
 - `opencode-skills-maintainer-skill` — post-fix format validation
-- `opencode-agent-creation-skill` / `opencode-skill-creation-skill` — authoring rules referenced when fixing
+- `civiltekk-opencode-creation-skill` — agent/skill authoring rules referenced when fixing
 - `continuous-learning-skill` — store diagnosed anti-patterns
 
 ## References
 
-- `opencode-agent-creation-skill` — agent authoring best practices
-- `opencode-skill-creation-skill` — skill authoring best practices
+- `civiltekk-opencode-creation-skill` — agent and skill authoring best practices
 - `opencode-skills-maintainer-skill` — skill format validation
 - `continuous-learning-skill` — debugging-pattern storage
 

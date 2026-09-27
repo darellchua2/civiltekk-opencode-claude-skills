@@ -222,17 +222,12 @@
         },
         {
             "action": "skill",
-            "resource": "opencode-agent-creation-skill",
+            "resource": "civiltekk-opencode-creation-skill",
             "effect": "allow"
         },
         {
             "action": "skill",
             "resource": "opencode-repo-setup-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "opencode-skill-creation-skill",
             "effect": "allow"
         },
         {

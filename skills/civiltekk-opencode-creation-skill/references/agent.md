@@ -1,14 +1,9 @@
----
-name: opencode-agent-creation-skill
-description: Generate OpenCode agents following official documentation best practices
-license: Apache-2.0
-compatibility: opencode
-metadata:
-  harness: "opencode"
-category: OpenCode Meta
----
+# Agent variant (values)
 
-## What I do
+Everything needed to generate or edit an OpenCode agent. The host SKILL.md
+carries the METHOD (detect → route → load); this file carries the VALUES.
+
+## What this variant does
 
 - Guide you through creating a new OpenCode agent by prompting for required configuration
 - Generate agent files in Markdown format with proper YAML frontmatter
@@ -18,9 +13,8 @@ category: OpenCode Meta
 - Ensure description is provided and all required fields are set correctly
 - Validate frontmatter against current OpenCode documentation standards
 
-## When to use me
+## When to use this variant
 
-Use this when:
 - You want to create a new OpenCode agent without manually formatting configuration
 - You need to ensure your agent follows official documentation standards
 - You want to avoid repetitive setup when creating multiple agents
@@ -28,6 +22,7 @@ Use this when:
 - You need to configure tool permissions and access levels
 
 Ask clarifying questions about:
+
 - Agent's purpose and intended behavior
 - Mode: primary (main assistant) or subagent (specialized)
 - Required tool permissions
@@ -39,11 +34,7 @@ Ask clarifying questions about:
 - Understanding of OpenCode agent structure and frontmatter
 - Knowledge of the agent's purpose and required permissions
 
-## Steps
-
-### Step 1: Gather Agent Requirements
-
-Prompt the user for the following information:
+## Requirements intake
 
 **Required Fields**:
 - **Name**: Agent identifier (lowercase, hyphens, e.g., `code-reviewer`)
@@ -84,24 +75,20 @@ Example:
   - Scope: project
 ```
 
-### Step 2: Determine Scope
-
-Ask the user where the agent should be created:
+## Scope (project vs global)
 
 | Scope | Location | Use Case |
 |-------|----------|----------|
 | Project | `.opencode/agents/<name>.md` | Team-shared, project-specific |
 | Global | `~/.config/opencode/agents/<name>.md` | Personal, available across projects |
 
-**Use question tool to ask**:
-```
-"Where should this agent be created?"
-- Options: "Project level (Recommended)" or "User level (global)"
-```
+Ask where the agent should be created; options: "Project level (Recommended)"
+or "User level (global)".
 
-### Step 3: Validate Agent Name
+## Name validation
 
-Ensure the agent name follows naming conventions:
+Ensure the agent name follows naming conventions (the host's question round
+gathers it; validate before writing):
 
 ```bash
 # Check name format (lowercase, hyphens)
@@ -118,12 +105,12 @@ fi
 
 # Check for leading/trailing hyphens
 if [[ $agent_name =~ ^- || $agent_name =~ -$ ]]; then
-  echo "Error: Agent name cannot start or end with hyphens"
+  echo "Error: Agent name cannot start or end with hyphen"
   exit 1
 fi
 ```
 
-### Step 4: Generate YAML Frontmatter
+## Frontmatter generation
 
 Create the frontmatter section based on agent type:
 
@@ -167,9 +154,7 @@ color: "#FF5733"
 ---
 ```
 
-### Step 5: Configure Permissions
-
-Set up tool permissions based on agent purpose:
+## Permissions configuration
 
 **Permission Values**:
 - `allow`: Operation permitted without approval
@@ -203,7 +188,7 @@ permission:
     "testing-*": allow
 ```
 
-### Step 6: Build Agent Content
+## Body (system prompt) structure
 
 Structure the agent instructions:
 
@@ -232,9 +217,7 @@ This agent is invoked when:
 [Describe expected output format]
 ```
 
-### Step 7: Create Agent File
-
-Write the agent file to the appropriate location:
+## File creation
 
 **IMPORTANT: Always use `read` tool before using `write` or `edit` on existing files.**
 
@@ -247,7 +230,7 @@ write filePath=".opencode/agents/<name>.md" content="<frontmatter + content>"
 write filePath="$HOME/.config/opencode/agents/<name>.md" content="<frontmatter + content>"
 ```
 
-### Step 8: Validate Created Agent
+## Validation & verification
 
 Verify the agent was created correctly:
 
@@ -263,7 +246,34 @@ grep -q "^description:" ".opencode/agents/<name>.md" && echo "✓ Has descriptio
 grep -q "^mode:" ".opencode/agents/<name>.md" && echo "✓ Has mode"
 ```
 
-## Best Practices
+Post-creation verification commands:
+
+```bash
+# List all project-level agents
+ls -la .opencode/agents/
+
+# List all global agents
+ls -la ~/.config/opencode/agents/
+
+# Validate agent frontmatter
+python3 -c "import yaml; yaml.safe_load(open('.opencode/agents/<name>.md'))"
+
+# Check for required fields
+grep -E "^(description|mode):" .opencode/agents/<name>.md
+```
+
+**Verification Checklist**:
+- [ ] Agent name follows naming conventions
+- [ ] Agent file created in correct location
+- [ ] YAML frontmatter is valid
+- [ ] `description` field present and descriptive
+- [ ] `mode` specified (`primary` or `subagent`)
+- [ ] Using `permission` not `tools`
+- [ ] Using `steps` not `maxSteps`
+- [ ] Task/skill permissions configured if needed
+- [ ] `hidden` only set for subagents
+
+## Best practices
 
 ### Naming Conventions
 
@@ -306,7 +316,7 @@ grep -q "^mode:" ".opencode/agents/<name>.md" && echo "✓ Has mode"
 - **Limit task spawning** to prevent recursive agent chains
 - **Restrict skill access** to only what's needed
 
-## Common Issues
+## Common issues
 
 ### Invalid Frontmatter
 
@@ -344,36 +354,7 @@ python3 -c "import yaml; yaml.safe_load(open('.opencode/agents/<name>.md'))"
 - Ensure needed tools are set to `allow` or `ask`
 - Check for pattern-based permissions (e.g., `task: "reviewer-*": allow`)
 
-## Verification Commands
-
-After creating an agent, verify with these commands:
-
-```bash
-# List all project-level agents
-ls -la .opencode/agents/
-
-# List all global agents
-ls -la ~/.config/opencode/agents/
-
-# Validate agent frontmatter
-python3 -c "import yaml; yaml.safe_load(open('.opencode/agents/<name>.md'))"
-
-# Check for required fields
-grep -E "^(description|mode):" .opencode/agents/<name>.md
-```
-
-**Verification Checklist**:
-- [ ] Agent name follows naming conventions
-- [ ] Agent file created in correct location
-- [ ] YAML frontmatter is valid
-- [ ] `description` field present and descriptive
-- [ ] `mode` specified (`primary` or `subagent`)
-- [ ] Using `permission` not `tools`
-- [ ] Using `steps` not `maxSteps`
-- [ ] Task/skill permissions configured if needed
-- [ ] `hidden` only set for subagents
-
-## Example Output
+## Example output
 
 ### Created Agent: code-reviewer
 

@@ -45,10 +45,7 @@ permissions:
     resource: image-analyzer-subagent
     effect: allow
   - action: skill
-    resource: opencode-agent-creation-skill
-    effect: allow
-  - action: skill
-    resource: opencode-skill-creation-skill
+    resource: civiltekk-opencode-creation-skill
     effect: allow
   - action: skill
     resource: opencode-skills-maintainer-skill
@@ -131,8 +128,7 @@ If in a configurator repo and user says "user level", the artifact goes into the
 
 | Task | Skill |
 |------|-------|
-| Create new skill | `opencode-skill-creation` |
-| Create new agent | `opencode-agent-creation` |
+| Create new skill or agent | `civiltekk-opencode-creation` (routes to its agent/skill variant) |
 | Audit/validate skills | `opencode-skills-maintainer` |
 | Sync docs (configurator only) | `documentation-sync-workflow` |
 
@@ -338,7 +334,7 @@ When a user wants to create their own OpenCode configurator repo (to manage and 
 6. If project uses `opencode.json`, suggest `instructions` field for external file references
 
 ### Creating Agents/Subagents
-1. Ask scope -> load `opencode-agent-creation` skill
+1. Ask scope -> load `civiltekk-opencode-creation` skill (agent variant)
 2. Gather: name, description, mode, permissions, purpose
 3. Fetch latest docs from opencode.ai/docs/agents/
 4. Create with `permission` (not `tools`), `steps` (not `maxSteps`)
@@ -388,7 +384,7 @@ permissions:
 - Using Task tool to invoke skills — skills must be loaded via the Skill tool
 
 ### Creating Skills
-1. Ask scope → load `opencode-skill-creation` skill
+1. Ask scope → load `civiltekk-opencode-creation` skill (skill variant)
 2. Gather: name, description, purpose, audience, workflow type
 3. Fetch latest docs from opencode.ai/docs/skills/
 4. Validate name against naming rules

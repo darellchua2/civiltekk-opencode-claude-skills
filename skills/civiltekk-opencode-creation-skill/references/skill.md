@@ -1,14 +1,9 @@
----
-name: opencode-skill-creation-skill
-description: Generate OpenCode skills following official documentation best practices
-license: Apache-2.0
-compatibility: opencode
-metadata:
-  harness: "opencode"
-category: OpenCode Meta
----
+# Skill variant (values)
 
-## What I do
+Everything needed to generate or edit an OpenCode skill. The host SKILL.md
+carries the METHOD (detect → route → load); this file carries the VALUES.
+
+## What this variant does
 
 Create new OpenCode skills: frontmatter contract, lean content standard, directory placement, registry rebuild.
 
