@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.0.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v11.0.0...v12.0.0) (2026-09-27)
+
+### ⚠ BREAKING CHANGES
+
+* **skills:** consolidate 22 skills into 6 civiltekk- route hosts (#604) (#616)
+
+### Code Refactoring
+
+* **skills:** consolidate 22 skills into 6 civiltekk- route hosts ([#604](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/604)) ([#616](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/616)) ([5bf320d](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/5bf320de62ac3a4191782265e345be1a84a3cade))
+
 ## [11.0.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v10.0.2...v11.0.0) (2026-09-27)
 
 ### ⚠ BREAKING CHANGES
