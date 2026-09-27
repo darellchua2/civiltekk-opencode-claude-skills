@@ -1,7 +1,7 @@
 # Skill-count restating surfaces exceed what count-drift tests cover
 
 **Category**: conventions
-**Confidence**: 0.7
+**Confidence**: 0.75 (#597 bump)
 **Scope**: project
 **Date**: 2026-09-24
 
@@ -26,3 +26,11 @@ generated source) wherever prose must state it.
 
 Related: `directory-scoped-rename-sweep-misses-root-docs` (sibling-doc surface
 missed by a scoped sweep).
+
+#597 recurrence: the count sweep in PLAN-597 step 3.2 covered README.md +
+opencode_app/README.md but missed the third restating surface —
+`deploy/setup.sh:3580` ("lean (default) -> 77 primary-visible skills"
+comment), caught by #597 code review after the 77→78 lean move. The rule
+text already named deploy scripts; the sweep done-when didn't. Every count
+sweep must enumerate surfaces BEFORE editing and grep all of them in the
+done-when.

@@ -1789,3 +1789,27 @@
 - **Scope**: project
 - **Date**: 2026-09-27
 - **Summary**: `§Name` pins in skills/agents must target real heading anchors, not bolded list labels — verify anchor resolvability at authoring and review time; promote the owner's item to a heading or pin at skill level. Origin: #595 code review.
+
+### Exit gate broader than the de-branding steps
+
+- **File**: `LEARNINGS/anti-patterns/exit-gate-broader-than-debranding-steps.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: An rg exit gate scoped to a whole file is a consumer of every branded surface in it — enumerate matches at authoring time, one owning step each; PLANS/PLAN-597's gate matched #582 in /review-arch + /review-inline while only the two -v2 commands had de-branding steps (#597 plan review)
+
+### Guard redesign updates its own docs of record
+
+- **File**: `LEARNINGS/conventions/guard-redesign-updates-its-own-doc-of-record.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: Changing a guard's invariant shape requires updating prose that pins the old shape in the same commit — grep for the old shape's description (AGENTS.md "single declared exception", dependency-map $comment "requiresSkills pair" both went stale under #597's two-handoff redesign)
+
+### Twin-skill forks diff the source's section list
+
+- **File**: `LEARNINGS/conventions/twin-skill-forks-diff-section-lists.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: Forking a skill twin must diff the source's ^##/^### sections and justify every drop in the PLAN — plan-execution-inline-skill silently dropped Final validation, the /goal close sentence, and the error-resolver integration row (#597 code review NOTEs)

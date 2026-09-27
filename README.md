@@ -2,7 +2,7 @@
 
 A personal software-development skills collection — the agents, skills, and pipeline tooling I use daily — shared so you can take **a single skill** or adopt **the whole stack**.
 
-- **154 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
+- **155 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
 - **Same skills install to other harnesses**: Claude Code, Kimi Code, Kilo Code, and the cross-tool `~/.agents/` standard (Agent Skills open format)
 - A **robust application-development pipeline**: ticket → PLAN → gated execution → review → merged PR, driven by a handful of slash commands
 
@@ -21,7 +21,7 @@ These four commands carry most of my day-to-day flow. **Slash commands ship with
 
 The first two compose: `/create-ticket` makes the ticket, `/run-worktree-pipeline #NNN` takes it to a merged PR.
 
-**#582 experiment commands** (opt-in A/B, defined in user-space config): `/review-arch` runs the architecture reviewer in an isolated child session; `/review-inline` runs the same review in-session; `/run-plan-v2` executes plans with the inline worker family (zero subagent delegation); `/run-worktree-pipeline-v2` is the pipeline with Step 8 inline workers — Step 9 review + Step 10 PR stay subagent-driven. Decision record: #582.
+**Two execution flavors, manual choice**: `/run-plan` + `/run-worktree-pipeline` execute with worker subagents (`plan-execution-skill`); `/run-plan-v2` + `/run-worktree-pipeline-v2` execute the same loops fully in-session (`plan-execution-inline-skill` — testing/linting/docs/responsive-audit routed to the inline skills, zero worker subagents; pipeline Step 9 review + Step 10 PR stay subagent-driven). Pick per run by invoking the command you want.
 
 ## Installation
 
@@ -73,7 +73,7 @@ Provider swap (Z.AI default): `./deploy/setup.sh --provider anthropic|openai|ope
 
 ### 3. Per-project subset — presets
 
-Not every project needs 34 agents + 154 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
+Not every project needs 34 agents + 155 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
 
 ```bash
 opencode-init --list categories                              # introspect (JSON)
@@ -107,7 +107,7 @@ See [Docker: run the whole setup in a browser](#docker-run-the-whole-setup-in-a-
 
 ```
 civiltekk-opencode-claude-skills/
-├── skills/                      # 154 skill directories (source of truth)
+├── skills/                      # 155 skill directories (source of truth)
 ├── agents/                      # 34 subagent .md files (source of truth)
 ├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings, auto-continue, question-repair)
 │   └── vibeguard.config.json    # Secret-masking regex patterns
@@ -248,7 +248,7 @@ docker compose build --build-arg OPENCODE_PACKS=markitdown,docling   # Docker bu
 
 Default state of every pack is **OFF**. Design history: [issue #268](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/268).
 
-**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (77 primary-visible skills + deny-all); subagents are profile-immune and all 154 skills stay on disk:
+**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (78 primary-visible skills + deny-all); subagents are profile-immune and all 155 skills stay on disk:
 
 ```bash
 ./deploy/setup.sh                     # default: lean
@@ -285,9 +285,9 @@ Attribution: `plugins/ATTRIBUTION.md`; skill-level attributions in `THIRD_PARTY_
 </details>
 
 <details>
-<summary><strong>Skill catalog — 154 skills by category</strong></summary>
+<summary><strong>Skill catalog — 155 skills by category</strong></summary>
 
-Current count: **154** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563).
+Current count: **155** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563).
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
@@ -298,14 +298,14 @@ Current count: **154** (history: 123 after the BT-142 pptx migration → consoli
 | **Framework-Specific** (11) | nextjs-unit-test-creator, nextjs-standard-setup, nextjs-image-usage, nextjs-devtools-mcp, amplify-nextjs-deployment, typescript-dry-principle, accessibility-a11y-skill, react-best-practices-skill, react-hooks-antipatterns-skill, react-render-antipatterns-skill, threejs-nextjs-skill | Next.js 16, React 19, TypeScript, accessibility, Three.js integration, and AWS Amplify deployment |
 | **Frontend Animation** (8) | gsap-core, gsap-timeline, gsap-scrolltrigger, gsap-plugins, gsap-utils, gsap-react, gsap-frameworks, gsap-performance | GSAP web-animation guidance — tweens/easing/stagger, timeline sequencing, ScrollTrigger, plugins, utils helpers, React (`useGSAP`) and Vue/Svelte integration, performance. Vendored from official greensock/gsap-skills (MIT) |
 | **OpenCode Meta** (7) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, opencode-repo-setup, documentation-consistency-skill, opencode-v2-migration, skill-generalizer | Agent and skill creation/maintenance, documentation consistency auditing, per-repo MCP/project-config setup, v1→v2 migration detect/triage, skill generalization auditing |
-| **Experiment** (4) | testing-inline-skill, linting-inline-skill, documentation-inline-skill, responsive-audit-inline-skill | A/B harness (#582) — in-session delegates mirroring the testing/linting/documentation/responsive-audit subagents (decision trees + enforcement deltas); opt-in via `--preset experiment` |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
-| **Git/Workflow** (14) | ascii-diagram-creator, mermaid-diagram-creator, ticket-creation-skill, plan-execution-skill, worktree-pipeline-skill, wayfinder-skill, git-issue-labeler, gh-cli-setup-skill, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, release conventions, version bumping, compact commits, branch workflow orchestration, structured ticket creation via `/create-ticket`, fully-automated per-phase plan execution via `/run-plan`, the tracker-ticket-to-merged-PR worktree pipeline via `/run-worktree-pipeline`, and oversized-work planning as decision-ticket maps |
-| **Documentation** (5) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow, unslop-skill, technical-writing-skill | Documentation generation |
+
+| **Git/Workflow** (16) | ascii-diagram-creator, mermaid-diagram-creator, dev-uat-promotion-skill, ticket-creation-skill, plan-execution-skill, plan-execution-inline-skill, worktree-pipeline-skill, wayfinder-skill, git-issue-labeler, gh-cli-setup-skill, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, dev→uat promotion batching, release conventions, version bumping, compact commits, branch workflow orchestration, structured ticket creation via `/create-ticket`, fully-automated per-phase plan execution via `/run-plan` (subagent workers) or `/run-plan-v2` (inline workers), the tracker-ticket-to-merged-PR worktree pipeline via `/run-worktree-pipeline`, and oversized-work planning as decision-ticket maps |
+| **Documentation** (6) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow, unslop-skill, technical-writing-skill, documentation-inline-skill | Documentation generation |
 | **Communication** (1) | email-drafter-skill | Business-email drafting — process, tone frames, slop checklist |
 | **Academic & Research Writing** (2) | horseshoe-paper-writing-skill, research-paper-generation-skill | Academic & research paper writing (Horseshoe Diagram Method, journal-submission formats; codebase→paper generation) |
 | **JIRA** (3) | jira-status-updater, jira-git-integration, jira-ticket-labeler | JIRA integration via MCP server |
-| **Code Quality** (14) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill, blast-radius-skill, ponytail-audit-skill, ponytail-review-skill, ponytail-debt-skill, language-review-checklists-skill, reviewer-baseline-skill | Code quality analysis, patterns, and @deprecated code cleanup |
+| **Code Quality** (16) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill, blast-radius-skill, ponytail-audit-skill, ponytail-review-skill, ponytail-debt-skill, language-review-checklists-skill, reviewer-baseline-skill, testing-inline-skill, linting-inline-skill | Code quality analysis, patterns, @deprecated code cleanup, and the inline testing/linting delegates |
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Mechanical `{"pass":bool,"score":N}` evaluators — no LLM self-judgment |
 | **Startup/Business** (3) | startup-pitch-deck-skill, startup-business-docs-skill, construction-bd-skill | Startup pitch decks, business documentation, construction proposals |
@@ -313,7 +313,7 @@ Current count: **154** (history: 123 after the BT-142 pptx migration → consoli
 | **Security** (2) | security-audit-skill, authentication-authorization-skill | Security auditing, vulnerability scanning, and auth implementation |
 | **DevOps** (5) | docker-containerization-skill, monorepo-management-skill, database-migration-skill, logging-observability-skill, aws-iac-safety-skill | Containerization, monorepos, database migrations, observability, and IaC safety |
 | **Planning & Alignment** (2) | grilling-skill, domain-modeling-skill | Relentless interview/grilling sessions and the canonical domain-model capture engine |
-| **Responsive & Visual Testing** (2) | wireframer-skill, playwright-responsive-audit-skill | Low-fidelity wireframes and Playwright-driven responsive UI audit + fix |
+| **Responsive & Visual Testing** (3) | wireframer-skill, playwright-responsive-audit-skill, responsive-audit-inline-skill | Low-fidelity wireframes, Playwright-driven responsive UI audit + fix, and the in-session responsive audit delegate |
 | **CAD & Hardware Design** (15) | cad-generation-skill, cad-viewer-skill, cad-step-parts-skill, cad-dxf-skill, cad-urdf-skill, cad-srdf-skill, cad-sdf-skill, cad-sendcutsend-skill, cad-gcode-skill, cad-bambu-labs-skill, cad-implicit-skill, autodesk-aps-skill, civil-3d-skill, open3d-skill, cad-redraw-skill | Parametric CAD (STEP/STL/3MF/GLB), CAD Viewer previews, off-the-shelf parts, DXF drawings, evidence-aware drawing redraw, robot descriptions (URDF/SRDF/SDF), G-code slicing, 3D printing, SendCutSend validation, implicit CAD, Autodesk APS, Civil 3D, Open3D |
 | **Media Generation** (4) | zai-image-generation-skill, zai-video-skill, zai-asr-skill, zai-ocr-skill | Z.AI PAYG media endpoints: text-to-image (GLM-Image), text/image-to-video (CogVideoX-3), audio transcription (GLM-ASR), layout-aware OCR (GLM-OCR) — artifacts saved to local files |
 
