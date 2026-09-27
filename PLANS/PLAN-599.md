@@ -44,59 +44,71 @@
 
 ### Phase 1: Audit (read-only detector passes — skill-generalizer framework)
 
-- [ ] **1.1** Run the five detector passes (named-entity/platform, anecdote→rule, domain-modularization, constants, path/reference) over the six source SKILL.md files and record the per-section disposition table into this PLAN's Technical Notes
+- [x] **1.1** Run the five detector passes (named-entity/platform, anecdote→rule, domain-modularization, constants, path/reference) over the six source SKILL.md files and record the per-section disposition table into this PLAN's Technical Notes
     — **Why:** Phase 2 authors from dispositions, not re-derivation; every source line gets exactly one disposition (method→main doc, platform values→side file, policy→canonical home, dead→delete)
     — **Done when:** Technical Notes carries a table covering all six skills' sections with zero "undecided" rows
     — **Consumers affected:** Phase 2 authoring steps
-- [ ] **1.2** Extract byte-exact §MCP Availability Guard (from jira-git-integration) and §Attribution (from ticket-creation) bodies plus the consolidated trigger-phrase inventory into Technical Notes
+    — **Done:** Disposition table written into Technical Notes covering all six skills; zero undecided rows
+- [x] **1.2** Extract byte-exact §MCP Availability Guard (from jira-git-integration) and §Attribution (from ticket-creation) bodies plus the consolidated trigger-phrase inventory into Technical Notes
     — **Why:** AC2 requires verbatim headings/bodies; pinning them pre-authoring prevents drift during the merge
     — **Done when:** Technical Notes contains both verbatim blocks and the trigger inventory (incl. the two skills that had no trigger lists)
     — **Consumers affected:** step 2.4
+    — **Done:** Verbatim §MCP Availability Guard + §Attribution bodies and trigger inventory pinned in Technical Notes
 
 ### Phase 2: Author `skills/ticketing-skill/` + CI-green atomic swap (ONE commit)
 
 _All of 2.1–2.10 lands in a single commit so release.yml (build-registry --check + full bats per push) stays green at that SHA._
 
-- [ ] **2.1** `mkdir -p skills/ticketing-skill/references`; `git mv skills/ticket-creation-skill/templates skills/ticketing-skill/templates`
+- [x] **2.1** `mkdir -p skills/ticketing-skill/references`; `git mv skills/ticket-creation-skill/templates skills/ticketing-skill/templates`
     — **Why:** git mv preserves template history and lands the byte-identical files the byte-identity test pins, before the source dir is removed
     — **Done when:** `git status` shows renamed `templates/*.yml` under `skills/ticketing-skill/`
     — **Consumers affected:** byte-identity test, opencode-repo-setup template-copy offer
-- [ ] **2.2** Write `skills/ticketing-skill/references/github.md` — gh values + LABELS vocabulary (GitHub defaults, priority, semver PR-only), issue key format, 3-tier tooling fallback with per-operation capability matrix (gh → prompt-install via gh-cli-setup-skill → git-only tier: create=paste-ready body+web URL, label/comment=skip+note, close=`Closes #N` keyword, plumbing=full), skeleton per side-file contract
+    — **Done:** git mv templates → skills/ticketing-skill/templates (3 renames detected); references/ dir created
+- [x] **2.2** Write `skills/ticketing-skill/references/github.md` — gh values + LABELS vocabulary (GitHub defaults, priority, semver PR-only), issue key format, 3-tier tooling fallback with per-operation capability matrix (gh → prompt-install via gh-cli-setup-skill → git-only tier: create=paste-ready body+web URL, label/comment=skip+note, close=`Closes #N` keyword, plumbing=full), skeleton per side-file contract
     — **Why:** AC4 GitHub half; platform values live in the side file, never the main doc
     — **Done when:** file exists with fixed skeleton, citations/verify-locally notes on values, no method content
     — **Consumers affected:** SKILL.md load rule; gh-cli-setup reciprocal pointer (3.4)
-- [ ] **2.3** Write `skills/ticketing-skill/references/jira.md` — atlassian_* MCP tools + REST fallback endpoints (`/rest/api/3/...`), type/priority/component vocabularies, idempotent transition contract, `PROJ-123` key regex, skeleton per side-file contract
+    — **Done:** references/github.md written: 3-tier fallback + tier-3 capability matrix, LABELS array, keywords, semver rule, key format, templates contract
+- [x] **2.3** Write `skills/ticketing-skill/references/jira.md` — atlassian_* MCP tools + REST fallback endpoints (`/rest/api/3/...`), type/priority/component vocabularies, idempotent transition contract, `PROJ-123` key regex, skeleton per side-file contract
     — **Why:** AC4 JIRA half; REST fallback carries the MCP-guard policy
     — **Done when:** file exists with skeleton, vocab with verify-locally leads, transition idempotency rule, no method content
     — **Consumers affected:** SKILL.md load rule; policy pointers retargeted in 3.4
-- [ ] **2.4** Write `skills/ticketing-skill/SKILL.md` — frontmatter (name, ≤50-word trigger-preserving description with negative scope, Apache-2.0, compatibility opencode, category Git/Workflow, metadata per house contract); §Platform Detection gate (explicit → repo signals → ask); §Lifecycle routing (create / classify-label / update / close / git-plumbing); §MCP Availability Guard (canonical home, verbatim from 1.2); §Attribution (verbatim from 1.2); semver rule "PRs get exactly one semver label; issues get type + priority"; side-file load rules
+    — **Done:** references/jira.md written: MCP discovery, REST endpoint table, type/priority vocab, transitions, key format, description templates
+- [x] **2.4** Write `skills/ticketing-skill/SKILL.md` — frontmatter (name, ≤50-word trigger-preserving description with negative scope, Apache-2.0, compatibility opencode, category Git/Workflow, metadata per house contract); §Platform Detection gate (explicit → repo signals → ask); §Lifecycle routing (create / classify-label / update / close / git-plumbing); §MCP Availability Guard (canonical home, verbatim from 1.2); §Attribution (verbatim from 1.2); semver rule "PRs get exactly one semver label; issues get type + priority"; side-file load rules
     — **Why:** the method body; AC1+AC2+AC3 land here
     — **Done when:** AC1–AC3 SKILL.md clauses checkable true; metadata values double-quoted comma-separated strings; description ≤50 words
     — **Consumers affected:** all Phase 3/5 consumers
-- [ ] **2.5** Write `skills/ticketing-skill/README.md` with the Mermaid workflow diagram (platform gate → lifecycle ops → side-file loads; github branch shows 3 tooling tiers; jira branch shows MCP/REST)
+    — **Done:** SKILL.md written: 31-word description, §Platform Detection, §Lifecycle (5 ops), §MCP Availability Guard + §Attribution verbatim, boundaries; files: skills/ticketing-skill/SKILL.md; fixes: none
+- [x] **2.5** Write `skills/ticketing-skill/README.md` with the Mermaid workflow diagram (platform gate → lifecycle ops → side-file loads; github branch shows 3 tooling tiers; jira branch shows MCP/REST)
     — **Why:** human-facing map; diagram must mirror SKILL.md routing exactly
     — **Done when:** fenced ```mermaid flowchart covers both platforms, both lifecycle dimensions, 3-tier fallback
     — **Consumers affected:** none (inert to installer/registry/tests)
-- [ ] **2.6** Sweep `opencode_app/opencode.json`: the six allow rules (`:130,:195,:200,:205,:210,:215`) → one `ticketing-skill` allow; retarget the `/create-ticket` command template (`:665`) to load `ticketing-skill`
+    — **Done:** README.md written with mermaid flowchart (both platforms, both routing dimensions, 3-tier + MCP/REST fallback)
+- [x] **2.6** Sweep `opencode_app/opencode.json`: the six allow rules (`:130,:195,:200,:205,:210,:215`) → one `ticketing-skill` allow; retarget the `/create-ticket` command template (`:665`) to load `ticketing-skill`
     — **Why:** full-profile single source (deploy/skill-profiles.json `_comment`); unswept, skill_profiles.bats :54 (lean ⊆ app allows) AND :63 (dead-allow guard) both fail — Mode R strengthening
     — **Done when:** zero old names in the file; `node -e JSON.parse` validates; both gating tests green at this SHA
     — **Consumers affected:** Docker app runtime, tests/skill_profiles.bats
-- [ ] **2.7** Installer sync: `node installer/build-registry.mjs` (regenerate); `installer/presets/pack-devops.json` six entries → `ticketing-skill`; `deploy/skill-profiles.json` lean: `ticket-creation-skill` → `ticketing-skill` (1:1, lean count stays 78)
+    — **Done:** opencode_app/opencode.json: 6 allow rules → 1 ticketing-skill allow (:130 block), 5-rule block removed, /create-ticket template retargeted; JSON valid; 0 old names
+- [x] **2.7** Installer sync: `node installer/build-registry.mjs` (regenerate); `installer/presets/pack-devops.json` six entries → `ticketing-skill`; `deploy/skill-profiles.json` lean: `ticket-creation-skill` → `ticketing-skill` (1:1, lean count stays 78)
     — **Why:** `--check` runs per push — registry must match disk in THIS commit; presets/profiles would pull dead dirs otherwise
     — **Done when:** `build-registry.mjs --check` exits 0; both JSONs reference only existing dirs
     — **Consumers affected:** installer/init.mjs, tests/init.bats, tests/skill_profiles.bats
-- [ ] **2.8** Docs counts (disk + delta): README Git/Workflow row 16→**14** (row holds only ticket-creation/git-issue-labeler/git-issue-updater of the six), JIRA (3) row removed, tree-comment + hand-maintained counts + running totals **155→150**; migration note naming the six old names with `npx add ticketing-skill` replacement; `opencode_app/README.md` count literal same delta
+    — **Done:** registry rebuilt (agents=34, skills=150, --check PASS); pack-devops 6→1; skill-profiles lean 1:1 swap (count 78); fixes: preset alphabetical placement
+- [x] **2.8** Docs counts (disk + delta): README Git/Workflow row 16→**14** (row holds only ticket-creation/git-issue-labeler/git-issue-updater of the six), JIRA (3) row removed, tree-comment + hand-maintained counts + running totals **155→150**; migration note naming the six old names with `npx add ticketing-skill` replacement; `opencode_app/README.md` count literal same delta
     — **Why:** test_markitdown cross-file count is per-push; LEARNINGS new-skill-count-literal-gates — derive from disk, never stale doc numbers (review caught 16→11 as wrong-base arithmetic)
     — **Done when:** README counts equal `ls skills/ | wc -l` at HEAD; migration note present
     — **Consumers affected:** tests/test_markitdown_skill.bats, humans
-- [ ] **2.9** `tests/test_issue_template_byte_identity.bats`: TEMPLATES_DIR/SKILL_MD → `skills/ticketing-skill/`
+    — **Done:** README 155→150 ×6 sites, Git/Workflow 16→14 with ticketing-skill, JIRA (3) row removed, history line + migration note (#599 names + replacement); opencode_app/README 155→150
+- [x] **2.9** `tests/test_issue_template_byte_identity.bats`: TEMPLATES_DIR/SKILL_MD → `skills/ticketing-skill/`
     — **Why:** AC7 first half; the pinned cmp must target the moved dir in this commit or the push is red
     — **Done when:** `bats tests/test_issue_template_byte_identity.bats` passes at this tree
     — **Consumers affected:** release CI
-- [ ] **2.10** `git rm -r` the six old dirs; single commit `refactor(skills): consolidate six ticket skills into ticketing-skill` (renames + new files + removals + 2.6–2.9 + Phase 1 PLAN edits)
+    — **Done:** tests/test_issue_template_byte_identity.bats paths swapped; 3/3 pass standalone
+- [x] **2.10** `git rm -r` the six old dirs; single commit `refactor(skills): consolidate six ticket skills into ticketing-skill` (renames + new files + removals + 2.6–2.9 + Phase 1 PLAN edits)
     — **Why:** AC1 same-commit replacement; every per-push gate green at this SHA (registry --check, skill_profiles :54/:63, markitdown count, byte-identity, count_drift, init)
     — **Done when:** commit lands; `bats tests/skill_profiles.bats tests/test_issue_template_byte_identity.bats tests/test_markitdown_skill.bats tests/test_count_drift.bats tests/init.bats` all green at this SHA
     — **Consumers affected:** all downstream consumers
+    — **Done:** Six dirs git rm-ed; single commit landed; gate green (registry --check + 5 suites = 71/71 ok, 0 not-ok)
 
 ### Phase 3: Reference sweep (agents + 12 consumer skills)
 
@@ -141,9 +153,36 @@ _All of 2.1–2.10 lands in a single commit so release.yml (build-registry --che
 
 ## Technical Notes
 
-### Phase 1 outputs (fill during 1.1/1.2)
+### Phase 1 outputs (filled 1.1/1.2)
 
-_Disposition table and verbatim §-bodies land here before Phase 2 begins._
+**Disposition table** — every source section → exactly one destination (main=SKILL.md method · github/jira=side-file values · delete):
+
+| Source section | Destination |
+|---|---|
+| ticket-creation: Step 1 platform detect | main §Platform Detection (explicit > repo signals > ask; atlassian-absent rule kept) |
+| ticket-creation: intake stages 1–5, behavior rules, harness binding, ticket-vs-plan boundary, Step 4b sequence handoff, blocked-by recording | main §Create |
+| ticket-creation: bug/feature field tables + rendering schemas + Jira description mapping | main §Create (schema); Jira renderings → jira.md |
+| ticket-creation: gh commands; atlassian commands + project select | github.md §Create; jira.md §Create |
+| ticket-creation: §MCP Availability Guard (was a pointer) | superseded by main canonical home (verbatim body below) |
+| ticket-creation: §Attribution | main §Attribution VERBATIM |
+| ticket-creation: examples, platform comparison, checklists | delete (README diagram + routing cover them) |
+| git-issue-labeler: "PRs get exactly one semver label; issues type+priority"; assignment caps; semantic-judgment caveat | main §Classify / Label |
+| git-issue-labeler: LABELS array + taxonomy + auto-create loop + keyword lists | github.md §Labels |
+| git-issue-labeler: semver structural regex; governance pointer | github.md §Semver (governance cite to semantic-release-convention-skill preserved) |
+| git-issue-updater: commit→comment workflow, house comment template, idempotency, ref-detection ORDER | main §Update |
+| git-issue-updater: per-platform endpoints/regexes | github.md §Update; jira.md §Comment |
+| jira-git-integration: §MCP Availability Guard | main §MCP Availability Guard VERBATIM (canonical home moves here) |
+| jira-git-integration: discovery workflow (resources→user→projects→create) | jira.md §MCP Tools |
+| jira-git-integration: branch naming + commit footers (general rule) | main §Git Plumbing (ABC-123 specifics → jira.md) |
+| jira-status-updater: exactly-once contract, merge comment template, key-detection-from-PR | main §Close |
+| jira-status-updater: transition pick priority + REST transitions endpoint | jira.md §Transitions |
+| jira-ticket-labeler: type/priority keyword tables, GitHub→JIRA mapping, components, Bug-vs-Task heuristics | jira.md §Vocabulary |
+| jira-ticket-labeler: "Why separate from git-issue-labeler", taxonomy comparison, MCP guard paragraph | delete (one skill now; main guard covers) |
+| both labelers: sync contract | note in both side files ("kept in sync within this skill") |
+
+**Verbatim §MCP Availability Guard** (from jira-git-integration:17–26 — the canonical body): "The `atlassian` MCP server is **disabled by default** (opt-in). Before any `atlassian_*` call, check whether the tools exist in your tool list: If `atlassian_*` tools are absent, do NOT attempt or hallucinate them. · Interactive: offer per-project enable via `opencode-repo-setup-skill` (writes the FULL atlassian server entry into the project `opencode.json` — a bare `{"disabled":false}` stub is inert; effective next session, so this session must degrade). · Fallback: REST with an API token — `curl -u email:token` against `https://<site>.atlassian.net` (discover cloudId unauthenticated: `curl https://<site>.atlassian.net/_edge/tenant_info`); scoped tokens use `api.atlassian.com/ex/jira/{cloudId}`, unscoped use site-direct `/rest/api/3/`. · No credentials/headless: report the JIRA operation as skipped — never block the calling workflow."
+
+**Verbatim §Attribution** (from ticket-creation:181–188): GitHub — issue author is the `gh auth` user by construction (token owner — GitHub does not allow spoofing); `--assignee @me` self-assigns the same identity; `git config user.name`/`user.email` are NOT valid assignee sources. JIRA reporter — defaults to the account behind the MCP token / REST credentials. JIRA assignee — must be set explicitly by `accountId`: REST `GET /rest/api/3/myself` → `.accountId` (MCP v2: `atlassianUserInfo`/`lookupJiraAccountId`); REST `PUT /rest/api/3/issue/{key}/assignee` `{"accountId":"<id>"}` — the only guaranteed path; `atlassian_createJiraIssue` (v1) assignee parameter unverified — re-inspect live; until then REST PUT or MCP v2 `editJiraIssue`.
 
 **Trigger inventory (from 1.2):** create ticket · create issue · new issue · jira ticket · bug report · feature request · label issue · assess labels · assign labels · semver label PR · classify jira ticket · issue type · priority · update issue · close ticket · post-merge transition · jira branch · ticket key from branch. Plus absorbed keyword surfaces from jira-status-updater ("status transitions after pull requests are merged") and jira-ticket-labeler (type/priority/components).
 
