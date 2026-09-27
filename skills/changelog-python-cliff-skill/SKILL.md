@@ -29,7 +29,7 @@ Use this workflow when:
 
 - Python project with git repository
 - [git-cliff](https://git-cliff.org) installed (`cargo install git-cliff` or download from releases)
-- Conventional commits in git history (see `git-semantic-commits` skill)
+- Conventional commits in git history (see `civiltekk-git-commits` skill)
 - Version defined in `pyproject.toml`, `__init__.py`, `setup.py`, or `setup.cfg`
 
 ## Steps
@@ -155,7 +155,7 @@ changelog:
 
 ## Best Practices
 
-- **Conventional Commits**: Use `feat:`, `fix:`, `docs:`, etc. for proper categorization (see `git-semantic-commits` skill)
+- **Conventional Commits**: Use `feat:`, `fix:`, `docs:`, etc. for proper categorization (see `civiltekk-git-commits` skill)
 - **PEP 440 Compliance**: Use proper pre-release identifiers (`a`, `b`, `rc`) not `alpha`, `beta`
 - **Tag Format**: Use `v` prefix for git tags (`v1.0.0`) for compatibility with both PEP 440 and semver tools
 - **Changelog Placement**: Keep `CHANGELOG.md` in project root
@@ -211,7 +211,7 @@ Changelog generation follows the conventions in `semantic-release-convention`:
 ## Dependencies
 
 - **semantic-release-convention**: For release tag format and commit type conventions
-- **git-semantic-commits**: For conventional commit formatting guidance
+- **civiltekk-git-commits**: For conventional commit formatting and budget guidance
 - **documentation-sync-workflow**: If changelog is part of documentation updates
 - **git-cliff**: External tool (not bundled)
 

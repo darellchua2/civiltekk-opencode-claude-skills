@@ -72,22 +72,26 @@ Consumers: agents/opencode-tooling-subagent.md (allowlist + body), deploy/skill-
 ### Phase 2: civiltekk-git-commits-skill
 Absorbs: `git-semantic-commits-skill` + `git-compact-commits-skill`. references/: `semantic.md`, `compact.md`. Routes: conventional-format | brevity-budget (descriptions already cross-reference as alternatives).
 Consumers: deploy/skill-profiles.json, deploy/.AGENTS.md (§Commits "Granularity: git-semantic-commits-skill" line → new name), installer/presets/pack-core.json + pack-devops.json + pack-inline-workers.json, tests/test_select_items.bats.
-- [ ] **2.1** Author host + references per template
+- [x] **2.1** Author host + references per template
     — **Why:** two commit-style skills are one method (write a commit) with two style variants
     — **Done when:** host routes both; triggers union intact; isolation bats green
     — **Consumers affected:** AGENTS.md §Commits readers
-- [ ] **2.2** Delete + repoint (skill-profiles, deploy/.AGENTS.md granularity line, 3 presets, test_select_items literals)
+    — **Done:** host 78 lines, routes conventional-format|brevity-budget, mutual boundary refs absorbed; files: skills/civiltekk-git-commits-skill/{SKILL.md,references/semantic.md,references/compact.md}; fixes: none
+- [x] **2.2** Delete + repoint (skill-profiles, deploy/.AGENTS.md granularity line, 3 presets, test_select_items literals)
     — **Why:** deploy/.AGENTS.md ships to user-level config — stale name misdirects the primary session
     — **Done when:** grep residue clean (same rule as 1.2); test_select_items green
     — **Consumers affected:** primary-session commit behavior, packs
-- [ ] **2.3** Registry + scoped gate + count (148)
+    — **Done:** 2 dirs git-rm; repointed: skill-profiles (77→76), deploy/opencode.json, deploy/.AGENTS.md granularity line, 3 presets, test_select_items, README (149→148 ×6 + category row), setup.sh lean comment, 6 fellow-skills (changelog-cliff, plan-execution x2, semantic-release, verification-loop, version-bump); residue exempt-only; fixes: none
+- [x] **2.3** Registry + scoped gate + count (148)
     — **Why:** per-commit green discipline
     — **Done when:** same shape as 1.3 with count 148
     — **Consumers affected:** installer
-- [ ] **2.4** Commit + push
+    — **Done:** registry rebuilt (skills=148); scoped gate 123/123 green first run; count 148; fixes: none
+- [x] **2.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed single commit
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 3: civiltekk-context-optimization-skill
 Absorbs: `context-budget-skill` (10.1K) + `strategic-compact-skill`. references/: `budget.md`, `compact.md`. Routes: audit-overhead | compaction-strategy.
@@ -307,3 +311,4 @@ None active. (The pre-#612 overlap hold is resolved — feat/602 merged as 05490
 
 WORK LOG — Phase 1: lean literal fix (78→77, six sites in tests/skill_profiles.bats) caught by the scoped gate on first run — the count-literal LEARNINGS recurring as predicted; WARN-5 sweep-net caught two unlisted fellow-skill consumers (skills-maintainer, agent-introspection). Template-mandated `Consolidates … (#603)` line is standing accepted residue for every host (ticketing-skill #599 precedent).
 GATE eeb509f tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 13837af tier=light lint=- typecheck=- build=- unit=t e2e=n.a

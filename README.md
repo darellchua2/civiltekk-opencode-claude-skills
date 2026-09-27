@@ -2,7 +2,7 @@
 
 A personal software-development skills collection — the agents, skills, and pipeline tooling I use daily — shared so you can take **a single skill** or adopt **the whole stack**.
 
-- **149 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
+- **148 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
 - **Same skills install to other harnesses**: Claude Code, Kimi Code, Kilo Code, and the cross-tool `~/.agents/` standard (Agent Skills open format)
 - A **robust application-development pipeline**: ticket → PLAN → gated execution → review → merged PR, driven by a handful of slash commands
 
@@ -73,7 +73,7 @@ Provider swap (Z.AI default): `./deploy/setup.sh --provider anthropic|openai|ope
 
 ### 3. Per-project subset — presets
 
-Not every project needs 34 agents + 149 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
+Not every project needs 34 agents + 148 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
 
 ```bash
 opencode-init --list categories                              # introspect (JSON)
@@ -84,7 +84,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills --project . --preset rev
 
 | Preset | Use for |
 |--------|---------|
-| `core` | Minimal baseline (explorer + git-semantic-commits, continuous-learning, codegraph) |
+| `core` | Minimal baseline (explorer + civiltekk-git-commits, continuous-learning, codegraph) |
 | `review` | Code quality gates (code/architecture/language reviewers + 31 skills) |
 | `frontend` | Web frontend (Next.js/React/a11y + uiux-reviewer, responsive-audit) |
 | `backend` | Server / devops-lite (Python/DB/API/security + language-reviewer) |
@@ -98,7 +98,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills --project . --preset rev
 
 ```
 civiltekk-opencode-claude-skills/
-├── skills/                      # 149 skill directories (source of truth)
+├── skills/                      # 148 skill directories (source of truth)
 ├── agents/                      # 34 subagent .md files (source of truth)
 ├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings, auto-continue, question-repair)
 │   └── vibeguard.config.json    # Secret-masking regex patterns
@@ -214,7 +214,7 @@ Globally: set `"disabled": false` in `~/.config/opencode/opencode.json`, or use 
 
 Default state of every pack is **OFF**. Design history: [issue #268](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/268).
 
-**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (77 primary-visible skills + deny-all); subagents are profile-immune and all 149 skills stay on disk:
+**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (76 primary-visible skills + deny-all); subagents are profile-immune and all 148 skills stay on disk:
 
 ```bash
 ./deploy/setup.sh                     # default: lean
@@ -251,9 +251,9 @@ Attribution: `plugins/ATTRIBUTION.md`; skill-level attributions in `THIRD_PARTY_
 </details>
 
 <details>
-<summary><strong>Skill catalog — 149 skills by category</strong></summary>
+<summary><strong>Skill catalog — 148 skills by category</strong></summary>
 
-Current count: **149** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563; the six ticket skills were consolidated into `ticketing-skill` in #599 — `npx … add ticket-creation-skill|git-issue-labeler-skill|git-issue-updater-skill|jira-git-integration-skill|jira-status-updater-skill|jira-ticket-labeler-skill` are removed, use `add ticketing-skill`; the two creation skills were consolidated into `civiltekk-opencode-creation-skill` in #603 — their `add` names are removed, use `add civiltekk-opencode-creation-skill`).
+Current count: **148** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563; the six ticket skills were consolidated into `ticketing-skill` in #599 — `npx … add ticket-creation-skill|git-issue-labeler-skill|git-issue-updater-skill|jira-git-integration-skill|jira-status-updater-skill|jira-ticket-labeler-skill` are removed, use `add ticketing-skill`; the two creation skills were consolidated into `civiltekk-opencode-creation-skill` in #603 — their `add` names are removed, use `add civiltekk-opencode-creation-skill`; the two commits skills were consolidated into `civiltekk-git-commits-skill` in #603 — their `add` names are removed, use `add civiltekk-git-commits-skill`).
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
@@ -266,7 +266,7 @@ Current count: **149** (history: 123 after the BT-142 pptx migration → consoli
 | **OpenCode Meta** (6) | civiltekk-opencode-creation, opencode-skills-maintainer, opencode-repo-setup, documentation-consistency-skill, opencode-v2-migration, skill-generalizer | Agent and skill creation/maintenance (one consolidated creation skill), documentation consistency auditing, per-repo MCP/project-config setup, v1→v2 migration detect/triage, skill generalization auditing |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
 
-| **Git/Workflow** (14) | ascii-diagram-creator, mermaid-diagram-creator, dev-uat-promotion-skill, ticketing-skill, plan-execution-skill, plan-execution-inline-skill, worktree-pipeline-skill, wayfinder-skill, gh-cli-setup-skill, git-semantic-commits, semantic-release-convention, git-compact-commits, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, dev→uat promotion batching, release conventions, version bumping, compact commits, branch workflow orchestration, the full ticket lifecycle (create/classify/update/close on GitHub Issues or JIRA) via `/create-ticket`, fully-automated per-phase plan execution via `/run-plan` (subagent workers) or `/run-plan-v2` (inline workers), the tracker-ticket-to-merged-PR worktree pipeline via `/run-worktree-pipeline`, and oversized-work planning as decision-ticket maps |
+| **Git/Workflow** (13) | ascii-diagram-creator, mermaid-diagram-creator, dev-uat-promotion-skill, ticketing-skill, plan-execution-skill, plan-execution-inline-skill, worktree-pipeline-skill, wayfinder-skill, gh-cli-setup-skill, civiltekk-git-commits, semantic-release-convention, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, dev→uat promotion batching, release conventions, version bumping, commit discipline — conventional format plus compact budgets (one consolidated commits skill), branch workflow orchestration, the full ticket lifecycle (create/classify/update/close on GitHub Issues or JIRA) via `/create-ticket`, fully-automated per-phase plan execution via `/run-plan` (subagent workers) or `/run-plan-v2` (inline workers), the tracker-ticket-to-merged-PR worktree pipeline via `/run-worktree-pipeline`, and oversized-work planning as decision-ticket maps |
 | **Documentation** (6) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow, unslop-skill, technical-writing-skill, documentation-inline-skill | Documentation generation |
 | **Communication** (1) | email-drafter-skill | Business-email drafting — process, tone frames, slop checklist |
 | **Academic & Research Writing** (2) | horseshoe-paper-writing-skill, research-paper-generation-skill | Academic & research paper writing (Horseshoe Diagram Method, journal-submission formats; codebase→paper generation) |

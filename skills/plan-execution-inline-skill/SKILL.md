@@ -83,7 +83,7 @@ Rules: `fixes:` MUST list every gate fix for that step; one logical line; only t
 
 ### Commit + push
 
-`git add <phase files> PLANS/PLAN-*.md` → `git commit -m "<type>(<scope>): implement Phase N — <summary>" -m "Plan: <file>. Gate: … green. Trace: per-step Done lines."` → `git push`. PLAN ticks, Done lines, and gate memos ride inside this one atomic commit — a standalone `docs(plan)` commit mid-run is never allowed. Conventions per `git-semantic-commits-skill`; project commitlint overrides; never mix style-only with logic. Push rejected (non-FF) → stop and ask, never force-push.
+`git add <phase files> PLANS/PLAN-*.md` → `git commit -m "<type>(<scope>): implement Phase N — <summary>" -m "Plan: <file>. Gate: … green. Trace: per-step Done lines."` → `git push`. PLAN ticks, Done lines, and gate memos ride inside this one atomic commit — a standalone `docs(plan)` commit mid-run is never allowed. Conventions per `civiltekk-git-commits-skill`; project commitlint overrides; never mix style-only with logic. Push rejected (non-FF) → stop and ask, never force-push.
 
 ### Final validation
 
@@ -130,7 +130,7 @@ Gate red after 3 attempts → report + ask · phase/fix budget hit → HALT `[go
 | `worktree-pipeline-skill` | Pipeline Step 8 may invoke this skill (inline arm) with an explicit PLAN path; §6d reuses `plan-execution-skill`'s malformed-step flag primitive |
 | `verification-loop-skill` | Canonical gate contract + memo format — the gate loop defers there |
 | `error-resolver-workflow-skill` | Gate-red diagnosis during fix-on-fail |
-| `git-semantic-commits-skill` | Commit formats for the per-phase atomic commit |
+| `civiltekk-git-commits-skill` | Commit formats for the per-phase atomic commit |
 | `testing-inline-skill` / `linting-inline-skill` / `documentation-inline-skill` / `responsive-audit-inline-skill` | The inline delegate family — matrix routes here |
 | `tdd-workflow-skill` | 4b mandates tests for new code before the gate |
 | `strategic-compact-skill` | PLAN.md files are natural compaction anchors |

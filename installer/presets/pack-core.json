@@ -6,8 +6,8 @@
     "explorer-subagent"
   ],
   "skills": [
-    "continuous-learning-skill",
-    "git-semantic-commits-skill"
+    "civiltekk-git-commits-skill",
+    "continuous-learning-skill"
   ],
   "mcps": [
     "codegraph"

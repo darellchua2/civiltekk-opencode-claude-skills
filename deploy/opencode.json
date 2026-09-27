@@ -107,7 +107,7 @@
         },
         {
             "action": "skill",
-            "resource": "git-semantic-commits-skill",
+            "resource": "civiltekk-git-commits-skill",
             "effect": "allow"
         },
         {
@@ -178,11 +178,6 @@
         {
             "action": "skill",
             "resource": "horseshoe-paper-writing-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "git-compact-commits-skill",
             "effect": "allow"
         },
         {

@@ -67,10 +67,10 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
 }
 
 @test "print_plan_is_deterministic" {
-  run node deploy/tui.mjs select-items --print-plan --skills git-semantic-commits-skill --agents code-review-subagent
+  run node deploy/tui.mjs select-items --print-plan --skills civiltekk-git-commits-skill --agents code-review-subagent
   [ "$status" -eq 0 ]
   local first="$output"
-  run node deploy/tui.mjs select-items --print-plan --skills git-semantic-commits-skill --agents code-review-subagent
+  run node deploy/tui.mjs select-items --print-plan --skills civiltekk-git-commits-skill --agents code-review-subagent
   [ "$output" = "$first" ]
 }
 
@@ -82,7 +82,7 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
 }
 
 @test "print_plan_runs_headless_zero_tty" {
-  run bash -c "node deploy/tui.mjs select-items --print-plan --skills git-semantic-commits-skill" </dev/null
+  run bash -c "node deploy/tui.mjs select-items --print-plan --skills civiltekk-git-commits-skill" </dev/null
   [ "$status" -eq 0 ]
 }
 
@@ -125,14 +125,14 @@ REGEN_MODULE="installer/deploy-plan-items.mjs"
   # BLOCK regression cannot re-land silently).
   local d; d="$(mktemp -d)"
   mkdir -p "$d/.config/opencode"
-  printf '%s' '{"skills":[{"name":"git-semantic-commits-skill","source":"direct"}],"agents":[],"mcps":[],"packs":[],"plugins":[],"extras":[],"warnings":[]}' > "$d/.config/opencode/deploy-plan.json"
+  printf '%s' '{"skills":[{"name":"civiltekk-git-commits-skill","source":"direct"}],"agents":[],"mcps":[],"packs":[],"plugins":[],"extras":[],"warnings":[]}' > "$d/.config/opencode/deploy-plan.json"
   run bash -c "export HOME='$d'; unset XDG_DATA_HOME XDG_CONFIG_HOME; source '$SETUP_SH' >/dev/null 2>&1
            SELECT_ITEMS=true; DRY_RUN=true; AUTO_ACCEPT=true
            command_exists(){ return 0; }; check_network(){ return 0; }; check_dependencies(){ return 0; }
            main --dry-run -y --select" </dev/null
   [ "$status" -eq 0 ]
   # The untouched-surface assertions (the actual teeth):
-  [ ! -e "$d/.config/opencode/skills/git-semantic-commits-skill" ]
+  [ ! -e "$d/.config/opencode/skills/civiltekk-git-commits-skill" ]
   [ ! -e "$d/.config/opencode/agents" ]
   # Consume-once: dry-run never unlinks the plan.
   [ -f "$d/.config/opencode/deploy-plan.json" ]

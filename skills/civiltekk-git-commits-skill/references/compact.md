@@ -1,16 +1,10 @@
----
-name: git-compact-commits-skill
-description: "Concise commits within strict budgets — 72-char subject, 150-word body, semantic grouping. Triggers: compact commit, concise commit, terse commit."
-license: Apache-2.0
-compatibility: opencode
-category: Git/Workflow
----
+# Compact route (values)
 
-## What I Do
+Commit-length budgets, semantic grouping, and compact writing. The host SKILL.md carries the METHOD (detect → route → load); this file carries the VALUES for the `brevity-budget` route.
 
-Enforce commit-length budgets, semantic grouping, and compact writing. **This skill is the authority** for length budgets, grouping strategy, and commitlint enforcement; `git-semantic-commits-skill` owns types/scopes/breaking-change format; `semantic-release-convention` owns the release pipeline.
+**Authority:** this route is the authority for length budgets, grouping strategy, and commitlint enforcement; `references/semantic.md` in this skill owns types/scopes/breaking-change format; `semantic-release-convention-skill` owns the release pipeline.
 
-## When to Use Me
+## When to use
 
 Commits running long; squashing a branch into one message; "concise commit", "terse commit"; tightening commitlint rules.
 

@@ -1,16 +1,8 @@
----
-name: git-semantic-commits-skill
-description: "Conventional Commits — type, scope, breaking changes, semver guidance, atomic-commit granularity by layer. Triggers: commit and push, make a commit, write a commit message, commit message format, semantic commit. Not for brevity (git-compact-commits-skill)."
-license: Apache-2.0
-compatibility: opencode
-category: Git/Workflow
----
+# Semantic route (values)
 
-## What I do
+Conventional Commits formatting plus this config's atomic-commit granularity doctrine — a framework other skills consume. The host SKILL.md carries the METHOD (detect → route → load); this file carries the VALUES for the `conventional-format` route.
 
-Conventional Commits formatting plus this config's atomic-commit granularity doctrine. A framework skill — other skills consume these rules.
-
-**Handoffs:** commit-length enforcement (72-char subject, 150-word body, commitlint config, semantic grouping) → `git-compact-commits-skill` (the authority for those). Full release pipeline conventions (PR titles, merge strategy, release tags, GitHub Actions) → `semantic-release-convention`.
+**Handoffs:** commit-length enforcement (72-char subject, 150-word body, commitlint config, semantic grouping) → `references/compact.md` in this skill (the authority for those). Full release pipeline conventions (PR titles, merge strategy, release tags, GitHub Actions) → `semantic-release-convention-skill`.
 
 ## Format
 
@@ -24,7 +16,7 @@ Conventional Commits formatting plus this config's atomic-commit granularity doc
 
 - Types: `feat fix docs style refactor test chore perf ci build revert`
 - Subject: imperative mood ("add", not "added"), lowercase type/scope, ≤72 chars, no trailing period
-- Body: what and why, not how; wrap at 72; word-count limits live in `git-compact-commits-skill`
+- Body: what and why, not how; wrap at 72; word-count limits live in `references/compact.md`
 - Footers: `BREAKING CHANGE: <desc + migration>`, `Closes #N`, `Reviewed-by:`, `Authored-by:`
 - Breaking change: `!` after type/scope (`feat(api)!: …`) **or** `BREAKING CHANGE:` footer → MAJOR
 
