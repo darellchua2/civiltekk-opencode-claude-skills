@@ -19,22 +19,23 @@
 
 | Node (file/module) | Depends on (must precede) | Consumers (who depends on this) | Change risk |
 |---------------------|---------------------------|---------------------------------|-------------|
-| `opencode_app/opencode.json` → `deploy/opencode.json` | — | `deploy/setup.sh:130`, `installer/init.mjs:56`, `.releaserc.json:133`, `release.yml:86-87`, `tests/skill_profiles.bats`, `tests/test_mcp_count_consistency.bats:26`, `tests/test_docling_skill.bats:11`, `tests/init.bats:10`, `tests/test_requires_skills.bats:75`, `deploy/apply-skill-profile.mjs`, `deploy/merge-packs.mjs:198`, `deploy/skill-profiles.json` | high — single source of truth for all 3 install modes |
-| `deploy/setup.sh` | config path (1.2) | every user-space deploy; `tests/test_help_parity.bats`; LLM flags → compose file | med |
+| `opencode_app/opencode.json` → `deploy/opencode.json` | — | `deploy/setup.sh:130`, `installer/init.mjs:56`, `installer/dependency-map.json` ($comment), `.releaserc.json:133`, `release.yml:86-87`, `tests/skill_profiles.bats`, `tests/test_mcp_count_consistency.bats:6,26`, `tests/test_docling_skill.bats:11`, `tests/init.bats:10`, `tests/test_requires_skills.bats:75`, `deploy/apply-skill-profile.mjs`, `deploy/merge-packs.mjs:198`, `deploy/skill-profiles.json`, `skills/context-budget-skill/SKILL.md:62` (inventory), `skills/opencode-repo-setup-skill/SKILL.md:202` (table row) | high — single source of truth for all 3 install modes |
+| `deploy/setup.sh` | config path (1.2) | every user-space deploy; `deploy/setup.ps1` flag forwarding; `tests/test_help_parity.bats`; LLM flags → compose file | med |
+| `deploy/setup.ps1` LLM arms (≈50-53, 135-138) | setup.sh flag removal (Phase 3, same phase) | Windows deploys; `tests/test_help_parity.bats:86-89` pins | med — dead forwarding breaks Windows deploys |
 | `opencode_app/` remainder (Dockerfile, entrypoint, README, AGENTS.md, `.opencode/skills/github-runners-setup-skill`) | config relocation (Phase 1 first — config lives inside this dir) | `tests/test_markitdown_skill.bats:96-99` (reads app README), `tests/test_pack_permissions.bats:213` (sweeps Dockerfile) | med |
 | `docker-compose.yml`, `restart-opencode-docker.sh`, `.dockerignore`, `.env.example` | — | `setup.sh` LLM flags (`docker compose --profile …`), compose `env_file: .env` | med |
 | `setup.sh` LLM/vLLM machinery (~2945-3260, help 630-640, `ENABLE_VLLM:367`) | compose file deletion (Phase 2) | `--enable-llm`/`--enable-vllm` users (none — user-confirmed); `tests/test_help_parity.bats:24` asserts markitdown bump-ritual comment | med |
 | `installer/resolve-models.mjs` `--inject-primary` | Dockerfile deletion (Phase 2 — its only caller) | none after Docker removal; `installer/models.default.json` `$comment` | low |
-| Docs: `README.md`, `AGENTS.md`, `MIGRATION.md`, `CONTRIBUTING.md`, `agents/opencode-tooling-subagent.md:280`, `THIRD_PARTY_LICENSES.md:164`, `skills/markitdown-mcp-skill`, `plugins/` comments | code phases (describe end state) | humans; `tests/test_count_drift.bats` (README counts) | low |
+| Docs: `README.md`, `AGENTS.md`, `MIGRATION.md`, `CONTRIBUTING.md`, `agents/opencode-tooling-subagent.md:280`, `THIRD_PARTY_LICENSES.md:164`, `skills/markitdown-mcp-skill`, `skills/context-budget-skill:58,62`, `skills/opencode-repo-setup-skill:202`, `plugins/` comments | code phases (describe end state) | humans; `tests/test_count_drift.bats` (README counts) | low |
 | `installer/registry.json` | — | expected NO diff (github-runners-setup-skill was never registered) | low |
 
 ## Implementation Phases
 
 ### Phase 1: Relocate config source of truth
 
-- [ ] **1.1** `git mv opencode_app/opencode.json deploy/opencode.json`
-    — **Why:** the file is the config source for ALL install modes, not Docker-only; it must leave `opencode_app/` before that dir is deleted.
-    — **Done when:** `git status` shows the rename staged; `deploy/opencode.json` exists; `opencode_app/opencode.json` does not.
+- [ ] **1.1** `git mv opencode_app/opencode.json deploy/opencode.json` AND strip the `github-runners-setup-skill` skill-allow rule from the relocated config (that skill exists only on the app surface deleted in 2.1 — the rule is dead-on-arrival at the new path; plan-review Issue 2 / GAP 3)
+    — **Why:** the file is the config source for ALL install modes, not Docker-only; it must leave `opencode_app/` before that dir is deleted, and a dead allow would fail the root-only dead-allow guard (1.6).
+    — **Done when:** `git status` shows the rename staged; `deploy/opencode.json` exists; `opencode_app/opencode.json` does not; `grep -c 'github-runners-setup-skill' deploy/opencode.json` = 0.
     — **Consumers affected:** every consumer row in the map; all repointed in 1.2–1.7.
 - [ ] **1.2** Repoint `deploy/setup.sh`: `SOURCE_CONFIG` (line 130) and the two prose comments (≈2729, ≈3579) that name `opencode_app/opencode.json`
     — **Why:** setup.sh is the deploy entrypoint; a stale path breaks every user-space deploy.
@@ -48,18 +49,18 @@
     — **Why:** release CI validates the config with jq; a stale path fails the release workflow.
     — **Done when:** `grep -rn 'opencode_app/opencode.json' .releaserc.json .github/` is empty.
     — **Consumers affected:** semantic-release config check, release workflow.
-- [ ] **1.5** Repoint guard tests: `test_mcp_count_consistency.bats:26`, `test_docling_skill.bats:11`, `init.bats:10`, `test_requires_skills.bats:75`
+- [ ] **1.5** Repoint guard tests: `test_mcp_count_consistency.bats:26` (+ source-of-truth comment :6), `test_docling_skill.bats:11`, `init.bats:10`, `test_requires_skills.bats:75`
     — **Why:** these read the config as source of truth; they fail ENOENT until repointed.
     — **Done when:** `bats tests/test_mcp_count_consistency.bats tests/test_docling_skill.bats tests/init.bats tests/test_requires_skills.bats` all pass in the worktree.
     — **Consumers affected:** CI bats suite.
-- [ ] **1.6** Rework `tests/skill_profiles.bats`: repoint config path AND strip the app-surface union/disjoint assertions (`opencode_app/.opencode/skills`, #486 two-surface contract)
-    — **Why:** the two-surface contract is superseded by this ticket; the app surface dies in Phase 2, so its assertions must go with the path change in the same atomic edit.
-    — **Done when:** `grep -n 'opencode_app' tests/skill_profiles.bats` is empty and `bats tests/skill_profiles.bats` passes.
-    — **Consumers affected:** skill-profile guard coverage (lean⊆shipped check survives, app-union check retired).
-- [ ] **1.7** Update deploy tooling comments/messages that name the old path: `deploy/skill-profiles.json` `_comment`, `deploy/apply-skill-profile.mjs:11`, `deploy/merge-packs.mjs:198`
+- [ ] **1.6** Rework `tests/skill_profiles.bats`: repoint config path to `deploy/opencode.json`; KEEP the dead-allow assert (≈63) and its negative fixture (≈77-86) repointed to the new path; DROP only the app-surface union/disjoint block (≈66-74 and the `dirs(opencode_app/...)` half of the union at ≈37) — #486 two-surface contract superseded
+    — **Why:** the two-surface contract is superseded by this ticket, but the dead-allow guard itself must survive root-only (future dead rules stay detectable); the app surface dies in Phase 2.
+    — **Done when:** `grep -n 'opencode_app' tests/skill_profiles.bats` is empty and `bats tests/skill_profiles.bats` passes (incl. the negative fixture).
+    — **Consumers affected:** skill-profile guard coverage (lean⊆shipped + dead-allow checks survive, app-union check retired).
+- [ ] **1.7** Update deploy/installer tooling comments/messages that name the old path: `deploy/skill-profiles.json` `_comment`, `deploy/apply-skill-profile.mjs:11`, `deploy/merge-packs.mjs:198`, `installer/dependency-map.json` `$comment` (MCP-key contract names `opencode_app/opencode.json` — plan-review Issue 3)
     — **Why:** operator-facing error text and comments must not send users to a deleted path.
-    — **Done when:** `grep -rn 'opencode_app' deploy/` returns nothing (outside setup.sh LLM section, handled in Phase 3).
-    — **Consumers affected:** pack-merge error messages, profile tooling readers.
+    — **Done when:** `grep -rn 'opencode_app' deploy/ installer/dependency-map.json` returns nothing (outside setup.sh LLM section, handled in Phase 3).
+    — **Consumers affected:** pack-merge error messages, profile tooling readers, installer dependency map.
 
 ### Phase 2: Delete Docker artifacts + coupled test reads
 
@@ -82,18 +83,18 @@
 
 ### Phase 3: setup.sh Docker/LLM surgery
 
-- [ ] **3.1** Remove the local-LLM machinery: `setup_local_llm` + `setup_vllm` functions and their wiring, `ENABLE_VLLM` var (367), help-text block (≈630-640), flag parsing for `--enable-llm`/`--enable-vllm`, `.env` writer (≈3059-3146)
-    — **Why:** these install and start Docker containers via the deleted compose file; dead after Phase 2.
-    — **Done when:** `grep -niE 'docker|llm|vllm' deploy/setup.sh` returns no machinery hits; `bash -n deploy/setup.sh` passes; `./deploy/setup.sh --help` renders without the LLM block.
-    — **Consumers affected:** setup.sh help-parity test (3.3); no end users (user-confirmed removal).
+- [ ] **3.1** Remove the LLM-container machinery — the FULL flag family, not just the two flagship flags (plan-review Issue 1 / GAP 1): `setup_local_llm` + `setup_vllm` functions (≈3185-3235), `ENABLE_LOCAL_LLM`/`ENABLE_VLLM` vars (≈366-367), flag parsing for `--enable-llm`/`--enable-vllm`/`--enable-local-llm`/`--local-llm`/`--vllm` (≈965-980), help-text block (≈631-641), `PLAN_STEPS` wiring rows (≈3831-3832), dispatch arms (≈4273-4274), `extras` array entries `local-llm`/`vllm` (≈4337), and the `.env` writer (≈3059-3146)
+    — **Why:** these install and start Docker containers via the deleted compose file; every arm of the family dies together or setup.sh rejects half-forwarded flags. Provider presets SURVIVE — `installer/provider-presets.json` `local-llm`/`vllm`/`ollama` entries and the `--provider` value lists at ≈608/≈925 are model-routing maps to user-hosted endpoints, not containers (GAP 1 ruling; `test_provider_pins.bats`/`test_provider_credentials.bats` stay green untouched).
+    — **Done when:** `grep -nE 'setup_local_llm|setup_vllm|ENABLE_LOCAL_LLM|ENABLE_VLLM|enable-llm|enable-vllm|enable-local-llm|local-llm-up|docker compose|docker pull|nvidia-ctk' deploy/setup.sh` returns only the surviving `--provider` value-list hits at ≈608/≈925 (value tokens, not flags); `bash -n deploy/setup.sh` passes; `./deploy/setup.sh --help` renders without the LLM block.
+    — **Consumers affected:** `deploy/setup.ps1` forwarding arms + `tests/test_help_parity.bats` pins (3.3, same phase); no end users (user-confirmed removal).
 - [ ] **3.2** Update the markitdown bump-ritual comment (≈2808): pin now lives in `deploy/setup.sh` only
     — **Why:** the ritual named `opencode_app/Dockerfile` as the second surface; one surface remains.
     — **Done when:** comment states the single-surface pin.
     — **Consumers affected:** `tests/test_help_parity.bats:24`.
-- [ ] **3.3** `tests/test_help_parity.bats`: update the asserted phrase to the new single-surface comment
-    — **Why:** the test greps the exact ritual sentence changed in 3.2.
-    — **Done when:** `bats tests/test_help_parity.bats` passes.
-    — **Consumers affected:** CI bats suite.
+- [ ] **3.3** Update the coupled test + launcher surfaces for the removed flag family (plan-review Issue 1 / GAP 2): `tests/test_help_parity.bats` — reword the asserted markitdown ritual phrase (≈24) AND drop the four ps1-arm pins (≈86-89); `deploy/setup.ps1` — drop the four switch declarations (≈50-53) and four forward arms (≈135-138) for `--enable-local-llm`/`--enable-vllm`/`--local-llm`/`--vllm` (the `--provider local-llm` VALUE survives per GAP 1)
+    — **Why:** the parity test greps the exact ritual sentence changed in 3.2 and pins the ps1 arms removed alongside 3.1; keeping the ps1 arms would forward dead flags into a setup.sh that now rejects them (broken Windows deploys).
+    — **Done when:** `bats tests/test_help_parity.bats` passes; `grep -nE 'enable-local-llm|enable-vllm|local-llm( |$)|--vllm' deploy/setup.ps1` returns no flag-forwarding hits (provider value lists excluded).
+    — **Consumers affected:** CI bats suite, Windows deploys.
 
 ### Phase 4: resolve-models dead flag
 
@@ -108,7 +109,7 @@
 
 ### Phase 5: Docs sweep
 
-- [ ] **5.1** `README.md`: remove §"Docker — the whole setup as a browser endpoint" + §"Docker: run the whole setup in a browser", dir-tree entries (`opencode_app/`, `docker-compose.yml`, `restart-opencode-docker.sh`, `.env.example`, `.env`), the "auto-injected in Docker" note (≈194), and the `docker compose build --build-arg` MCP line (≈246)
+- [ ] **5.1** `README.md`: remove §"Docker — the whole setup as a browser endpoint" + §"Docker: run the whole setup in a browser", dir-tree entries (`opencode_app/`, `docker-compose.yml`, `restart-opencode-docker.sh`, `.env.example`, `.env`), the "auto-injected in Docker" note (≈194), the `docker compose build --build-arg` MCP line (≈246), and the Docker-mode mentions at ≈240, ≈346, ≈455 (plan-review Issue 3)
     — **Why:** docs must not teach deleted flows.
     — **Done when:** `grep -niE 'docker compose|opencode_app|\.env\.example' README.md` returns no stale hits; `bats tests/test_count_drift.bats` passes (counts untouched: 150/34).
     — **Consumers affected:** README readers; count-drift guard.
@@ -120,12 +121,12 @@
     — **Why:** both describe the deleted image build.
     — **Done when:** no `docker compose` / `OPENCODE_VERSION` references remain.
     — **Consumers affected:** migration readers.
-- [ ] **5.4** Prose fixes: `agents/opencode-tooling-subagent.md` tree (≈280-281), `THIRD_PARTY_LICENSES.md:164` ("baked into the Docker image" → pip-installed on demand), `skills/markitdown-mcp-skill/SKILL.md` Docker-baking paragraphs
-    — **Why:** stale references to deleted infrastructure mislead agents and users.
-    — **Done when:** `grep -rn 'opencode_app' agents/ THIRD_PARTY_LICENSES.md skills/markitdown-mcp-skill/` empty.
-    — **Consumers affected:** tooling subagent, license readers, markitdown skill users.
+- [ ] **5.4** Prose fixes: `agents/opencode-tooling-subagent.md` tree (≈280-281), `THIRD_PARTY_LICENSES.md:164` ("baked into the Docker image" → pip-installed on demand), `skills/markitdown-mcp-skill/SKILL.md` Docker-baking paragraphs, AND the two skills carrying stale infra references to THIS repo's deleted Docker mode (plan-review Issue 3 / GAP 4): `skills/context-budget-skill/SKILL.md` (drop Path 3 `opencode_app/AGENTS.md` at ≈58; repoint the MCP-block inventory at ≈62 to `deploy/opencode.json`) and `skills/opencode-repo-setup-skill/SKILL.md` (repoint the source-of-truth table row at ≈202) — body prose only, no frontmatter changes, so 6.1's registry no-diff holds
+    — **Why:** stale references to deleted infrastructure mislead agents and users; without these, the 6.4 exit audit fails its own grep.
+    — **Done when:** `grep -rn 'opencode_app' agents/ THIRD_PARTY_LICENSES.md skills/markitdown-mcp-skill/ skills/context-budget-skill/ skills/opencode-repo-setup-skill/` empty.
+    — **Consumers affected:** tooling subagent, license readers, three skill consumers. `skills/docker-containerization-skill` remains untouched (teaches Docker generically; references nothing of this repo's hosting).
 - [ ] **5.5** `plugins/`: reword Docker-volume rationale comments in `plugins/README.md:10`, `plugins/ATTRIBUTION.md:45`, `plugins/opencode-ponytail-scoped.ts` (≈28, 52) — keep the XDG-data-path rule, drop the compose-volume rationale
-    — **Why:** the path rule survives (LEARNINGS: plugin-persisted-state-needs-volume-backed-path); only the Docker justification is stale.
+    — **Why:** the path rule survives (LEARNINGS index row `plugin-persisted-state-needs-volume-backed-path` — the rule is also stated inline in the plugin comments); only the Docker justification is stale.
     — **Done when:** `grep -niE 'docker' plugins/` returns no compose/image references.
     — **Consumers affected:** plugin maintainers.
 
@@ -139,9 +140,9 @@
     — **Why:** exit gate — every touched guard must be green on the final tree.
     — **Done when:** 0 failures.
     — **Consumers affected:** all.
-- [ ] **6.3** Write `LEARNINGS/decisions/docker-surface-removal.md` superseding `app-scoped-skill-surface.md` (one-surface contract: root `skills/` only) + append `_index.md` entry
+- [ ] **6.3** Write `LEARNINGS/decisions/docker-surface-removal.md` superseding the #486 two-surface decision — anchor on the records that actually exist on disk: the `_index.md` row (≈764, `app-scoped-skill-surface`) and `LEARNINGS/anti-patterns/two-surface-count-conflation.md`; note that `LEARNINGS/decisions/app-scoped-skill-surface.md` is index-only (no file) — do not fabricate it; append the new `_index.md` entry (plan-review Issue 4)
     — **Why:** the #486 two-surface decision is now false; future sessions must not resurrect the app surface.
-    — **Done when:** file exists, `_index.md` lists it, old entry left untouched (history).
+    — **Done when:** new file exists, `_index.md` lists it, pre-existing entries untouched (history).
     — **Consumers affected:** future agent sessions.
 - [ ] **6.4** Final audit grep: no `opencode_app|docker-compose|restart-opencode-docker|inject-primary|OPENCODE_VERSION` references outside `PLANS/`, `LEARNINGS/`, `CHANGELOG.md`, `docs/` (historical research snapshot), `.gitignore` (`.env*` ignore stays)
     — **Why:** proves the removal is complete; history dirs are exempt by design.
@@ -151,7 +152,8 @@
 ## Technical Notes
 
 - `skills/docker-containerization-skill` and preset references to it are PRODUCTS (teach Docker) — never touched.
-- `deploy/setup.ps1` is a thin launcher (no config path, no LLM flags, no markitdown pin — LEARNINGS #474); expected zero edits, verify with `tests/test_setup_ps1_vars.bats`.
+- `deploy/setup.ps1` is a thin launcher (no config path, no markitdown pin — LEARNINGS #474) but DOES carry the LLM flag switches/arms removed in 3.3 (plan-review Issue 1); `tests/test_setup_ps1_vars.bats` has zero LLM references and stays green untouched.
+- Provider presets survive: `installer/provider-presets.json` `local-llm`/`vllm`/`ollama` entries and `--provider` value lists (setup.sh ≈608/≈925) are model-routing maps, not containers — pinned by `test_provider_pins.bats`/`test_provider_credentials.bats`, both untouched (GAP 1 ruling).
 - Branch convention: `feat/607` (repo uses `feat/<num>`); PLAN file `PLANS/PLAN-607.md`.
 - `.gitignore` `# Docker / .env*` stanza: keep ignoring `.env*` (harmless, protects future local env files); optionally retitle comment.
 - Root skill count stays 150: `github-runners-setup-skill` lived only on the deleted app surface, never in root `skills/` or `registry.json`.
