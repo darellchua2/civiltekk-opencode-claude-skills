@@ -6,14 +6,14 @@
 
 ## Acceptance Criteria
 
-- [ ] `opencode_app/`, `docker-compose.yml`, `restart-opencode-docker.sh`, `.dockerignore`, `.env.example` deleted; no Docker implementation files remain
-- [ ] Config source of truth lives at `deploy/opencode.json`; `setup.sh`, `init.mjs`, `.releaserc.json`, `release.yml`, and all guard tests repointed; `jq . deploy/opencode.json` validates
-- [ ] `setup.sh` carries no `--enable-llm`/`--enable-vllm`/Docker machinery; `bash -n deploy/setup.sh` passes; help text updated
-- [ ] `resolve-models.mjs` has no `--inject-primary`
-- [ ] Full bats suite passes (skill_profiles, test_markitdown_skill, test_pack_permissions, test_help_parity, test_count_drift, test_skill_isolation, test_mcp_count_consistency, test_docling_skill, init, test_requires_skills)
-- [ ] `node installer/build-registry.mjs` produces no diff (skill set unchanged: 150 skills / 34 agents)
-- [ ] README / AGENTS.md / MIGRATION.md / CONTRIBUTING.md carry no Docker sections; `skills/docker-containerization-skill` untouched (shippable product, not this repo's hosting)
-- [ ] PLANS/ / LEARNINGS/ / CHANGELOG history untouched; one new LEARNINGS decision note supersedes `app-scoped-skill-surface`
+- [x] `opencode_app/`, `docker-compose.yml`, `restart-opencode-docker.sh`, `.dockerignore`, `.env.example` deleted; no Docker implementation files remain
+- [x] Config source of truth lives at `deploy/opencode.json`; `setup.sh`, `init.mjs`, `.releaserc.json`, `release.yml`, and all guard tests repointed; `jq . deploy/opencode.json` validates
+- [x] `setup.sh` carries no `--enable-llm`/`--enable-vllm`/Docker machinery; `bash -n deploy/setup.sh` passes; help text updated
+- [x] `resolve-models.mjs` has no `--inject-primary`
+- [x] Full bats suite passes (skill_profiles, test_markitdown_skill, test_pack_permissions, test_help_parity, test_count_drift, test_skill_isolation, test_mcp_count_consistency, test_docling_skill, init, test_requires_skills)
+- [x] `node installer/build-registry.mjs` produces no diff (skill set unchanged: 150 skills / 34 agents)
+- [x] README / AGENTS.md / MIGRATION.md / CONTRIBUTING.md carry no Docker sections; `skills/docker-containerization-skill` untouched (shippable product, not this repo's hosting)
+- [x] PLANS/ / LEARNINGS/ / CHANGELOG history untouched; one new LEARNINGS decision note supersedes `app-scoped-skill-surface`
 
 ## Dependency & Consumer Map
 
@@ -153,22 +153,26 @@
 
 ### Phase 6: Verification + knowledge capture
 
-- [ ] **6.1** Run `node installer/build-registry.mjs`; assert no diff (`git diff --exit-code installer/registry.json`)
+- [x] **6.1** Run `node installer/build-registry.mjs`; assert no diff (`git diff --exit-code installer/registry.json`)
     — **Why:** proves the skill set (150/34) is unchanged by the removal.
     — **Done when:** exit 0.
     — **Consumers affected:** installer registry.
-- [ ] **6.2** Run the full bats suite (`bats tests/`)
+    — **Done:** build-registry regen → only generatedAt timestamp differs; counts 34/150 stable; registry.json restored untouched; files: (none committed); fixes: none
+- [x] **6.2** Run the full bats suite (`bats tests/`)
     — **Why:** exit gate — every touched guard must be green on the final tree.
     — **Done when:** 0 failures.
     — **Consumers affected:** all.
-- [ ] **6.3** Write `LEARNINGS/decisions/docker-surface-removal.md` superseding the #486 two-surface decision — anchor on the records that actually exist on disk: the `_index.md` row (≈764, `app-scoped-skill-surface`) and `LEARNINGS/anti-patterns/two-surface-count-conflation.md`; note that `LEARNINGS/decisions/app-scoped-skill-surface.md` is index-only (no file) — do not fabricate it; append the new `_index.md` entry (plan-review Issue 4)
+    — **Done:** full suite 630 ok / 0 fail after fix cycle; files: tests/test_subcommands.bats, tests/test_dry_run_leaks.bats, deploy/setup.sh; fixes: 3 — (a) dead 'llm' subcommand still taught in --help line 41, removed; (b)+(c) two setup_local_llm_env dry-run pins retired with the removed .env writer (class pin header annotated #607)
+- [x] **6.3** Write `LEARNINGS/decisions/docker-surface-removal.md` superseding the #486 two-surface decision — anchor on the records that actually exist on disk: the `_index.md` row (≈764, `app-scoped-skill-surface`) and `LEARNINGS/anti-patterns/two-surface-count-conflation.md`; note that `LEARNINGS/decisions/app-scoped-skill-surface.md` is index-only (no file) — do not fabricate it; append the new `_index.md` entry (plan-review Issue 4)
     — **Why:** the #486 two-surface decision is now false; future sessions must not resurrect the app surface.
     — **Done when:** new file exists, `_index.md` lists it, pre-existing entries untouched (history).
     — **Consumers affected:** future agent sessions.
-- [ ] **6.4** Final audit grep: no `opencode_app|docker-compose|restart-opencode-docker|inject-primary|OPENCODE_VERSION` references outside `PLANS/`, `LEARNINGS/`, `CHANGELOG.md`, `docs/` (historical research snapshot), `.gitignore` (`.env*` ignore stays)
+    — **Done:** LEARNINGS/decisions/docker-surface-removal.md written + _index.md entry appended; supersede anchored on the index row + two-surface-count-conflation (index-only decisions file not fabricated); files: LEARNINGS/decisions/docker-surface-removal.md, LEARNINGS/_index.md; fixes: none
+- [x] **6.4** Final audit grep: no `opencode_app|docker-compose|restart-opencode-docker|inject-primary|OPENCODE_VERSION` references outside `PLANS/`, `LEARNINGS/`, `CHANGELOG.md`, `docs/` (historical research snapshot), `.gitignore` (`.env*` ignore stays)
     — **Why:** proves the removal is complete; history dirs are exempt by design.
     — **Done when:** grep returns only exempted paths.
     — **Consumers affected:** none (audit).
+    — **Done:** audit grep: hits only in PLANS/, LEARNINGS/, CHANGELOG.md, docs/ + benign (setup.sh opencode_version bash var; product teaching content in 2 skills); files: (audit only); fixes: none
 
 ## Technical Notes
 
@@ -197,3 +201,4 @@ GATE e847380 tier=light lint=n.a typecheck=n.a build=n.a unit=t(22/22 affected b
 GATE aff8c4f tier=light lint=n.a typecheck=n.a build=n.a unit=t(help-parity+ps1-vars+select-items 0 fails) e2e=n.a
 GATE f99dcb6 tier=light lint=n.a typecheck=n.a build=n.a unit=t(resolver dry-run smoke) e2e=n.a
 GATE 555c737 tier=light lint=n.a typecheck=n.a build=n.a unit=t(count-drift+ships-plugins 0 fails; doc grep clean) e2e=n.a
+GATE 0cd5aee tier=full lint=n.a typecheck=n.a build=n.a unit=t(bats 630/630) e2e=n.a

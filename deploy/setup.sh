@@ -549,7 +549,7 @@ USAGE:
                           (menu option 5 as a flag)             scripted installs
 
   SUBCOMMANDS (aliases over the flags):
-    install | update | rollback | peonping | llm | plan | check-catalog
+    install | update | rollback | peonping | plan | check-catalog
 
   --select                Pick skills/agents/packs/plugins per item   Custom
                           (interactive picker; emits a deploy plan)  deploys

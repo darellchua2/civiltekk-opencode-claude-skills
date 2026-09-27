@@ -1,9 +1,10 @@
 #!/usr/bin/env bats
 
 # Dry-run leak pins (#467): every real write reachable under --dry-run must be
-# DRY_RUN-gated. The three historical leaks: learnings _index.md heredoc, the
-# local-LLM .env writer (cp + sed/append), and the models-only init.mjs update
-# that re-applied for real after the resolver had only staged a preview.
+# DRY_RUN-gated. The historical leaks: learnings _index.md heredoc, the (since
+# removed with the LLM stack, #607) local-LLM .env writer, and the models-only
+# init.mjs update that re-applied for real after the resolver had only staged
+# a preview.
 # Each functional pin carries a positive control (the real run MUST change
 # bytes) so a future over-gate cannot silently no-op the fix.
 
@@ -23,38 +24,6 @@ SETUP_PS1="deploy/setup.ps1"
   d="$(mktemp -d)"
   HOME="$d" bash -c "source '$SETUP_SH' >/dev/null 2>&1; DRY_RUN=false; setup_learnings_dir" >/dev/null 2>&1
   [ -f "$d/.config/opencode/learnings/_index.md" ]
-  rm -rf "$d"
-}
-
-@test "env_file_dry_run_leaves_bytes_unchanged" {
-  local d before after escape
-  d="$(mktemp -d)"
-  mkdir -p "$d/repo"
-  printf 'LLM_PORT=1234\nOTHER=x\n' > "$d/repo/.env"
-  before="$(md5sum < "$d/repo/.env")"
-  # Sandbox-escape detector: the worktree .env (untracked user config) must be
-  # untouched afterwards — a source-time REPO_DIR clobber would mutate it here.
-  if [ -f .env ]; then escape="$(md5sum < .env)"; fi
-  # REPO_DIR is assigned AFTER source on purpose: setup.sh:70 unconditionally
-  # reassigns it from SCRIPT_DIR, clobbering any env-prefix sandbox (#467).
-  HOME="$d" bash -c "source '$SETUP_SH' >/dev/null 2>&1; DRY_RUN=true; REPO_DIR='$d/repo'; setup_local_llm_env" >/dev/null 2>&1
-  after="$(md5sum < "$d/repo/.env")"
-  [ "$before" = "$after" ]
-  if [ -n "$escape" ]; then [ "$escape" = "$(md5sum < .env)" ]; fi
-  rm -rf "$d"
-}
-
-@test "env_file_real_run_updates_values_positive_control" {
-  local d
-  d="$(mktemp -d)"
-  mkdir -p "$d/repo"
-  printf 'LLM_PORT=1234\n' > "$d/repo/.env"
-  HOME="$d" bash -c "source '$SETUP_SH' >/dev/null 2>&1; DRY_RUN=false; REPO_DIR='$d/repo'; setup_local_llm_env" >/dev/null 2>&1
-  grep -q '^LLM_PORT=17851' "$d/repo/.env"
-  # Negated assertions (`! grep`) are errexit-exempt and can NEVER fail a bats
-  # test — use run + explicit status instead (#467 round 1).
-  run grep -q '^LLM_PORT=1234$' "$d/repo/.env"
-  [ "$status" -eq 1 ]
   rm -rf "$d"
 }
 
