@@ -80,7 +80,7 @@ Each carries a `wayfinder:<type>` label — `research`, `prototype`,
 `grilling`, or `task` (below). A session **claims** a ticket by assigning it
 to the driving dev **first**, before any work; that assignee *is* the claim.
 Blocking uses the tracker's **native** dependency relationship (GitHub
-task-list/blocked-by, JIRA issue links) so the frontier renders visually in
+task-list/blocked-by, tracker-native issue links) so the frontier renders visually in
 the tracker UI; body-convention fallback only if the tracker lacks blocking.
 A ticket is **unblocked** when all blockers are closed; the **frontier** is
 the open, unblocked, unclaimed children. The answer is posted as a
@@ -129,10 +129,9 @@ walked, and a scope boundary isn't a step on it.
 - **GitHub Issues** (default): `gh issue create/view/comment/close`,
   `--assignee @me` claims, task-list or `blocked-by: <ref>` body line for
   blocking.
-- **JIRA**: apply the **MCP Availability Guard** (policy:
-  `jira-git-integration-skill` §MCP Availability Guard): `atlassian_*` tools
-  present → use them; absent → REST token fallback; headless → degrade to
-  GitHub/local-markdown with a clear report.
+- **Tracker tickets (e.g. JIRA)**: MCP Availability Guard policy per
+  `jira-git-integration-skill` §MCP Availability Guard; degrade to
+  GitHub/local-markdown with a clear report when the tracker is unavailable.
 - **No tracker / offline**: local-markdown fallback — `docs/wayfinder/<slug>/`
   with `MAP.md` + one file per ticket; assignment/blocking recorded in each
   file's front matter.

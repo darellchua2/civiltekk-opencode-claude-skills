@@ -32,6 +32,7 @@
 ## Gate Trace
 
 GATE 45bd3b7 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — grep IBIS=0 x4 convention owners; ABC-123 examples present; bats test_skill_isolation 5/5 ok
+GATE bd0bca6 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — IBIS=0 in 4 Phase-2 files; pins resolve (plan-execution ×2, pr-creation ×1, mermaid ×1); pr-creation frontmatter byte-identical
 
 ## Implementation Phases
 
@@ -83,18 +84,21 @@ GATE 45bd3b7 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — grep
 
 ### Phase 3: Tier 2 — compress restated JIRA how-tos into convention pins (generic skills)
 
-- [ ] **3.1** In `skills/worktree-pipeline-skill/SKILL.md` (L34/91/108-109): keep the ticket-ref taxonomy shapes and the fetch/merged checks; reword the JIRA fetch policy to a one-line pin on `jira-git-integration-skill` §MCP Availability Guard so no `atlassian_*` string remains; L273 transition mention stays a `jira-status-updater` pin
+- [x] **3.1** In `skills/worktree-pipeline-skill/SKILL.md` (L34/91/108-109): keep the ticket-ref taxonomy shapes and the fetch/merged checks; reword the JIRA fetch policy to a one-line pin on `jira-git-integration-skill` §MCP Availability Guard so no `atlassian_*` string remains; L273 transition mention stays a `jira-status-updater` pin
     — **Why:** The pipeline's parsing taxonomy is its own generic mechanism; the JIRA access policy's home is the integration skill. AC2 requires zero `atlassian_*` here.
     — **Done when:** `grep -c "atlassian_" skills/worktree-pipeline-skill/SKILL.md` = 0; guard pin present; taxonomy line intact.
     — **Consumers affected:** every pipeline run with JIRA tickets (behavior unchanged — policy delegated, not deleted).
-- [ ] **3.2** In `skills/pr-merge-workflow-skill/SKILL.md` (§JIRA Integration L149-155, L177-188, L198-199): verify it only references `jira-status-updater` (already a pin); compress any restated transition call detail to the reference; keep the `[A-Z]+-\d+` detection pattern
+    — **Done:** 4 edits (taxonomy → tracker, v1 note → tracker, fetch policy → pure pin, watcher transition → tracker-neutral); regex + checks intact; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **3.2** In `skills/pr-merge-workflow-skill/SKILL.md` (§JIRA Integration L149-155, L177-188, L198-199): verify it only references `jira-status-updater` (already a pin); compress any restated transition call detail to the reference; keep the `[A-Z]+-\d+` detection pattern
     — **Why:** Detection is generic mechanism; transition how-to belongs to the transitions owner.
     — **Done when:** no restated atlassian call-sheets; section reads as load-and-delegate; zero `atlassian_` strings.
     — **Consumers affected:** `repo-ops-specialist-subagent.md` inventory line.
-- [ ] **3.3** In `skills/wayfinder-skill/SKILL.md` (L83/132-133): compress the JIRA bullet to a pure pin on `jira-git-integration-skill` §MCP Availability Guard so no `atlassian_*` string remains; keep the task-list/link note tracker-neutral
+    — **Done:** §JIRA Integration compressed 4 steps → 2 (transition+comment delegated per contract); 2 report templates → Tracker; prerequisites atlassian line removed, skill pin kept + guard pointer; detection pattern intact; frontmatter untouched; files: skills/pr-merge-workflow-skill/SKILL.md; fixes: none
+- [x] **3.3** In `skills/wayfinder-skill/SKILL.md` (L83/132-133): compress the JIRA bullet to a pure pin on `jira-git-integration-skill` §MCP Availability Guard so no `atlassian_*` string remains; keep the task-list/link note tracker-neutral
     — **Why:** AC2 mechanical surface; the guard policy must not be restated.
     — **Done when:** `grep -c "atlassian_" skills/wayfinder-skill/SKILL.md` = 0; pin present.
     — **Consumers affected:** frontier-ticket runs with JIRA links (degraded gracefully as before).
+    — **Done:** JIRA bullet → tracker pin with degrade note; dependency-relationship line → tracker-neutral; files: skills/wayfinder-skill/SKILL.md; fixes: none
 
 ### Phase 4: Tier 2 — agents: keep enforcement points, compress restatements
 
