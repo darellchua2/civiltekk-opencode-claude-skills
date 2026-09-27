@@ -23,6 +23,7 @@ _Before writing steps, list each touched file/module and who consumes it. Use `c
 | `deploy/opencode.json` → `commands.run-worktree-pipeline-v2` | — | opencode runtime (command invocation); `deploy/setup.sh` (copies to user space); `installer/presets/pack-inline-workers.json` description references the command | medium |
 | `README.md` two-flavors line | 1.1 (wording must match final template semantics) | humans, docs consumers; documentation-consistency checks that grep this claim | low |
 | `installer/presets/pack-inline-workers.json` | — | `installer/init.mjs` / `npx ... add` preset installs | low |
+| `tests/test_requires_skills.bats`, `tests/test_mcp_count_consistency.bats` | — | read only the `deploy/opencode.json` `mcp` block — no commands-block pins (inspected in Step 7 review; no breakage) | none |
 
 Runtime behavior (template-following) is unverifiable by unit test — the AC
 targets the config content itself; the redeploy step makes user space match.
@@ -33,7 +34,7 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 1: Command template substitution (source of truth)
 
-- [ ] **1.1** Rewrite `deploy/opencode.json` → `commands.run-worktree-pipeline-v2` description + template to the fully-inline contract: no subagent spawns anywhere in the run; Step 7 selected reviewers (architecture/language/uiux) run in-session by loading deployed `agents/<reviewer>-subagent.md` as checklist (`~/.config/opencode/agents/` CLI, `/app/.opencode/agents/` Docker; neither resolves → report unavailable, stop), `reviewer-baseline-skill` first, same severity gates + Return Contract, requirements-specialist Mode R relay in-session the same way; Step 8 via `plan-execution-inline-skill` with the explicit PLAN path; Step 9 by loading `agents/code-review-subagent.md` as checklist, computing `git diff origin/<base>...feat/<KEY>` directly in the worktree, writing LEARNINGS directly, max 2 fix-re-review iterations + full re-gate-before-fix-push unchanged; Step 10 by loading `agents/pr-workflow-subagent.md` as checklist, PR via `gh` in-session, merge watch via background shell poll instead of a background subagent
+- [ ] **1.1** Rewrite `deploy/opencode.json` → `commands.run-worktree-pipeline-v2` description + template to the fully-inline contract: no subagent spawns anywhere in the run; Step 7 selected reviewers (architecture/language/uiux) run in-session by loading deployed `agents/<reviewer>-subagent.md` as checklist (`~/.config/opencode/agents/` CLI, `/app/.opencode/agents/` Docker; neither resolves → report unavailable, stop), `reviewer-baseline-skill` first, same severity gates + Return Contract, requirements-specialist Mode R relay in-session the same way; Step 8 via `plan-execution-inline-skill` with the explicit PLAN path; Step 9 by loading `agents/code-review-subagent.md` as checklist, computing `git diff origin/<base>...feat/<KEY>` directly in the worktree, writing LEARNINGS directly, max 2 fix-re-review iterations + full re-gate-before-fix-push unchanged; Step 10 by loading `agents/pr-workflow-subagent.md` as checklist, PR via `gh` in-session, merge watch via background shell poll instead of a background subagent; pin `subagent: false` explicitly (mechanism parity with `/review-inline`, NOTE-2 of Step 7 review)
     — **Why:** this substitution is the feature — every downstream step (README claim, preset membership, user-space runtime behavior) derives from this template
     — **Done when:** the JSON entry parses; its text contains "spawn no subagents" (or equivalent prohibition), the `agents/<reviewer>-subagent.md` checklist mechanism for Steps 7/9/10, both resolution paths, and the background-shell merge watch
     — **Consumers affected:** opencode runtime, setup.sh copy, preset description
@@ -48,13 +49,13 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Why:** README is the usage contract; a stale claim would tell users v2 spawns reviewer subagents after they've been removed
     — **Done when:** `rg "Step 9" README.md` finds no subagent-driven claim for v2, and the line states both flavors' true behavior
     — **Consumers affected:** docs readers; documentation-consistency sweeps
-- [ ] **2.2** Update `installer/presets/pack-inline-workers.json`: add `reviewer-baseline-skill` and `language-review-checklists-skill` to the skill list; extend the description to cover inline reviews for the v2 pipeline
-    — **Why:** inline reviewers load what the reviewer subagents load; without the pack entries, individual installs of the inline family lack the review baselines
-    — **Done when:** both skill names appear in the preset's skills array and the description mentions inline review coverage
+- [ ] **2.2** Update `installer/presets/pack-inline-workers.json`: add `reviewer-baseline-skill` and `language-review-checklists-skill` (the two skills the v2 template names explicitly) to the skills array; NARROW the description to "reviewer baselines for inline pipeline reviews" — no full reviewer-knowledge-closure claim (WARN-1 resolution: the agents' full knowledge closure is ~40 skills, several unregistered — graceful degradation, not silent breakage; full closure deferred to a follow-up ticket)
+    — **Why:** the pack's contract forbids claiming coverage it doesn't carry; the two named skills are the non-negotiable inline-review baselines the template instructs to load first
+    — **Done when:** both skill names appear in the preset's skills array and the description claims only baselines (no "review coverage" overclaim)
     — **Consumers affected:** `npx ... add` / preset installs
-- [ ] **2.3** Sweep stale wording repo-wide: `rg "Step 9.*Step 10" README.md deploy/ installer/` and `rg "run-worktree-pipeline-v2"` — fix any remaining "subagent-driven at Step 9/10 for v2" phrasing (CHANGELOG history lines are immutable, skip them)
-    — **Why:** the AC bans stale wording; directory-scoped sweeps miss repo-root docs (documented anti-pattern), so the sweep must be repo-wide
-    — **Done when:** the rg sweep returns only historical (CHANGELOG/PLANS) or already-correct matches
+- [ ] **2.3** Sweep stale wording repo-wide: `rg "Step 9.*Step 10" README.md deploy/ installer/`, `rg "run-worktree-pipeline-v2"`, and `rg -in "subagent-driven|remain subagent|stay subagent" README.md deploy/ installer/ agents/ skills/` — fix any remaining "subagent-driven at Step 9/10 for v2" phrasing (CHANGELOG and PLANS history lines are immutable, skip them)
+    — **Why:** the AC bans stale wording; directory-scoped sweeps miss repo-root docs (documented anti-pattern), and single-pattern sweeps miss one-step phrasings (NOTE-4)
+    — **Done when:** all three rg sweeps return only historical (CHANGELOG/PLANS) or already-correct matches
     — **Consumers affected:** none beyond docs accuracy
 
 ### Phase 3: Redeploy + end-to-end verification
@@ -63,9 +64,9 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Why:** the runtime reads `~/.config/opencode/opencode.json`, not the repo; source-of-truth edits are inert until deployed (AGENTS.md: never edit deployed copies directly)
     — **Done when:** setup.sh exits 0
     — **Consumers affected:** user-space runtime for all sessions
-- [ ] **3.2** Verify the deployed entry: `python3` JSON-parse of user-space `~/.config/opencode/opencode.json`, byte-compare `commands.run-worktree-pipeline-v2` against the template, and confirm v1 + `review-arch`/`review-inline` entries byte-equal their pre-change state
+- [ ] **3.2** Verify the deployed entry: `python3` JSON-parse of user-space `~/.config/opencode/opencode.json`, byte-compare `commands.run-worktree-pipeline-v2` against the template, and confirm v1 + `review-arch`/`review-inline` entries byte-equal their pre-change state — baseline = `git show origin/main:deploy/opencode.json` (clean reference, never the possibly-drifted user-space copy, NOTE-3)
     — **Why:** AC#6 — template/user-space parity and the v1-unchanged guard at the artifact the runtime actually reads
-    — **Done when:** parse exits 0; the four entry comparisons report equal
+    — **Done when:** parse exits 0; the four entry comparisons against the named git baseline report equal
     — **Consumers affected:** runtime command resolution (verified)
 - [ ] **3.3** Full-gate run and final AC sweep: run the verification gate (lint/typecheck/build/unit per repo discovery — bats tests exist under `tests/`), then tick PLAN acceptance criteria against evidence
     — **Why:** the exit gate is the run's last gate; AC ticks need evidence, not intent
@@ -79,6 +80,8 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 - Inline review tradeoff (accepted by user): reviewers share the building context — fresh-eyes isolation is lost by design on v2; v1 remains the isolated-review flavor.
 - The `agent` field of the v2 command stays `build` (in-session execution requires the build agent, not a subagent).
 - Conventional Commits: config change = `feat(opencode): ...` or per-scope splits (docs/preset separate); commitlint body ≤72 chars.
+- Preflight asymmetry (NOTE-1, pre-existing since #597): the shared skill's dependency preflight hard-requires `plan-execution-skill` though v2 never invokes it — minimal inline-preset installs abort at preflight. SKILL.md stays untouched here (v1-byte-unchanged design); follow-up ticket to be filed for inline-aware preflight.
+- Preset closure decision (WARN-1): description narrowed to reviewer baselines; full knowledge-closure enumeration (~40 skills, several unregistered) rejected as unshippable — follow-up ticket may revisit with a registered-skills-only closure.
 
 ## Dependencies
 
