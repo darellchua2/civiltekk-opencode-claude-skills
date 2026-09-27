@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.55.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.54.1...v9.55.0) (2026-09-27)
+
+### Features
+
+* **skills:** teach skill-generalizer the load-weight audit + 50-word description ([#605](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/605)) ([#606](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/606)) ([28e3b41](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/28e3b41ddc1bd9704d2032e3c45569c0e9adcefd))
+
 ## [9.54.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.54.0...v9.54.1) (2026-09-27)
 
 ### Code Refactoring
