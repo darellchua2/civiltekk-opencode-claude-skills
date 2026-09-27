@@ -90,3 +90,5 @@ None — no blocked-by; independent of #603/#604 (Wave merges must re-point noth
 WORK LOG — Phases 1+2 landed as one commit (deliberate deviation from the PLAN's per-phase commit split): the exact-match pin in test_requires_skills #5 makes map+guard+tests a lockstep unit; separate commits would push a red gate between them. Tier judgment: light (config+tests only; exit gate Phase 3 runs full).
 GATE c3258f3 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 03e8f9e tier=full lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 019d69e tier=full lint=- typecheck=- build=- unit=t e2e=n.a
+WORK LOG — rebase 2026-09-27: main moved under the PR (#609 Docker removal relocated opencode_app/opencode.json → deploy/opencode.json; conflicted with our same-line HANDOFF3 extension). Resolved as union (their path + our argv extension), rebased onto 8478774, full gate re-run green (633/633, exit 0), force-push + re-watch per the stale-base rule.
