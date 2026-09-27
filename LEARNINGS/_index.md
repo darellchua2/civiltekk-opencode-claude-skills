@@ -1900,3 +1900,6 @@
 - **Scope**: project
 - **Summary**: Destructive convergence arms (update --prune) go after the same-run content-backup snapshot so every pruned file is restorable from that run's backup (#608 review)
 - **Date**: 2026-09-27
+- moved-files-self-references-repoint-on-host-consolidation
+- rename-residue-sweeps-need-lookbehind-anchor
+- lean-host-union-pulls-non-lean-member-content
