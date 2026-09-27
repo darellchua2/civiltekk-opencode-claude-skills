@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [10.0.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.55.0...v10.0.0) (2026-09-27)
+
+### ⚠ BREAKING CHANGES
+
+* **repo:** remove Docker standalone mode; relocate config source to deploy/ (#609)
+
+### Features
+
+* **repo:** remove Docker standalone mode; relocate config source to deploy/ ([#609](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/609)) ([4a93810](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/4a93810840976ad1fe2c87a91942f8d88e6de149)), closes [#607](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/607) [#607](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/607)
+
 ## [9.55.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.54.1...v9.55.0) (2026-09-27)
 
 ### Features
