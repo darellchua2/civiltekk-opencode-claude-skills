@@ -35,7 +35,7 @@ This is a **governance skill** - it defines conventions that other skills and ag
 |-------|-----------------|
 | `git-semantic-commits` | Commit type definitions and format rules |
 | `git-compact-commits` | Length budgets (72-char subject, 150-word body), semantic grouping strategy, commitlint config authority |
-| `pr-creation-workflow` | PR title format, label mapping, merge conventions, JIRA image handling |
+| `pr-creation-workflow` | PR title format, label mapping, merge conventions, image handling |
 | `git-issue-labeler` | Semver label definitions and detection |
 | `changelog-python-cliff` | Changelog category structure from commit types |
 | `version-bump-standard` | Release tag formats, branch-aware pre-release suffixes, workflow templates for dev/uat/main flow |
@@ -134,10 +134,10 @@ feat(api)!: remove deprecated v1 endpoints
 ### Examples
 
 ```
-feat: add user authentication [IBIS-456]
+feat: add user authentication [ABC-456]
 fix(ui): resolve layout issue [#158]
-feat(api)!: breaking change to authentication [IBIS-789]
-docs: update API documentation [IBIS-100]
+feat(api)!: breaking change to authentication [ABC-789]
+docs: update API documentation [ABC-100]
 chore(deps): upgrade dependencies [#200]
 ```
 

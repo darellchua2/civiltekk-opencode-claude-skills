@@ -29,6 +29,10 @@
 | `skills/dev-uat-promotion-skill/SKILL.md` | `jira-git-integration-skill` (hygiene pin) | promotion runs, `worktree-pipeline-skill` ops tickets | low |
 | `tests/*.bats`, `installer/registry.json` | all edits above | CI guards | low (verify-only) |
 
+## Gate Trace
+
+GATE 45bd3b7 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — grep IBIS=0 x4 convention owners; ABC-123 examples present; bats test_skill_isolation 5/5 ok
+
 ## Implementation Phases
 
 ### Phase 1: Tier 1 — neutralize the IBIS origin key in convention owners
@@ -56,22 +60,26 @@
 
 ### Phase 2: Tier 1 — generic skills: drop quoted JIRA examples, pin conventions
 
-- [ ] **2.1** In `skills/plan-execution-skill/SKILL.md` (~L135), replace the quoted `PLANS/PLAN-IBIS-456.md` JIRA example with a one-line pin to `jira-git-integration-skill` for tracker-key format
+- [x] **2.1** In `skills/plan-execution-skill/SKILL.md` (~L135), replace the quoted `PLANS/PLAN-IBIS-456.md` JIRA example with a one-line pin to `jira-git-integration-skill` for tracker-key format
     — **Why:** Generic skills reference conventions instead of restating examples (session directive).
     — **Done when:** file has zero `IBIS` and the JIRA branch-parse line names the convention owner.
     — **Consumers affected:** `worktree-pipeline-skill` Step 8 (PLAN path resolution unchanged).
-- [ ] **2.2** In `skills/mermaid-diagram-creator-skill/SKILL.md`, neutralize the `PLAN-IBIS-456/` tree example and reduce JIRA-ticket mentions (L43/91/338) to tracker-neutral phrasing with a convention pin
+    — **Done:** pins in both restatements (Plan-resolution line + `--update` Step 2, second example caught by gate grep); files: skills/plan-execution-skill/SKILL.md; fixes: none
+- [x] **2.2** In `skills/mermaid-diagram-creator-skill/SKILL.md`, neutralize the `PLAN-IBIS-456/` tree example and reduce JIRA-ticket mentions (L43/91/338) to tracker-neutral phrasing with a convention pin
     — **Why:** Directory-structure illustration stays (neutral placeholder); JIRA how-to framing goes.
     — **Done when:** zero `IBIS`; L91 table row names `jira-git-integration-skill` for key format.
     — **Consumers affected:** PLAN-dir table readers.
-- [ ] **2.3** In `skills/pr-creation-workflow-skill/SKILL.md` (L27/L29 **body only** — L5 is frontmatter description, embedded verbatim in `installer/registry.json`; editing it would fail 6.3), replace the `IBIS-123` example and JIRA how-to phrasing with a pin to the convention owner
+    — **Done:** 4 edits (trigger line, table row pin, tree example → ABC-456, inline-plan intro); files: skills/mermaid-diagram-creator-skill/SKILL.md; fixes: none
+- [x] **2.3** In `skills/pr-creation-workflow-skill/SKILL.md` (L27/L29 **body only** — L5 is frontmatter description, embedded verbatim in `installer/registry.json`; editing it would fail 6.3), replace the `IBIS-123` example and JIRA how-to phrasing with a pin to the convention owner
     — **Why:** PR tracking-ref step keeps the generic mechanism (`#123`/key detection), drops restated JIRA detail; frontmatter descriptions are registry events and out of AC scope.
     — **Done when:** body has zero `IBIS`; tracking step references the convention owner; frontmatter block byte-identical to `origin/main`.
     — **Consumers affected:** `semantic-release-convention-skill` table row (synced in 2.4), `pr-workflow-subagent.md`.
-- [ ] **2.4** In `skills/semantic-release-convention-skill/SKILL.md` (L137-140), neutralize `[IBIS-456]`-style commit examples (placeholder or pin) and sync the L38 framework-table row with 2.3's final body wording
+    — **Done:** 2 body edits (tracking-system step → pin, PR-body template slot → tracker-neutral); frontmatter diff verified empty; files: skills/pr-creation-workflow-skill/SKILL.md; fixes: none
+- [x] **2.4** In `skills/semantic-release-convention-skill/SKILL.md` (L137-140), neutralize `[IBIS-456]`-style commit examples (placeholder or pin) and sync the L38 framework-table row with 2.3's final body wording
     — **Why:** Commit-format examples keep their shape with a neutral key; cross-skill table must not drift (this step owns the match assertion).
     — **Done when:** zero `IBIS`; L38 table row matches pr-creation-workflow's post-2.3 body description.
     — **Consumers affected:** `git-issue-labeler-skill` sync contract (unaffected — label lists untouched).
+    — **Done:** 3 commit-example swaps ([ABC-456]/[ABC-789]/[ABC-100]) + table row "JIRA image handling" → "image handling"; files: skills/semantic-release-convention-skill/SKILL.md; fixes: none
 
 ### Phase 3: Tier 2 — compress restated JIRA how-tos into convention pins (generic skills)
 
