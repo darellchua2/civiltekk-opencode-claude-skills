@@ -47,18 +47,25 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 2: Docs + preset sync
 
-- [ ] **2.1** Update the `README.md` two-flavors line: v2 becomes "fully in-session, zero subagents end to end"; drop the "pipeline Step 9 review + Step 10 PR stay subagent-driven" claim
+- [x] **2.1** Update the `README.md` two-flavors line: v2 becomes "fully in-session, zero subagents end to end"; drop the "pipeline Step 9 review + Step 10 PR stay subagent-driven" claim
     — **Why:** README is the usage contract; a stale claim would tell users v2 spawns reviewer subagents after they've been removed
     — **Done when:** `rg "Step 9" README.md` finds no subagent-driven claim for v2, and the line states both flavors' true behavior
     — **Consumers affected:** docs readers; documentation-consistency sweeps
-- [ ] **2.2** Update `installer/presets/pack-inline-workers.json`: add `reviewer-baseline-skill` and `language-review-checklists-skill` (the two skills the v2 template names explicitly) to the skills array; NARROW the description to "reviewer baselines for inline pipeline reviews" — no full reviewer-knowledge-closure claim (WARN-1 resolution: the agents' full knowledge closure is ~40 skills, several unregistered — graceful degradation, not silent breakage; full closure deferred to a follow-up ticket)
+    — **Done:** two-flavors line rewritten to "zero subagents end to end" with the checklist mechanism named; subagent-driven claim removed; files: README.md; fixes: none
+- [x] **2.2** Update `installer/presets/pack-inline-workers.json`: add `reviewer-baseline-skill` and `language-review-checklists-skill` (the two skills the v2 template names explicitly) to the skills array; NARROW the description to "reviewer baselines for inline pipeline reviews" — no full reviewer-knowledge-closure claim (WARN-1 resolution: the agents' full knowledge closure is ~40 skills, several unregistered — graceful degradation, not silent breakage; full closure deferred to a follow-up ticket)
     — **Why:** the pack's contract forbids claiming coverage it doesn't carry; the two named skills are the non-negotiable inline-review baselines the template instructs to load first
     — **Done when:** both skill names appear in the preset's skills array and the description claims only baselines (no "review coverage" overclaim)
     — **Consumers affected:** `npx ... add` / preset installs
-- [ ] **2.3** Sweep stale wording repo-wide: `rg "Step 9.*Step 10" README.md deploy/ installer/`, `rg "run-worktree-pipeline-v2"`, and `rg -in "subagent-driven|remain subagent|stay subagent" README.md deploy/ installer/ agents/ skills/` — fix any remaining "subagent-driven at Step 9/10 for v2" phrasing (CHANGELOG and PLANS history lines are immutable, skip them)
+    — **Done:** both baseline skills appended to the skills array; description claims "reviewer baselines for inline pipeline reviews" only; files: installer/presets/pack-inline-workers.json; fixes: none
+- [x] **2.3** Sweep stale wording repo-wide: `rg "Step 9.*Step 10" README.md deploy/ installer/`, `rg "run-worktree-pipeline-v2"`, and `rg -in "subagent-driven|remain subagent|stay subagent" README.md deploy/ installer/ agents/ skills/` — fix any remaining "subagent-driven at Step 9/10 for v2" phrasing (CHANGELOG and PLANS history lines are immutable, skip them)
     — **Why:** the AC bans stale wording; directory-scoped sweeps miss repo-root docs (documented anti-pattern), and single-pattern sweeps miss one-step phrasings (NOTE-4)
     — **Done when:** all three rg sweeps return only historical (CHANGELOG/PLANS) or already-correct matches
     — **Consumers affected:** none beyond docs accuracy
+    — **Done:** sweep 1 matches only the new correct v2 template text; sweep 3 zero matches in live trees; sweep 2 only README/preset/deploy (all correct); files: none (sweep-only); fixes: none
+
+## Gate Trace
+
+GATE f61827e tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 633/633 — phase 1, config anchor)
 
 ### Phase 3: Redeploy + end-to-end verification
 
