@@ -6,11 +6,11 @@
 
 ## Acceptance Criteria
 
-- [ ] 6 atomic commits `refactor(skills): consolidate X into Y`; counts green per commit
-- [ ] impliesMcp edge re-homed in dependency-map.json + pack-frontend mcps (next-devtools value unchanged)
-- [ ] All member triggers preserved in host descriptions; skill count = 119 after this wave (135 − 16: 22 members → 6 hosts)
-- [ ] Withdrawn families stay unmerged: autoresearch (4), release trio (3)
-- [ ] Merge-specific musts: zai endpoint-policy split preserved · opentofu provider-setup trimmed · test-gen ONE Iteration Protocol · reqs host carries old-name aliases · pr step-number pins reworded · pr-workflow-subagent allowlist gains the merged name
+- [x] 6 atomic commits `refactor(skills): consolidate X into Y`; counts green per commit
+- [x] impliesMcp edge re-homed in dependency-map.json + pack-frontend mcps (next-devtools value unchanged)
+- [x] All member triggers preserved in host descriptions; skill count = 119 after this wave (135 − 16: 22 members → 6 hosts)
+- [x] Withdrawn families stay unmerged: autoresearch (4), release trio (3)
+- [x] Merge-specific musts: zai endpoint-policy split preserved · opentofu provider-setup trimmed · test-gen ONE Iteration Protocol · reqs host carries old-name aliases · pr step-number pins reworded · pr-workflow-subagent allowlist gains the merged name
 
 ## Pattern template (identical to Wave 1 — skills/civiltekk-git-commits-skill is the reference host)
 
@@ -182,17 +182,20 @@ Consumers: agents/testing-subagent.md (3 allowlists → 1 + body), agents/tdd-su
     — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 7: Exit — full suite, final counts, sweep
-- [ ] **7.1** Full gate: `bats tests/` exit=0 zero failures; LEARNINGS count sweep (lookbehind residue for all 22 members); registry committed clean
+- [x] **7.1** Full gate: `bats tests/` exit=0 zero failures; LEARNINGS count sweep (lookbehind residue for all 22 members); registry committed clean
     — **Why:** ticket exit gate is tier=full unconditionally
     — **Done when:** suite green; sweep clean; `GATE <sha> tier=full` memo appended
+    — **Done:** full suite green (615/615, exit 0; count drop 633->615 = P5/P6 bats-block consolidation by design) after fixing README count sites 5/76/101 stale at 121; conflict-marker grep 0; LEARNINGS sweep clean; fixes: README x3
     — **Consumers affected:** PR citation, reviewer
-- [ ] **7.2** Verify ticket ACs end-to-end (6 commits, impliesMcp re-homed, triggers preserved, count 119, withdrawn families untouched); tick
+- [x] **7.2** Verify ticket ACs end-to-end (6 commits, impliesMcp re-homed, triggers preserved, count 119, withdrawn families untouched); tick
     — **Why:** AC reconciliation before review
     — **Done when:** every AC tickable with evidence
+    — **Done:** ACs verified: 6 refactor commits; impliesMcp re-homed (dependency-map + pack-frontend); triggers preserved per phase; count 119 (= amended AC); withdrawn families intact (autoresearch 4, release trio 3)
     — **Consumers affected:** reviewer, PR
-- [ ] **7.3** Commit PLAN ticks + memo; push
+- [x] **7.3** Commit PLAN ticks + memo; push
     — **Why:** traceability; final SHA carries tier=full memo
     — **Done when:** pushed; zero unchecked; `[goal:evidence]` emitted
+    — **Done:** committed + pushed; zero unchecked; [goal:evidence] ready
     — **Consumers affected:** pipeline Step 9/10
 
 ## Technical Notes
@@ -220,3 +223,4 @@ GATE 1dea685 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 2b5a870 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE d1d0abe tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE c1e8db3 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE c8ed149 tier=full lint=- typecheck=- build=- unit=t e2e=n.a
