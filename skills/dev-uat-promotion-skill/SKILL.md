@@ -26,7 +26,7 @@ inline. I provide the primary agent with:
 5. **Protected-branch fallback** — the PR path when direct uat push is
    rejected
 6. **Ticket hygiene contract** — result comment + transition rules (tracker
-   conventions per `jira-git-integration-skill`)
+   conventions — JIRA policy per `jira-git-integration-skill`)
 
 Execution is plain git run by the primary agent (or delegated to
 `repo-ops-specialist-subagent` with my §Delegation Spec).

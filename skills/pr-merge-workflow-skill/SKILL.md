@@ -146,7 +146,7 @@ For auto-fixable failures:
 
 ## Phase 4: Post-Merge Cleanup
 
-### JIRA Integration
+### Tracker Integration
 
 If a tracker ticket key was found in the PR title or branch name (pattern: `[A-Z]+-\d+`):
 1. Load `jira-status-updater` skill and delegate the post-merge transition

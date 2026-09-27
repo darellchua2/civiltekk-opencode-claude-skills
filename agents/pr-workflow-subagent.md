@@ -152,7 +152,7 @@ Workflow:
 3. Generate coverage badges if applicable
 4. Update branch-specific PLAN.md (invoke plan-execution-skill in --update mode)
 5. Create PR using `pr-creation-workflow` (gate contract + memo check per `verification-loop-skill`)
-6. Update JIRA ticket with PR link (if applicable)
+6. Update tracker ticket with PR link (if applicable)
 7. Use skills for specialized tasks (linting, testing, docs as needed)
 8. Inform user to say "pr merge to [branch]" when ready to merge
 

@@ -37,6 +37,7 @@ GATE 72284bb tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — atla
 GATE 2ea94c1 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — permissions byte-identical (both agents); JIRA MCP call-sheet removed; guard paragraph verbatim
 GATE 2c56b15 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — dev-uat identity tracker-neutral; hygiene pin present; frontmatter untouched
 GATE (exit) tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a — AC1 grep IBIS SKILL.md-scope=0; AC2 allowlist exact (5 JIRA-family files); 6.2 pins resolve ×8, call-sheets none; bats 632/632 ok; registry content no-diff (generatedAt-only, restored). Exit gate ran on the identical tree committed as ca5a5a0; this correction commit carries only this memo fix (self-referential SHA resolved fix-forward, no force-push)
+GATE (post-review) tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a — Step 9 code review: 0 Critical / 0 Major / 4 Minor (all fixed: fake §Branch Naming anchors → skill-level pins, pr-workflow step 6 label, dev-uat hygiene pin precision, pr-merge heading tracker-neutral); re-gated on fixed tree: AC1=0, AC2=5, bats 632/632, registry timestamp-only. LEARNINGS: 2 new files written, 2 bumps skipped (already covered). Review-fix commit folds all of the above per pipeline contract
 
 ## Implementation Phases
 

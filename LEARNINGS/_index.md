@@ -1779,3 +1779,13 @@
 - **Scope**: project
 - **Date**: 2026-09-26
 - **Summary**: Deleting a git worktree without purging its `worktree`/`project` rows in `~/.local/share/opencode/opencode.db` made `opencode reload` fail with `ENOENT FileSystem.realPath` (56 stale rows); teardown must clear every registry keying the removed path in the same step.
+- **File**: `LEARNINGS/anti-patterns/plan-line-targets-must-clear-frontmatter-boundary.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: PLAN steps citing SKILL.md line numbers must clear the frontmatter fence — description lines are registry events (embedded verbatim in registry.json), so editing them breaks no-diff gates; scope body-only or add an explicit frontmatter-change step. Origin: #595 architecture review.
+- **File**: `LEARNINGS/conventions/section-pins-target-heading-anchors.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: `§Name` pins in skills/agents must target real heading anchors, not bolded list labels — verify anchor resolvability at authoring and review time; promote the owner's item to a heading or pin at skill level. Origin: #595 code review.

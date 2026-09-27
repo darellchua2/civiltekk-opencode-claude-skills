@@ -32,7 +32,7 @@ I execute PLAN.md files phase-by-phase in one of three modes. Pick the mode from
 
 All modes parse the same structure:
 
-- **Plan resolution**: explicit path wins; else branch-derived — `feat/GIT-123` → `PLANS/PLAN-GIT-123.md`; `feat/issue-123` / `feat/123` (legacy) → `PLANS/PLAN-GIT-123.md`; `feat/PROJECT-123` (tracker key per `jira-git-integration-skill` §Branch Naming) → `PLANS/PLAN-PROJECT-123.md`. Missing → stop with the expected path (`--update` gracefully skips instead).
+- **Plan resolution**: explicit path wins; else branch-derived — `feat/GIT-123` → `PLANS/PLAN-GIT-123.md`; `feat/issue-123` / `feat/123` (legacy) → `PLANS/PLAN-GIT-123.md`; `feat/PROJECT-123` (tracker key per `jira-git-integration-skill`) → `PLANS/PLAN-PROJECT-123.md`. Missing → stop with the expected path (`--update` gracefully skips instead).
 - **Parse**: phases = `^### Phase`; steps = `- [ ] **N.M**`; completed = `- [x]`.
 - **Rationale triple**: every atomic step carries `— **Why:**` / `— **Done when:**` / `— **Consumers affected:**` — parse all three. Surface a step's `Consumers affected` BEFORE mutating its target. Verify `Done when` objectively before `[x]` — "looks done" is not done.
 - **Read `## Dependency & Consumer Map` before executing** so order and blast radius are known up front.
