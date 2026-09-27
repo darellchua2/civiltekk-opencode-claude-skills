@@ -4,9 +4,9 @@
 # .github/ISSUE_TEMPLATE/*.yml are deployed instances of
 # skills/ticketing-skill/templates/*.yml — a one-time cmp at authoring
 # time decays silently; this pins the pairs (extends the bats-structure-pin
-# idiom to file pairs). Also pins the SKILL.md field-spec tables to the form
-# labels verbatim (AC #1) so agent-created and human-created tickets stay
-# structurally identical.
+# idiom to file pairs). Also pins the SKILL.md field spec (prose lists) to
+# the form labels verbatim (AC #1) so agent-created and human-created
+# tickets stay structurally identical.
 
 FORMS_DIR=".github/ISSUE_TEMPLATE"
 TEMPLATES_DIR="skills/ticketing-skill/templates"

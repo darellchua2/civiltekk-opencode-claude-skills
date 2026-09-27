@@ -22,6 +22,7 @@ atlassian_getUserInformation                → account id (assignee)
 atlassian_getVisibleJiraProjects --cloudId  → pick project key (ABC, PROJ, DA…)
 atlassian_createJiraIssue --cloudId --projectKey --issueTypeName
                            --summary --description [--assignee_account_id]
+                           [--parent <STORY-KEY>]   # Sub-task creation — *verify locally*
 atlassian_getJiraIssue / atlassian_addCommentToJiraIssue
 atlassian_getTransitions / atlassian_transitionJiraIssue
 ```

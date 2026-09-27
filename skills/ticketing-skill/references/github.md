@@ -34,6 +34,8 @@ the ask-don't-invent rule.
 
 ## Commands (tier 1)
 
+> Requires bash (git-bash/WSL on Windows).
+
 ```bash
 # Create (single) — author = gh auth user; @me self-assigns the same identity
 ISSUE_URL=$(gh issue create --title "$TITLE" --body "$FORMATTED_BODY" \
@@ -88,6 +90,8 @@ Prerequisite: `gh` authenticated with write access to the repository.
 
 ### Auto-create missing labels (machine-readable source)
 
+> Requires bash (git-bash/WSL on Windows).
+
 ```bash
 declare -A LABELS=(
   ["bug"]="d73a4a,Something isn't working"
@@ -123,6 +127,8 @@ in — the consistent baseline. Existing custom labels coexist untouched.
 
 Governance: definitions follow `semantic-release-convention-skill` (single
 source of truth for version-bump conventions) — cited here, never redefined.
+
+> Requires bash (git-bash/WSL on Windows).
 
 ```bash
 if [[ "$pr_title" =~ ^[^:]+\! ]]; then labels+=("major")

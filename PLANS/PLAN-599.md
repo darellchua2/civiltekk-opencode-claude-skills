@@ -225,3 +225,4 @@ GATE ffc7b14 tier=full lint=n.a typecheck=n.a build=n.a unit=71/71(bats: skill_p
 GATE acfbe53 tier=light lint=n.a typecheck=n.a build=n.a unit=13/13(bats: skill_isolation, skill_profiles) + build-registry --check PASS e2e=n.a — Phase 3 (scoped: frontmatter/body pointer sweep)
 ```
 GATE b5da03f tier=full lint=n.a typecheck=n.a build=n.a unit=632/632(bats tests/ full suite) e2e=n.a — ticket exit gate (#599)
+GATE 010ce89 tier=full lint=n.a typecheck=n.a build=n.a unit=632/632(bats tests/ full suite, post-review-fix) e2e=n.a — review-fix re-gate (#599)

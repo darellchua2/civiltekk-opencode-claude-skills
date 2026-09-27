@@ -1831,3 +1831,12 @@
 - **Scope**: project
 - **Date**: 2026-09-27
 - **Summary**: Before merging skills, grep repo-wide for `§` + doomed skill names; that pin set (PLAN-599: §MCP Availability Guard ×6, §Attribution ×2) is exactly what must survive as verbatim headings in the merged doc — every pointer then becomes a one-token rename.
+
+### Pattern: Values side files are the multi-platform extension path
+
+- **Category**: pattern
+- **File**: `LEARNINGS/patterns/values-side-files-platform-extension-path.md`
+- **Confidence**: 0.6
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: Consolidated multi-platform skills split METHOD (SKILL.md, frozen § headings, idempotency contracts) from VALUES (references/<platform>.md with load rules + verify-locally markers); unknown platform → detect-and-ask + "contribute a side file, never improvise endpoints". Replicate for future multi-platform consolidations (#599).
