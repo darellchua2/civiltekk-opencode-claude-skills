@@ -61,7 +61,7 @@ permissions:
     resource: autoresearch-ml-skill
     effect: allow
   - action: skill
-    resource: strategic-compact-skill
+    resource: civiltekk-context-optimization-skill
     effect: allow
   - action: skill
     resource: blast-radius-skill
@@ -163,7 +163,7 @@ Per `autoresearch-core-skill/references/crash-recovery.md`:
 - Delegate parallel research tasks to `general` subagent.
 - Load `autoresearch-core-skill` for the canonical methodology text.
 - Load `autoresearch-ml-skill` for ML-specific overrides and templates.
-- Load `strategic-compact-skill` if your context exceeds 60% mid-loop.
+- Load `civiltekk-context-optimization-skill` (compaction-strategy route) if your context exceeds 60% mid-loop.
 
 ## CodeGraph Integration
 

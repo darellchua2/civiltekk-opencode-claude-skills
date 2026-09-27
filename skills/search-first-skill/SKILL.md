@@ -79,13 +79,12 @@ Skip search when: domain-unique functionality, bug fix in existing code, one-lin
 ## Integration
 
 - `continuous-learning-skill` — persist decisions as reusable patterns
-- `strategic-compact-skill` — compact preserves search decisions + rationale
-- `context-budget-skill` — catches dependency bloat
+- `civiltekk-context-optimization-skill` — compaction preserves search decisions + rationale; the audit route catches dependency bloat
 - `eval-harness-skill` — evaluates whether the chosen solution meets quality thresholds
 
 ## References
 
-- `context-budget-skill` — dependency context-cost audit
+- `civiltekk-context-optimization-skill` — dependency context-cost audit
 - `continuous-learning-skill` — decision persistence
 - `architecture-review-subagent` — consults this skill for stack decisions
 

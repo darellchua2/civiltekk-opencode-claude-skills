@@ -96,22 +96,26 @@ Consumers: deploy/skill-profiles.json, deploy/.AGENTS.md (§Commits "Granularity
 ### Phase 3: civiltekk-context-optimization-skill
 Absorbs: `context-budget-skill` (10.1K) + `strategic-compact-skill`. references/: `budget.md`, `compact.md`. Routes: audit-overhead | compaction-strategy.
 Consumers: agents/autoresearch-{code,ml,research}-subagent.md (strategic-compact), agents/loop-operator-subagent.md, deploy/skill-profiles.json, presets pack-frontend/pack-business/pack-review (context-budget) + pack-research (strategic-compact).
-- [ ] **3.1** Author host + references per template
+- [x] **3.1** Author host + references per template
     — **Why:** both are token-economy method skills; one audit route, one strategy route
     — **Done when:** template satisfied; triggers intact; isolation green
     — **Consumers affected:** autoresearch agents, loop-operator
-- [ ] **3.2** Delete + repoint (4 agent files, skill-profiles, 4 presets)
+    — **Done:** host mirrors pattern shape, routes audit-overhead|compaction-strategy, 455-char union description (12 trigger phrases), category Agent Optimization; files: skills/civiltekk-context-optimization-skill/{SKILL.md,references/budget.md,references/compact.md}; fixes: none
+- [x] **3.2** Delete + repoint (4 agent files, skill-profiles, 4 presets)
     — **Why:** autoresearch agents allowlist strategic-compact by name
     — **Done when:** grep residue clean
     — **Consumers affected:** autoresearch loops, packs
-- [ ] **3.3** Registry + scoped gate + count (147)
+    — **Done:** 2 dirs git-rm; repointed: skill-profiles (76→75 + six bats literals), deploy/opencode.json, setup.sh lean comment, 4 presets, 4 agents (autoresearch x3 + loop-operator), README counts+rows, 6 fellow-skills; residue exempt-only; fixes: none
+- [x] **3.3** Registry + scoped gate + count (147)
     — **Why:** per-commit green
     — **Done when:** same shape; count 147
     — **Consumers affected:** installer
-- [ ] **3.4** Commit + push
+    — **Done:** registry rebuilt (skills=147); scoped gate green; count 147; fixes: none
+- [x] **3.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 4: civiltekk-documentation-sync-skill
 Absorbs: `documentation-sync-workflow-skill` + `documentation-consistency-skill`. references/: `sync-on-add.md`, `drift-audit.md`. Routes: on-add sync | drift audit/fix.
@@ -312,3 +316,4 @@ None active. (The pre-#612 overlap hold is resolved — feat/602 merged as 05490
 WORK LOG — Phase 1: lean literal fix (78→77, six sites in tests/skill_profiles.bats) caught by the scoped gate on first run — the count-literal LEARNINGS recurring as predicted; WARN-5 sweep-net caught two unlisted fellow-skill consumers (skills-maintainer, agent-introspection). Template-mandated `Consolidates … (#603)` line is standing accepted residue for every host (ticketing-skill #599 precedent).
 GATE eeb509f tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 13837af tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE cde8214 tier=light lint=- typecheck=- build=- unit=t e2e=n.a

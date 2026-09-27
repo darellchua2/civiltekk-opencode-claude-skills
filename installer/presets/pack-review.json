@@ -9,11 +9,11 @@
   ],
   "skills": [
     "authentication-authorization-skill",
+    "civiltekk-context-optimization-skill",
     "clean-architecture-skill",
     "clean-code-skill",
     "code-smells-skill",
     "complexity-management-skill",
-    "context-budget-skill",
     "continuous-learning-skill",
     "database-migration-skill",
     "deprecated-code-cleanup-skill",

@@ -85,7 +85,7 @@ Config first (most common), permissions second (quick win), behavior last. One c
 
 ## Integration
 
-- `context-budget-skill` — context bloat is a diagnosis outcome
+- `civiltekk-context-optimization-skill` — context bloat is a diagnosis outcome
 - `opencode-skills-maintainer-skill` — post-fix format validation
 - `civiltekk-opencode-creation-skill` — agent/skill authoring rules referenced when fixing
 - `continuous-learning-skill` — store diagnosed anti-patterns

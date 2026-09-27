@@ -43,14 +43,14 @@ Criteria starters: code quality — naming per language convention, function ≤
 
 - `verification-loop-skill` — canonical gate contract; eval supplies scoring rubrics, not gate execution
 - `continuous-learning-skill` — learn which patterns score well
-- `strategic-compact-skill` — compact preserves eval results
+- `civiltekk-context-optimization-skill` — compact preserves eval results
 - `linting-workflow-skill` / `code-smells-skill` / `solid-principles-skill` — signals feeding the quality criterion
 
 ## References
 
 - `verification-loop-skill` — gates and verification during implementation
 - `continuous-learning-skill` — learning from evaluation results
-- `strategic-compact-skill` — preserving eval context
+- `civiltekk-context-optimization-skill` — preserving eval context
 
 ## Iteration Protocol (opt-in)
 

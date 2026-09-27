@@ -181,7 +181,7 @@ This is the reusable primitive `worktree-pipeline-skill` §6d atomicity self-che
 | `ticketing-skill` | A resolved plan feeds ticket creation upstream |
 | `error-resolver-workflow-skill` | Gate-red diagnosis during `--gate` fix-on-fail |
 | `tdd-workflow-skill` | `--gate` 4b mandates tests for new code before the gate |
-| `strategic-compact-skill` | PLAN.md files are natural compaction anchors |
+| `civiltekk-context-optimization-skill` | PLAN.md files are natural compaction anchors |
 
 ## Iteration Protocol (opt-in)
 

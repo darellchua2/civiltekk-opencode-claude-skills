@@ -13,12 +13,12 @@
     "autoresearch-core-skill",
     "autoresearch-ml-skill",
     "autoresearch-research-skill",
+    "civiltekk-context-optimization-skill",
     "continuous-learning-skill",
     "eval-harness-skill",
     "horseshoe-paper-writing-skill",
     "research-paper-generation-skill",
     "search-first-skill",
-    "strategic-compact-skill",
     "verification-loop-skill"
   ],
   "mcps": [

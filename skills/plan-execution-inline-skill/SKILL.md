@@ -133,4 +133,4 @@ Gate red after 3 attempts → report + ask · phase/fix budget hit → HALT `[go
 | `civiltekk-git-commits-skill` | Commit formats for the per-phase atomic commit |
 | `testing-inline-skill` / `linting-inline-skill` / `documentation-inline-skill` / `responsive-audit-inline-skill` | The inline delegate family — matrix routes here |
 | `tdd-workflow-skill` | 4b mandates tests for new code before the gate |
-| `strategic-compact-skill` | PLAN.md files are natural compaction anchors |
+| `civiltekk-context-optimization-skill` | PLAN.md files are natural compaction anchors |

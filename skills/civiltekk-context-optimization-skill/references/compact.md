@@ -1,18 +1,8 @@
----
-name: strategic-compact-skill
-description: Suggest optimal context compaction strategies for AI agent sessions, preserving critical information while reducing token usage
-license: Apache-2.0
-compatibility: opencode
-metadata:
-  harness: "opencode"
-category: Agent Optimization
----
+# Compact route (values)
 
-## What I do
+Retention tiers, compaction workflow, and session-brief contract for the `compaction-strategy` route. The host SKILL.md carries the METHOD (detect → route → load); this file carries the VALUES.
 
-Analyze session context and compact it: classify content by retention priority, generate a session brief that preserves actionable state, and plan session breakpoints.
-
-**Trigger phrases**: "compact context", "summarize session", "reduce context", "what can we drop", "session getting long", "preserve key decisions".
+**Authority:** this route is the authority for retention classification, compaction timing, and the session-brief format; `references/budget.md` in this skill owns config-side token auditing (the two were formerly peer skills — the boundary is internal now).
 
 ## Retention Tiers
 
@@ -72,4 +62,4 @@ Analyze session context and compact it: classify content by retention priority, 
 - `eval-harness-skill` — eval results are Tier 2 (keep summaries)
 - `plan-execution-skill` (--update) — PLAN.md files are natural compaction anchors
 
-> **Removal note (2026-09-19, #409 trim per LEARNINGS #383 recipe):** dropped the worked compaction-strategy example, the multi-session plan template (variant of the session brief), the Example Usage section, and Best Practices prose (compressed into "When to Compact"). Kept verbatim: frontmatter, retention tiers, workflow contract, session-brief output template.
+> **Removal note (2026-09-19, #409 trim per LEARNINGS #383 recipe; inherited by this consolidation):** dropped the worked compaction-strategy example, the multi-session plan template (variant of the session brief), the Example Usage section, and Best Practices prose (compressed into "When to Compact"). Kept verbatim: retention tiers, workflow contract, session-brief output template.

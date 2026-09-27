@@ -1,40 +1,16 @@
----
-name: context-budget-skill
-description: >-
-  Audit token overhead across agents, skills, and MCP servers — classification
-  and optimization recommendations.
-license: Apache-2.0
-compatibility: opencode
-metadata:
-  harness: "opencode"
-category: Agent Optimization
----
+# Budget route (values)
 
-## What I do
+Token-overhead inventory, classification, and budget-report contract for the `audit-overhead` route. The host SKILL.md carries the METHOD (detect → route → load); this file carries the VALUES.
 
-I audit the token overhead of every loaded component in an OpenCode configuration and surface actionable optimizations:
+**Authority:** this route is the authority for token-estimation formulas, classification buckets, problem patterns, and the report format; `references/compact.md` in this skill owns runtime session compaction (the two were formerly peer skills — the boundary is internal now).
 
-1. **Inventory**: Scan all agents, skills, rules, and MCP servers that consume context
-2. **Classify**: Bucket each component by necessity (Always / Sometimes / Rarely needed)
-3. **Detect Issues**: Identify bloat, redundancy, and common problem patterns
-4. **Report**: Produce a structured context budget report with prioritized recommendations
+## When to use
 
-## When to use me
-
-Use this skill when:
 - Session performance feels sluggish or output quality is degrading
 - You've recently added many skills, agents, or MCP servers
 - You want to know how much context headroom you actually have
 - Planning to add more components and need to know if there's room
 - Before deploying configuration changes to catch bloat early
-
-**Trigger phrases**:
-- "audit context budget"
-- "context budget"
-- "token overhead"
-- "how much context am I using"
-- "audit config bloat"
-- "check skill overhead"
 
 ## Core Workflow
 
@@ -179,16 +155,6 @@ AGENTS.md is loaded on every session. Verbose explanations, outdated sections, o
 
 **Fix**: Move detailed instructions to skills. Keep AGENTS.md as routing tables and concise rules.
 
-## Integration with Other Skills
-
-| Skill | Integration |
-|-------|-------------|
-| `strategic-compact-skill` | Budget audit identifies bloat sources; compact addresses runtime context compression |
-| `continuous-learning-skill` | Store audit findings as optimization patterns for future reference |
-| `eval-harness-skill` | Use eval scoring to assess whether removing a component impacts quality |
-| `opencode-skills-maintainer-skill` | Act on redundancy findings — merge, archive, or refactor overlapping skills |
-| `documentation-consistency-skill` | Cross-validate counts between budget report and documentation |
-
 ## Best Practices
 
 ### Running Audits
@@ -217,7 +183,7 @@ AGENTS.md is loaded on every session. Verbose explanations, outdated sections, o
 "Audit my context budget"
 ```
 
-The skill will:
+The route will:
 1. Scan all agents, skills, MCP servers, and config files
 2. Estimate token overhead per component
 3. Classify each component by necessity
@@ -230,7 +196,7 @@ The skill will:
 "I want to add 5 more MCP servers, do I have room?"
 ```
 
-The skill will:
+The route will:
 1. Calculate current overhead as percentage of estimated context
 2. Project additional overhead from 5 new servers
 3. Recommend what to remove to stay under budget
@@ -242,14 +208,24 @@ The skill will:
 "Are any of my skills overlapping?"
 ```
 
-The skill will:
+The route will:
 1. Scan all skill descriptions and content
 2. Compare domains and workflow tags
 3. Identify skills with >50% content overlap
 4. Recommend consolidation or archival
 
+## Integration with Other Skills
+
+| Skill | Integration |
+|-------|-------------|
+| `references/compact.md` (`compaction-strategy` route, this skill) | Budget audit identifies bloat sources; compaction addresses runtime context compression |
+| `continuous-learning-skill` | Store audit findings as optimization patterns for future reference |
+| `eval-harness-skill` | Use eval scoring to assess whether removing a component impacts quality |
+| `opencode-skills-maintainer-skill` | Act on redundancy findings — merge, archive, or refactor overlapping skills |
+| `documentation-consistency-skill` | Cross-validate counts between budget report and documentation |
+
 ## References
 
-- `strategic-compact-skill` - Runtime context compression (companion to this audit skill)
-- `opencode-skills-maintainer-skill` - Act on redundancy findings
-- `continuous-learning-skill` - Persist optimization patterns
+- `references/compact.md` (this skill's `compaction-strategy` route) — runtime context compression, companion to this audit
+- `opencode-skills-maintainer-skill` — act on redundancy findings
+- `continuous-learning-skill` — persist optimization patterns

@@ -252,12 +252,7 @@
         },
         {
             "action": "skill",
-            "resource": "context-budget-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "strategic-compact-skill",
+            "resource": "civiltekk-context-optimization-skill",
             "effect": "allow"
         },
         {
