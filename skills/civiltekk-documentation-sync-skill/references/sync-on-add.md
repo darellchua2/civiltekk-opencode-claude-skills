@@ -1,31 +1,17 @@
----
-name: documentation-sync-workflow-skill
-description: >-
-  Sync docs when adding skills or subagents — updates setup.sh, setup.ps1,
-  README.md, AGENTS.md counts and listings.
-license: Apache-2.0
-compatibility: opencode
-metadata:
-  harness: "opencode"
-category: Documentation
----
+# Sync-on-add route (values)
 
-## What I do
+The 4-file documentation update procedure for adding, removing, or renaming skills and subagents. The host SKILL.md carries the METHOD (detect → route → load); this file carries the VALUES for the `sync-on-add` route.
 
-I ensure documentation files stay synchronized when adding new skills or subagents by guiding updates to 4 key files:
+**Authority:** this route is the authority for the per-file update procedure, search patterns, and count arithmetic; `references/drift-audit.md` in this skill owns auditing existing docs for drift (the two were formerly peer skills — the boundary is internal now).
 
-1. **setup.sh** - Update skill/agent counts and listings
-2. **setup.ps1** - Update skill/agent counts and listings
-3. **README.md** - Update tables reflecting current skills/agents
-4. **AGENTS.md** - Document workflow guidance for new additions
+All shell snippets require bash (git-bash/WSL on Windows).
 
-## When to use me
+## When to use
 
-Use this workflow when:
 - Adding a new skill to the `skills/` directory
 - Adding a new subagent to the `agents/` directory
 - Removing or renaming skills/subagents
-- Verifying documentation accuracy
+- Verifying documentation accuracy after such a change
 
 ## Prerequisites
 
@@ -42,18 +28,22 @@ Update when: Adding a new primary agent
 
 **SKILLS Section**: Search for `SKILLS (` to find the skill listing.
 ```bash
-   SKILLS (49):
-     Framework (7):        test-generator-framework, linting-workflow,
+   SKILLS (<total>):
+     <Category> (<n>):    <skill-a>, <skill-b>,
                            ...
-     Documentation (2):    coverage-readme-workflow, docstring-generator
      ...
 ```
-Update when: Adding a new skill - increment count and add to appropriate category
+Update when: Adding a new skill — increment count and add to appropriate category
+
+> Note: totals and per-category listings are computed dynamically in current
+> `setup.sh` (`count_skills`, `print_skill_categories`) — verify the dynamic
+> output reflects the change; only hand-maintained comments (e.g. the lean
+> profile count) need manual edits.
 
 ### 2. setup.ps1
 
 **SKILLS Section**: Search for `SKILLS (` (mirrors setup.sh).
-Update when: Adding a new skill - same changes as setup.sh
+Update when: Adding a new skill — same changes as setup.sh
 
 ### 3. README.md
 
@@ -61,17 +51,20 @@ Update when: Adding a new skill - same changes as setup.sh
 ```markdown
 | Category | Skills | Purpose |
 |-----------|---------|---------|
-| **Framework** (7) | ... | Generic workflows, testing patterns |
-| **Documentation** (2) | coverage-readme-workflow, docstring-generator | Documentation generation |
+| **<Category>** (<n>) | <skill-a>, <skill-b> | <purpose> |
 ```
-Update when: Adding a new skill - add to or update appropriate category row
+Update when: Adding a new skill — add to or update appropriate category row
 
 **Subagents Table**: Search for `| Subagent | Purpose |` to locate.
-Update when: Adding a new subagent - add row with purpose and associated skills
+Update when: Adding a new subagent — add row with purpose and associated skills
+
+**Total counts**: Search for `<N> skill` / `<N> agents` in the intro and
+file-tree sections — every literal must match disk.
 
 ### 4. AGENTS.md
 
-Add workflow guidance section when creating new documentation patterns.
+Add workflow guidance section when creating new documentation patterns
+(e.g. the §Adding Skills or Subagents sync-rules table).
 
 ## Validation Commands
 
@@ -81,7 +74,7 @@ Add workflow guidance section when creating new documentation patterns.
 ls -d skills/*/ | wc -l
 
 # Compare with what's documented in setup.sh
-grep "SKILLS (" setup.sh
+grep "SKILLS (" deploy/setup.sh
 ```
 
 ### Count Subagents
@@ -96,10 +89,10 @@ grep -c "| \*\*" README.md
 ### Verify Counts Match in Files
 ```bash
 # Check skill count in setup.sh
-grep "SKILLS (" setup.sh
+grep "SKILLS (" deploy/setup.sh
 
 # Check skill count in setup.ps1
-grep "SKILLS (" setup.ps1
+grep "SKILLS (" deploy/setup.ps1
 
 # Check README.md table entries
 grep -c "| \*\*" README.md
@@ -109,8 +102,8 @@ grep -c "| \*\*" README.md
 ```bash
 # Verify skill counts across all files
 echo "Skills in directory: $(ls -d skills/*/ | wc -l)"
-echo "Skills in setup.sh: $(grep -oP 'SKILLS \(\K[0-9]+' setup.sh)"
-echo "Skills in setup.ps1: $(grep -oP 'SKILLS \(\K[0-9]+' setup.ps1)"
+echo "Skills in setup.sh: $(grep -oP 'SKILLS \(\K[0-9]+' deploy/setup.sh)"
+echo "Skills in setup.ps1: $(grep -oP 'SKILLS \(\K[0-9]+' deploy/setup.ps1)"
 echo "Skills in README.md: $(grep -oP '\*\*[A-Za-z]+\*\* \([0-9]+\)' README.md | wc -l)"
 ```
 
@@ -129,9 +122,9 @@ ls agents/*.md
 ### Step 2: Update setup.sh
 
 1. Search for the appropriate category section (grep for `SKILLS (`)
-2. Increment category count: `(7)` → `(8)`
+2. Increment category count: `(<n>)` → `(<n+1>)`
 3. Add skill name to the list
-4. Update total count: `SKILLS (49)` → `SKILLS (50)`
+4. Update total count: `SKILLS (<total>)` → `SKILLS (<total+1>)`
 
 ### Step 3: Update setup.ps1
 
@@ -144,10 +137,8 @@ ls agents/*.md
    - Update category count
    - Add skill name to list
    - Ensure Purpose column remains accurate
-
 2. If adding a subagent, search for the Subagents table (grep for `| Subagent | Purpose |`):
    - Add new row with subagent name, purpose, and associated skills
-
 3. Search for the total skill count in the intro paragraph and update it
 
 ### Step 5: Update AGENTS.md (if needed)
@@ -158,21 +149,17 @@ Add workflow guidance section for new documentation patterns.
 
 Run validation commands to ensure all counts match.
 
-## Skill Categories Reference
+## Category rules
 
-| Category | Current Count | Purpose |
-|----------|---------------|---------|
-| Framework | 7 | Generic workflows, testing patterns, document creation |
-| Language-Specific | 4 | Language-specific test, linting, documentation |
-| Framework-Specific | 7 | Next.js and TypeScript workflows |
-| OpenCode Meta | 4 | Agent and skill creation/maintenance |
-| OpenTofu | 7 | Infrastructure as code |
-| Git/Workflow | 7 | Git operations and workflows |
-| Documentation | 2 | Documentation generation |
-| JIRA | 4 | JIRA integration workflows |
-| Code Quality | 7 | Code quality analysis and patterns |
-
-**Total: Verify with `ls -d skills/*/ | wc -l`**
+- Category membership comes from each skill's `category:` frontmatter key
+  (installer-registry-only, but the README/setup listings mirror it).
+- The live category set is whatever README.md's Skill Categories table
+  currently shows — never trust a stale copy of the counts; recount from
+  disk.
+- **Sum rule:** total skill count must equal the sum of all category
+  counts. A consolidation that moves a skill between categories changes
+  BOTH rows' parentheticals (source loses 1; destination gains 1) while
+  the total changes by the net add/remove.
 
 ## Checklist for Adding a New Skill
 
@@ -208,13 +195,13 @@ Run validation commands to ensure all counts match.
 
 **Solution**: Run validation commands to identify which file is incorrect:
 ```bash
-grep "SKILLS (" setup.sh setup.ps1
+grep "SKILLS (" deploy/setup.sh deploy/setup.ps1
 ```
 
 ### Wrong Category
 **Issue**: Skill added to wrong category
 
-**Solution**: Review skill purpose and assign to appropriate category based on the categories reference table above.
+**Solution**: Review skill purpose and assign to the category the README.md Skill Categories table uses for that purpose.
 
 ### Missing Skill in Table
 **Issue**: Skill added to setup files but not README.md

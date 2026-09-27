@@ -128,14 +128,16 @@ Consumers: agents/repo-ops-specialist-subagent.md, agents/opencode-tooling-subag
     — **Why:** bats pin member names — literals must move with the merge
     — **Done when:** residue clean; test_default_behavior + test_autoresearch_protocol green
     — **Consumers affected:** CI, agents
-- [ ] **4.3** Registry + scoped gate + count (146)
+- [x] **4.3** Registry + scoped gate + count (146)
     — **Why:** per-commit green
     — **Done when:** count 146; affected bats green
     — **Consumers affected:** installer
-- [ ] **4.4** Commit + push
+    — **Done:** registry rebuilt (skills=146); scoped gate green incl. default_behavior+autoresearch_protocol pinned literals; count 146; fixes: none
+- [x] **4.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 5: civiltekk-startup-docs-skill
 Absorbs: `startup-business-docs-skill` + `startup-pitch-deck-skill`. references/: `business-docs.md`, `pitch-deck.md`. Routes: business docs | pitch decks.
@@ -317,3 +319,4 @@ WORK LOG — Phase 1: lean literal fix (78→77, six sites in tests/skill_profil
 GATE eeb509f tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 13837af tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE cde8214 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 135a641 tier=light lint=- typecheck=- build=- unit=t e2e=n.a

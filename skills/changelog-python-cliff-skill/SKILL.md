@@ -212,7 +212,7 @@ Changelog generation follows the conventions in `semantic-release-convention`:
 
 - **semantic-release-convention**: For release tag format and commit type conventions
 - **civiltekk-git-commits**: For conventional commit formatting and budget guidance
-- **documentation-sync-workflow**: If changelog is part of documentation updates
+- **civiltekk-documentation-sync**: If changelog is part of documentation updates
 - **git-cliff**: External tool (not bundled)
 
 ## Reference: cliff.toml Template for Python Projects

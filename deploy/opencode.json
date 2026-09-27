@@ -112,7 +112,7 @@
         },
         {
             "action": "skill",
-            "resource": "documentation-sync-workflow-skill",
+            "resource": "civiltekk-documentation-sync-skill",
             "effect": "allow"
         },
         {
@@ -243,11 +243,6 @@
         {
             "action": "skill",
             "resource": "agent-introspection-debugging-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "documentation-consistency-skill",
             "effect": "allow"
         },
         {

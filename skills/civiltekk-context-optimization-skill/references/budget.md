@@ -222,7 +222,7 @@ The route will:
 | `continuous-learning-skill` | Store audit findings as optimization patterns for future reference |
 | `eval-harness-skill` | Use eval scoring to assess whether removing a component impacts quality |
 | `opencode-skills-maintainer-skill` | Act on redundancy findings — merge, archive, or refactor overlapping skills |
-| `documentation-consistency-skill` | Cross-validate counts between budget report and documentation |
+| `civiltekk-documentation-sync-skill` | Cross-validate counts between budget report and documentation |
 
 ## References
 

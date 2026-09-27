@@ -250,20 +250,20 @@ extract_section_range() {
 # Tier 2 — 8 skills × 3 assertions = 24 tests
 # =============================================================================
 
-# --- documentation-consistency ---
-@test "default_behavior_documentation-consistency_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+# --- civiltekk-documentation-sync ---
+@test "default_behavior_civiltekk-documentation-sync_has_imperative_gating_preamble" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'DO NOT execute any of the following unless' "$skill_md"
 }
-@test "default_behavior_documentation-consistency_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+@test "default_behavior_civiltekk-documentation-sync_preamble_appears_exactly_once" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
   [ "$count" -eq 1 ]
 }
-@test "default_behavior_documentation-consistency_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+@test "default_behavior_civiltekk-documentation-sync_evaluator_token_in_section_only" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   range=$(extract_section_range "$skill_md")
   start=$(echo "$range" | awk '{print $1}')

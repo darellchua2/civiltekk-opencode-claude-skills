@@ -51,7 +51,7 @@ permissions:
     resource: opencode-skills-maintainer-skill
     effect: allow
   - action: skill
-    resource: documentation-sync-workflow-skill
+    resource: civiltekk-documentation-sync-skill
     effect: allow
 category: meta
 ---
@@ -130,7 +130,7 @@ If in a configurator repo and user says "user level", the artifact goes into the
 |------|-------|
 | Create new skill or agent | `civiltekk-opencode-creation` (routes to its agent/skill variant) |
 | Audit/validate skills | `opencode-skills-maintainer` |
-| Sync docs (configurator only) | `documentation-sync-workflow` |
+| Sync docs (configurator only) | `civiltekk-documentation-sync` |
 
 ## File Locations Reference
 
@@ -398,7 +398,7 @@ permissions:
 4. Report inconsistencies with fixes
 
 ### Synchronizing Documentation (Configurator Repo Only)
-1. Load `documentation-sync-workflow` skill
+1. Load `civiltekk-documentation-sync` skill (`drift-audit` route)
 2. Count actual skills/subagents vs documented counts
 3. Fix discrepancies across: `deploy/setup.sh`, `deploy/setup.ps1`, `README.md`, `AGENTS.md`
 4. Validate counts match

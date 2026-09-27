@@ -156,19 +156,19 @@ CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
 # Each Tier 2 skill cites a SPECIFIC subset of references (not all 5).
 # =============================================================================
 
-# --- documentation-consistency (audit-trail + crash-recovery) ---
-@test "tier2_documentation-consistency_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+# --- civiltekk-documentation-sync (audit-trail + crash-recovery) ---
+@test "tier2_civiltekk-documentation-sync_has_iteration_protocol_section" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
 }
-@test "tier2_documentation-consistency_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+@test "tier2_civiltekk-documentation-sync_has_opt_in_metadata" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
 }
-@test "tier2_documentation-consistency_cites_expected_references" {
-  skill_md="$SKILLS_DIR/documentation-consistency-skill/SKILL.md"
+@test "tier2_civiltekk-documentation-sync_cites_expected_references" {
+  skill_md="$SKILLS_DIR/civiltekk-documentation-sync-skill/SKILL.md"
   [ -f "$skill_md" ]
   for ref in audit-trail crash-recovery; do
     grep -q "autoresearch-core-skill/references/${ref}.md" "$skill_md"

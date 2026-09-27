@@ -62,10 +62,7 @@ permissions:
     resource: changelog-python-cliff-skill
     effect: allow
   - action: skill
-    resource: documentation-sync-workflow-skill
-    effect: allow
-  - action: skill
-    resource: documentation-consistency-skill
+    resource: civiltekk-documentation-sync-skill
     effect: allow
   - action: skill
     resource: plan-execution-skill
@@ -139,8 +136,7 @@ Load these skills to apply the correct standards and conventions:
 - **pr-merge-workflow**: Post-merge workflow — merge, CI monitoring, auto-fix, JIRA status update, branch cleanup
 - **ticketing-skill**: Full ticket lifecycle on GitHub Issues or JIRA — create, classify/label (incl. semver labels, PR-only), update from commits, close post-merge, ticket-key↔branch plumbing
 - **changelog-python-cliff**: Generate changelogs via git-cliff with PEP 440 versioning
-- **documentation-sync-workflow**: Keep docs synchronized when adding skills/subagents
-- **documentation-consistency**: Audit documentation consistency across files
+- **civiltekk-documentation-sync**: Keep docs synchronized when adding skills/subagents and audit doc drift (counts, PLAN-vs-reality, orphans)
 - **plan-execution** (`--update` / `--soft`): Track and execute PLAN.md phases
 
 > **JIRA skills MCP dependency:** policy per `ticketing-skill` §MCP Availability Guard. GitHub-side operations are unaffected.

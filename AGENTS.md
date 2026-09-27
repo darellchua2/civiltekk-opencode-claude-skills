@@ -66,7 +66,7 @@ Pick by purpose: correctness-critical → `reasoning`; exploratory → `fast`; d
 | New/removed agent | Agent count, help text listing |
 | `opencode.json` config change | MCP server entries if added/removed |
 
-Files: `deploy/setup.sh`, `deploy/setup.ps1` (Windows mirror), `README.md` (Skill Categories + Subagents tables). Then invoke `documentation-sync-workflow` skill or delegate to `opencode-tooling-subagent`.
+Files: `deploy/setup.sh`, `deploy/setup.ps1` (Windows mirror), `README.md` (Skill Categories + Subagents tables). Then invoke `civiltekk-documentation-sync-skill` or delegate to `opencode-tooling-subagent`.
 
 ## Skill / Agent Frontmatter Contract
 
