@@ -224,3 +224,5 @@ GATE 2b5a870 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE d1d0abe tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE c1e8db3 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE c8ed149 tier=full lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 58ea0a1 tier=full lint=- typecheck=- build=- unit=t e2e=n.a
+WORK LOG - review fix: README:217 121->119 (4th stale site, reviewer-caught); full suite re-run green 615/615; rebase onto release commit post-fix.

@@ -214,7 +214,7 @@ Globally: set `"disabled": false` in `~/.config/opencode/opencode.json`, or use 
 
 Default state of every pack is **OFF**. Design history: [issue #268](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/268).
 
-**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (67 primary-visible skills + deny-all); subagents are profile-immune and all 121 skills stay on disk:
+**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (67 primary-visible skills + deny-all); subagents are profile-immune and all 119 skills stay on disk:
 
 ```bash
 ./deploy/setup.sh                     # default: lean
