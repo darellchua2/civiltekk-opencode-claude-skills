@@ -61,9 +61,16 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   and the would-be `feat/<KEY>` branch + worktree names (per repo), then
   stop before Step 2. Read-only: no writes, no branch/worktree/remote
   mutations.
-- **Dependency preflight (per-skill installs)**: hard deps — skill
-  `plan-execution-skill` --gate (Step 8), agents `code-review-subagent`
-  (Step 9) and `pr-workflow-subagent` (Step 10). Any missing → abort
+- **Dependency preflight (per-skill installs, resolved per arm)**: the
+  subagent arm (v1 `/run-worktree-pipeline`) hard-requires skill
+  `plan-execution-skill` --gate (Step 8) and agents `code-review-subagent`
+  (Step 9) + `pr-workflow-subagent` (Step 10). The inline arm
+  (`/run-worktree-pipeline-v2` — its template's "spawn NO subagents"
+  directive marks it) hard-requires skill `plan-execution-inline-skill`
+  (Step 8) and the same agent definition FILES as in-session checklists —
+  `agents/code-review-subagent.md` (Step 9) +
+  `agents/pr-workflow-subagent.md` (Step 10), resolved at the deploy-mode
+  paths. Any missing dep for the resolved arm → abort
   (`failed`) with the install hint
   `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>`. Soft deps
   degrade with a note: `ticketing-skill` (only for new-work tickets,

@@ -27,14 +27,20 @@
 
 ### Phase 1: inline-aware preflight
 
-- [ ] **1.1** Reword the SKILL.md preflight (lines ~65-71) to per-arm dependency sets: subagent arm (v1) hard-requires `plan-execution-skill` --gate + agents `code-review-subagent`/`pr-workflow-subagent`; inline arm (invoked by the `/run-worktree-pipeline-v2` template) hard-requires `plan-execution-inline-skill` + the same agent definition FILES as checklists (code-review-subagent.md, pr-workflow-subagent.md — resolve as files at the deploy-mode paths); the running session resolves which set applies from its invocation (the v2 template's "spawn NO subagents" directive marks the inline arm); soft deps and install hints unchanged
+- [x] **1.1** Reword the SKILL.md preflight (lines ~65-71) to per-arm dependency sets: subagent arm (v1) hard-requires `plan-execution-skill` --gate + agents `code-review-subagent`/`pr-workflow-subagent`; inline arm (invoked by the `/run-worktree-pipeline-v2` template) hard-requires `plan-execution-inline-skill` + the same agent definition FILES as checklists (code-review-subagent.md, pr-workflow-subagent.md — resolve as files at the deploy-mode paths); the running session resolves which set applies from its invocation (the v2 template's "spawn NO subagents" directive marks the inline arm); soft deps and install hints unchanged
     — **Why:** this is #617's core — a preset-inline-workers-only install aborts at preflight on `plan-execution-skill`, which the v2 arm never invokes
     — **Done when:** the preflight text names both sets with the arm-resolution rule; v1's set is textually unchanged in its requirements
     — **Consumers affected:** all pipeline runs (v1 behavior preserved by the explicit arm split)
-- [ ] **1.2** Verify v1 preflight invariance: diff the subagent-arm clause against the pre-change text — requirements identical (same hard deps, same abort + install hint wording)
+    — **Done:** preflight rewritten to two named arm sets with the directive-based resolution rule; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **1.2** Verify v1 preflight invariance: diff the subagent-arm clause against the pre-change text — requirements identical (same hard deps, same abort + install hint wording)
     — **Why:** AC2 — v1 users must see zero preflight behavior change
     — **Done when:** the v1 clause's hard-dep list and abort semantics match origin/main's byte-for-byte modulo the arm-scoping framing
     — **Consumers affected:** v1 pipeline users (unchanged)
+    — **Done:** diff shows all three v1 hard deps retained; "Any missing dep for the resolved arm → abort" + install hint intact; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+
+## Gate Trace
+
+GATE <phase-1-sha> tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (bats 615/615 — phase 1, cross-module anchor; SKILL.md-only change, no linter target)
 
 ### Phase 2: #613-comment follow-ups
 
