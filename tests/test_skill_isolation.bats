@@ -20,7 +20,7 @@
 HANDOFF1_OWNER="pptx-template-modifier-skill"
 HANDOFF1_TARGETS="pptx-generate-slide-skill"
 HANDOFF2_OWNER="plan-execution-inline-skill"
-HANDOFF2_TARGETS="testing-inline-skill linting-inline-skill documentation-inline-skill responsive-audit-inline-skill"
+HANDOFF2_TARGETS="testing-inline-skill linting-inline-skill civiltekk-documentation-inline-skill responsive-audit-inline-skill"
 HANDOFF3_OWNERS="autoresearch-code-skill autoresearch-ml-skill autoresearch-research-skill"
 HANDOFF3_TARGETS="autoresearch-core-skill"
 

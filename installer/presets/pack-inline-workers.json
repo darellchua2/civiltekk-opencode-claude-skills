@@ -1,5 +1,5 @@
 {
-    "$comment": "Preset 'inline-workers' for installer/init.mjs (--preset inline-workers). HAND-MAINTAINED (unlike the derived presets): the /tmp/gen-presets.mjs generator is not in-repo, so regeneration would drop this file. The inline delegation family — the inline plan executor plus the 4 *-inline-skill decision trees and their knowledge-skill dependency closure (the closure rides preset membership for the knowledge skills; the 4 workers + plan-execution-inline-skill are ALSO covered by dependency-map.json requiresSkills edges). Opt-in: default setup.sh deploy is unaffected.",
+    "$comment": "Preset 'inline-workers' for installer/init.mjs (--preset inline-workers). HAND-MAINTAINED (unlike the derived presets): the /tmp/gen-presets.mjs generator is not in-repo, so regeneration would drop this file. The inline delegation family — the inline plan executor plus the 4 inline decision-tree skills and their knowledge-skill dependency closure (the closure rides preset membership for the knowledge skills; the 4 workers + plan-execution-inline-skill are ALSO covered by dependency-map.json requiresSkills edges). Opt-in: default setup.sh deploy is unaffected.",
     "name": "inline-workers",
     "description": "Inline delegation family — plan-execution-inline-skill, the testing/linting/documentation/responsive-audit inline skills, and the knowledge skills they defer to. Companion to the /run-plan-v2 and /run-worktree-pipeline-v2 commands.",
     "agents": [],
@@ -7,7 +7,7 @@
         "plan-execution-inline-skill",
         "testing-inline-skill",
         "linting-inline-skill",
-        "documentation-inline-skill",
+        "civiltekk-documentation-inline-skill",
         "responsive-audit-inline-skill",
         "language-linting-skill",
         "verification-loop-skill",

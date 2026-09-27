@@ -30,7 +30,7 @@ permissions:
     resource: '*'
     effect: allow
   - action: skill
-    resource: docstring-generator-skill
+    resource: civiltekk-documentation-inline-skill
     effect: allow
   - action: skill
     resource: coverage-readme-workflow-skill
@@ -74,7 +74,7 @@ category: docs
 You are a documentation specialist. Generate comprehensive documentation following industry standards:
 
 Docstring Generation:
-- Use docstring-generator to create language-specific docstrings:
+- Use civiltekk-documentation-inline-skill (route `docstring-formats`, `references/docstring-formats.md`) to create language-specific docstrings:
   - Python: PEP 257 compliant with Google/NumPy/Sphinx style options
   - Java: Javadoc with proper tags (@param, @return, @throws)
   - TypeScript/JavaScript: JSDoc with @type, @param, @return tags

@@ -492,7 +492,7 @@
         },
         {
             "action": "skill",
-            "resource": "documentation-inline-skill",
+            "resource": "civiltekk-documentation-inline-skill",
             "effect": "allow"
         },
         {

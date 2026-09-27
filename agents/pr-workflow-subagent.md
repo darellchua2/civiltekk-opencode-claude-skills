@@ -116,7 +116,7 @@ PR Workflows by Framework:
 
 Quality Checks — defer to the contract:
 - Gate commands come from manifest discovery per `verification-loop-skill` §The gate contract — this agent owns no framework command table.
-- PR-boundary execution is `pr-creation-workflow-skill` steps 2-3 (framework detect + gate contract/memo check); coverage badges via `coverage-readme-workflow` on the standalone path only; docstring validation via `docstring-generator`.
+- PR-boundary execution is `pr-creation-workflow-skill` steps 2-3 (framework detect + gate contract/memo check); coverage badges via `coverage-readme-workflow` on the standalone path only; docstring validation via `civiltekk-documentation-inline-skill` (route `docstring-formats`).
 
 JIRA Integration (policy per `ticketing-skill` §MCP Availability Guard):
 - Attribution: self-assign the linked ticket (see ticketing-skill §Attribution); PR author = the `gh auth` user by construction

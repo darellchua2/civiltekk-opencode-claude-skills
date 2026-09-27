@@ -40,7 +40,7 @@ permissions:
     resource: nextjs-standard-setup-skill
     effect: allow
   - action: skill
-    resource: docstring-generator-skill
+    resource: civiltekk-documentation-inline-skill
     effect: allow
   - action: skill
     resource: nextjs-image-usage-skill
@@ -90,7 +90,7 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 
 **Trigger phrases:** "create next.js app", "next.js setup", "scaffold next.js", "new next.js project", "initialize next.js"
 
-**Skill:** Load `nextjs-standard-setup-skill`. Cross-reference `nextjs-image-usage-skill` for image config, `docstring-generator-skill` for TSDoc, `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns`) to avoid common pitfalls.
+**Skill:** Load `nextjs-standard-setup-skill`. Cross-reference `nextjs-image-usage-skill` for image config, `civiltekk-documentation-inline-skill` (route `docstring-formats`) for TSDoc, `civiltekk-react-quality-skill` (routes `hooks-antipatterns` + `render-antipatterns`) to avoid common pitfalls.
 
 **Workflow:**
 1. Initialize Next.js 16 with TypeScript and Tailwind v4
@@ -99,7 +99,7 @@ You are a Next.js specialist. You handle **project scaffolding**, **runtime diag
 4. Enable React Compiler
 5. Create Tekk-prefixed component architecture
 6. Configure imports/exports
-7. Add TSDoc standards via `docstring-generator-skill`
+7. Add TSDoc standards via `civiltekk-documentation-inline-skill` (route `docstring-formats`)
 8. Post-scaffold: run branch-workflow detection per `git-branch-workflow-setup-skill` §Detection Logic and the `.opencode/branch-workflow-skipped` marker. If all signals absent, include `NEEDS_GIT_BRANCH_SETUP: true` in the Return Contract.
 
 ### Mode 2 — Runtime Diagnosis

@@ -63,8 +63,8 @@ Load and follow each named skill in this session — no Task/subagent calls:
 | Test generation | `testing-inline-skill` (decision tree, scope bounds, output contract) |
 | Refactor / DRY | Handle directly (review happens upstream/downstream in the pipeline, never inline-mutated by a reviewer) |
 | Lint setup/fix | `linting-inline-skill` |
-| Docstrings for new/changed functions/classes | `documentation-inline-skill` (before the gate, same-phase commit; skip pure-data/trivial) |
-| Other docs (README, ADRs) | `documentation-inline-skill` |
+| Docstrings for new/changed functions/classes | `civiltekk-documentation-inline-skill` (before the gate, same-phase commit; skip pure-data/trivial) |
+| Other docs (README, ADRs) | `civiltekk-documentation-inline-skill` |
 | Build/deploy/git · simple implementation | Handle directly |
 
 ### E2E rule
@@ -131,6 +131,6 @@ Gate red after 3 attempts → report + ask · phase/fix budget hit → HALT `[go
 | `verification-loop-skill` | Canonical gate contract + memo format — the gate loop defers there |
 | `error-resolver-workflow-skill` | Gate-red diagnosis during fix-on-fail |
 | `civiltekk-git-commits-skill` | Commit formats for the per-phase atomic commit |
-| `testing-inline-skill` / `linting-inline-skill` / `documentation-inline-skill` / `responsive-audit-inline-skill` | The inline delegate family — matrix routes here |
+| `testing-inline-skill` / `linting-inline-skill` / `civiltekk-documentation-inline-skill` / `responsive-audit-inline-skill` | The inline delegate family — matrix routes here |
 | `tdd-workflow-skill` | 4b mandates tests for new code before the gate |
 | `civiltekk-context-optimization-skill` | PLAN.md files are natural compaction anchors |

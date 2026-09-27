@@ -13,10 +13,10 @@
   "skills": [
     "brd-creation-skill",
     "civiltekk-diagram-skill",
+    "civiltekk-documentation-inline-skill",
     "civiltekk-startup-docs-skill",
     "coverage-readme-workflow-skill",
     "docling-mcp-skill",
-    "docstring-generator-skill",
     "docx-creation-skill",
     "horseshoe-paper-writing-skill",
     "interactive-document-rendering-skill",

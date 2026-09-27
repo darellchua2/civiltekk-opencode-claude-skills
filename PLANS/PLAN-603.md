@@ -287,22 +287,26 @@ Consumers: agents/language-reviewer-subagent.md + agents/error-resolver-subagent
 Absorbs: `documentation-inline-skill` (host renames) + `docstring-generator-skill`. references/: `docstring-formats.md` (PEP 257/Javadoc/JSDoc/XML tables); host keeps the inline decision-tree method. Routes: inline-docs delegate | docstring-format lookup.
 Contract lockstep (same fail-closed unit, one commit): `tests/test_skill_isolation.bats` HANDOFF2_TARGETS renames `documentation-inline-skill` → `civiltekk-documentation-inline-skill`; `installer/dependency-map.json` plan-execution-inline requiresSkills entry renames same (pin test derives from guard — no third copy); `skills/plan-execution-inline-skill/SKILL.md` body references the four inline skills — rename the documentation one; HANDOFF3 (post-#612) untouched.
 Consumers: agents/documentation-subagent.md + agents/nextjs-specialist-subagent.md (docstring-generator), plan-execution-inline-skill body, presets pack-docs + pack-frontend (docstring) **+ pack-inline-workers.json (documentation-inline entry — BLOCK-2)**, deploy/skill-profiles.json + deploy/opencode.json + opencode.json (documentation-inline allow rules), README.md. **Lockstep prose mirror (Mode R Q3): repo `AGENTS.md` §Skill Isolation Contract brace-shorthand `{testing,linting,documentation,responsive-audit}-inline-skill` at AGENTS.md:22 rewords in this same commit — grep-invisible, checklist-enforced.**
-- [ ] **11.1** Rename + author host + fold docstring values into references/
+- [x] **11.1** Rename + author host + fold docstring values into references/
     — **Why:** documentation-inline already owns "docstrings for new/changed symbols"; the generator's format tables are values it lacked
     — **Done when:** template satisfied; both trigger sets intact; isolation green
     — **Consumers affected:** inline delegate family, plan-execution-inline
-- [ ] **11.2** Delete + repoint + contract lockstep (HANDOFF2_TARGETS, dependency-map entry, plan-execution-inline body, 2 agents, presets, profiles/opencode.json, README)
+    — **Done:** git mv preserved history; inline METHOD kept (decision tree, scope bounds, enforcement deltas, output contract) + new docstring-formats route; dead house-reference line dropped (cited nonexistent skills); files: skills/civiltekk-documentation-inline-skill/{SKILL.md,references/docstring-formats.md}; fixes: none
+- [x] **11.2** Delete + repoint + contract lockstep (HANDOFF2_TARGETS, dependency-map entry, plan-execution-inline body, 2 agents, presets, profiles/opencode.json, README)
     — **Why:** the guard + pin are one fail-closed unit with the map — partial rename turns CI red (same lockstep lesson as #602)
     — **Done when:** `bats tests/test_skill_isolation.bats tests/test_requires_skills.bats` green; residue clean
     — **Consumers affected:** isolation guard, installer, plan-execution-inline routing
-- [ ] **11.3** Registry + scoped gate + count (135 — then reconcile: 150−15 dirs if Phase 6/10 arithmetic differed; record the true number, target 136±1 with explanation)
+    — **Done:** all four lockstep surfaces together: guard HANDOFF2_TARGETS, dependency-map plan-execution-inline entry, plan-execution-inline SKILL.md x3, AGENTS.md:22 brace-shorthand reword; + 3 agents, 3 presets, skill-profiles (lean stays 67), deploy/opencode.json, README 136->135, 1 fellow-skill; docstring dir git-rm; residue exempt-only; fixes: none
+- [x] **11.3** Registry + scoped gate + count (135 — then reconcile: 150−15 dirs if Phase 6/10 arithmetic differed; record the true number, target 136±1 with explanation)
     — **Why:** the ticket AC pins 136; any deviation must be explained in the Done line, never silently absorbed
     — **Done when:** count recorded + reconciled; affected bats green
     — **Consumers affected:** installer
-- [ ] **11.4** Commit + push
+    — **Done:** registry rebuilt (skills=135); scoped gate green incl. isolation + requires_skills lockstep; count 135 = amended AC target (was 136 pre-Mode-R); fixes: none
+- [x] **11.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 12: Exit — full suite, final counts, sweep
 - [ ] **12.1** Full gate: `bats tests/` (exit 0, zero `not ok`); registry diff committed clean; LEARNINGS count-literal sweep across tests/ deploy/ README.md
@@ -350,3 +354,4 @@ GATE e1174fd tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 15dbf7e tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE eeeccb4 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 18c988c tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 41ef666 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
