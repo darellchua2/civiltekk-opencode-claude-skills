@@ -13,6 +13,7 @@
   "skills": [
     "ascii-diagram-creator-skill",
     "brd-creation-skill",
+    "civiltekk-startup-docs-skill",
     "coverage-readme-workflow-skill",
     "docling-mcp-skill",
     "docstring-generator-skill",
@@ -28,7 +29,6 @@
     "pptx-template-modifier-skill",
     "research-paper-generation-skill",
     "srs-creation-skill",
-    "startup-pitch-deck-skill",
     "technical-design-creation-skill",
     "vision-creation-skill",
     "xlsx-specialist-skill"

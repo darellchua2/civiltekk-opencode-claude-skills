@@ -1,34 +1,8 @@
----
-name: startup-pitch-deck-skill
-description: >-
-  Startup presentation knowledge — pitch deck structures, board updates, launch
-  decks, palettes, investor-readiness checklists.
-license: Apache-2.0
-compatibility: opencode
-category: Startup/Business
----
+# Pitch-decks route (values)
 
-## What I do
+Startup presentation knowledge — pitch deck structures, board updates, launch decks, palettes, investor-readiness checklists. The host SKILL.md carries the METHOD (detect → route → load); this file carries the VALUES for the `pitch-decks` route.
 
-I provide comprehensive domain knowledge for creating startup presentations:
-
-1. **Pitch Deck Structures**: Standard 10-12 slide fundraising decks with detailed slide-by-slide guidance
-2. **Board Update Templates**: Quarterly board meeting presentation outlines
-3. **Product Launch Decks**: Press, customer, and investor launch presentation frameworks
-4. **Demo Day Presentations**: Accelerator and conference short-form decks
-5. **Design Principles**: Visual philosophy, typography rules, and color palettes
-6. **Common Layouts**: Problem/Solution split, Market Size Pyramid, Competitive Matrix, and more
-7. **Investor-Readiness**: Checklists and common mistakes to avoid
-8. **Stage-Specific Guidance**: Tailored advice for pre-seed through Series C
-
-## When to use me
-
-Use this skill when:
-- Creating any type of startup presentation (pitch deck, board update, product launch)
-- Designing slides for investors, board members, or stakeholders
-- Selecting appropriate color palettes and layouts
-- Verifying investor-readiness of presentation content
-- Understanding stage-specific presentation requirements
+**Authority:** this route owns the deck structures, design principles, and investor-readiness knowledge; `references/business-docs.md` in this skill owns the underlying report/quotation/spreadsheet workflows (the two were formerly peer skills — the boundary is internal now).
 
 ## Startup Presentation Types
 
@@ -306,6 +280,7 @@ For accelerator or conference presentations (5-7 slides, 3-5 minutes):
 | `pptx-specialist-subagent` | Actual PPTX creation (delegates to `pptx-generate-slide-skill`; requires user-supplied Slide Master template) |
 | `continuous-learning` | Extract presentation patterns for future reference |
 | `verification-loop` | Verify presentation meets investor-readiness criteria |
+| `references/business-docs.md` (this skill) | report metrics and financial-model workflows feeding deck content |
 
 ## References
 

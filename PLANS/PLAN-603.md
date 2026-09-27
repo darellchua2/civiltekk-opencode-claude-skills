@@ -142,22 +142,26 @@ Consumers: agents/repo-ops-specialist-subagent.md, agents/opencode-tooling-subag
 ### Phase 5: civiltekk-startup-docs-skill
 Absorbs: `startup-business-docs-skill` + `startup-pitch-deck-skill`. references/: `business-docs.md`, `pitch-deck.md`. Routes: business docs | pitch decks.
 Consumers: agents/startup-founder-subagent.md (both), agents/startup-ceo-subagent.md (pitch-deck), presets pack-docs (pitch-deck) + pack-business (both), README.md.
-- [ ] **5.1** Author host + references per template
+- [x] **5.1** Author host + references per template
     — **Why:** one startup-docs family, two deliverable variants; same subagent pair consumes
     — **Done when:** template satisfied; triggers intact; isolation green
     — **Consumers affected:** startup agents
-- [ ] **5.2** Delete + repoint (2 agents, presets, README)
+    — **Done:** routes business-docs|pitch-decks, 530-char union description, category Startup/Business (both members matched); files: skills/civiltekk-startup-docs-skill/{SKILL.md,references/business-docs.md,references/pitch-deck.md}; fixes: none
+- [x] **5.2** Delete + repoint (2 agents, presets, README)
     — **Why:** agents allowlist members by name
     — **Done when:** residue clean
     — **Consumers affected:** startup agents, packs
-- [ ] **5.3** Registry + scoped gate + count (145)
+    — **Done:** 2 dirs git-rm; repointed: opencode.json, 2 agents, 2 presets, README (145 counts, category row 3->2); lean untouched (neither member was lean — 74 stays); zero fellow-skill hits; residue exempt-only; fixes: none
+- [x] **5.3** Registry + scoped gate + count (145)
     — **Why:** per-commit green
     — **Done when:** count 145
     — **Consumers affected:** installer
-- [ ] **5.4** Commit + push
+    — **Done:** registry rebuilt (skills=145); preset diff verified = member->host swaps only; scoped gate green; count 145; fixes: none
+- [x] **5.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 6: civiltekk-python-backend-skill
 Absorbs: `python-backend-skill` (host renames) + `python-packaging-skill` + `fastapi-pydantic-orm-patterns-skill`. references/: `scaffold.md`, `packaging.md`, `fastapi-orm.md`. Routes: scaffold | package | patterns.
@@ -320,3 +324,4 @@ GATE eeb509f tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 13837af tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE cde8214 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 135a641 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 9d8174a tier=light lint=- typecheck=- build=- unit=t e2e=n.a

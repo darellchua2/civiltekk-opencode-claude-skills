@@ -18,7 +18,7 @@ permissions:
     resource: '*'
     effect: allow
   - action: skill
-    resource: startup-pitch-deck-skill
+    resource: civiltekk-startup-docs-skill
     effect: allow
   - action: skill
     resource: unslop-skill
@@ -76,7 +76,7 @@ Activate when user mentions:
 
 ## Skill Delegation
 
-Load `startup-pitch-deck-skill` to access:
+Load `civiltekk-startup-docs-skill` (pitch-decks route) to access:
 - Pitch deck structures (10-12 slide sequence)
 - Board update templates
 - Product launch deck frameworks

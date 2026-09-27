@@ -1,37 +1,8 @@
----
-name: startup-business-docs-skill
-description: >-
-  Business document workflows for startup founders — reports, quotations,
-  spreadsheets, presentations with professional formatting.
-license: Apache-2.0
-compatibility: opencode
-category: Startup/Business
----
+# Business-docs route (values)
 
-## What I do
+Business document workflows for startup founders — reports, quotations, spreadsheets, presentations, and communications with professional formatting. The host SKILL.md carries the METHOD (detect → route → load); this file carries the VALUES for the `business-docs` route.
 
-I provide structured workflow patterns for creating professional business documents efficiently:
-
-1. **Reports**: Status, investor, board, and team reports with clear metrics and next steps
-2. **Quotations & Proposals**: Client quotations, SOWs, project proposals, and partnership proposals
-3. **Spreadsheets**: Financial models, tracking sheets, data analysis, and planning tools
-4. **Presentations**: Pitch decks, sales decks, and internal presentations (delegated to specialized subagents)
-5. **Communications**: Professional emails to investors, partners, and clients
-
-## When to use me
-
-Use this skill when you need to create:
-- Business reports (status updates, investor updates, board updates, team reports)
-- Quotations or proposals (client quotes, SOWs, project proposals, partnership proposals)
-- Spreadsheets (financial models, tracking sheets, data analysis, planning tools)
-- Presentations (pitch decks, sales decks, internal slides)
-- Professional communications (investor emails, partner outreach, client communications)
-
-**Trigger phrases**:
-- "create a report", "generate quotation", "update slides"
-- "make a spreadsheet", "prepare a proposal"
-- "draft an investor update", "write a client email"
-- "build a financial model", "create a tracking sheet"
+**Authority:** this route owns the report, quotation, spreadsheet, presentation-delegation, and communications workflows; `references/pitch-deck.md` in this skill owns the startup deck structures and design knowledge (the two were formerly peer skills — the boundary is internal now).
 
 ## Report Workflow
 
@@ -396,3 +367,4 @@ Maintain high presentation standards:
 - `xlsx-specialist` - Spreadsheet creation and manipulation
 - `pptx-specialist-subagent` - PowerPoint presentation creation (routes to pptx-generate-slide/template/template-modifier)
 - `pdf-specialist` - PDF conversion and manipulation
+- `references/pitch-deck.md` (this skill) - startup deck structures when a presentation needs founder-domain framing
