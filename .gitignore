@@ -69,3 +69,5 @@ LEARNINGS/**/*.md
 # Generated research-report artifacts (regenerate from docs/opencode-agent-tooling-research-2026-09-24.md)
 docs/OpenCode-Agent-Tooling-Research-2026-09-24.docx
 docs/OpenCode-Agent-Tooling-Research-2026-09-24.interactive.html
+!LEARNINGS/anti-patterns/plan-line-targets-must-clear-frontmatter-boundary.md
+!LEARNINGS/conventions/section-pins-target-heading-anchors.md

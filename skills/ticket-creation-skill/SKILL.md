@@ -226,7 +226,7 @@ done
 **Select JIRA Project** (if not specified):
 ```bash
 atlassian_getVisibleJiraProjects --cloudId "$CLOUD_ID"
-# Prompt user to select project by key (e.g., IBIS, PROJ, DA)
+# Prompt user to select project by key (e.g., ABC, PROJ, DA)
 ```
 
 **Single Task**:

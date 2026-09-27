@@ -31,7 +31,8 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   `^(#\d+|[\w.-]+/[\w.-]+#\d+|[A-Z][A-Z0-9]+-\d+|[\w.-]+/[A-Z][A-Z0-9]+-\d+)$`
   **and is not purely numeric**. Full first-token taxonomy, in test order:
   `--`flags → ticket forms (`#N` GitHub · `owner/repo#N` cross-repo GitHub ·
-  bare numeric `N` (auto-`#N`) · `KEY` JIRA · `repo/KEY` cross-repo JIRA) →
+  bare numeric `N` (auto-`#N`) · `KEY` tracker · `repo/KEY` cross-repo
+  tracker) →
   base-branch fallthrough. Every accepted token shape is listed here — a
   variant that matches none of them is the base-branch, never silently
   dropped.
@@ -88,7 +89,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   (push `--force-with-lease` after a resume rebase). Contrast: 6f/10a
   overlap holds park AFTER PLAN authoring, so their resume continues at
   Step 7 / 10a. Tickets still held when nothing else is runnable are
-  reported deferred at run end, not failed. (No JIRA link traversal in v1 —
+  reported deferred at run end, not failed. (No tracker link traversal in v1 —
   body text only.)
 
 ## Steps 2-10 — per ticket (in order)
@@ -105,10 +106,9 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    `feat/<KEY>` onto the updated `origin/<base>` (push `--force-with-lease`
    after the rebase) and re-enter at the first unexecuted step.
 3. **Ticket fetch/create**: existing ref → fetch its description (`gh issue
-   view [-R <owner/name>]` / JIRA). JIRA access follows the **MCP Availability
-   Guard** (policy: `jira-git-integration-skill` §MCP Availability Guard):
-   `atlassian_*` tools present → use them; absent → REST fallback
-   via API token; headless → degrade with a clear report. New work → create the
+   view [-R <owner/name>]`; tracker tickets per `jira-git-integration-skill`
+   §MCP Availability Guard — degrade with a clear report when the tracker is
+   unavailable). New work → create the
    ticket first via `ticket-creation-skill` (`/create-ticket`), then
    continue.
 4. **Worktree**: locate the **main** checkout via
@@ -270,7 +270,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 
     Requires Node ≥23.4 (`node:sqlite` built in); older Node fallback:
     `sqlite3 ~/.local/share/opencode/opencode.db "DELETE FROM worktree WHERE directory='<root>/<KEY>';DELETE FROM project WHERE worktree='<root>/<KEY>'"`.
-    JIRA tickets: ensure exactly one `jira-status-updater` transition to
+    Tracker tickets: ensure exactly one `jira-status-updater` transition to
     Done — check the ticket status first, transition only if still open. On
     a red notification: the fix is queued for the next boundary (immediate
     if idle), bounded at **2 fix-and-re-watch rounds per ticket**; red-fix

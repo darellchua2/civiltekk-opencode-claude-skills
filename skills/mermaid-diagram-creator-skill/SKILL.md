@@ -40,7 +40,7 @@ Use this workflow when:
 - You need to visualize workflows, processes, or system architecture
 - You want Mermaid diagrams for documentation or presentations
 - You need to include diagrams in git commits or PLAN files
-- You're creating planning documents for GitHub issues or JIRA tickets
+- You're creating planning documents for GitHub issues or tracker tickets
 - You need to document code logic or system flows visually
 - You want diagrams that can be edited later (source `.mmd` files preserved)
 
@@ -88,7 +88,7 @@ npx -y @mermaid-js/mermaid-cli -i diagram.mmd -o diagram.svg -b white
 | Source | Directory |
 |--------|-----------|
 | GitHub Issue | `PLANS/PLAN-GIT-[issue-number]/` |
-| JIRA Ticket | `PLANS/PLAN-[ticket-key]/` |
+| Tracker ticket (key format per `jira-git-integration-skill`) | `PLANS/PLAN-[ticket-key]/` |
 | General | `diagrams/` |
 
 ### Step 3: Generate Mermaid Syntax
@@ -149,7 +149,7 @@ PLANS/
 │   ├── architecture-flowchart.svg
 │   ├── sequence-diagram.mmd
 │   └── sequence-diagram.svg
-└── PLAN-IBIS-456/
+└── PLAN-ABC-456/
     ├── deployment-flow.mmd
     └── deployment-flow.svg
 ```
@@ -335,7 +335,7 @@ Note: inline ` ```mermaid ` blocks are unaffected — they render client-side (G
 
 ### ticket-creation-skill
 
-When creating plans for GitHub issues or JIRA tickets, embed the diagram inline in the PLAN.md:
+When creating plans for GitHub issues or tracker tickets, embed the diagram inline in the PLAN.md:
 
 ````
 ```mermaid

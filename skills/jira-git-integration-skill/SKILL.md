@@ -31,6 +31,6 @@ The `atlassian` MCP server is **disabled by default** (opt-in). Before any `atla
 2. **User info**: `atlassian_getUserInformation` → account id (assignee).
 3. **Visible projects**: `atlassian_getVisibleJiraProjects(cloudId)` → pick project key.
 4. **Create ticket**: `atlassian_createJiraIssue --cloudId --projectKey --issueTypeName --summary --description [--assignee_account_id]`. Description template: `## Description` / `## Type` / `## Context` / `## Acceptance Criteria` (checkboxes) / `## Files to Modify` / `## Notes`.
-5. **Branch naming**: ticket key first — `feature/IBIS-123-short-slug` (key parses back out of the branch trivially); commits carry `Refs: IBIS-123` or `Closes IBIS-123` in footers (feeds `git-issue-updater-skill` / `jira-status-updater-skill` detection).
+5. **Branch naming**: ticket key first — `feature/ABC-123-short-slug` (key parses back out of the branch trivially); commits carry `Refs: ABC-123` or `Closes ABC-123` in footers (feeds `git-issue-updater-skill` / `jira-status-updater-skill` detection).
 
 **Related:** `git-issue-updater-skill` (progress comments) · `jira-status-updater-skill` (post-merge transitions) · `ticket-creation-skill` (platform selection).

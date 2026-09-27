@@ -146,13 +146,12 @@ For auto-fixable failures:
 
 ## Phase 4: Post-Merge Cleanup
 
-### JIRA Integration
+### Tracker Integration
 
-If a JIRA ticket key was found in the PR title or branch name (pattern: `[A-Z]+-\d+`):
-1. Load `jira-status-updater` skill for transition logic
-2. Transition ticket to post-merge status (e.g., "Done")
-3. Add comment with merge commit URL and CI result
-4. If no JIRA key found, skip silently
+If a tracker ticket key was found in the PR title or branch name (pattern: `[A-Z]+-\d+`):
+1. Load `jira-status-updater` skill and delegate the post-merge transition
+   and merge comment per its contract
+2. If no key found, skip silently
 
 ### Branch Cleanup
 
@@ -174,7 +173,7 @@ After all phases complete, report to user:
 ```
 ✓ PR #<number> merged into <target-branch>
 ✓ CI passed (run <run-id>)
-✓ JIRA <ticket> → Done
+✓ Tracker <ticket> → Done
 ✓ Branch <source-branch> deleted
 ```
 
@@ -185,7 +184,7 @@ Or if failures occurred:
 ✗ CI failed (run <run-id>): <error summary>
 ✓ Auto-fixed and merged fix PR #<fix-number>
 ✓ CI passed on retry (run <run-id-2>)
-✓ JIRA <ticket> → Done
+✓ Tracker <ticket> → Done
 ✓ Branch <source-branch> deleted
 ```
 
@@ -195,8 +194,8 @@ This skill expects the loading agent to have:
 - `bash: allow` — for gh CLI, git operations
 - `edit: allow` — for CI failure fixes
 - `read: allow` / `glob: allow` / `grep: allow` — for code analysis
-- Access to atlassian MCP tools — for JIRA integration
-- `jira-status-updater` skill — for ticket transitions
+- `jira-status-updater` skill — for ticket transitions (tracker policy per
+  `jira-git-integration-skill` §MCP Availability Guard)
 
 ## Iteration Protocol (opt-in)
 

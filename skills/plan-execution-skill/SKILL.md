@@ -32,7 +32,7 @@ I execute PLAN.md files phase-by-phase in one of three modes. Pick the mode from
 
 All modes parse the same structure:
 
-- **Plan resolution**: explicit path wins; else branch-derived — `feat/GIT-123` → `PLANS/PLAN-GIT-123.md`; `feat/issue-123` / `feat/123` (legacy) → `PLANS/PLAN-GIT-123.md`; `feat/PROJECT-123` (JIRA) → `PLANS/PLAN-PROJECT-123.md`. Missing → stop with the expected path (`--update` gracefully skips instead).
+- **Plan resolution**: explicit path wins; else branch-derived — `feat/GIT-123` → `PLANS/PLAN-GIT-123.md`; `feat/issue-123` / `feat/123` (legacy) → `PLANS/PLAN-GIT-123.md`; `feat/PROJECT-123` (tracker key per `jira-git-integration-skill`) → `PLANS/PLAN-PROJECT-123.md`. Missing → stop with the expected path (`--update` gracefully skips instead).
 - **Parse**: phases = `^### Phase`; steps = `- [ ] **N.M**`; completed = `- [x]`.
 - **Rationale triple**: every atomic step carries `— **Why:**` / `— **Done when:**` / `— **Consumers affected:**` — parse all three. Surface a step's `Consumers affected` BEFORE mutating its target. Verify `Done when` objectively before `[x]` — "looks done" is not done.
 - **Read `## Dependency & Consumer Map` before executing** so order and blast radius are known up front.
@@ -132,7 +132,7 @@ Gate red after 3 attempts → report + ask · phase/fix budget hit → HALT `[go
 ### Workflow
 
 1. **Detect branch reference** from `git branch --show-current`: `GIT-123` (preferred), `issue-123` / `123` (legacy), `PROJECT-123` (JIRA).
-2. **Find the PLAN file**: `PLANS/PLAN-GIT-{N}.md` for GitHub; `PLANS/PLAN-{ID}.md` for JIRA (e.g. `PLANS/PLAN-IBIS-456.md`). Neither exists → graceful skip (not an error): "No PLAN file found for current branch — continuing without PLAN update."
+2. **Find the PLAN file**: `PLANS/PLAN-GIT-{N}.md` for GitHub; `PLANS/PLAN-{ID}.md` for tracker keys (key format per `jira-git-integration-skill`). Neither exists → graceful skip (not an error): "No PLAN file found for current branch — continuing without PLAN update."
 3. **Analyze recent commits**: `git log ${BASE}..HEAD --oneline`, `git diff --name-only ${BASE}...HEAD`.
 4. **Update checkboxes** — rules:
    1. Mark `[ ]` → `[x]` if the related file was modified

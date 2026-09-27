@@ -12,7 +12,8 @@ category: Git/Workflow
 ## What I do
 
 I am an **orchestration skill** for promoting `dev` → `uat` across a set of
-repos (one JIRA Task per repo, or ad-hoc). I do NOT execute git operations
+repos (one tracker task per repo — JIRA task or GitHub issue — or ad-hoc). I
+do NOT execute git operations
 inline. I provide the primary agent with:
 
 1. **Inventory logic** — how to enumerate repos and dedupe remotes (sibling
@@ -24,7 +25,8 @@ inline. I provide the primary agent with:
 4. **Conflict resolution policy** — mechanical vs decision-grade conflicts
 5. **Protected-branch fallback** — the PR path when direct uat push is
    rejected
-6. **Ticket hygiene contract** — result comment + transition rules
+6. **Ticket hygiene contract** — result comment + transition rules (tracker
+   conventions — JIRA policy per `jira-git-integration-skill`)
 
 Execution is plain git run by the primary agent (or delegated to
 `repo-ops-specialist-subagent` with my §Delegation Spec).
@@ -32,7 +34,7 @@ Execution is plain git run by the primary agent (or delegated to
 ## When to use me
 
 Invoke me when asked to "promote dev to uat" for one repo or a batch, when
-executing promotion JIRA Tasks (e.g. "Promote <repo> dev to uat"), or when
+executing promotion tracker tasks (e.g. "Promote <repo> dev to uat"), or when
 `/run-worktree-pipeline` hits promotion ops tickets (git-refs-only — no feat
 branch, PLAN, or PR applies except the protected-branch fallback).
 
@@ -113,7 +115,7 @@ On merge conflict inside the worktree:
 3. **Modify/delete**: decide by lifecycle. A PLAN (or other artifact) for a
    **Done** ticket where dev deleted it as cleanup → **deletion wins**;
    preserve any unique knowledge from the surviving-but-deleted side as a
-   JIRA comment on that artifact's ticket. Anything else → decision-grade.
+   comment on that artifact's tracker ticket. Anything else → decision-grade.
 4. **Decision-grade**: quarantine the repo (keep worktree, no pushes), comment
    the ticket with the exact conflict, continue the batch, surface to the user.
 

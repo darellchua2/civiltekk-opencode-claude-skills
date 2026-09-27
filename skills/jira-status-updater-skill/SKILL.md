@@ -20,7 +20,7 @@ Transitions/comments use `atlassian_*` MCP tools. Policy per `jira-git-integrati
 
 ## Workflow
 
-1. **Detect ticket ref** from the merged PR: title/body (`[A-Z]+-\d+`), branch name (`feat/IBIS-123-*`), or commit footers (`Closes IBIS-123`). Via `gh pr view <num> --json title,body,headRefName`. No key found → report and stop (never guess).
+1. **Detect ticket ref** from the merged PR: title/body (`[A-Z]+-\d+`), branch name (`feat/ABC-123-*`), or commit footers (`Closes ABC-123`). Via `gh pr view <num> --json title,body,headRefName`. No key found → report and stop (never guess).
 2. **Available transitions**: `atlassian_getTransitions --cloudId <id> --issueKey <KEY>`.
 3. **Pick target** by priority: `to.name == "Done"` → `"Closed"` → any `to.statusCategory.key == "done"` (jq: `.transitions[] | select(.to.name=="Done") | .id`).
 4. **Check current status** (`atlassian_getJiraIssue` or `gh`-cached state): already done-category → skip transition, still add/verify the merge comment. This is the transition-once guard.
