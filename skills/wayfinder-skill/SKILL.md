@@ -32,7 +32,7 @@ made in place. The map is domain-agnostic.
 Wayfinder is **planning** by default: each ticket resolves a decision, and
 the map is done when nothing is left to decide before someone does the thing.
 The pull to just do the work is usually the signal you've reached the edge of
-the map — hand off (e.g. to `ticket-creation-skill` for execution tickets,
+the map — hand off (e.g. to `ticketing-skill` for execution tickets,
 then `/run-worktree-pipeline` to execute). An effort can override this in its
 **Notes**, carrying execution into the map itself.
 
@@ -130,7 +130,7 @@ walked, and a scope boundary isn't a step on it.
   `--assignee @me` claims, task-list or `blocked-by: <ref>` body line for
   blocking.
 - **Tracker tickets (e.g. JIRA)**: MCP Availability Guard policy per
-  `jira-git-integration-skill` §MCP Availability Guard; degrade to
+  `ticketing-skill` §MCP Availability Guard; degrade to
   GitHub/local-markdown with a clear report when the tracker is unavailable.
 - **No tracker / offline**: local-markdown fallback — `docs/wayfinder/<slug>/`
   with `MAP.md` + one file per ticket; assignment/blocking recorded in each

@@ -112,22 +112,26 @@ _All of 2.1–2.10 lands in a single commit so release.yml (build-registry --che
 
 ### Phase 3: Reference sweep (agents + 12 consumer skills)
 
-- [ ] **3.1** `agents/repo-ops-specialist-subagent.md`: 6 skill-allow rules (`:59-74`) → one `ticketing-skill` allow (gh-cli-setup already at `:53`); prose `:166` policy pointer
+- [x] **3.1** `agents/repo-ops-specialist-subagent.md`: 6 skill-allow rules (`:59-74`) → one `ticketing-skill` allow (gh-cli-setup already at `:53`); prose `:166` policy pointer
     — **Why:** frontmatter skill-allows are the dependency-map primary source; stale names = silently un-loadable skill
     — **Done when:** zero old names in file; prose cites ticketing-skill §MCP Availability Guard
     — **Consumers affected:** deploy/setup.sh agent copy, runtime delegation
-- [ ] **3.2** `agents/pr-workflow-subagent.md`: allow rule `:57` → `ticketing-skill`; prose `:121-123` (§Attribution + policy + delegation contracts)
+    — **Done:** repo-ops: 6 contiguous allow rules → 1 ticketing-skill; 6-line toolbox prose → 1 line; :166 policy pointer retargeted
+- [x] **3.2** `agents/pr-workflow-subagent.md`: allow rule `:57` → `ticketing-skill`; prose `:121-123` (§Attribution + policy + delegation contracts)
     — **Why:** same runtime-allow requirement; AC2 anchors must be cited by their new home
     — **Done when:** zero old names; §-citations resolve inside ticketing-skill
     — **Consumers affected:** PR flow delegation
-- [ ] **3.3** Prose pointers in `requirements-specialist` (`:110,:244`), `technical-design-specialist` (`:108`), `discovery-specialist` (`:109`)
+    — **Done:** pr-workflow: allow :57 → ticketing-skill; :121-123 JIRA block retargeted (guard, §Attribution, delegation contract)
+- [x] **3.3** Prose pointers in `requirements-specialist` (`:110,:244`), `technical-design-specialist` (`:108`), `discovery-specialist` (`:109`)
     — **Why:** dead references misroute readers
     — **Done when:** `grep -rn` old names across `agents/` returns nothing
     — **Consumers affected:** doc readers
-- [ ] **3.4** Consumer sweep (12 skills): plan-execution (`:35,:135,:181`), plan-execution-inline (`:34`), pr-creation (`:27,:29`), pr-merge (`:198`), wayfinder (`:35,:133`), worktree-pipeline (`:20,:69,:109,:112`), dev-uat-promotion (`:29,:54`), mermaid-diagram-creator (`:91,:336`), semantic-release-convention (`:48`), opencode-repo-setup (`:65,:176,:195`), gh-cli-setup (`:17`), **grilling (`:144`)** — each a ticketing-skill §-pointer; run `build-registry.mjs`, include any diff; commit `refactor(agents,skills): point ticket consumers at ticketing-skill`
+    — **Done:** requirements (:110,:244), technical-design (:108), discovery (:109) prose pointers renamed; agents/ grep clean
+- [x] **3.4** Consumer sweep (12 skills): plan-execution (`:35,:135,:181`), plan-execution-inline (`:34`), pr-creation (`:27,:29`), pr-merge (`:198`), wayfinder (`:35,:133`), worktree-pipeline (`:20,:69,:109,:112`), dev-uat-promotion (`:29,:54`), mermaid-diagram-creator (`:91,:336`), semantic-release-convention (`:48`), opencode-repo-setup (`:65,:176,:195`), gh-cli-setup (`:17`), **grilling (`:144`)** — each a ticketing-skill §-pointer; run `build-registry.mjs`, include any diff; commit `refactor(agents,skills): point ticket consumers at ticketing-skill`
     — **Why:** AC5; grilling was the review-caught 12th consumer; registry re-check because agent/frontmatter-adjacent files changed in this commit
     — **Done when:** repo-wide old-name grep hits only the Phase 5 adjudicated buckets (LEARNINGS/CHANGELOG/PLANS)
     — **Consumers affected:** every downstream flow loading these by name
+    — **Done:** 16 consumer files swept (12 skills incl. grilling:144 + 3 short-name stragglers + gh-cli anchor fix §Prerequisites→§Platform Detection); registry rebuilt clean; grep = only README migration note
 
 ### Phase 4: Deploy comment literals
 
@@ -209,3 +213,10 @@ _All of 2.1–2.10 lands in a single commit so release.yml (build-registry --che
 - **Missed pointer / dangling §-anchor** — mitigate: AC8 adjudicated buckets make the final grep decidable; anchors preserved verbatim (AC2).
 - **Breaking change for `npx add` users pinning old names** — mitigate: major release + migration note (2.8).
 - **Byte-identity test path drift** — mitigate: git mv rename detection + 2.9 standalone run inside the Phase 2 commit.
+
+## Gate Trace
+
+```
+GATE ffc7b14 tier=full lint=n.a typecheck=n.a build=n.a unit=71/71(bats: skill_profiles, byte-identity, markitdown, count_drift, init) e2e=n.a — Phase 2 (critical-area anchors: installer registry + CI-gated count tests)
+GATE acfbe53 tier=light lint=n.a typecheck=n.a build=n.a unit=13/13(bats: skill_isolation, skill_profiles) + build-registry --check PASS e2e=n.a — Phase 3 (scoped: frontmatter/body pointer sweep)
+```

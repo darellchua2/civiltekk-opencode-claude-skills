@@ -149,7 +149,7 @@ For auto-fixable failures:
 ### Tracker Integration
 
 If a tracker ticket key was found in the PR title or branch name (pattern: `[A-Z]+-\d+`):
-1. Load `jira-status-updater` skill and delegate the post-merge transition
+1. Load `ticketing-skill` §Close and delegate the post-merge transition
    and merge comment per its contract
 2. If no key found, skip silently
 
@@ -194,8 +194,8 @@ This skill expects the loading agent to have:
 - `bash: allow` — for gh CLI, git operations
 - `edit: allow` — for CI failure fixes
 - `read: allow` / `glob: allow` / `grep: allow` — for code analysis
-- `jira-status-updater` skill — for ticket transitions (tracker policy per
-  `jira-git-integration-skill` §MCP Availability Guard)
+- `ticketing-skill` — for ticket transitions (tracker policy per
+  `ticketing-skill` §MCP Availability Guard)
 
 ## Iteration Protocol (opt-in)
 

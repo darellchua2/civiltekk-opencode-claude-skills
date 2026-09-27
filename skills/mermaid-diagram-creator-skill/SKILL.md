@@ -88,7 +88,7 @@ npx -y @mermaid-js/mermaid-cli -i diagram.mmd -o diagram.svg -b white
 | Source | Directory |
 |--------|-----------|
 | GitHub Issue | `PLANS/PLAN-GIT-[issue-number]/` |
-| Tracker ticket (key format per `jira-git-integration-skill`) | `PLANS/PLAN-[ticket-key]/` |
+| Tracker ticket (key format per `ticketing-skill`) | `PLANS/PLAN-[ticket-key]/` |
 | General | `diagrams/` |
 
 ### Step 3: Generate Mermaid Syntax
@@ -333,7 +333,7 @@ Note: inline ` ```mermaid ` blocks are unaffected — they render client-side (G
 
 ## Integration with Planning Workflows
 
-### ticket-creation-skill
+### ticketing-skill
 
 When creating plans for GitHub issues or tracker tickets, embed the diagram inline in the PLAN.md:
 

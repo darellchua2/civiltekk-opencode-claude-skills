@@ -26,7 +26,7 @@ inline. I provide the primary agent with:
 5. **Protected-branch fallback** — the PR path when direct uat push is
    rejected
 6. **Ticket hygiene contract** — result comment + transition rules (tracker
-   conventions — JIRA policy per `jira-git-integration-skill`)
+   conventions — JIRA policy per `ticketing-skill`)
 
 Execution is plain git run by the primary agent (or delegated to
 `repo-ops-specialist-subagent` with my §Delegation Spec).
@@ -51,7 +51,7 @@ This skill defers to:
 |--------|-------------------------|-------------------|
 | Branch flow & release conventions | `version-bump-standard-skill` | §Branch Flow |
 | Merge strategy & tag mapping | `semantic-release-convention-skill` | §Branch-Aware Tag Mapping |
-| New promotion tickets | `ticket-creation-skill` | full flow |
+| New promotion tickets | `ticketing-skill` | full flow |
 | PR on protected branches | `pr-workflow-subagent` | PR creation + gates |
 | Bulk execution delegation | `repo-ops-specialist-subagent` | §Delegation Spec below |
 

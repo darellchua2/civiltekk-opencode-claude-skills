@@ -56,22 +56,7 @@ permissions:
     resource: pr-merge-workflow-skill
     effect: allow
   - action: skill
-    resource: git-issue-labeler-skill
-    effect: allow
-  - action: skill
-    resource: jira-git-integration-skill
-    effect: allow
-  - action: skill
-    resource: jira-status-updater-skill
-    effect: allow
-  - action: skill
-    resource: git-issue-updater-skill
-    effect: allow
-  - action: skill
-    resource: ticket-creation-skill
-    effect: allow
-  - action: skill
-    resource: jira-ticket-labeler-skill
+    resource: ticketing-skill
     effect: allow
   - action: skill
     resource: changelog-python-cliff-skill
@@ -152,18 +137,13 @@ Load these skills to apply the correct standards and conventions:
 - **semantic-release-convention**: Single source of truth for commit → PR → merge → release → CI/CD conventions, versioning labels, changelog generation
 - **pr-creation-workflow**: Framework for creating PRs with quality checks and semantic versioning labels
 - **pr-merge-workflow**: Post-merge workflow — merge, CI monitoring, auto-fix, JIRA status update, branch cleanup
-- **git-issue-labeler**: Assess and assign GitHub labels including semantic versioning labels
-- **jira-git-integration**: JIRA + Git workflow utilities (ticket management, branch creation)
-- **jira-status-updater**: Automate JIRA ticket status transitions after PR merge
-- **git-issue-updater**: Update issues/tickets with commit progress (user, date, file stats)
-- **ticket-creation**: Structured GitHub/JIRA ticket creation (labels, sub-issues)
-- **jira-ticket-labeler**: Classify JIRA tickets with issue types, priorities, labels
+- **ticketing-skill**: Full ticket lifecycle on GitHub Issues or JIRA — create, classify/label (incl. semver labels, PR-only), update from commits, close post-merge, ticket-key↔branch plumbing
 - **changelog-python-cliff**: Generate changelogs via git-cliff with PEP 440 versioning
 - **documentation-sync-workflow**: Keep docs synchronized when adding skills/subagents
 - **documentation-consistency**: Audit documentation consistency across files
 - **plan-execution** (`--update` / `--soft`): Track and execute PLAN.md phases
 
-> **JIRA skills MCP dependency:** policy per `jira-git-integration-skill` §MCP Availability Guard. GitHub-side operations are unaffected.
+> **JIRA skills MCP dependency:** policy per `ticketing-skill` §MCP Availability Guard. GitHub-side operations are unaffected.
 
 ## Repository Setup Workflow
 

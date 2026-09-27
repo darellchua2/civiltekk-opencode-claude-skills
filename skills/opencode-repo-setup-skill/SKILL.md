@@ -62,7 +62,7 @@ One multi-select question + one yes/no per extra. Options are built from the det
 - "Initialize CodeGraph index? (`codegraph init -i`)" — only if `.codegraph/` absent and repo is code-heavy; on accept, also append the CodeGraph rule block (below) to `<repo>/AGENTS.md`
 - "Append the LSP rule block to AGENTS.md?" — offer when a built-in LSP server matches the repo language (TS/JS → `typescript`+`eslint`; Python → `pyright`)
 - "Scaffold a minimal project AGENTS.md?" — repo rules only; NO MCP prose (that belongs to config + this skill)
-- "Scaffold GitHub issue templates? (bug report + feature request forms + chooser config)" — offer when the detection table signals a GitHub repo without `.github/ISSUE_TEMPLATE/`; copies `bug_report.yml`, `feature_request.yml`, `config.yml` from the installed `ticket-creation-skill/templates/` dir into `<repo>/.github/ISSUE_TEMPLATE/`. Create-if-absent ONLY — an existing file is skipped and reported, never overwritten. Source templates dir absent (per-skill install without `ticket-creation-skill`) → skip the offer with a note (mirrors the CodeGraph soft-skip). These are git-tracked repo files — they never touch `opencode.json`.
+- "Scaffold GitHub issue templates? (bug report + feature request forms + chooser config)" — offer when the detection table signals a GitHub repo without `.github/ISSUE_TEMPLATE/`; copies `bug_report.yml`, `feature_request.yml`, `config.yml` from the installed `ticketing-skill/templates/` dir into `<repo>/.github/ISSUE_TEMPLATE/`. Create-if-absent ONLY — an existing file is skipped and reported, never overwritten. Source templates dir absent (per-skill install without `ticketing-skill`) → skip the offer with a note (mirrors the CodeGraph soft-skip). These are git-tracked repo files — they never touch `opencode.json`.
 - "Pin built-in agent models?" — group multi-select: hidden maintenance (`title`, `summary`, `compaction` — they inherit the session model and run constantly, the cheapest cost trim) / subagents (`explore`, `general`) / all five / no. Never offer `build`/`plan` (session-selected models). Declined → skip silently.
 
 **Model-pin intake** (only when the pin extra is accepted) — two more questions:
@@ -173,7 +173,7 @@ Per-tool routing rules live at PROJECT level, not user level — this skill appe
 
 **Jira templates** (marker `<!-- opencode:jira-templates -->`) — offer appended when the repo is Jira-centric (detection table's Jira signal) and accepted:
 
-> Jira ticket descriptions follow the type templates — Bug: Problem description / Steps to reproduce / Expected vs Actual / Environment / Logs / References (mirrors the canonical GitHub bug body). Story: "As a… I want… so that…" + acceptance-criteria checklist. Task: Context / Acceptance Criteria / Scope. Run the intake from `ticket-creation-skill` first (classify → collect required fields → validate → preview); never leave a Jira description empty.
+> Jira ticket descriptions follow the type templates — Bug: Problem description / Steps to reproduce / Expected vs Actual / Environment / Logs / References (mirrors the canonical GitHub bug body). Story: "As a… I want… so that…" + acceptance-criteria checklist. Task: Context / Acceptance Criteria / Scope. Run the intake from `ticketing-skill` first (classify → collect required fields → validate → preview); never leave a Jira description empty.
 
 > GitHub repos get real form files via the issue-template scaffold above; Jira has no repo-file equivalent, so this rule block is the agent-side application path.
 
@@ -192,7 +192,7 @@ State exactly:
 ## Atlassian caveats (read before enabling)
 
 - **First use opens a browser OAuth flow** (mcp-remote → mcp.atlassian.com). Fine on desktop; **fails headless/CI**.
-- Headless fallback = skip MCP, use REST: token at id.atlassian.com/manage-profile/security/api-tokens; REST pattern + cloudId discovery per `jira-git-integration-skill` §MCP Availability Guard.
+- Headless fallback = skip MCP, use REST: token at id.atlassian.com/manage-profile/security/api-tokens; REST pattern + cloudId discovery per `ticketing-skill` §MCP Availability Guard.
 - Delegation pattern: even when enabled, route bulk Jira calls through a subagent to keep tool output out of the primary context (schemas are paid regardless of who calls).
 
 ## Governance
