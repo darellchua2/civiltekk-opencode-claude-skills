@@ -1,25 +1,23 @@
----
-name: nextjs-image-usage-skill
-description: Implement proper Next.js 16 Image component usage with configuration for remote domains, responsive images, and breaking changes from previous versions
-license: Apache-2.0
-compatibility: opencode
-metadata:
-  pattern: image-implementation
-category: Framework-Specific
----
+# Route `image-usage` — Next.js 16 Image component (values)
 
-## What this skill does
+Values for `civiltekk-nextjs-skill` route `image-usage`. The host SKILL.md
+carries the METHOD (detect route → auto-convert without asking); this file
+carries the house conversion policy and the version-pinned Next 16 deltas.
+
+## What this route covers
 
 - Enforces the house rule: every image in Next.js 16 code uses `<Image />`, never `<img>`
 - Configures remote image sources via `remotePatterns` in `next.config.ts`
 - Migrates ≤15 image code across the Next.js 16 breaking changes
 
-## When to use
+Use when: any `<img>` tag appears in (or is proposed for) Next.js 16 code;
+remote images fail to load / console errors about next/image configuration;
+migrating a codebase from Next.js 13/14/15 to 16; setting up external image
+domains or responsive image layouts.
 
-- Any `<img>` tag appears in (or is proposed for) Next.js 16 code
-- Remote images fail to load / console errors about next/image configuration
-- Migrating a codebase from Next.js 13/14/15 to 16
-- Setting up external image domains or responsive image layouts
+**Exception:** plain `<img>` inside drei `<Html>` portals is sanctioned in
+route `threejs` (pitfall `next-image-inside-drei-html`) — the optimizer is
+bypassed there anyway.
 
 ## House rule: auto-convert `<img>` → `<Image />`
 

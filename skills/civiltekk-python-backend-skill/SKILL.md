@@ -69,7 +69,7 @@ gotchas and asyncpg-specific pitfalls).
   logic.
 - Full migration workflows (rollback, zero-downtime, seeding, migration
   testing) belong to `database-migration-skill`, not here.
-- JS/TS project-setup equivalent: `nextjs-standard-setup-skill`;
+- JS/TS project-setup equivalent: `civiltekk-nextjs-skill` (route `scaffold`);
   monorepo package management across languages: `monorepo-management-skill`.
 
 ## Agent behavior rules

@@ -61,22 +61,26 @@ Consumers: agents/requirements-specialist-subagent.md (2 allowlists + 4 body rou
 Absorbs: `nextjs-standard-setup-skill` + `nextjs-devtools-mcp-skill` + `nextjs-image-usage-skill` + `threejs-nextjs-skill` (amplify stays standalone; unit-test-creator belongs to Phase 6). references/: `setup.md`, `devtools-mcp.md`, `image.md`, `threejs.md`. Routes: scaffold | runtime-diagnosis | image-usage | threejs-integration.
 MUSTS: (a) re-home `impliesMcp`: dependency-map key `nextjs-devtools-mcp-skill` → `civiltekk-nextjs-skill` (value `["next-devtools"]` unchanged) + pack-frontend `mcps` entry key; (b) devtools' file-based availability fallback stays in host boundaries (reachable without loading the reference); (c) add missing `metadata:` blocks (portability); (d) threejs dated version matrix lives in the reference (route-gated).
 Consumers: agents/nextjs-specialist-subagent.md (4 allowlists + body), presets pack-frontend (skills list only — its `mcps` is a bare server-name array, nothing skill-keyed to re-home), deploy/opencode.json (2 rules → 1: nextjs-devtools-mcp :310 + threejs :400; standard-setup and image-usage are not primary-visible), README (Framework-Specific category), fellow skills (grep stems — 9 live cites: accessibility-a11y, amplify ×3, authentication-authorization, civiltekk-python-backend + its scaffold.md, frontend-design), tests (none pin these names — verified in review).
-- [ ] **2.1** Author host + references + metadata blocks per template
+- [x] **2.1** Author host + references + metadata blocks per template
     — **Why:** four reference cards share one routing method (the specialist's task-type matrix)
     — **Done when:** host ≤140; four trigger sets preserved; isolation green
     — **Consumers affected:** nextjs-specialist
-- [ ] **2.2** Delete + repoint + impliesMcp re-home (agent, preset + mcps, opencode.json, README)
+    — **Done:** 4 routes scaffold|runtime-diagnosis|image-usage|threejs; devtools availability gate + fallback in host; metadata pattern merged; 687-char union description; files: skills/civiltekk-nextjs-skill/{SKILL.md,references/{setup,devtools-mcp,image,threejs}.md}; fixes: none
+- [x] **2.2** Delete + repoint + impliesMcp re-home (agent, preset + mcps, opencode.json, README)
     — **Why:** a stale impliesMcp key silently breaks MCP opt-in for the whole family
     — **Done when:** `bats tests/test_requires_skills.bats` green (impliesMcp ⊆ deploy/opencode.json servers); residue clean
     — **Consumers affected:** installer MCP wiring, pack-frontend
-- [ ] **2.3** Registry rebuild + scoped gate + count (131)
+    — **Done:** 4 dirs git-rm; impliesMcp key renamed (value unchanged); pack-frontend 4->1; agent 4->1; opencode.json 2->1; README 134->131 (Framework-Specific 8->5); 7 fellow-cites across 6 files (amplify x2 not 3 - grep truth); residue sanctioned-only; fixes: none
+- [x] **2.3** Registry rebuild + scoped gate + count (131)
     — **Why:** per-commit green
     — **Done when:** registry skills=131; requires_skills + skill_profiles green
     — **Consumers affected:** installer
-- [ ] **2.4** Commit + push
+    — **Done:** registry rebuilt (skills=131); scoped gate green incl. requires_skills impliesMcp pin + isolation; count 131; fixes: none
+- [x] **2.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a. (stash-split incident resolved: an earlier mixed commit was soft-reset and re-split clean; force-pushed pre-PR)
 
 ### Phase 3: civiltekk-zai-media-skill
 Absorbs: `zai-image-generation-skill` + `zai-video-skill` + `zai-asr-skill` + `zai-ocr-skill`. references/: `image.md`, `video.md`, `asr.md`, `ocr.md`. Routes: image | video | audio-transcribe | ocr.
@@ -194,3 +198,4 @@ None active (the #614 hold resolved — Wave 1 merged as 7a725c5 before this PLA
 - **Count arithmetic** — 22−6=−16 → 119; re-derive from disk at 7.2, never from this note.
 WORK LOG - W2 base 8cf5b6c
 GATE 8cf5b6c tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 0814744 tier=light lint=- typecheck=- build=- unit=t e2e=n.a

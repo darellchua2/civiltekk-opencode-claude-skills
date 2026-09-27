@@ -1,22 +1,15 @@
----
-name: threejs-nextjs-skill
-description: >-
-  Three.js + Next.js (App Router, React 19) integration — SSR pitfalls, GLSL
-  bundling, hydration, WebGL context loss, R3F/drei, WebXR, companion-library
-  decision tree. Version detection first.
-license: Apache-2.0
-compatibility: opencode
-category: Framework-Specific
----
+# Route `threejs` — Three.js + Next.js integration (values)
 
-# Three.js + Next.js Integration Guidance
+Values for `civiltekk-nextjs-skill` route `threejs`. The host SKILL.md
+carries the METHOD (detect route → version-detect before version-specific
+code); this file carries the version matrix and pitfall catalog.
 
 Provenance: built for the chronic friction of Three.js + Next.js App Router / React 19 — three.js ships 10–12 breaking releases/year, R3F v8/v9 is the React 18/19 split, drei lags `three` by months, and Next 16's default Turbopack breaks Webpack-era GLSL patterns.
 
 ## CRITICAL: Version detection first (MANDATORY)
 
 Never give version-specific code before confirming versions. Ask the user to run:
-`npm ls three @react-three/fiber @react-three/drei @react-three/xr` + `grep -E 'three|react|next' package.json`; or detect from files (package.json → `npm ls` → `require('three').REVISION`; monorepos: per-workspace). Generic architectural guidance (e.g. "use `'use client'`") is safe without versions; concrete imports/JSX are not.
+`npm ls three @react-three/fiber @react-three/drei @react-three/xr` + `grep -E 'three|react|next' package.json` (the grep half Requires bash — git-bash/WSL on Windows; otherwise read `package.json` directly); or detect from files (package.json → `npm ls` → `require('three').REVISION`; monorepos: per-workspace). Generic architectural guidance (e.g. "use `'use client'`") is safe without versions; concrete imports/JSX are not.
 
 **Version matrix (verified Jul 2026 — refresh with `npm view <pkg> version` before relying on it):** `three` 0.185.1 (addons at `three/addons/*`; WebGPURenderer+TSL present) · `@react-three/fiber` 9.6.1 (**v9 = React 19**, v8 = React 18) · `@react-three/drei` 10.7.7 (**stale, compatibility risk** — uses `three-stdlib`; test before upgrading `three` past drei's tested range) · `@react-three/xr` 6.6.30 (v6 `createXRStore()` + `<XR store>`; v5 API entirely different) · `next` 16 (Turbopack default) · `react` 19 (StrictMode double-mounts → WebGL context loss in non-R3F code).
 

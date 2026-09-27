@@ -1,34 +1,11 @@
----
-name: nextjs-devtools-mcp-skill
-description: >-
-  next-devtools-mcp reference — Next.js 16+ runtime diagnosis via MCP
-  (get_errors, get_logs, get_routes, server actions); config and workflows.
-license: Apache-2.0
-compatibility: opencode
-metadata:
-  pattern: mcp-diagnosis
-category: Framework-Specific
----
+# Route `runtime-diagnosis` — next-devtools-mcp (values)
 
-## What this skill does
-
-- Documents the `next-devtools-mcp` server and its 6 tools
-- Provides `opencode.json` configuration (the `mcp.servers` entry and `permissions` rule)
-- Prescribes workflows for error diagnosis, route analysis, page debugging, server action debugging, and project audits
-- Covers common MCP connection issues and fallback strategies
+Values for `civiltekk-nextjs-skill` route `runtime-diagnosis`. The host
+SKILL.md carries the METHOD and the hard availability gate + file-based
+fallback; this file carries the config values, tool inventory, and
+workflows.
 
 **Reference:** https://nextjs.org/docs/app/guides/mcp
-
-## Requirements & Honesty Note
-
-| Requirement                                             | Status                                     |
-| ------------------------------------------------------- | ------------------------------------------ |
-| Next.js 16+ (for built-in `/_next/mcp` endpoint)          | Project dependency                         |
-| Running Next.js dev server (`npm run dev`)                | Required for live features                 |
-| `next-devtools` server in `opencode.json` `mcp.servers` block     | Required for MCP tool access               |
-| `permissions` rule `{ "action": "next-devtools*", "resource": "*", "effect": "allow" }` | **No rule by default** — user must opt in |
-
-If any requirement is unmet, MCP tools will return connection errors. Fall back to file-based inspection (`glob`/`grep`/`read`) and `webfetch` to Next.js docs.
 
 ## opencode.json Configuration
 
@@ -159,11 +136,3 @@ Use `get_server_action_by_id` to: verify `'use server'`, check form integration,
 - Server Components: https://nextjs.org/docs/app/building-your-application/rendering/server-components
 - Server Actions: https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations
 - Routing: https://nextjs.org/docs/app/building-your-application/routing
-
-## Fallback Strategy (No MCP)
-
-If `next-devtools-mcp` is not configured or the dev server is not running, this skill degrades gracefully to file-based inspection:
-- **Routes:** Glob `app/**/page.{tsx,ts,jsx,js}` and `app/**/route.{tsx,ts,jsx,js}` + `pages/**/*.{tsx,ts,jsx,js}` for Pages Router
-- **Page metadata:** Read page files directly to detect `'use client'` directives and `export const metadata`
-- **Server Actions:** Grep for `'use server'` to locate action files
-- **Errors:** Cannot replicate — instruct user to share error output or enable MCP

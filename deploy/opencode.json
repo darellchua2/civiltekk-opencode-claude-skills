@@ -302,7 +302,7 @@
         },
         {
             "action": "skill",
-            "resource": "nextjs-devtools-mcp-skill",
+            "resource": "civiltekk-nextjs-skill",
             "effect": "allow"
         },
         {
@@ -388,11 +388,6 @@
         {
             "action": "skill",
             "resource": "monorepo-management-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "threejs-nextjs-skill",
             "effect": "allow"
         },
         {
