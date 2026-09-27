@@ -3318,6 +3318,17 @@ deploy_content() {
         log_error "installer CLI failed (exit ${rc})"
         return "$rc"
     fi
+
+    # Convergence pass (#608): `add` is additive-only by design (init.mjs
+    # refuses --prune on add), so manifest-tracked entries whose names left
+    # installer/registry.json linger forever without this pass. `update
+    # --prune` removes exactly those (files + manifest rows) across recorded
+    # targets. Non-fatal by design: a pre-#379 manifest-less install makes
+    # `update` exit 2 with its adoption hint — warn and continue, per the
+    # #379 contract.
+    if ! node "${INSTALLER_DIR}/init.mjs" update --prune $provider_arg $dry_arg; then
+        log_warn "prune pass skipped - pre-#379 installs: one full re-run adopts the manifest"
+    fi
     log_success "Content deployed ($(count_agents "${REPO_DIR}/agents") agents / $(count_skills "${REPO_DIR}/skills") skills, manifest-tracked)"
     return 0
 }

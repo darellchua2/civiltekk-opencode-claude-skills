@@ -386,7 +386,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills update          # re-cop
 npx github:darellchua2/civiltekk-opencode-claude-skills update --prune  # also remove registry-removed entries
 ```
 
-**Redeploy contract:** `setup.sh --yes` force-copies content; existing skills/agents snapshot to the backup dir's `content-backup/` first — restore via the rollback flow.
+**Redeploy contract:** `setup.sh --yes` force-copies content; full and `--skills-only` redeploys also prune manifest-tracked entries removed from this repo (the `update --prune` arm); existing skills/agents snapshot to the backup dir's `content-backup/` first — restore via the rollback flow. `--select` deploys add only and never auto-prune; converge manually with `update --prune` (see #610).
 
 Environment variable persistence: macOS/Linux writes shell rc; Windows uses `setx` / `$PROFILE` (Git Bash / PowerShell respectively).
 </details>

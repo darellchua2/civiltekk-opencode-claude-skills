@@ -23,15 +23,17 @@
 
 ### Phase 1: Wire the prune pass into deploy_content()
 
-- [ ] **1.1** Add the convergence pass to `deploy_content()` in `deploy/setup.sh`, immediately after the `init.mjs add --all --yes` success check: `node "${INSTALLER_DIR}/init.mjs" update --prune $provider_arg $dry_arg` (reusing the function's existing locals), wrapped `if ! … then log_warn` so a missing pre-#379 manifest warns and continues instead of failing the deploy; the warn text mirrors `update_manifest`'s #379 adoption hint ("pre-#379 installs: one full re-run adopts the manifest")
+- [x] **1.1** Add the convergence pass to `deploy_content()` in `deploy/setup.sh`, immediately after the `init.mjs add --all --yes` success check: `node "${INSTALLER_DIR}/init.mjs" update --prune $provider_arg $dry_arg` (reusing the function's existing locals), wrapped `if ! … then log_warn` so a missing pre-#379 manifest warns and continues instead of failing the deploy; the warn text mirrors `update_manifest`'s #379 adoption hint ("pre-#379 installs: one full re-run adopts the manifest")
     — **Why:** `add` is additive-only by design (`init.mjs:819` refuses `--prune` on add); convergence to the repo source can only ride the existing `update --prune` arm, and #379's contract keeps manifest-adoption gaps non-fatal — the hint wording lets pre-#379 users self-diagnose (review finding)
     — **Done when:** `bash -n deploy/setup.sh` passes and the prune invocation appears in `deploy_content()` after the `add --all` `rc` check, carrying `$dry_arg` from the existing explicit-comparison assignment
     — **Consumers affected:** `deploy_agents()` (full + skills-only deploys now converge); none other — `--select` and `--models-only` paths deliberately unchanged (curated installs / model-resolution mode; follow-up #610 owns `--select` convergence)
+    — **Done:** convergence pass added after the `add --all` rc-check in `deploy_content()` — `update --prune $provider_arg $dry_arg` wrapped in `if !` with the #379-adoption-hint warn; files: deploy/setup.sh; fixes: none (note: an initial uncommitted draft of this hunk appeared in the worktree from a review delegate exceeding its read-only mandate — verified line-by-line, warn text corrected to carry the #379 hint per the review finding, adopted after gate verification)
 
-- [ ] **1.2** Append one sentence to README's update recipe (after the "Redeploy contract:" paragraph, ~README:387): "`--select` deploys add only and never auto-prune; converge manually with `update --prune` (see #610)."
+- [x] **1.2** Append one sentence to README's update recipe (after the "Redeploy contract:" paragraph, ~README:387): "`--select` deploys add only and never auto-prune; converge manually with `update --prune` (see #610)."
     — **Why:** relay decision (Mode R): the `--select` exclusion is deliberate but must carry a documented manual path where `--select` users actually read — the canonical install/update recipe, not a closing ticket comment
     — **Done when:** the sentence is present in README's update recipe block and `grep -c "never auto-prune" README.md` returns 1
     — **Consumers affected:** `--select` deploy users (documentation only); no runtime consumers
+    — **Done:** README:387 Redeploy-contract paragraph extended with the `--select` never-auto-prune sentence (#610 pointer) plus a truthful clause that full/`--skills-only` redeploys now prune; files: README.md; fixes: none
 
 ### Phase 2: Regression net
 
@@ -66,3 +68,6 @@ None. (`init.mjs update --prune` already shipped and tested at `tests/update.bat
 
 - **Risk:** prune pass slows deploys (`update` re-hashes all entries). **Mitigation:** bounded by the manifest size, single extra pass, and it prints a one-line summary; acceptable for a deploy script.
 - **Risk:** a user's locally-renamed agent that shadowed a registry name gets pruned on redeploy. **Mitigation:** that is the documented convergence semantics (manifest = system of record, #379); the backup snapshot in `deploy_content()` (`content-backup`) already preserves pre-overwrite state.
+## Trace
+
+GATE 31c4830 tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
