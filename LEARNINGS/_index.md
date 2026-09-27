@@ -249,13 +249,13 @@
 - **Scope**: project
 - **Summary**: Worktree-pipeline Step 7 selects reviewers by blast-radius only (no proactive requirements review); uiux gained a required Requirements Gaps field; surfaced gaps relay to requirements-specialist Mode R; Step 1 preflight guards per-skill installs (2026-09-18).
 
-### Decision: MCP Availability Guard single-homed at jira-git-integration-skill
+### Decision: MCP Availability Guard single-homed (now at ticketing-skill)
 
 - **Category**: decision
 - **File**: `LEARNINGS/decisions/mcp-guard-single-homed.md`
 - **Confidence**: n.a.
 - **Scope**: project
-- **Summary**: Policy text lives only in `jira-git-integration-skill` §MCP Availability Guard; per-skill copies are pointer + their own REST endpoint, headings frozen verbatim (#434).
+- **Summary**: Policy text lives only in one §MCP Availability Guard section; per-skill copies are pointer + their own REST endpoint, headings frozen verbatim (#434). Evidence-add (#599, 2026-09-27): the canonical home moved from `jira-git-integration-skill` to `ticketing-skill` §MCP Availability Guard when the six ticket skills consolidated; heading preserved verbatim, ~8 external pointers became one-token renames.
 
 ### Decision: reviewer subagents return LEARNINGS candidates as content
 
@@ -738,7 +738,7 @@
 - **Confidence**: 0.8
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: The `blocked-by: <ref>` issue-body line has **one parser** — `worktree-pipeline-skill` Step 1's skip-guard (whole-body scan, ticket regex `^(#\d+|[\w.-]+/[\w.-]+#\d+|[A-Z][A-Z0-9]+-\d+)$`) — and **two producers**: `ticket-creation-skill` (Step 4b, this convention's origin) and `wayfinder-skill`. Producers restate the format minimally and point at the parser's rule (`policy-single-home-pointer-shap
+- **Summary**: The `blocked-by: <ref>` issue-body line has **one parser** — `worktree-pipeline-skill` Step 1's skip-guard (whole-body scan, ticket regex `^(#\d+|[\w.-]+/[\w.-]+#\d+|[A-Z][A-Z0-9]+-\d+)$`) — and **two producers**: `ticketing-skill` (§Create sequence handoff — was ticket-creation-skill Step 4b, moved #599) and `wayfinder-skill`. Producers restate the format minimally and point at the parser's rule (`policy-single-home-pointer-shap
 
 ### Recount claimed structural counts in PLANs — an unnamed element is an unrecorded scope decision
 
@@ -747,7 +747,7 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-20
-- **Summary**: PLAN-470 said "remove the six early-exit blocks"; main() has seven. The uncounted seventh (`--check-update`, setup.sh:4301-4304) carries the exact defect the ticket exists to kill — `check_for_updates_only` returns 1 on real failures (:3830/:3840) while the caller exits 0 unconditionally — and would have survived outside the truthful-exit contract.
+- **Summary**: PLAN-470 said "remove the six early-exit blocks"; main() has seven. The uncounted seventh (`--check-update`, setup.sh:4301-4304) carries the exact defect the ticket exists to kill — `check_for_updates_only` returns 1 on real failures (:3830/:3840) while the caller exits 0 unconditionally — and would have survived outside the truthful-exit contract. Evidence-add (#599, 2026-09-27): PLAN-599 rev 1 encoded "Git/Workflow 16→11" by subtracting all six consolidated skills from a row that held only three (JIRA trio lived in its own row; correct: 16→14). Rule refinement: when a PLAN encodes a derived count delta, verify the subtracted elements are members of the row/total being decremented before writing the arithmetic.
 
 ### Structure-pinning tests are first-class consumers for any refactor PLAN
 
@@ -999,7 +999,7 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-19
-- **Summary**: **Context**: #434 single-homed the MCP Availability Guard into `jira-git-integration-skill` (canonical); 6 other locations became pointers.
+- **Summary**: **Context**: #434 single-homed the MCP Availability Guard into `jira-git-integration-skill` (canonical); 6 other locations became pointers. Evidence-add (#599): home moved again to `ticketing-skill` §MCP Availability Guard — the pointer-shape convention held: every pointer was a one-token rename because the heading was frozen verbatim.
 
 ### new skill count literal gates
 
@@ -1017,7 +1017,7 @@
 - **Confidence**: 0.9
 - **Scope**: project
 - **Date**: 2026-09-19
-- **Summary**: **Context**: PLAN-409 review. Plans executed by plan-execution-skill (then plan-automation-loop-skill, renamed #408) commit + push per phase, and CI (release.yml) runs the full bats suite plus `node installer/build-registry.mjs --check` on every push.
+- **Summary**: **Context**: PLAN-409 review. Plans executed by plan-execution-skill (then plan-automation-loop-skill, renamed #408) commit + push per phase, and CI (release.yml) runs the full bats suite plus `node installer/build-registry.mjs --check` on every push. Evidence-add (#599, 2026-09-27): PLAN-599 rev 1 repeated the defect at plan time — the skill-dir swap commit deferred registry/lean/app-config/README-count sync to a later phase; doc-count literals pinned by bats (README "155 skill directories" vs test_markitdown cross-file) are per-push gates too, not final-suite-only. Fix: every sync surface rides the same commit as the disk change.
 
 ### Conditional-mode blocks must supersede all restatements, not just the numbered list
 
@@ -1813,3 +1813,30 @@
 - **Scope**: project
 - **Date**: 2026-09-27
 - **Summary**: Forking a skill twin must diff the source's ^##/^### sections and justify every drop in the PLAN — plan-execution-inline-skill silently dropped Final validation, the /goal close sentence, and the error-resolver integration row (#597 code review NOTEs)
+
+### Pattern: Skill-dir consolidation sweeps the full-profile source of truth
+
+- **Category**: pattern
+- **File**: `LEARNINGS/patterns/skill-consolidation-sweeps-full-profile-source.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: Consolidation plans that sweep registry/presets/lean/README/agent-frontmatter still go CI-red if they miss `opencode_app/opencode.json` (full-profile single source: skill-allow rules + `/create-ticket` command template) — gated by BOTH the lean⊆app-allows test and the dead-allow guard. Grep the superset-config file, fold its sweep into the same commit as the disk change.
+
+### Pattern: Merges preserve externally pinned §-anchors — enumerate the pin set first
+
+- **Category**: pattern
+- **File**: `LEARNINGS/patterns/merge-preserves-externally-pinned-anchors.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: Before merging skills, grep repo-wide for `§` + doomed skill names; that pin set (PLAN-599: §MCP Availability Guard ×6, §Attribution ×2) is exactly what must survive as verbatim headings in the merged doc — every pointer then becomes a one-token rename.
+
+### Pattern: Values side files are the multi-platform extension path
+
+- **Category**: pattern
+- **File**: `LEARNINGS/patterns/values-side-files-platform-extension-path.md`
+- **Confidence**: 0.6
+- **Scope**: project
+- **Date**: 2026-09-27
+- **Summary**: Consolidated multi-platform skills split METHOD (SKILL.md, frozen § headings, idempotency contracts) from VALUES (references/<platform>.md with load rules + verify-locally markers); unknown platform → detect-and-ask + "contribute a side file, never improvise endpoints". Replicate for future multi-platform consolidations (#599).

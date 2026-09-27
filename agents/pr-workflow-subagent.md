@@ -54,7 +54,7 @@ permissions:
     resource: gh-cli-setup-skill
     effect: allow
   - action: skill
-    resource: jira-status-updater-skill
+    resource: ticketing-skill
     effect: allow
   - action: skill
     resource: plan-execution-skill
@@ -118,9 +118,9 @@ Quality Checks — defer to the contract:
 - Gate commands come from manifest discovery per `verification-loop-skill` §The gate contract — this agent owns no framework command table.
 - PR-boundary execution is `pr-creation-workflow-skill` steps 2-3 (framework detect + gate contract/memo check); coverage badges via `coverage-readme-workflow` on the standalone path only; docstring validation via `docstring-generator`.
 
-JIRA Integration (policy per `jira-git-integration-skill` §MCP Availability Guard):
-- Attribution: self-assign the linked ticket (see ticket-creation-skill §Attribution); PR author = the `gh auth` user by construction
-- PR-link comments, post-merge transitions, and image attachments: delegate to `jira-git-integration-skill` / `jira-status-updater-skill` per their contracts
+JIRA Integration (policy per `ticketing-skill` §MCP Availability Guard):
+- Attribution: self-assign the linked ticket (see ticketing-skill §Attribution); PR author = the `gh auth` user by construction
+- PR-link comments, post-merge transitions, and image attachments: delegate to `ticketing-skill` (§Update / §Close) per its contract
 - MCP GUARD: the `atlassian` server is disabled by default (opt-in). If `atlassian_*` tools are absent from your tool list, do NOT attempt them — skip JIRA integration, note it in the PR report, and suggest per-project enable via `opencode-repo-setup-skill` (or its REST fallback). Never fail the PR flow on a disabled server.
 
 Built-in Subagent Delegation:

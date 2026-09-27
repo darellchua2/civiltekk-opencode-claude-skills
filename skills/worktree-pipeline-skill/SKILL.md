@@ -17,7 +17,7 @@ category: Git/Workflow
 I run the **full ticket-to-merged-PR pipeline**, one ticket at a time, each in
 its own **git worktree** so the main working tree stays free. I am the
 orchestrator: heavy knowledge lives in the skills/subagents I drive
-(`ticket-creation-skill` for new tickets, `plan-execution-skill` --gate for
+(`ticketing-skill` for new tickets, `plan-execution-skill` --gate for
 execution, `pr-workflow-subagent` for the PR) — I own sequencing, PLAN
 authoring, worktree lifecycle, and re-validation.
 
@@ -66,7 +66,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   (Step 9) and `pr-workflow-subagent` (Step 10). Any missing → abort
   (`failed`) with the install hint
   `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>`. Soft deps
-  degrade with a note: `ticket-creation-skill` (only for new-work tickets,
+  degrade with a note: `ticketing-skill` (only for new-work tickets,
   Step 3), `architecture-review-subagent` / `uiux-reviewer-subagent` /
   `requirements-specialist-subagent` (Step 7 skip-with-note rule).
 - **Execution model (pipelined)**: ticket order = authoring order, but only
@@ -106,10 +106,10 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    `feat/<KEY>` onto the updated `origin/<base>` (push `--force-with-lease`
    after the rebase) and re-enter at the first unexecuted step.
 3. **Ticket fetch/create**: existing ref → fetch its description (`gh issue
-   view [-R <owner/name>]`; tracker tickets per `jira-git-integration-skill`
+   view [-R <owner/name>]`; tracker tickets per `ticketing-skill`
    §MCP Availability Guard — degrade with a clear report when the tracker is
    unavailable). New work → create the
-   ticket first via `ticket-creation-skill` (`/create-ticket`), then
+   ticket first via `ticketing-skill` (`/create-ticket`), then
    continue.
 4. **Worktree**: locate the **main** checkout via
    `git worktree list --porcelain | sed -n 's/^worktree //p' | head -1`
@@ -270,7 +270,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 
     Requires Node ≥23.4 (`node:sqlite` built in); older Node fallback:
     `sqlite3 ~/.local/share/opencode/opencode.db "DELETE FROM worktree WHERE directory='<root>/<KEY>';DELETE FROM project WHERE worktree='<root>/<KEY>'"`.
-    Tracker tickets: ensure exactly one `jira-status-updater` transition to
+    Tracker tickets: ensure exactly one `ticketing-skill` §Close transition to
     Done — check the ticket status first, transition only if still open. On
     a red notification: the fix is queued for the next boundary (immediate
     if idle), bounded at **2 fix-and-re-watch rounds per ticket**; red-fix

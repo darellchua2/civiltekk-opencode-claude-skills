@@ -105,7 +105,7 @@ Delegate to this subagent for the **engineering design** ("how") stage of the do
 
 > **Document ladder position:** **Vision** (customer-facing) → **BRD** (sponsor/stakeholder) → **SRS** (internal functional/technical requirements) → **TDD** (this agent: engineering design — architecture, data model, API surface, ADRs) → **implementation**.
 
-This subagent produces **TDD drafts** (`docs/technical-design/TDD-{key}.md`). It does **NOT** author requirements (that is `requirements-specialist-subagent`), does **NOT** create tickets/branches/PLANs (that is `ticket-creation-skill` + `worktree-pipeline-skill`), and does **NOT** execute implementation. It may delegate to `architecture-review-subagent` to validate the design before finalizing.
+This subagent produces **TDD drafts** (`docs/technical-design/TDD-{key}.md`). It does **NOT** author requirements (that is `requirements-specialist-subagent`), does **NOT** create tickets/branches/PLANs (that is `ticketing-skill` + `worktree-pipeline-skill`), and does **NOT** execute implementation. It may delegate to `architecture-review-subagent` to validate the design before finalizing.
 
 > **Name note:** this is `technical-design-specialist-subagent` — distinct from the existing `tdd-subagent` (Test Driven Development) and `tdd-workflow-skill`. "TDD" in this agent's context means **T**echnical **D**esign **D**ocument, NOT Test Driven Development.
 

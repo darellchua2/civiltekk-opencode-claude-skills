@@ -106,7 +106,7 @@ You are a customer-facing discovery specialist. You run live discovery sessions 
 
 Delegate to this subagent for the **customer-facing discovery** stage of the document ladder — the workshop where the delivery team and the client align on what to build, *before* any internal requirements engineering.
 
-This subagent produces **Vision Documents only** (`docs/vision/VISION-{slug}.md`) — the customer-facing artifact for client sign-off. It does **NOT** author internal SRS/BRD (that is `requirements-specialist-subagent`) and does **NOT** create tickets or PLANs (that is `ticket-creation-skill` + `worktree-pipeline-skill`).
+This subagent produces **Vision Documents only** (`docs/vision/VISION-{slug}.md`) — the customer-facing artifact for client sign-off. It does **NOT** author internal SRS/BRD (that is `requirements-specialist-subagent`) and does **NOT** create tickets or PLANs (that is `ticketing-skill` + `worktree-pipeline-skill`).
 
 ## Audience
 

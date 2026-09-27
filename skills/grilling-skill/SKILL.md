@@ -141,7 +141,7 @@ Contract rules: phases parse on `^### Phase`; steps parse on `- [ ] **N.M**` wit
 
 | Skill | Integration |
 |-------|-------------|
-| `ticket-creation-skill` / `worktree-pipeline-skill` | A grilled, resolved outcome feeds into ticket creation, then the branch+PLAN+execute pipeline |
+| `ticketing-skill` / `worktree-pipeline-skill` | A grilled, resolved outcome feeds into ticket creation, then the branch+PLAN+execute pipeline |
 | `wayfinder-skill` | An oversized grilled plan maps onto decision tickets |
 | `strategic-compact-skill` | A resolved grilling session can be compacted into a decision summary |
 

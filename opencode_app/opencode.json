@@ -127,7 +127,7 @@
         },
         {
             "action": "skill",
-            "resource": "ticket-creation-skill",
+            "resource": "ticketing-skill",
             "effect": "allow"
         },
         {
@@ -188,31 +188,6 @@
         {
             "action": "skill",
             "resource": "git-compact-commits-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "git-issue-labeler-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "git-issue-updater-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "jira-git-integration-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "jira-status-updater-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "jira-ticket-labeler-skill",
             "effect": "allow"
         },
         {
@@ -662,7 +637,7 @@
         },
         "create-ticket": {
             "description": "Create a structured GitHub issue or JIRA ticket — platform detection, structured description, labels, sub-issues. Ticket only: no branch/PLAN/execution (use /run-worktree-pipeline for that).",
-            "template": "Load the skill `ticket-creation-skill` and run it with the arguments: $ARGUMENTS",
+            "template": "Load the skill `ticketing-skill` and run it with the arguments: $ARGUMENTS",
             "agent": "build"
         },
         "run-worktree-pipeline": {

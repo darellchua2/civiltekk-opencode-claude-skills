@@ -2,7 +2,7 @@
 
 A personal software-development skills collection — the agents, skills, and pipeline tooling I use daily — shared so you can take **a single skill** or adopt **the whole stack**.
 
-- **155 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
+- **150 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
 - **Same skills install to other harnesses**: Claude Code, Kimi Code, Kilo Code, and the cross-tool `~/.agents/` standard (Agent Skills open format)
 - A **robust application-development pipeline**: ticket → PLAN → gated execution → review → merged PR, driven by a handful of slash commands
 
@@ -73,7 +73,7 @@ Provider swap (Z.AI default): `./deploy/setup.sh --provider anthropic|openai|ope
 
 ### 3. Per-project subset — presets
 
-Not every project needs 34 agents + 155 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
+Not every project needs 34 agents + 150 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
 
 ```bash
 opencode-init --list categories                              # introspect (JSON)
@@ -107,7 +107,7 @@ See [Docker: run the whole setup in a browser](#docker-run-the-whole-setup-in-a-
 
 ```
 civiltekk-opencode-claude-skills/
-├── skills/                      # 155 skill directories (source of truth)
+├── skills/                      # 150 skill directories (source of truth)
 ├── agents/                      # 34 subagent .md files (source of truth)
 ├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings, auto-continue, question-repair)
 │   └── vibeguard.config.json    # Secret-masking regex patterns
@@ -248,7 +248,7 @@ docker compose build --build-arg OPENCODE_PACKS=markitdown,docling   # Docker bu
 
 Default state of every pack is **OFF**. Design history: [issue #268](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/268).
 
-**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (78 primary-visible skills + deny-all); subagents are profile-immune and all 155 skills stay on disk:
+**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (78 primary-visible skills + deny-all); subagents are profile-immune and all 150 skills stay on disk:
 
 ```bash
 ./deploy/setup.sh                     # default: lean
@@ -285,9 +285,9 @@ Attribution: `plugins/ATTRIBUTION.md`; skill-level attributions in `THIRD_PARTY_
 </details>
 
 <details>
-<summary><strong>Skill catalog — 155 skills by category</strong></summary>
+<summary><strong>Skill catalog — 150 skills by category</strong></summary>
 
-Current count: **155** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563).
+Current count: **150** (history: 123 after the BT-142 pptx migration → consolidations and vendoring brought it to 146; 6 superseded skills were archived under `skills/_archived/` and removed in #563; the six ticket skills were consolidated into `ticketing-skill` in #599 — `npx … add ticket-creation-skill|git-issue-labeler-skill|git-issue-updater-skill|jira-git-integration-skill|jira-status-updater-skill|jira-ticket-labeler-skill` are removed, use `add ticketing-skill`).
 
 | Category | Skills | Purpose |
 |-----------|---------|---------|
@@ -300,11 +300,10 @@ Current count: **155** (history: 123 after the BT-142 pptx migration → consoli
 | **OpenCode Meta** (7) | opencode-agent-creation, opencode-skill-creation, opencode-skills-maintainer, opencode-repo-setup, documentation-consistency-skill, opencode-v2-migration, skill-generalizer | Agent and skill creation/maintenance, documentation consistency auditing, per-repo MCP/project-config setup, v1→v2 migration detect/triage, skill generalization auditing |
 | **OpenTofu** (7) | opentofu-aws-explorer, opentofu-keycloak-explorer, opentofu-kubernetes-explorer, opentofu-neon-explorer, opentofu-provider-setup, opentofu-provisioning-workflow, opentofu-ecr-provision | Infrastructure as Code |
 
-| **Git/Workflow** (16) | ascii-diagram-creator, mermaid-diagram-creator, dev-uat-promotion-skill, ticket-creation-skill, plan-execution-skill, plan-execution-inline-skill, worktree-pipeline-skill, wayfinder-skill, git-issue-labeler, gh-cli-setup-skill, git-issue-updater, git-semantic-commits, semantic-release-convention, git-compact-commits, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, dev→uat promotion batching, release conventions, version bumping, compact commits, branch workflow orchestration, structured ticket creation via `/create-ticket`, fully-automated per-phase plan execution via `/run-plan` (subagent workers) or `/run-plan-v2` (inline workers), the tracker-ticket-to-merged-PR worktree pipeline via `/run-worktree-pipeline`, and oversized-work planning as decision-ticket maps |
+| **Git/Workflow** (14) | ascii-diagram-creator, mermaid-diagram-creator, dev-uat-promotion-skill, ticketing-skill, plan-execution-skill, plan-execution-inline-skill, worktree-pipeline-skill, wayfinder-skill, gh-cli-setup-skill, git-semantic-commits, semantic-release-convention, git-compact-commits, version-bump-standard, git-branch-workflow-setup-skill | Diagrams, git operations, dev→uat promotion batching, release conventions, version bumping, compact commits, branch workflow orchestration, the full ticket lifecycle (create/classify/update/close on GitHub Issues or JIRA) via `/create-ticket`, fully-automated per-phase plan execution via `/run-plan` (subagent workers) or `/run-plan-v2` (inline workers), the tracker-ticket-to-merged-PR worktree pipeline via `/run-worktree-pipeline`, and oversized-work planning as decision-ticket maps |
 | **Documentation** (6) | coverage-readme-workflow, docstring-generator, documentation-sync-workflow, unslop-skill, technical-writing-skill, documentation-inline-skill | Documentation generation |
 | **Communication** (1) | email-drafter-skill | Business-email drafting — process, tone frames, slop checklist |
 | **Academic & Research Writing** (2) | horseshoe-paper-writing-skill, research-paper-generation-skill | Academic & research paper writing (Horseshoe Diagram Method, journal-submission formats; codebase→paper generation) |
-| **JIRA** (3) | jira-status-updater, jira-git-integration, jira-ticket-labeler | JIRA integration via MCP server |
 | **Code Quality** (16) | solid-principles, clean-code, clean-architecture, design-patterns, object-design, code-smells, complexity-management, deprecated-code-cleanup-skill, blast-radius-skill, ponytail-audit-skill, ponytail-review-skill, ponytail-debt-skill, language-review-checklists-skill, reviewer-baseline-skill, testing-inline-skill, linting-inline-skill | Code quality analysis, patterns, @deprecated code cleanup, and the inline testing/linting delegates |
 | **Agent Optimization** (7) | continuous-learning, eval-harness, strategic-compact, verification-loop, search-first, context-budget, agent-introspection-debugging | AI agent session optimization, research-first workflow, context auditing, and agent debugging |
 | **Autoresearch** (4) | autoresearch-core-skill, autoresearch-ml-skill, autoresearch-code-skill, autoresearch-research-skill | Autonomous research loops: 5-stage Understand→Hypothesize→Experiment→Evaluate→Log methodology. ML training (GPU), code optimization, literature review. Mechanical `{"pass":bool,"score":N}` evaluators — no LLM self-judgment |

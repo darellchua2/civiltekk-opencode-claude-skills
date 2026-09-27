@@ -2,15 +2,15 @@
 
 # Byte-identity pin for the issue-template forms (PLAN-417, AC #3).
 # .github/ISSUE_TEMPLATE/*.yml are deployed instances of
-# skills/ticket-creation-skill/templates/*.yml — a one-time cmp at authoring
+# skills/ticketing-skill/templates/*.yml — a one-time cmp at authoring
 # time decays silently; this pins the pairs (extends the bats-structure-pin
-# idiom to file pairs). Also pins the SKILL.md field-spec tables to the form
-# labels verbatim (AC #1) so agent-created and human-created tickets stay
-# structurally identical.
+# idiom to file pairs). Also pins the SKILL.md field spec (prose lists) to
+# the form labels verbatim (AC #1) so agent-created and human-created
+# tickets stay structurally identical.
 
 FORMS_DIR=".github/ISSUE_TEMPLATE"
-TEMPLATES_DIR="skills/ticket-creation-skill/templates"
-SKILL_MD="skills/ticket-creation-skill/SKILL.md"
+TEMPLATES_DIR="skills/ticketing-skill/templates"
+SKILL_MD="skills/ticketing-skill/SKILL.md"
 
 @test "issue_template_forms_byte_identical_to_skill_templates" {
   for f in bug_report.yml feature_request.yml config.yml; do

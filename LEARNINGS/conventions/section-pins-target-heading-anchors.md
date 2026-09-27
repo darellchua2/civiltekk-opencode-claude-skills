@@ -7,7 +7,7 @@
 
 ## Convention
 
-`§Name` reference pins in skills/agents prose should target real heading anchors, not bolded list labels. The repo's § convention is heading-anchored: `§MCP Availability Guard` → `jira-git-integration-skill:17`, `§Attribution` → `ticket-creation-skill:181`, `§Branch Flow` → `version-bump-standard:31`. #595 introduced two `§Branch Naming` pins (plan-execution-skill:35, pr-creation-workflow-skill:27) that resolve only to a bolded workflow item (`5. **Branch naming**:` at jira-git-integration:34) — resolvable today because the file is 36 lines, but a reader (or agent) jumping to "the Branch Naming section" finds no such heading.
+`§Name` reference pins in skills/agents prose should target real heading anchors, not bolded list labels. The repo's § convention is heading-anchored: `§MCP Availability Guard` → `ticketing-skill` §MCP Availability Guard (was `jira-git-integration-skill:17`, moved #599 with the heading preserved verbatim), `§Attribution` → `ticketing-skill` §Attribution (was `ticket-creation-skill:181`, moved #599), `§Branch Flow` → `version-bump-standard:31`. #595 introduced two `§Branch Naming` pins (plan-execution-skill:35, pr-creation-workflow-skill:27) that resolved only to a bolded workflow item in the pre-#599 `jira-git-integration` file — the #599 sweep rewrote them into plain skill-level refs (`tracker key per ticketing-skill`, no § suffix), leaving zero dangling pins repo-wide.
 
 ## Rule
 

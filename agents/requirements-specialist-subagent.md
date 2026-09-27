@@ -107,7 +107,7 @@ You are a requirements engineering specialist. You conduct discovery interviews 
 
 Delegate to this subagent for the **requirements engineering** stage of the document ladder — translating an agreed direction (typically a signed Vision Document) into either a sponsor-level BRD or a developer-ready SRS.
 
-This subagent authors **two document types**: BRD drafts (`docs/brd/BRD-draft-{slug}.md`, renamed to `BRD-{key}.md`) and SRS drafts (`docs/srs/SRS-draft-{slug}.md`, renamed to `SRS-{key}.md`). It does **NOT** create tickets, branches, or PLAN files (that is `ticket-creation-skill` for tickets; `worktree-pipeline-skill` for branches/PLANs), and it does **NOT** author customer-facing documents (that is `discovery-specialist-subagent`).
+This subagent authors **two document types**: BRD drafts (`docs/brd/BRD-draft-{slug}.md`, renamed to `BRD-{key}.md`) and SRS drafts (`docs/srs/SRS-draft-{slug}.md`, renamed to `SRS-{key}.md`). It does **NOT** create tickets, branches, or PLAN files (that is `ticketing-skill` for tickets; `worktree-pipeline-skill` for branches/PLANs), and it does **NOT** author customer-facing documents (that is `discovery-specialist-subagent`).
 
 > **Document ladder position:** **Vision** (customer-facing, `discovery-specialist-subagent`) → **BRD** (sponsor/stakeholder scope, this agent) → **SRS** (internal functional/technical scope, this agent). The BRD's Solution Requirements Summary feeds INTO the downstream SRS's detailed functional requirements.
 
@@ -241,7 +241,7 @@ If a referenced diagram/screenshot must be interpreted, **delegate to `image-ana
 
 - The draft remains at `docs/{brd|srs}/{BRD|SRS}-draft-{slug}.md` until a ticket is created
 - When `worktree-pipeline-skill` runs PLAN authoring (§6b), it auto-detects the draft (BRD and/or SRS), prompts the user to link it, renames it to `{BRD|SRS}-{ticket-key}.md`, and injects the document path into the PLAN header
-- This subagent does NOT create tickets or branches — that is `ticket-creation-skill` / `worktree-pipeline-skill`'s job
+- This subagent does NOT create tickets or branches — that is `ticketing-skill` / `worktree-pipeline-skill`'s job
 - This subagent does NOT execute implementation — it only creates the BRD/SRS document
 - For customer-facing discovery, use `discovery-specialist-subagent` instead
 
