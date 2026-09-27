@@ -94,18 +94,21 @@
 
 ### Phase 3: setup.sh Docker/LLM surgery
 
-- [ ] **3.1** Remove the LLM-container machinery — the FULL flag family, not just the two flagship flags (plan-review Issue 1 / GAP 1): `setup_local_llm` + `setup_vllm` functions (≈3185-3235), `ENABLE_LOCAL_LLM`/`ENABLE_VLLM` vars (≈366-367), flag parsing for `--enable-llm`/`--enable-vllm`/`--enable-local-llm`/`--local-llm`/`--vllm` (≈965-980), help-text block (≈631-641), `PLAN_STEPS` wiring rows (≈3831-3832), dispatch arms (≈4273-4274), `extras` array entries `local-llm`/`vllm` (≈4337), and the `.env` writer (≈3059-3146)
+- [x] **3.1** Remove the LLM-container machinery — the FULL flag family, not just the two flagship flags (plan-review Issue 1 / GAP 1): `setup_local_llm` + `setup_vllm` functions (≈3185-3235), `ENABLE_LOCAL_LLM`/`ENABLE_VLLM` vars (≈366-367), flag parsing for `--enable-llm`/`--enable-vllm`/`--enable-local-llm`/`--local-llm`/`--vllm` (≈965-980), help-text block (≈631-641), `PLAN_STEPS` wiring rows (≈3831-3832), dispatch arms (≈4273-4274), `extras` array entries `local-llm`/`vllm` (≈4337), and the `.env` writer (≈3059-3146)
     — **Why:** these install and start Docker containers via the deleted compose file; every arm of the family dies together or setup.sh rejects half-forwarded flags. Provider presets SURVIVE — `installer/provider-presets.json` `local-llm`/`vllm`/`ollama` entries and the `--provider` value lists at ≈608/≈925 are model-routing maps to user-hosted endpoints, not containers (GAP 1 ruling; `test_provider_pins.bats`/`test_provider_credentials.bats` stay green untouched).
     — **Done when:** `grep -nE 'setup_local_llm|setup_vllm|ENABLE_LOCAL_LLM|ENABLE_VLLM|enable-llm|enable-vllm|enable-local-llm|local-llm-up|docker compose|docker pull|nvidia-ctk' deploy/setup.sh` returns only the surviving `--provider` value-list hits at ≈608/≈925 (value tokens, not flags); `bash -n deploy/setup.sh` passes; `./deploy/setup.sh --help` renders without the LLM block.
     — **Consumers affected:** `deploy/setup.ps1` forwarding arms + `tests/test_help_parity.bats` pins (3.3, same phase); no end users (user-confirmed removal).
-- [ ] **3.2** Update the markitdown bump-ritual comment (≈2808): pin now lives in `deploy/setup.sh` only
+    — **Done:** full flag family removed (2 vars, help block, 4 flag cases, llm subcommand, 4 functions ~300 lines, PLAN_STEPS rows, dispatch loop, extras emptied); bash -n green; help renders LLM-free with provider value-lists surviving at :606/:910; files: deploy/setup.sh; fixes: none
+- [x] **3.2** Update the markitdown bump-ritual comment (≈2808): pin now lives in `deploy/setup.sh` only
     — **Why:** the ritual named `opencode_app/Dockerfile` as the second surface; one surface remains.
     — **Done when:** comment states the single-surface pin.
     — **Consumers affected:** `tests/test_help_parity.bats:24`.
-- [ ] **3.3** Update the coupled test + launcher surfaces for the removed flag family (plan-review Issue 1 / GAP 2): `tests/test_help_parity.bats` — reword the asserted markitdown ritual phrase (≈24) AND drop the four ps1-arm pins (≈86-89); `deploy/setup.ps1` — drop the four switch declarations (≈50-53) and four forward arms (≈135-138) for `--enable-local-llm`/`--enable-vllm`/`--local-llm`/`--vllm` (the `--provider local-llm` VALUE survives per GAP 1)
+    — **Done:** ritual comment now single-surface (setup.sh only); files: deploy/setup.sh; fixes: none
+- [x] **3.3** Update the coupled test + launcher surfaces for the removed flag family (plan-review Issue 1 / GAP 2): `tests/test_help_parity.bats` — reword the asserted markitdown ritual phrase (≈24) AND drop the four ps1-arm pins (≈86-89); `deploy/setup.ps1` — drop the four switch declarations (≈50-53) and four forward arms (≈135-138) for `--enable-local-llm`/`--enable-vllm`/`--local-llm`/`--vllm` (the `--provider local-llm` VALUE survives per GAP 1)
     — **Why:** the parity test greps the exact ritual sentence changed in 3.2 and pins the ps1 arms removed alongside 3.1; keeping the ps1 arms would forward dead flags into a setup.sh that now rejects them (broken Windows deploys).
     — **Done when:** `bats tests/test_help_parity.bats` passes; `grep -nE 'enable-local-llm|enable-vllm|local-llm( |$)|--vllm' deploy/setup.ps1` returns no flag-forwarding hits (provider value lists excluded).
     — **Consumers affected:** CI bats suite, Windows deploys.
+    — **Done:** ps1: 4 switches + 4 forward arms + 2 comment lists cleaned; parity test: ritual phrase reworded + 4 ps1 pins dropped; files: deploy/setup.ps1, tests/test_help_parity.bats; fixes: 1 — ritual phrase crossed a line break, rewrapped comment so the asserted phrase is contiguous (bats red→green)
 
 ### Phase 4: resolve-models dead flag
 
@@ -184,3 +187,4 @@ None — single executable ticket, no `blocked-by`.
 
 GATE 48ea788 tier=light lint=n.a typecheck=n.a build=n.a unit=t(84/84 affected bats) e2e=n.a
 GATE e847380 tier=light lint=n.a typecheck=n.a build=n.a unit=t(22/22 affected bats; no orphan refs) e2e=n.a
+GATE aff8c4f tier=light lint=n.a typecheck=n.a build=n.a unit=t(help-parity+ps1-vars+select-items 0 fails) e2e=n.a
