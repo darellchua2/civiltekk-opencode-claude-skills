@@ -238,22 +238,26 @@ Consumers: agents/code-review-subagent.md (review), agents/architecture-review-s
 ### Phase 9: civiltekk-api-spec-skill
 Absorbs: `api-design-skill` + `openapi-contract-adherence-skill`. references/: `design.md`, `adherence.md`. Routes: author spec | diff/review contract. §Authoring Quality Gate stays in host method (it is the method).
 Consumers: agents/technical-design-specialist-subagent.md, deploy/skill-profiles.json, deploy/opencode.json (pair's allow rules), deploy/.AGENTS.md (skill-not-subagent exception names api-design-skill → cite new name; semantics unchanged), presets pack-business + pack-backend, tests/test_default_behavior.bats + test_autoresearch_protocol.bats, **lockstep pair (BLOCK-3): `installer/init.mjs:1826` usage example string ↔ `tests/test_help_parity.bats:36` grep -F pin — rename rides BOTH in this commit**, installer/templates/api-quality/README.md:4 (shipped template cites the api-design gate), README.md.
-- [ ] **9.1** Author host + references per template
+- [x] **9.1** Author host + references per template
     — **Why:** same artifact (OpenAPI spec), two lifecycle ops (author vs adherence-diff)
     — **Done when:** template satisfied; triggers intact; isolation green
     — **Consumers affected:** technical-design-specialist
-- [ ] **9.2** Delete + repoint (specialist agent, skill-profiles, deploy/.AGENTS.md exception line, presets, 3 bats literal sets, README)
+    — **Done:** routes author|adherence; Authoring Quality Gate method in host; 2 fellow-skills repointed (authn-authz, technical-design-creation); files: skills/civiltekk-api-spec-skill/{SKILL.md,references/design.md,references/adherence.md}; fixes: none
+- [x] **9.2** Delete + repoint (specialist agent, skill-profiles, deploy/.AGENTS.md exception line, presets, 3 bats literal sets, README)
     — **Why:** user-level config ships the exception name; bats pin both names
     — **Done when:** residue clean; affected bats green
     — **Consumers affected:** primary sessions (user AGENTS.md), CI, specialist
-- [ ] **9.3** Registry + scoped gate + count (139)
+    — **Done:** 2 dirs git-rm; 16 files repointed: init.mjs:1826 + help-parity pin (lockstep pair, both edited), api-quality template, deploy/.AGENTS.md:9 exception line, specialist agent allowlist, skill-profiles lean 70->69 + six literals, opencode.json, 2 presets, 2 bats literal sets, README 140->139 (+fixed stale 142 header drift from phase 7), setup.sh; residue exempt-only; fixes: none
+- [x] **9.3** Registry + scoped gate + count (139)
     — **Why:** per-commit green
     — **Done when:** count 139
     — **Consumers affected:** installer
-- [ ] **9.4** Commit + push
+    — **Done:** registry rebuilt (skills=139); scoped gate green incl. help-parity lockstep; count 139; fixes: none
+- [x] **9.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 10: civiltekk-react-quality-skill
 Absorbs: `react-best-practices-skill` (already has references/ — move tree in) + `react-hooks-antipatterns-skill` + `react-render-antipatterns-skill` + `typescript-dry-principle-skill`. references/: existing best-practices tree + `hooks.md`, `render.md`, `dry.md`. Routes: perf | hooks-antipatterns | render-antipatterns | TS-DRY.
@@ -340,3 +344,4 @@ GATE 9d8174a tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 4f1ca75 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE e1174fd tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 15dbf7e tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE eeeccb4 tier=light lint=- typecheck=- build=- unit=t e2e=n.a

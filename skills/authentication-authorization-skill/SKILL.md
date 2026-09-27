@@ -16,7 +16,7 @@ Implement authn/authz: OAuth2/OIDC flows, JWT lifecycle, sessions, RBAC/ABAC, fr
 
 Login/signup flows, OAuth social login, RBAC design, JWT management, NextAuth/Passport integration, API auth middleware, CSRF hardening, MFA.
 
-**Related:** `security-audit-skill` (auditing/detection) · `api-design-skill` (endpoint design) · `nextjs-standard-setup-skill` (scaffolding incl. auth).
+**Related:** `security-audit-skill` (auditing/detection) · `civiltekk-api-spec-skill` `author` route (endpoint design) · `nextjs-standard-setup-skill` (scaffolding incl. auth).
 
 ## House patterns
 

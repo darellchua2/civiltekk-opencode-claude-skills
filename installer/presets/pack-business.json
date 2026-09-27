@@ -10,8 +10,8 @@
     "technical-design-specialist-subagent"
   ],
   "skills": [
-    "api-design-skill",
     "brd-creation-skill",
+    "civiltekk-api-spec-skill",
     "civiltekk-context-optimization-skill",
     "civiltekk-startup-docs-skill",
     "clean-architecture-skill",
@@ -26,7 +26,6 @@
     "markitdown-mcp-skill",
     "office-thumbnail-skill",
     "ooxml-editing-skill",
-    "openapi-contract-adherence-skill",
     "pptx-generate-slide-skill",
     "pptx-generate-template-skill",
     "pptx-template-modifier-skill",

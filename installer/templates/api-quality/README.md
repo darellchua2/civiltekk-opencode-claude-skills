@@ -1,7 +1,7 @@
 # API Authoring Quality Gate (opt-in template)
 
 Deterministic enforcement for OpenAPI spec quality — the **hard net** behind the soft
-prompt-level gate (#319: `api-design-skill` §Authoring Quality Gate + deploy `AGENTS.md`
+prompt-level gate (#319: `civiltekk-api-spec-skill` §Authoring Quality Gate + deploy `AGENTS.md`
 routing). LLMs can drift past prompts; a pre-commit hook cannot be drifted past.
 
 Filed as #320. Ships as a copy-adopt template — this repo is a configurator, not an app repo.

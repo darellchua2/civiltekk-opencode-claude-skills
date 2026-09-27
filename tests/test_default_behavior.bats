@@ -483,20 +483,20 @@ extract_section_range() {
   [ "$in_section" -eq "$total" ]
 }
 
-# --- api-design ---
-@test "default_behavior_api-design_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/api-design-skill/SKILL.md"
+# --- civiltekk-api-spec ---
+@test "default_behavior_civiltekk-api-spec_has_imperative_gating_preamble" {
+  skill_md="$SKILLS_DIR/civiltekk-api-spec-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'DO NOT execute any of the following unless' "$skill_md"
 }
-@test "default_behavior_api-design_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/api-design-skill/SKILL.md"
+@test "default_behavior_civiltekk-api-spec_preamble_appears_exactly_once" {
+  skill_md="$SKILLS_DIR/civiltekk-api-spec-skill/SKILL.md"
   [ -f "$skill_md" ]
   count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
   [ "$count" -eq 1 ]
 }
-@test "default_behavior_api-design_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/api-design-skill/SKILL.md"
+@test "default_behavior_civiltekk-api-spec_evaluator_token_in_section_only" {
+  skill_md="$SKILLS_DIR/civiltekk-api-spec-skill/SKILL.md"
   [ -f "$skill_md" ]
   range=$(extract_section_range "$skill_md")
   start=$(echo "$range" | awk '{print $1}')

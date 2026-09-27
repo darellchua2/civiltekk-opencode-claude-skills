@@ -3,9 +3,9 @@
   "lean": [
     "accessibility-a11y-skill",
     "agent-introspection-debugging-skill",
-    "api-design-skill",
     "authentication-authorization-skill",
     "blast-radius-skill",
+    "civiltekk-api-spec-skill",
     "civiltekk-context-optimization-skill",
     "civiltekk-diagram-skill",
     "civiltekk-documentation-sync-skill",
@@ -42,7 +42,6 @@
     "markitdown-mcp-skill",
     "mcp-install-assistant-skill",
     "object-design-skill",
-    "openapi-contract-adherence-skill",
     "opencode-repo-setup-skill",
     "opencode-skills-maintainer-skill",
     "opencode-v2-migration-skill",

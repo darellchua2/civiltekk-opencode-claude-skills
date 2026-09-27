@@ -1,21 +1,13 @@
----
-name: openapi-contract-adherence-skill
-description: >-
-  Detect OpenAPI contract changes, classify breaking vs additive, map consumer
-  impact, generate migration plans (oasdiff). Triggers: openapi diff, api
-  contract, breaking change, contract review, spec changed, regenerate client.
-license: Apache-2.0
-compatibility: opencode
-category: Framework
----
+# Adherence route (values)
 
-## What I do
+Diff OpenAPI specs (`oasdiff`), classify every change
+Breaking/Additive/Cosmetic with semver impact and consumer action, emit
+`CONTRACT_DIFF.{md,json}` + a migration plan.
 
-Diff OpenAPI specs (`oasdiff`), classify every change Breaking/Additive/Cosmetic with semver impact and consumer action, emit `CONTRACT_DIFF.{md,json}` + a migration plan.
+## When
 
-## When to use me
-
-Spec changed in a PR; consumer-impact review; before publishing a new API version; regenerating SDK clients.
+Spec changed in a PR; consumer-impact review; before publishing a new API
+version; regenerating SDK clients.
 
 **Tools:** `oasdiff` (primary; Docker fallback `tufin/oasdiff:stable`); linters `redocly lint` / `spectral lint`; generators per client language.
 
@@ -26,7 +18,7 @@ Spec changed in a PR; consumer-impact review; before publishing a new API versio
 3. **Diff — three oasdiff invocations** (intermediates, gitignored via `.oasdiff-*`):
    `oasdiff changelog base.yaml revision.yaml --format markdown > .oasdiff-changelog.md` (human) · `--format json > .oasdiff-changelog.json` (feeds summary counts) · `oasdiff breaking base.yaml revision.yaml --format json > .oasdiff-breaking.json` (feeds `breakingChanges[]`).
 4. **Classify** with the matrix below; **semverBump rollup**: any Breaking → major; else any Additive → minor; else Cosmetic → patch; else none.
-5. **Map consumers**: grep call sites for each changed operation/path (`rg '"/users' --type ts -l` etc.); each hit gets the consumer action.
+5. **Map consumers**: grep call sites for each changed operation/path (`rg '"/users" --type ts -l` etc.); each hit gets the consumer action.
 6. **Emit** `CONTRACT_DIFF.md` (changelog + impact) and `CONTRACT_DIFF.json` (`{summary: {breaking, nonBreaking, cosmetic, semverBump}, breakingChanges: [...], consumerImpact: [...]}`) + a migration plan section per breaking change. Intermediates never committed.
 
 ## Classification matrix (authoritative)
@@ -45,4 +37,4 @@ Spec changed in a PR; consumer-impact review; before publishing a new API versio
 | New operation / additive response field | Additive | Minor | optional adoption |
 | Description/title/summary updated | Cosmetic | Patch | none |
 
-**Related:** `api-design-skill` §Authoring Quality Gate (write-time rules; this skill is the review-time counterpart).
+The write-time counterpart is the host's §Authoring Quality Gate (`author` route).

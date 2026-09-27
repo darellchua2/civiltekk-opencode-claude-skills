@@ -44,7 +44,7 @@ The TDD is **for engineers, architects, and tech leads** — the people who will
 - **`srs-creation-skill`** — the upstream document; the SRS's functional requirements feed INTO the TDD
 - **`brd-creation-skill`** — upstream sponsor-level doc; its Solution Requirements Summary informs the TDD scope
 - **`interactive-document-rendering-skill`** — shared HTML + DOCX rendering standard (snapshot HTML for TDD)
-- **`api-design-skill`** — referenced for detailed OpenAPI/REST patterns in the API Surface section
+- **`civiltekk-api-spec-skill`** (`author` route) — referenced for detailed OpenAPI/REST patterns in the API Surface section
 - **`domain-modeling-skill`** — sharpens domain terminology for the Data Model section
 
 ---
@@ -190,7 +190,7 @@ erDiagram
 
 ## Part 4. API Surface
 
-> REST/GraphQL endpoints, event contracts, and internal APIs. Reference `api-design-skill` for detailed OpenAPI patterns and `openapi-contract-adherence-skill` for contract review.
+> REST/GraphQL endpoints, event contracts, and internal APIs. Reference `civiltekk-api-spec-skill` (`author` route) for detailed OpenAPI patterns and its `adherence` route for contract review.
 
 ### 4.1 HTTP/GraphQL Endpoints
 
@@ -203,7 +203,7 @@ erDiagram
 - **Errors**: 400 (validation), 401 (auth), 409 (duplicate)
 - **Idempotency**: {key required?}
 
-> Full OpenAPI spec: see `api-design-skill`. Breaking changes must pass `openapi-contract-adherence-skill`.
+> Full OpenAPI spec: see `civiltekk-api-spec-skill` (`author` route). Breaking changes must pass its `adherence` route.
 ```
 
 ### 4.2 Event Contracts (async)

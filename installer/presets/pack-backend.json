@@ -6,8 +6,8 @@
     "language-reviewer-subagent"
   ],
   "skills": [
-    "api-design-skill",
     "authentication-authorization-skill",
+    "civiltekk-api-spec-skill",
     "civiltekk-python-backend-skill",
     "clean-code-skill",
     "code-smells-skill",
@@ -16,7 +16,6 @@
     "design-patterns-skill",
     "docker-containerization-skill",
     "logging-observability-skill",
-    "openapi-contract-adherence-skill",
     "performance-optimization-skill",
     "search-first-skill",
     "security-audit-skill",

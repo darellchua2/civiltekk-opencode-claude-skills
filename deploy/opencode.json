@@ -72,7 +72,7 @@
         },
         {
             "action": "skill",
-            "resource": "openapi-contract-adherence-skill",
+            "resource": "civiltekk-api-spec-skill",
             "effect": "allow"
         },
         {
@@ -313,11 +313,6 @@
         {
             "action": "skill",
             "resource": "civiltekk-diagram-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "api-design-skill",
             "effect": "allow"
         },
         {
