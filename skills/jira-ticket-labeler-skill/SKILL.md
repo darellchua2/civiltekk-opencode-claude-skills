@@ -32,7 +32,7 @@ Use this when:
   - Fallback: classification/label-mapping is analytical and can proceed without MCP; only ticket creation/reads (`atlassian_createJiraIssue`, `atlassian_getJiraIssue`) need the server or the REST fallback (`curl -u email:token`).
   - Otherwise: return the classification and report creation as skipped.
 - JIRA project access with create/edit permissions
-- Valid JIRA project key (e.g., "IBIS", "PROJ")
+- Valid JIRA project key (e.g., "ABC", "PROJ")
 
 ## Why a Separate Skill from git-issue-labeler
 

@@ -33,22 +33,26 @@
 
 ### Phase 1: Tier 1 — neutralize the IBIS origin key in convention owners
 
-- [ ] **1.1** Swap every `IBIS-123`/`IBIS` occurrence in `skills/jira-status-updater-skill/SKILL.md` to `ABC-123`/`ABC`
+- [x] **1.1** Swap every `IBIS-123`/`IBIS` occurrence in `skills/jira-status-updater-skill/SKILL.md` to `ABC-123`/`ABC`
     — **Why:** Convention owners keep one concrete format example; the placeholder must not be a real past-project key.
     — **Done when:** `grep -c IBIS skills/jira-status-updater-skill/SKILL.md` returns 0 and an `ABC-123` example exists.
     — **Consumers affected:** readers of the branch/footer detection example only.
-- [ ] **1.2** Swap every `IBIS-123`/`IBIS` occurrence in `skills/jira-git-integration-skill/SKILL.md` to `ABC-123`/`ABC`
+    — **Done:** 2 swaps (branch example, footer example); files: skills/jira-status-updater-skill/SKILL.md; fixes: none
+- [x] **1.2** Swap every `IBIS-123`/`IBIS` occurrence in `skills/jira-git-integration-skill/SKILL.md` to `ABC-123`/`ABC`
     — **Why:** Same convention-owner rule; this file is the branch-naming home other skills pin to.
     — **Done when:** grep count 0; example reads `feature/ABC-123-short-slug`.
     — **Consumers affected:** all skills pinning to §Branch Naming.
-- [ ] **1.3** Swap `"IBIS"` in `skills/jira-ticket-labeler-skill/SKILL.md` project-key example to `"ABC"`
+    — **Done:** 3 swaps (branch slug, Refs footer, Closes footer); files: skills/jira-git-integration-skill/SKILL.md; fixes: none
+- [x] **1.3** Swap `"IBIS"` in `skills/jira-ticket-labeler-skill/SKILL.md` project-key example to `"ABC"`
     — **Why:** Removes origin proper noun from the project-key example list.
     — **Done when:** grep count 0 for that file.
     — **Consumers affected:** none (illustrative list).
-- [ ] **1.4** Swap `IBIS` in `skills/ticket-creation-skill/SKILL.md` project-selection example to `ABC`
+    — **Done:** 1 swap (prerequisites key example); files: skills/jira-ticket-labeler-skill/SKILL.md; fixes: none
+- [x] **1.4** Swap `IBIS` in `skills/ticket-creation-skill/SKILL.md` project-selection example to `ABC`
     — **Why:** Same rule; keeps the "select project by key" comment neutral.
     — **Done when:** grep count 0 for that file.
     — **Consumers affected:** none (comment example).
+    — **Done:** 1 swap (project-selection comment); files: skills/ticket-creation-skill/SKILL.md; fixes: none
 
 ### Phase 2: Tier 1 — generic skills: drop quoted JIRA examples, pin conventions
 
