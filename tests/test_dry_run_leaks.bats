@@ -54,6 +54,6 @@ SETUP_PS1="deploy/setup.ps1"
   # rows) — its invocation must carry $dry_arg fed by the pinned
   # explicit-comparison assignment, never the banned ${DRY_RUN:+…} spelling.
   grep -q 'init.mjs" update --prune $provider_arg $dry_arg' "$SETUP_SH"
-  run grep -Fc '${DRY_RUN:+--dry-run}' "$SETUP_SH"
-  [ "$output" -eq 0 ]
+  run grep -qF '${DRY_RUN:+--dry-run}' "$SETUP_SH"
+  [ "$status" -ne 0 ]
 }

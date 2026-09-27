@@ -83,21 +83,28 @@ print(f'{len(agents)} agents / {len(skills)} skills, hashes well-formed')
   planted="${HOME}/.config/opencode/agents/office-document-primary-agent.md"
   mkdir -p "$(dirname "$planted")"
   printf -- '---\ndescription: planted stale agent\n---\nstale\n' > "$planted"
+  planted_skill="${HOME}/.config/opencode/skills/gone-skill"
+  mkdir -p "$planted_skill"
+  printf -- '---\nname: gone-skill\ndescription: planted stale skill\n---\n' > "${planted_skill}/SKILL.md"
   python3 - "$MANIFEST" <<'PYEOF'
 import json, sys, hashlib
 p = sys.argv[1]
 m = json.load(open(p))
 h = "sha256:" + hashlib.sha256(b"stale").hexdigest()
 m["entries"]["office-document-primary-agent"] = {"type": "agent", "targets": {"opencode": h}}
+m["entries"]["gone-skill"] = {"type": "skill", "targets": {"opencode": h}}
 json.dump(m, open(p, "w"))
 PYEOF
 
   run $INIT update --prune
   [ "$status" -eq 0 ]
 
-  # planted agent: file and manifest row gone...
+  # planted agent + skill: files and manifest rows gone...
   [ ! -f "$planted" ]
+  [ ! -d "$planted_skill" ]
   run grep -q 'office-document-primary-agent' "$MANIFEST"
+  [ "$status" -eq 1 ]
+  run grep -q 'gone-skill' "$MANIFEST"
   [ "$status" -eq 1 ]
   # ...while a live registry agent survives untouched
   [ -f "${HOME}/.config/opencode/agents/code-review-subagent.md" ]
@@ -106,4 +113,8 @@ PYEOF
   # Wiring pin: deploy_content() must invoke the convergence pass — removing
   # the call from setup.sh fails here too, not just in semantics-land.
   grep -q 'init.mjs" update --prune $provider_arg $dry_arg' "$SETUP_SH"
+  # Non-fatal shape pin (AC3, review NOTE): a failing update must
+  # warn-and-continue with its exit code — never abort the deploy.
+  grep -qF 'local prune_rc=$?' "$SETUP_SH"
+  grep -qF 'prune pass failed (exit' "$SETUP_SH"
 }

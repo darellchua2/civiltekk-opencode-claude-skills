@@ -3323,11 +3323,18 @@ deploy_content() {
     # refuses --prune on add), so manifest-tracked entries whose names left
     # installer/registry.json linger forever without this pass. `update
     # --prune` removes exactly those (files + manifest rows) across recorded
-    # targets. Non-fatal by design: a pre-#379 manifest-less install makes
-    # `update` exit 2 with its adoption hint — warn and continue, per the
-    # #379 contract.
-    if ! node "${INSTALLER_DIR}/init.mjs" update --prune $provider_arg $dry_arg; then
+    # targets. Non-fatal on purpose, mirroring update_manifest's rc-capture
+    # idiom: exit 2 = pre-#379 manifest-less install (adoption hint); any
+    # other failure warns with its exit code and the deploy continues —
+    # reachability note: a successful `add` above writes the manifest, so
+    # exit 2 in a real run effectively means the dry-run arm or an add that
+    # half-failed; both deserve a warn, neither deserves a deploy abort.
+    node "${INSTALLER_DIR}/init.mjs" update --prune $provider_arg $dry_arg
+    local prune_rc=$?
+    if [ "$prune_rc" -eq 2 ]; then
         log_warn "prune pass skipped - pre-#379 installs: one full re-run adopts the manifest"
+    elif [ "$prune_rc" -ne 0 ]; then
+        log_warn "prune pass failed (exit ${prune_rc}) - registry-removed entries may linger until the next successful pass"
     fi
     log_success "Content deployed ($(count_agents "${REPO_DIR}/agents") agents / $(count_skills "${REPO_DIR}/skills") skills, manifest-tracked)"
     return 0
