@@ -2,7 +2,7 @@
 
 A personal software-development skills collection — the agents, skills, and pipeline tooling I use daily — shared so you can take **a single skill** or adopt **the whole stack**.
 
-- **142 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
+- **135 ready-to-load skills + 34 specialist subagents**, natively targeting **OpenCode v2**
 - **Same skills install to other harnesses**: Claude Code, Kimi Code, Kilo Code, and the cross-tool `~/.agents/` standard (Agent Skills open format)
 - A **robust application-development pipeline**: ticket → PLAN → gated execution → review → merged PR, driven by a handful of slash commands
 
@@ -73,7 +73,7 @@ Provider swap (Z.AI default): `./deploy/setup.sh --provider anthropic|openai|ope
 
 ### 3. Per-project subset — presets
 
-Not every project needs 34 agents + 142 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
+Not every project needs 34 agents + 135 skills. `opencode-init` installs a curated preset into `./.opencode/` (clean-slate isolation; additive over a global deploy — it warns):
 
 ```bash
 opencode-init --list categories                              # introspect (JSON)
@@ -98,7 +98,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills --project . --preset rev
 
 ```
 civiltekk-opencode-claude-skills/
-├── skills/                      # 142 skill directories (source of truth)
+├── skills/                      # 135 skill directories (source of truth)
 ├── agents/                      # 34 subagent .md files (source of truth)
 ├── plugins/                     # Local OpenCode plugins (vibeguard, ponytail, learnings, auto-continue, question-repair)
 │   └── vibeguard.config.json    # Secret-masking regex patterns
@@ -214,7 +214,7 @@ Globally: set `"disabled": false` in `~/.config/opencode/opencode.json`, or use 
 
 Default state of every pack is **OFF**. Design history: [issue #268](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/268).
 
-**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (72 primary-visible skills + deny-all); subagents are profile-immune and all 142 skills stay on disk:
+**Skill profiles** — deploy-time primary visibility (#333). Every allowed skill's `description` loads into the primary session at startup (~90 tokens each). Default deploy is **lean** (67 primary-visible skills + deny-all); subagents are profile-immune and all 135 skills stay on disk:
 
 ```bash
 ./deploy/setup.sh                     # default: lean

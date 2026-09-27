@@ -6,12 +6,12 @@
 
 ## Acceptance Criteria
 
-- [ ] 11 atomic commits `refactor(skills): consolidate X into Y`; counts green per commit
-- [ ] HANDOFF2_TARGETS + dependency-map requiresSkills for plan-execution-inline cite civiltekk-documentation-inline-skill
-- [ ] deploy/.AGENTS.md granularity + api-design exception lines cite civiltekk- names; repo AGENTS.md doc-sync row updated
-- [ ] docstring fold repoints done: documentation-subagent, nextjs-specialist-subagent, pack-docs.json, pack-frontend.json
-- [ ] registry.json rebuilt per merge; `bats tests/` green; LEARNINGS count-literal sweep clean
-- [ ] All member triggers preserved in host descriptions; skill count = 135 after this wave (150 − 15: 26 members → 11 hosts; AC amended from 136 per Mode R — 136 was the transient Phase-10 ladder value)
+- [x] 11 atomic commits `refactor(skills): consolidate X into Y`; counts green per commit
+- [x] HANDOFF2_TARGETS + dependency-map requiresSkills for plan-execution-inline cite civiltekk-documentation-inline-skill
+- [x] deploy/.AGENTS.md granularity + api-design exception lines cite civiltekk- names; repo AGENTS.md doc-sync row updated
+- [x] docstring fold repoints done: documentation-subagent, nextjs-specialist-subagent, pack-docs.json, pack-frontend.json
+- [x] registry.json rebuilt per merge; `bats tests/` green; LEARNINGS count-literal sweep clean
+- [x] All member triggers preserved in host descriptions; skill count = 135 after this wave (150 − 15: 26 members → 11 hosts; AC amended from 136 per Mode R — 136 was the transient Phase-10 ladder value)
 
 ## Pattern template (every host follows — ticketing-skill shape)
 
@@ -120,14 +120,16 @@ Consumers: agents/autoresearch-{code,ml,research}-subagent.md (strategic-compact
 ### Phase 4: civiltekk-documentation-sync-skill
 Absorbs: `documentation-sync-workflow-skill` + `documentation-consistency-skill`. references/: `sync-on-add.md`, `drift-audit.md`. Routes: on-add sync | drift audit/fix.
 Consumers: agents/repo-ops-specialist-subagent.md, agents/opencode-tooling-subagent.md, agents/opencode-v2-migration-subagent.md, deploy/skill-profiles.json, deploy/opencode.json (both members' allow rules), presets pack-devops (both), tests/test_default_behavior.bats + test_autoresearch_protocol.bats (consistency literals), README.md (incl. category-table rows — host lands in **OpenCode Meta**, per Mode R; remove the Documentation-row member entry), repo `AGENTS.md` (sync-rules row names documentation-sync-workflow).
-- [ ] **4.1** Author host + references per template
+- [x] **4.1** Author host + references per template
     — **Why:** same object (docs counts/drift), two situations (adding vs auditing)
     — **Done when:** template satisfied; triggers intact; isolation green
     — **Consumers affected:** repo-ops, tooling agents
-- [ ] **4.2** Delete + repoint (3 agents, skill-profiles, presets, 2 bats literal sets, README, AGENTS.md row)
+    — **Done:** routes sync-on-add|drift-audit, 519-char union description, category OpenCode Meta (Mode R), bats-pinned literals carried once; files: skills/civiltekk-documentation-sync-skill/{SKILL.md,references/sync-on-add.md,references/drift-audit.md}; fixes: none (tick was missed by a scripting slip — work landed in commit 9d8174a)
+- [x] **4.2** Delete + repoint (3 agents, skill-profiles, presets, 2 bats literal sets, README, AGENTS.md row)
     — **Why:** bats pin member names — literals must move with the merge
     — **Done when:** residue clean; test_default_behavior + test_autoresearch_protocol green
     — **Consumers affected:** CI, agents
+    — **Done:** 2 dirs git-rm; 15 files repointed: skill-profiles (75->74 + literals), opencode.json, 3 agents, pack-devops, 2 bats literal sets, README, repo AGENTS.md:69, setup.sh, 3 fellow-skills; residue exempt-only; fixes: none
 - [x] **4.3** Registry + scoped gate + count (146)
     — **Why:** per-commit green
     — **Done when:** count 146; affected bats green
@@ -309,17 +311,20 @@ Consumers: agents/documentation-subagent.md + agents/nextjs-specialist-subagent.
     — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 12: Exit — full suite, final counts, sweep
-- [ ] **12.1** Full gate: `bats tests/` (exit 0, zero `not ok`); registry diff committed clean; LEARNINGS count-literal sweep across tests/ deploy/ README.md
+- [x] **12.1** Full gate: `bats tests/` (exit 0, zero `not ok`); registry diff committed clean; LEARNINGS count-literal sweep across tests/ deploy/ README.md
     — **Why:** ticket exit gate is tier=full unconditionally
     — **Done when:** suite exit=0; sweep grep clean; `GATE <sha> tier=full` memo appended to Trace
+    — **Done:** full suite green after 3 fix rounds: init.bats pins (code-review-subagent skills 17->15, review preset 31->26) + README stale literals (:5,:76,:101,:217 -> 135/67; first sed batch aborted on a bad address label, caught on re-verify); LEARNINGS sweep clean; fixes: init.bats x2, README x4
     — **Consumers affected:** PR citation, reviewer
-- [ ] **12.2** Verify ticket ACs end-to-end (11 commits on branch, HANDOFF2 cites new name, deploy/.AGENTS.md lines, docstring repoints, triggers preserved, final count)
+- [x] **12.2** Verify ticket ACs end-to-end (11 commits on branch, HANDOFF2 cites new name, deploy/.AGENTS.md lines, docstring repoints, triggers preserved, final count)
     — **Why:** AC reconciliation before review
     — **Done when:** every AC checkbox tickable with evidence; tick them
+    — **Done:** ACs verified: 11 merge commits on branch; HANDOFF2+map cite new name; deploy/.AGENTS.md 2 civiltekk lines; docstring repoints (3 agents, 3 presets); registry committed per merge; count 135 = amended AC; triggers preserved per phase Done lines
     — **Consumers affected:** reviewer, PR
-- [ ] **12.3** Commit PLAN ticks + memo; push
+- [x] **12.3** Commit PLAN ticks + memo; push
     — **Why:** traceability; final SHA carries tier=full memo
     — **Done when:** pushed; `[goal:evidence]` emitted
+    — **Done:** committed + pushed; final SHA carries tier=full memo; [goal:evidence] ready
     — **Consumers affected:** pipeline Step 9/10
 
 ## Technical Notes
@@ -355,3 +360,4 @@ GATE 15dbf7e tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE eeeccb4 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 18c988c tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 41ef666 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 1d22cbf tier=full lint=- typecheck=- build=- unit=t e2e=n.a
