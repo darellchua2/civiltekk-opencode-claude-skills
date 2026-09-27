@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.54.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.53.1...v9.54.0) (2026-09-27)
+
+### Features
+
+* **skills:** plan-execution-inline-skill + inline-family de-branding + two-handoff guard redesign ([#597](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/597)) ([#598](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/598)) ([60e8d76](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/60e8d7644cf4e4c333b92a3783f72ab7a943d15d))
+
+### Documentation
+
+* **skills:** drop IBIS origin key, pin JIRA conventions to owner skills ([#596](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/596)) ([b2fbaa7](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/b2fbaa795e9c2c38a79bbdcd8cdd77ac6b42fe99)), closes [#595](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/595) [#595](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/595)
+
 ## [9.53.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.53.0...v9.53.1) (2026-09-26)
 
 ### Bug Fixes
