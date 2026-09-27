@@ -23,6 +23,7 @@
 //   opencode-init --project . --agents code-review-subagent --mcps codegraph --yes
 //   opencode-init ... --dry-run        # print manifest, write nothing
 //   opencode-init ... --prune          # remove previously-installed entries not in the new set
+//   opencode-init prune [--dry-run]    # remove manifest-tracked entries whose names left the registry (#610)
 //
 // Config merge semantics (verified, opencode 1.18.11): project .opencode/opencode.json
 // is read and has HIGHER precedence than <project>/opencode.json; it MERGES with the
@@ -1626,9 +1627,52 @@ async function cmdUpdate(args, opts) {
   await checkStrictAllowlist(sel, opts);
 }
 
+// Prune manifest-tracked entries whose names are no longer in registry.json
+// (#610): the surgical convergence arm for --select deploys. Unlike
+// `update --prune` (set-replace against the full catalog — pruning would
+// remove live-but-unselected entries), this predicate is registry-removed
+// ONLY: live-but-unselected entries always survive, and no re-copy arm runs.
+// Honors --dry-run (report-only, no mutation).
+async function cmdPrune(args, opts) {
+  const dry = !!opts.dryRun;
+  const prev = await readJsonMaybe(USER_MANIFEST);
+  if (!prev) { console.log("(no user-scope manifest — nothing to prune)"); return; }
+  const reg = await loadRegistry();
+  const entries = { ...(prev.entries || {}) };
+  const regAgentStems = new Set(reg.agents.map((a) => a.stem));
+  const regSkillNames = new Set(reg.skills.map((s) => s.name));
+  const report = [], pruned = [];
+  for (const [name, ent] of Object.entries(entries)) {
+    const inRegistry = ent.type === "agent" ? regAgentStems.has(name) : regSkillNames.has(name);
+    if (inRegistry) continue;
+    report.push(name);
+    if (dry) continue;
+    for (const t of Object.keys(ent.targets)) {
+      const cfg = TARGETS[t];
+      if (!cfg) { console.error(`warning: pruning '${name}': unknown install target '${t}' — its files (if any) were left in place`); continue; }
+      const p = ent.type === "agent"
+        ? (cfg.agentsDir ? join(cfg.agentsDir, `${name}.md`) : null)
+        : (cfg.skillsDir ? join(cfg.skillsDir, name) : null);
+      if (p && existsSync(p)) await rm(p, { recursive: true, force: true });
+    }
+    delete entries[name];
+    prev.agents = (prev.agents || []).filter((x) => x !== name);
+    prev.skills = (prev.skills || []).filter((x) => x !== name);
+    pruned.push(name);
+  }
+  if (dry) {
+    if (report.length) console.log(`registry-removed (present locally): ${report.join(", ")} — dry run: nothing removed`);
+    else console.log("(nothing to prune)");
+    return;
+  }
+  const manifest = { ...prev, entries, generatedAt: new Date().toISOString() };
+  await writeFile(USER_MANIFEST, JSON.stringify(manifest, null, 2) + "\n", "utf8");
+  if (pruned.length) console.log(`pruned ${pruned.length} registry-removed entries: ${pruned.join(", ")}`);
+  else console.log("(nothing to prune)");
+}
+
 // ─────────────────────────── main ───────────────────────────────────────
-async function main() {
-  const opts = parseArgs(process.argv.slice(2));
+async function main() {  const opts = parseArgs(process.argv.slice(2));
   if (opts.help) { printHelp(); return; }
   if (opts.global && opts.project)
     die("cannot combine --global with --project (user scope is already the default; drop -g)", 2);
@@ -1668,6 +1712,7 @@ async function main() {
   if (opts.rest[0] === "update") { await cmdUpdate(opts.rest.slice(1), opts); return; }
   if (opts.rest[0] === "remove") { await cmdRemove(opts.rest.slice(1), opts); return; }
   if (opts.rest[0] === "rm") { await cmdRemove(opts.rest.slice(1), opts); return; }
+  if (opts.rest[0] === "prune") { await cmdPrune(opts.rest.slice(1), opts); return; }
 
   // read modes
   if (opts.rest[0] === "list" || opts.rest[0] === "ls") {

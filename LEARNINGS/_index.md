@@ -1921,3 +1921,4 @@
 - **Scope**: project
 - **Summary**: setup.sh deploys from its own checkout, so a post-worktree-deploy refresh from main silently reverts user-space config; --yes does not flip the overwrite prompt and "✓ Copied" is a status display — verify parity at fix-push time (#613 review)
 - **Date**: 2026-09-27
+- bats-file-level-path-expansion-before-home-swap

@@ -389,7 +389,7 @@ npx github:darellchua2/civiltekk-opencode-claude-skills update          # re-cop
 npx github:darellchua2/civiltekk-opencode-claude-skills update --prune  # also remove registry-removed entries
 ```
 
-**Redeploy contract:** `setup.sh --yes` force-copies content; full and `--skills-only` redeploys also prune manifest-tracked entries removed from this repo (the `update --prune` arm); existing skills/agents snapshot to the backup dir's `content-backup/` first — restore via the rollback flow. `--select` deploys add only and never auto-prune; converge manually with `update --prune` (see #610).
+**Redeploy contract:** `setup.sh --yes` force-copies content; full and `--skills-only` redeploys also prune manifest-tracked entries removed from this repo (the `update --prune` arm); existing skills/agents snapshot to the backup dir's `content-backup/` first — restore via the rollback flow. `--select` deploys also converge: a `prune-registry-removed` step runs `init.mjs prune` after the selected groups land, removing entries whose names left this repo and reporting them in the deploy output (#610). Manual convergence for any scope remains `update --prune` (or `init.mjs prune` for the registry-removed-only predicate).
 
 Environment variable persistence: macOS/Linux writes shell rc; Windows uses `setx` / `$PROFILE` (Git Bash / PowerShell respectively).
 </details>
