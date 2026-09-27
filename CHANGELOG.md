@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [10.0.2](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v10.0.1...v10.0.2) (2026-09-27)
+
+### Bug Fixes
+
+* **installer:** declare autoresearch loop-to-core dependency edges ([#602](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/602)) ([#612](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/612)) ([0549005](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/0549005b669a1ac4e09ad9a1cf6c96a0a72349ff))
+
 ## [10.0.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v10.0.0...v10.0.1) (2026-09-27)
 
 ### Bug Fixes
