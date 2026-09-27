@@ -85,13 +85,14 @@ npx github:darellchua2/civiltekk-opencode-claude-skills --project . --preset rev
 | Preset | Use for |
 |--------|---------|
 | `core` | Minimal baseline (explorer + civiltekk-git-commits, continuous-learning, codegraph) |
-| `review` | Code quality gates (code/architecture/language reviewers + 31 skills) |
+| `review` | Code quality gates (code/architecture/language reviewers + 21 skills) |
 | `frontend` | Web frontend (Next.js/React/a11y + uiux-reviewer, responsive-audit) |
 | `backend` | Server / devops-lite (Python/DB/API/security + language-reviewer) |
 | `docs` | Document generation (documentation + coverage + office docs) |
 | `devops` | Git / infra / release (repo-ops + opentofu-explorer) |
 | `business` | BD / founder workflows (discovery → requirements → technical-design) |
 | `research` | Autonomous loops (autoresearch ml/code/research; ml needs GPU) |
+| `inline-workers` | Inline delegation family — `plan-execution-inline-skill` + the testing/linting/documentation/responsive-audit inline skills and their knowledge-skill closure; companion to `/run-plan-v2` and `/run-worktree-pipeline-v2` |
 | `cad` | CAD / robotics / hardware (cad-specialist + 15 CAD skills) |
 
 ## Directory structure
@@ -107,6 +108,8 @@ civiltekk-opencode-claude-skills/
 ├── tests/                       # bats test suite (guards counts, isolation, portability)
 ├── PLANS/                       # Execution plans per ticket (git-committed history)
 ├── LEARNINGS/                   # Knowledge-persistence skeleton (auto-provisioned in target projects)
+├── CHANGELOG.md                 # Release history (semantic-release generated)
+├── CONTRIBUTING.md              # Contribution guide (skill/agent authoring)
 ├── MIGRATION.md                 # v1.x → v2.0 migration guide
 └── THIRD_PARTY_LICENSES.md      # Vendored-skill attributions (MIT/Apache-2.0)
 ```
@@ -403,20 +406,32 @@ Two setup scripts: `setup.sh` (macOS/Linux/WSL/Git Bash — full feature set) an
 | `--quick` | `-Quick` | Copy config + skills only (skip dependency checks) |
 | `--skills-only` | `-SkillsOnly` | Deploy skills only (requires @opencode/cli installed) |
 | `--update` | `-Update` | Update OpenCode CLI to latest |
-| `--check-catalog` | — (bash only) | Warn if `installer/provider-models.json` drifted from models.dev; regenerate: `node deploy/regen-provider-models.mjs` |
+| `--check-catalog` | `-CheckCatalog` | Warn if `installer/provider-models.json` drifted from models.dev; regenerate: `node deploy/regen-provider-models.mjs` |
 | `--dry-run` | `-DryRun` | Preview all actions without changes |
 | `--yes` | `-Yes` | Auto-accept all prompts |
+| `-v, --verbose` | `-Verbose` | Enable detailed debug logging |
 | `--rollback [TARGET]` | `-RollbackTarget <T>` | Restore from a previous backup: `list`, `latest`, `TIMESTAMP`, or `VERSION`. Pre-rollback safety backup first |
 | `--no-zip-backup` | `-NoZipBackup` | Skip zip archive creation |
 | `--keep-backups <N>` | `-KeepBackups <N>` | Keep N most recent backups (default 5; 0 = all deleted; negative = keep all) |
 | `--provider <p>` | `-Provider <p>` | Swap provider (zai\|anthropic\|openai\|openrouter) |
-| `--mix` | — | Mix providers per tier |
+| `--preset <name>` | `-Preset <name>` | Restore a saved preset (models.json; deploy-plan.json only consumed together with `--select`) |
+| `--save-preset <name>` | `-SavePreset <name>` | Save models.json + deploy-plan.json as a named preset |
+| `--list-items` | `-ListItems` | Dump the deploy item catalog (skills/agents/…) |
+| `--select` | `-Select` | Pick deploy items interactively per item (emits a deploy plan) |
+| `-P, --peonping` | `-Peonping` | Install PeonPing sound notifications only |
+| `-A, --enable-auto-update` | `-EnableAutoUpdate` | (removed) accepted no-op — schedule updates externally, e.g. cron |
+| `-D, --disable-auto-update` | `-DisableAutoUpdate` | Disable automatic updates |
+| `-S, --schedule-update <s>` | `-ScheduleUpdate <s>` | Set update-check frequency: daily, weekly, monthly, manual (default) |
+| `-C, --check-update` | `-CheckUpdate` | Check for available updates without installing |
+| `--mix` | `-Mix` | Mix providers per tier |
 | `--models-only` | `-ModelsOnly` | Re-resolve models only |
-| `--migrate` | — | Run v1.x → v2.0 migration |
-| `--force` | — | Re-resolve, ignoring preserved hand-edits |
+| `--migrate` | `-Migrate` | Run v1.x → v2.0 migration |
+| `--force` | `-Force` | Re-resolve, ignoring preserved hand-edits |
 | `--enable-pack <p>` | `-EnablePack <p>` | Provider packs (see MCP section) |
 | `--skill-profile <p>` | `-SkillProfile <p>` | lean (default) \| full |
 | `--help` | `-Help` | Detailed help + examples |
+
+Subcommands (aliases over the flags): `install \| update \| rollback \| peonping \| plan \| check-catalog`
 
 **What setup does:** copies `deploy/.AGENTS.md` → `~/.config/opencode/AGENTS.md`; copies `skills/` and agents; copies `deploy/opencode.json` → `~/.config/opencode/opencode.json` (single source of truth — v2 reads only `opencode.json`/`opencode.jsonc`; a coexisting `opencode.jsonc` is parked as `.legacy-ignored`, never deleted); backs up before overwriting. Installed `opencode-setup` symlinks back to the clone it deployed from — edit files there, re-run here.
 </details>

@@ -90,7 +90,7 @@ After ANY frontmatter change: run `node installer/build-registry.mjs` and commit
 
 ### Portability contract
 
-Skills deploy to multiple harness targets (`--target claude|agents|kimi|kilo`) and OSes. Three rules; the portability guard test (#515) enforces rules 1–2, review enforces rule 3:
+Skills deploy to multiple harness targets (`--target claude|agents|kimi|kilo|zcode|copilot`) and OSes. Three rules; the portability guard test (#515) enforces rules 1–2, review enforces rule 3:
 
 1. **Capability-binding block** — a skill body that invokes a harness-specific runtime mechanism presents it as a capability with per-harness bindings plus a portable fallback (the agent self-selects its row; unknown harnesses fall through to the fallback):
 
