@@ -77,6 +77,9 @@ if (missing.length > 0) {
   console.error(
     `apply-skill-profile: lean keys not present in shipped skill allows (typo guard): ${missing.join(", ")}`
   );
+  console.error(
+    `Hint: the deployed config's skill allows are stale (skill renames land in deploy/opencode.json, not in an existing config you declined to overwrite). Re-run ./deploy/setup.sh and ACCEPT the config copy — models are re-resolved afterward; back up the old config first if you customized beyond models.`
+  );
   process.exit(1);
 }
 
