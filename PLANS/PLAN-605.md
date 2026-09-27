@@ -6,13 +6,13 @@
 
 ## Acceptance Criteria
 
-- [ ] Frontmatter description ≤50 words, trigger phrases preserved verbatim
-- [ ] Load-weight detector pass present with signature/mechanism/test/disposition, wired into workflow + decision tree
-- [ ] Doctrine revised: router carries contract; step mechanics may move behind load rules; gates/tolerances/schemas never leave
-- [ ] Output contract + verification gate cover the weight line, load-rule WHEN+WHAT, no-preload, README non-duplication
-- [ ] 4 new anti-patterns wired
-- [ ] `node installer/build-registry.mjs` re-run; `registry.json` committed (frontmatter changed)
-- [ ] `tests/test_skill_isolation.bats` green
+- [x] Frontmatter description ≤50 words, trigger phrases preserved verbatim
+- [x] Load-weight detector pass present with signature/mechanism/test/disposition, wired into workflow + decision tree
+- [x] Doctrine revised: router carries contract; step mechanics may move behind load rules; gates/tolerances/schemas never leave
+- [x] Output contract + verification gate cover the weight line, load-rule WHEN+WHAT, no-preload, README non-duplication
+- [x] 4 new anti-patterns wired
+- [x] `node installer/build-registry.mjs` re-run; `registry.json` committed (frontmatter changed)
+- [x] `tests/test_skill_isolation.bats` green
 
 ## Dependency & Consumer Map
 
@@ -68,14 +68,16 @@
 
 ### Phase 2: Regeneration + exit gate
 
-- [ ] **2.1** Run `node installer/build-registry.mjs`; inspect `git diff installer/registry.json` — expected delta confined to the skill-generalizer entry (description field); commit the regenerated file together with the Phase 1 edits
+- [x] **2.1** Run `node installer/build-registry.mjs`; inspect `git diff installer/registry.json` — expected delta confined to the skill-generalizer entry (description field); commit the regenerated file together with the Phase 1 edits
     — **Why:** AC 6; the frontmatter contract mandates registry rebuild after any frontmatter change; committing together keeps the entry and its source atomic.
     — **Done when:** registry diff confined to the `generatedAt` timestamp + the skill-generalizer entry's `description` value; any other hunk = stale registry (per Risks: still commit, explain in the commit body); both files in one commit; lockfile untouched.
     — **Consumers affected:** `installer/init.mjs`, deploy/setup.sh counts (unchanged — no skills added/removed).
-- [ ] **2.2** Full exit gate: `bats tests/test_skill_isolation.bats` green; `node installer/build-registry.mjs --check` green (CI release.yml:50 parity — normalizes `generatedAt`, proves committed registry ↔ frontmatter); scoped suite for count/frontmatter guards green (`tests/test_count_drift.bats` and any portability/frontmatter guard found via `ls tests | grep -iE "portab|frontmatter|skill"`); description self-check re-run (≤50 words, triggers, ≤1024 chars); append the `GATE <short-sha> tier=full` memo line to this PLAN's trace block
+    — **Done:** registry rebuilt and committed with Phase 1 (both files in one commit 868dbfc, per Done-when); committed diff vs origin/main = description ± pair only (2 non-generatedAt lines); lockfile untouched. Files: installer/registry.json. Fixes: none.
+- [x] **2.2** Full exit gate: `bats tests/test_skill_isolation.bats` green; `node installer/build-registry.mjs --check` green (CI release.yml:50 parity — normalizes `generatedAt`, proves committed registry ↔ frontmatter); scoped suite for count/frontmatter guards green (`tests/test_count_drift.bats` and any portability/frontmatter guard found via `ls tests | grep -iE "portab|frontmatter|skill"`); description self-check re-run (≤50 words, triggers, ≤1024 chars); append the `GATE <short-sha> tier=full` memo line to this PLAN's trace block
     — **Why:** AC 7 + the pipeline's exit-gate rule (last gate is full); this memo line is Step 10a's PR citation.
     — **Done when:** all listed checks exit 0; memo line present with the final tree SHA.
     — **Consumers affected:** PR creation citation (Step 10a).
+    — **Done:** exit gate full-tier green: bats 38/38 across 7 scoped suites (isolation, portability, count_drift, skills_only_parity, requires_skills, skill_profiles, mcp_count_consistency); build-registry --check = no drift; description self-check 49 words / 384 chars / 6 triggers; tier=full memo appended. Files: PLANS/PLAN-605.md. Fixes: none.
 
 ## AC coverage
 
@@ -100,3 +102,4 @@ None. Single-ticket run; no `blocked-by:`.
 ## Gate trace
 
 GATE 783a0a5 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 61f10cd tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
