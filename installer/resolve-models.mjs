@@ -6,8 +6,7 @@
 // default tier->model map, optional user/project tier maps and per-agent
 // overrides, then injects a concrete `model:` into each deployed agent .md
 // frontmatter and patches the deployed opencode.json (explore/general always;
-// top-level `model` only with --inject-primary, e.g. Docker — local deploys
-// ship no baked-in primary so the end user picks at runtime).
+// local deploys ship no baked-in primary so the end user picks at runtime).
 //
 // Zero external dependencies - Node built-ins only (fs, path, process).
 //
@@ -29,7 +28,7 @@
 //     [--config-src <opencode.json>] [--config-dest <deployed opencode.json>] \
 //     [--state <.resolved-models.json sidecar>] \
 //     [--provider <name> --presets <provider-presets.json>] \
-//     [--inject-primary] [--force] [--dry-run] [--preview-dir <path>] [--provider-models <file>] [--verbose] [--json]
+//     [--force] [--dry-run] [--preview-dir <path>] [--provider-models <file>] [--verbose] [--json]
 
 import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -47,9 +46,9 @@ function parseArgsCamel(argv) {
     overrides: null, projectOverrides: null,
     configSrc: null, configDest: null,
     state: null, provider: null, presets: null, providerModels: null,
-    force: false, dryRun: false, verbose: false, json: false, injectPrimary: false,
+    force: false, dryRun: false, verbose: false, json: false,
   };
-  const boolKeys = new Set(["force", "dryRun", "verbose", "json", "liftOnly", "injectPrimary"]);
+  const boolKeys = new Set(["force", "dryRun", "verbose", "json", "liftOnly"]);
   for (let i = 0; i < argv.length; i++) {
     let a = argv[i];
     if (!a.startsWith("--")) continue;
@@ -193,13 +192,12 @@ async function main() {
   }
   function effectivePrimary() {
     // Explicit choices (project/provider/user override) always win. The bare
-    // default (models.default.json `primary`) is only used when --inject-primary
-    // is passed (Docker build). Local deploys omit it so the deployed config
-    // ships no top-level `model` — the end user picks at runtime.
+    // default (models.default.json `primary`) is never injected — the
+    // deployed config ships no top-level `model`, the end user picks at
+    // runtime.
     return (projectMap && projectMap.primary)
       ?? (providerMap && providerMap.primary)
       ?? (userMap && userMap.primary)
-      ?? (O.injectPrimary ? (defaultMap && defaultMap.primary) : null)
       ?? null;
   }
   // Per-agent resolution: project override > global override > tier model
@@ -271,7 +269,7 @@ async function main() {
     rows.push({ stem, tier, model: preserved ? "(preserved)" : model, reason, action });
   }
 
-  // ── resolve config (explore/general always; primary only if --inject-primary or explicit override) ──
+  // ── resolve config (explore/general always; primary only on explicit override) ──
   const primary = effectivePrimary();
   const exploreModel = tierModel("fast");
   const generalModel = tierModel("reasoning");

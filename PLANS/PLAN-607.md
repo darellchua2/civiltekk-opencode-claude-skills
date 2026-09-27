@@ -112,14 +112,16 @@
 
 ### Phase 4: resolve-models dead flag
 
-- [ ] **4.1** Remove `--inject-primary` from `installer/resolve-models.mjs` (flag parse, usage line, comments ≈9/32/196-197/274)
+- [x] **4.1** Remove `--inject-primary` from `installer/resolve-models.mjs` (flag parse, usage line, comments ≈9/32/196-197/274)
     — **Why:** the Dockerfile was its only caller; post-removal it is unreachable dead code.
     — **Done when:** `node --check installer/resolve-models.mjs` passes; `grep -n 'inject-primary' installer/` empty.
     — **Consumers affected:** none (no live callers); `setup.sh` resolver call omits the flag already.
-- [ ] **4.2** Trim the `installer/models.default.json` `$comment` Docker-build sentence
+    — **Done:** flag removed from defaults/boolKeys/usage/header; effectivePrimary simplified; node --check green; dry-run resolver executes against deploy/opencode.json; files: installer/resolve-models.mjs; fixes: none
+- [x] **4.2** Trim the `installer/models.default.json` `$comment` Docker-build sentence
     — **Why:** comment describes the removed `--inject-primary` build path.
     — **Done when:** `node -e "JSON.parse(require('fs').readFileSync('installer/models.default.json'))"` parses; no `Docker build` mention.
     — **Consumers affected:** none (opaque comment).
+    — **Done:** $comment Docker-build sentence replaced with never-injected wording; JSON parses; files: installer/models.default.json; fixes: none
 
 ### Phase 5: Docs sweep
 
@@ -188,3 +190,4 @@ None — single executable ticket, no `blocked-by`.
 GATE 48ea788 tier=light lint=n.a typecheck=n.a build=n.a unit=t(84/84 affected bats) e2e=n.a
 GATE e847380 tier=light lint=n.a typecheck=n.a build=n.a unit=t(22/22 affected bats; no orphan refs) e2e=n.a
 GATE aff8c4f tier=light lint=n.a typecheck=n.a build=n.a unit=t(help-parity+ps1-vars+select-items 0 fails) e2e=n.a
+GATE f99dcb6 tier=light lint=n.a typecheck=n.a build=n.a unit=t(resolver dry-run smoke) e2e=n.a
