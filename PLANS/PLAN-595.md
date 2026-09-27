@@ -34,6 +34,7 @@
 GATE 45bd3b7 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — grep IBIS=0 x4 convention owners; ABC-123 examples present; bats test_skill_isolation 5/5 ok
 GATE bd0bca6 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — IBIS=0 in 4 Phase-2 files; pins resolve (plan-execution ×2, pr-creation ×1, mermaid ×1); pr-creation frontmatter byte-identical
 GATE 72284bb tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — atlassian_=0 in pipeline/pr-merge/wayfinder; ticket regex intact; pr-merge frontmatter untouched
+GATE 2ea94c1 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — permissions byte-identical (both agents); JIRA MCP call-sheet removed; guard paragraph verbatim
 
 ## Implementation Phases
 
@@ -116,10 +117,11 @@ GATE 72284bb tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — atla
 
 ### Phase 5: Tier 2 — dev-uat-promotion conditionalization
 
-- [ ] **5.1** In `skills/dev-uat-promotion-skill/SKILL.md`: reword identity lines (L15 "one JIRA Task per repo", L35 "promotion JIRA Tasks") to tracker-neutral ("one tracker task per repo — JIRA task or GitHub issue"); point the ticket-hygiene contract (L116 region) at `jira-git-integration-skill` conventions
+- [x] **5.1** In `skills/dev-uat-promotion-skill/SKILL.md`: reword identity lines (L15 "one JIRA Task per repo", L35 "promotion JIRA Tasks") to tracker-neutral ("one tracker task per repo — JIRA task or GitHub issue"); point the ticket-hygiene contract (L116 region) at `jira-git-integration-skill` conventions
     — **Why:** The promotion workflow works for both trackers; JIRA-specific mechanics stay in the owner.
     — **Done when:** identity lines contain no bare "JIRA Task" identity; hygiene section pins the owner.
     — **Consumers affected:** promotion runs (behavior unchanged); `worktree-pipeline-skill` ops-ticket path.
+    — **Done:** 4 edits (identity line, when-to-use line, hygiene item 6 + pin, conflict-rule comment → tracker); frontmatter untouched; files: skills/dev-uat-promotion-skill/SKILL.md; fixes: none
 
 ### Phase 6: Verification gates
 
