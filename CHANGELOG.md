@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [10.0.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v10.0.0...v10.0.1) (2026-09-27)
+
+### Bug Fixes
+
+* **deploy:** prune registry-removed entries on redeploy ([#608](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/608)) ([#611](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/611)) ([84cb483](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/84cb48301df9755bcec8fad1640d66089e57fb4d)), closes [#610](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/610) [Pre-#379](https://github.com/darellchua2/Pre-/issues/379) [#610](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/610) [pre-#379](https://github.com/darellchua2/pre-/issues/379)
+
 ## [10.0.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v9.55.0...v10.0.0) (2026-09-27)
 
 ### ⚠ BREAKING CHANGES
