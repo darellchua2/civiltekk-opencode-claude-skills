@@ -3519,6 +3519,7 @@ build_plan() {
             PLAN_STEPS+=("true|select-items|Select items to deploy|run_item_picker")
             PLAN_STEPS+=("true|deploy-selected-skills|Deploy selected skills|deploy_selected_skills")
             PLAN_STEPS+=("true|deploy-selected-agents|Deploy selected agents|deploy_selected_agents")
+            PLAN_STEPS+=("true|prune-registry-removed|Prune registry-removed entries|deploy_selected_prune")
             PLAN_STEPS+=("false|apply-selected-extras|Apply selected packs|apply_selected_packs_extras")
         else
             PLAN_STEPS+=("true|agents|Deploy agents|deploy_agents")
@@ -3936,6 +3937,17 @@ deploy_selected_skills() {
 
 deploy_selected_agents() {
     deploy_selected_group agents
+}
+
+deploy_selected_prune() {
+    # #610: converge the --select deploy with the registry — remove
+    # manifest-tracked entries whose names left installer/registry.json.
+    # Boolean-safe dry_args (see deploy_selected_group's nounset note).
+    local dry_args=""
+    if [ "$DRY_RUN" = true ]; then
+        dry_args="--dry-run"
+    fi
+    node "${INSTALLER_DIR}/init.mjs" prune $dry_args
 }
 
 apply_selected_packs_extras() {
