@@ -397,12 +397,7 @@
         },
         {
             "action": "skill",
-            "resource": "python-packaging-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "python-backend-skill",
+            "resource": "civiltekk-python-backend-skill",
             "effect": "allow"
         },
         {
@@ -438,11 +433,6 @@
         {
             "action": "skill",
             "resource": "changelog-python-cliff-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "fastapi-pydantic-orm-patterns-skill",
             "effect": "allow"
         },
         {

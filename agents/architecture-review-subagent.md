@@ -144,7 +144,7 @@ Run the gate defined in `reviewer-baseline-skill` §Mandatory Post-Review Learni
 
 Actively scan for these architecture-relevant patterns during review:
 
-- **Global singleton mutation** — `global _service` pattern hides coupling, no lifecycle management; prefer FastAPI `Depends()` with `app.state` (see `python-backend-skill` → Prefer DI Over Global Singletons)
+- **Global singleton mutation** — `global _service` pattern hides coupling, no lifecycle management; prefer FastAPI `Depends()` with `app.state` (see `civiltekk-python-backend-skill` scaffold route — Prefer DI Over Global Singletons)
 - **Claim-check pattern for secrets** — in workflow orchestrators, plaintext credentials must never touch durable history; use opaque UUID claim IDs with TTL cache + single-read `pop()` (see `security-audit-skill` A02 → claim-check-ephemeral-secret-cache)
 - **Atomic conditional UPDATE** — race-free state transitions via `UPDATE ... WHERE expected_state RETURNING cols` as optimistic lock; avoids read-then-write TOCTOU races (see `design-patterns-skill` → Concurrency Patterns)
 

@@ -36,7 +36,7 @@ Use this skill when:
 ## Related Skills
 
 - **performance-optimization-skill**: Handles runtime query profiling and optimization. This skill handles schema lifecycle. Index optimization can overlap — this skill handles index creation in migrations, performance skill handles query analysis.
-- **python-backend-skill**: FastAPI/Django/Flask project patterns that use these migration tools.
+- **civiltekk-python-backend-skill**: FastAPI/Django/Flask project patterns that use these migration tools (`scaffold` and `patterns` routes).
 - **docker-containerization-skill**: Database containers in compose configurations.
 
 ---
@@ -352,4 +352,4 @@ op.bulk_insert(
 )
 ```
 
-> **Cross-reference**: This pitfall is also documented in **python-backend-skill** Step 8.
+> **Cross-reference**: This pitfall is also documented in **civiltekk-python-backend-skill** (`scaffold` route).

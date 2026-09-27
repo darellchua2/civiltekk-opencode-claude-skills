@@ -1,22 +1,10 @@
----
-name: python-packaging-skill
-description: >-
-  Python packaging for apps and libraries — pyproject.toml, Poetry, uv,
-  setuptools, hatch, dependency management, PyPI publishing.
-license: Apache-2.0
-compatibility: opencode
-category: Language-Specific
----
+# Packaging route (values)
 
-## What I do
+Configure Python packaging for applications and libraries. The host SKILL.md carries the METHOD (detect → route → load); this file carries the VALUES for the `packaging` route.
 
-Configure Python packaging for **applications** and **libraries**: pyproject.toml per backend (uv / Poetry / setuptools / hatch), dependency strategy, publishing.
+**Scope:** choosing a build tool; writing/restructuring pyproject.toml; app-vs-library dependency strategy; PyPI publishing; entry points; Python monorepo packages. The app scaffolding baseline (pinned FastAPI pyproject standard) lives in `references/scaffold.md` in this skill.
 
-## When to use me
-
-Choosing a build tool; writing/restructuring pyproject.toml; app-vs-library dependency strategy; PyPI publishing; entry points; Python monorepo packages.
-
-**Related:** `python-backend-skill` (app scaffolding — its pinned pyproject standard is the app baseline) · `python-ruff-linter-skill` / `python-pytest-creator-skill` (tool config sections) · `monorepo-management-skill` (JS/TS side).
+**Related:** `python-ruff-linter-skill` / `python-pytest-creator-skill` (tool config sections) · `monorepo-management-skill` (JS/TS side).
 
 ## House decision rules
 

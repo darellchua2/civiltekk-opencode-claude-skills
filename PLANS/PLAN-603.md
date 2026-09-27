@@ -166,22 +166,26 @@ Consumers: agents/startup-founder-subagent.md (both), agents/startup-ceo-subagen
 ### Phase 6: civiltekk-python-backend-skill
 Absorbs: `python-backend-skill` (host renames) + `python-packaging-skill` + `fastapi-pydantic-orm-patterns-skill`. references/: `scaffold.md`, `packaging.md`, `fastapi-orm.md`. Routes: scaffold | package | patterns.
 Consumers: agents/language-reviewer-subagent.md (packaging + fastapi), deploy/skill-profiles.json, presets pack-review + pack-backend, README.md.
-- [ ] **6.1** Rename dir + author host + references per template (host body is the scaffold method)
+- [x] **6.1** Rename dir + author host + references per template (host body is the scaffold method)
     — **Why:** scaffold method already exists — it absorbs the other two as routes
     — **Done when:** template satisfied; all three trigger sets intact; isolation green
     — **Consumers affected:** language-reviewer
-- [ ] **6.2** Delete absorbed + repoint (language-reviewer allowlist/body, skill-profiles, presets, README)
+    — **Done:** git mv preserved history; routes scaffold|packaging|patterns; 408-char 3-way union description, category Language-Specific; files: skills/civiltekk-python-backend-skill/{SKILL.md,references/scaffold.md,references/packaging.md,references/fastapi-orm.md}; fixes: none
+- [x] **6.2** Delete absorbed + repoint (language-reviewer allowlist/body, skill-profiles, presets, README)
     — **Why:** stale names break reviewer routing
     — **Done when:** residue clean (python-backend-skill old name included)
     — **Consumers affected:** language-reviewer, packs
-- [ ] **6.3** Registry + scoped gate + count (143)
+    — **Done:** 2 dirs git-rm (net -2 dirs); repointed: skill-profiles (3 lean entries -> 1, 74->72 — deviation from PLAN estimate 73, all three were lean), six bats literals, setup.sh, opencode.json (3 rules -> 1), language-reviewer + architecture-review agents, 2 presets, README (143 counts, Language-Specific 6->4), 4 fellow-skills; residue exempt-only; fixes: none
+- [x] **6.3** Registry + scoped gate + count (143)
     — **Why:** per-commit green (3 dirs removed: 145→143... running total corrected at gate)
     — **Done when:** count 143; affected bats green
     — **Consumers affected:** installer
-- [ ] **6.4** Commit + push
+    — **Done:** registry rebuilt (skills=143); scoped gate green; count 143 (PLAN said 143 — matches); fixes: none
+- [x] **6.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 7: civiltekk-diagram-skill
 Absorbs: `ascii-diagram-creator-skill` + `mermaid-diagram-creator-skill`. references/: `ascii.md`, `mermaid.md`; move any scripts/ or assets/ the members ship (inspect dirs at execution; keep trees intact).
@@ -325,3 +329,4 @@ GATE 13837af tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE cde8214 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 135a641 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 9d8174a tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 4f1ca75 tier=light lint=- typecheck=- build=- unit=t e2e=n.a

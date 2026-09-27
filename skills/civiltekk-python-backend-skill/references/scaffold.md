@@ -1,22 +1,14 @@
----
-name: python-backend-skill
-description: >-
-  Scaffold Python backend projects — FastAPI/Django/Flask layout, dependency
-  injection, config, virtual environments, pyproject.toml.
-license: Apache-2.0
-compatibility: opencode
-category: Language-Specific
----
+# Scaffold route (values)
 
-## What I do
+Scaffold Python backends — framework choice, layout, config, sessions. The host SKILL.md carries the METHOD (detect → route → load); this file carries the VALUES for the `scaffold` route.
 
-Scaffold Python backends: framework choice (FastAPI/Django/Flask), project layout, pyproject.toml standard, env-based config (pydantic-settings), DI, SQLAlchemy session discipline, migration gotchas, SSE durability, OpenCode LSP wiring.
-
-## When to use me
-
-New/restructured Python backend; production patterns for FastAPI/Django/Flask; detached-instance or SSE bugs.
+**Scope:** new/restructured Python backend; production patterns for FastAPI/Django/Flask; detached-instance or SSE bugs. Packaging tool choice → `references/packaging.md`; runtime code patterns → `references/fastapi-orm.md`.
 
 **Related:** `python-pytest-creator-skill` (tests) · `python-ruff-linter-skill` (lint) · `database-migration-skill` (full migration workflows — this file keeps only gotchas) · `nextjs-standard-setup-skill` (JS equivalent).
+
+## What this route does
+
+Framework choice (FastAPI/Django/Flask), project layout, pyproject.toml standard, env-based config (pydantic-settings), DI, SQLAlchemy session discipline, migration gotchas, SSE durability, OpenCode LSP wiring.
 
 ## House standards
 

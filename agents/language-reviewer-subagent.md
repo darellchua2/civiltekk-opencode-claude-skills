@@ -58,16 +58,10 @@ permissions:
     resource: design-patterns-skill
     effect: allow
   - action: skill
-    resource: python-backend-skill
-    effect: allow
-  - action: skill
-    resource: fastapi-pydantic-orm-patterns-skill
+    resource: civiltekk-python-backend-skill
     effect: allow
   - action: skill
     resource: database-migration-skill
-    effect: allow
-  - action: skill
-    resource: python-packaging-skill
     effect: allow
   - action: skill
     resource: react-hooks-antipatterns-skill
@@ -115,6 +109,8 @@ Determine the review language from the task and codebase, then apply that langua
 | Java | `*.java` files dominate, or `pom.xml`/`build.gradle` detected |
 
 If the task names a language explicitly, use that section. For multi-language changesets, apply every relevant section and report findings in a single output with a per-language breakdown.
+
+For Python reviews, load `civiltekk-python-backend-skill` by route: packaging/config findings (pyproject, build tool, entry points, publishing) → its `packaging` route; FastAPI/Pydantic/ORM pattern findings (N+1, detached sessions, multi-tenant isolation, defensive coding) → its `patterns` route; project-shape findings (layout, DI, session discipline) → its `scaffold` route.
 
 ## Severity Scoring
 

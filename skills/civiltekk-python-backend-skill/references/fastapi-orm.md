@@ -1,37 +1,12 @@
----
-name: fastapi-pydantic-orm-patterns-skill
-description: >-
-  Backend Python patterns — Pydantic v2 conventions, layered FastAPI
-  architecture, ORM pitfalls (N+1, migration syntax), defensive coding,
-  multi-tenant isolation.
-license: Apache-2.0
-compatibility: opencode
-category: Language-Specific
----
+# Patterns route (values)
 
-<!-- Provenance: canvastekk-workflow-engine + canvastekk-defect-service LEARNINGS. PLAN-GIT-312. Excludes 12 patterns already in python-backend-skill, design-patterns-skill, object-design-skill. -->
+Battle-tested patterns for FastAPI + Pydantic v2 + SQLAlchemy/asyncpg backends, extracted from production incidents across multiple repos. Each pattern caused a real bug and has a concrete fix. The host SKILL.md carries the METHOD (detect → route → load); this file carries the VALUES for the `patterns` route.
 
-## What I do
+<!-- Provenance: canvastekk-workflow-engine + canvastekk-defect-service LEARNINGS. PLAN-GIT-312. Excludes 12 patterns already in the scaffold route, design-patterns-skill, object-design-skill. -->
 
-I provide battle-tested patterns for FastAPI + Pydantic v2 + SQLAlchemy/asyncpg backends, extracted from production incidents across multiple repos. Each pattern caused a real bug and has a concrete fix.
+**Scope:** writing or reviewing FastAPI endpoints (especially async sessions); configuring Pydantic v2 models, validators, serializers; writing Alembic migrations (especially asyncpg + JSONB); auditing multi-tenant isolation or auth flows; debugging race conditions in state transitions; reviewing error handling in service-to-service calls.
 
-## When to use me
-
-Use this skill when:
-- Writing or reviewing FastAPI endpoints, especially with async sessions
-- Configuring Pydantic v2 models, validators, or serializers
-- Writing Alembic migrations (especially with asyncpg + JSONB)
-- Auditing multi-tenant isolation or auth flows
-- Debugging race conditions in state transitions
-- Reviewing error handling in service-to-service calls
-
-## Related Skills
-
-- **python-backend-skill**: Project scaffolding. This skill covers the runtime patterns python-backend-skill references.
-- **database-migration-skill**: Migration workflow patterns. This skill covers the asyncpg-specific pitfalls.
-- **security-audit-skill**: Security auditing. This skill covers the FastAPI-specific auth/encryption patterns.
-
----
+**Related:** project scaffolding → `references/scaffold.md` in this skill · `database-migration-skill` (migration workflow patterns; this file covers the asyncpg-specific pitfalls) · `security-audit-skill` (security auditing; this file covers the FastAPI-specific auth/encryption patterns).
 
 ## A. Pydantic v2 Conventions
 

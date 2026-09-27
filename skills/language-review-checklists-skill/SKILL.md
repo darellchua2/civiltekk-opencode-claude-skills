@@ -76,7 +76,7 @@ per-language.
 | **Flask** | Blueprint organization, proper app factory, request context |
 | **SQLAlchemy** | Session management, relationship loading, migration compatibility |
 
-**Backend Patterns**: use `python-backend-skill` + `fastapi-pydantic-orm-patterns-skill` for SQLAlchemy detached-instance bugs, Pydantic-on-JSONB pitfalls, async SSE durability, enum strategy resolution, two-phase dataclass initialization, and `global _service` singletons (prefer FastAPI `Depends()` with `app.state` lifecycle).
+**Backend Patterns**: use `civiltekk-python-backend-skill` (`scaffold` + `patterns` routes) for SQLAlchemy detached-instance bugs, Pydantic-on-JSONB pitfalls, async SSE durability, enum strategy resolution, two-phase dataclass initialization, and `global _service` singletons (prefer FastAPI `Depends()` with `app.state` lifecycle).
 
 ## TypeScript/JavaScript Review Checklist
 

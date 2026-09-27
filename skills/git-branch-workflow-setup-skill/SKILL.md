@@ -171,7 +171,7 @@ After scaffolding:
 4. The primary agent handles the rest (loads this skill, prompts user, delegates)
 ```
 
-> **Note:** `python-backend-skill` is a **skill**, not an agent — it cannot invoke this skill. Only a future `python-setup-subagent` (agent) could.
+> **Note:** `civiltekk-python-backend-skill` is a **skill**, not an agent — it cannot invoke this skill. Only a future `python-setup-subagent` (agent) could.
 
 ## Invocation Flow
 
