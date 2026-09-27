@@ -104,10 +104,11 @@ Phase ordering follows the map: skill before wiring; wiring before guard-test co
 
 ### Phase 4: Registry rebuild + exit gate
 
-- [ ] **4.1** Run `node installer/build-registry.mjs`; verify the `registry.json` diff contains exactly: the new skill entry, four category/metadata updates, preset rename side effects — nothing else
+- [x] **4.1** Run `node installer/build-registry.mjs`; verify the `registry.json` diff contains exactly: the new skill entry, four category/metadata updates, preset rename side effects — nothing else
     — **Why:** registry is the generated single source for installer/TUI/README provenance; all frontmatter changes must land before the rebuild (generated-artifact-unstaged-regression guard)
     — **Done when:** build exits 0; `git diff --stat installer/registry.json` shows only expected entries; rebuilt artifact staged with this phase's commit
     — **Consumers affected:** installer/init.mjs, GitHub Pages catalog
+    — **Done:** registry rebuilt; diff audited — exactly skills 154→155, new skill entry (harness=opencode), four worker category/trigger updates, generatedAt bump; files: installer/registry.json; fixes: none
 - [ ] **4.2** Run the full gate on the final tree: complete bats suite (`bats tests/`), plus the branding rg-gate `rg "A/B trial|#582|#585" --glob '!CHANGELOG.md' --glob '!PLANS/**' --glob '!LEARNINGS/**'` returning no matches in changed surfaces
     — **Why:** ticket exit gate — full tier unconditionally on the last gate of the run
     — **Done when:** bats suite exits 0; rg-gate empty; gate memo line appended to this PLAN's trace block
