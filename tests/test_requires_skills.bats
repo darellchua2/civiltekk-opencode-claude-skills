@@ -3,9 +3,9 @@
 # Tests for the requiresSkills installer edge (#439, PLANS/PLAN-439.md).
 # dependency-map.json skill->skill auto-install: `add <skill>` installs the
 # declared prerequisite with a visible notice; --no-deps opts out; dry-run and
-# the user-scope manifest list the auto-added skill; the map entry is pinned to
-# tests/test_skill_isolation.bats HANDOFF_OWNER/HANDOFF_TARGET (source of truth
-# per AGENTS.md §Skill Isolation Contract).
+# the user-scope manifest list the auto-added skill; the map entries are pinned
+# to tests/test_skill_isolation.bats HANDOFF{1,2}_OWNER/HANDOFF{1,2}_TARGETS
+# (source of truth per AGENTS.md §Skill Isolation Contract).
 
 REPO="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
 INIT="node ${REPO}/installer/init.mjs"
@@ -63,19 +63,24 @@ for name in sys.argv[1:3]:
 }
 
 @test "requires_skills_map_entry_matches_isolation_guard_handoff_pair" {
-  # AGENTS.md: HANDOFF_OWNER/HANDOFF_TARGET in the guard are the source of
-  # truth — the installer edge must be exactly that pair, never drift.
-  HANDOFF_OWNER="$(grep -oE '^HANDOFF_OWNER="[^"]+"' "$GUARD" | cut -d'"' -f2)"
-  HANDOFF_TARGET="$(grep -oE '^HANDOFF_TARGET="[^"]+"' "$GUARD" | cut -d'"' -f2)"
-  [ -n "$HANDOFF_OWNER" ] && [ -n "$HANDOFF_TARGET" ]
-  python3 - "$DEPMAP" "$HANDOFF_OWNER" "$HANDOFF_TARGET" "${REPO}/opencode_app/opencode.json" <<'PYEOF'
+  # AGENTS.md: HANDOFF{1,2}_OWNER/HANDOFF{1,2}_TARGETS in the guard are the
+  # source of truth — the installer edges must be exactly those handoffs
+  # (owner -> multi-target), never drift.
+  HANDOFF1_OWNER="$(grep -oE '^HANDOFF1_OWNER="[^"]+"' "$GUARD" | cut -d'"' -f2)"
+  HANDOFF1_TARGETS="$(grep -oE '^HANDOFF1_TARGETS="[^"]+"' "$GUARD" | cut -d'"' -f2)"
+  HANDOFF2_OWNER="$(grep -oE '^HANDOFF2_OWNER="[^"]+"' "$GUARD" | cut -d'"' -f2)"
+  HANDOFF2_TARGETS="$(grep -oE '^HANDOFF2_TARGETS="[^"]+"' "$GUARD" | cut -d'"' -f2)"
+  [ -n "$HANDOFF1_OWNER" ] && [ -n "$HANDOFF1_TARGETS" ]
+  [ -n "$HANDOFF2_OWNER" ] && [ -n "$HANDOFF2_TARGETS" ]
+  python3 - "$DEPMAP" "$HANDOFF1_OWNER" "$HANDOFF1_TARGETS" "$HANDOFF2_OWNER" "$HANDOFF2_TARGETS" "${REPO}/opencode_app/opencode.json" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1]))
-expected = {sys.argv[2]: [sys.argv[3]]}
+owner1, targets1, owner2, targets2 = sys.argv[2:6]
+expected = {owner1: targets1.split(), owner2: targets2.split()}
 got = d.get("requiresSkills", {})
-assert got == expected, f"requiresSkills {got} != guard handoff pair {expected}"
+assert got == expected, f"requiresSkills {got} != guard handoffs {expected}"
 # impliesMcp values must be real MCP server keys (dependency-map $comment claim)
-oc = json.load(open(sys.argv[4]))
+oc = json.load(open(sys.argv[6]))
 servers = set((oc.get("mcp") or {}).get("servers") or {})
 for skill, mcps in d.get("impliesMcp", {}).items():
     for m in mcps:

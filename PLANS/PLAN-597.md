@@ -58,26 +58,31 @@ Phase ordering follows the map: skill before wiring; wiring before guard-test co
 
 ### Phase 2: Installer edge + guard coupling
 
-- [ ] **2.1** Add the `requiresSkills` edge to `installer/dependency-map.json`: `"plan-execution-inline-skill": ["testing-inline-skill", "linting-inline-skill", "documentation-inline-skill", "responsive-audit-inline-skill"]`
+- [x] **2.1** Add the `requiresSkills` edge to `installer/dependency-map.json`: `"plan-execution-inline-skill": ["testing-inline-skill", "linting-inline-skill", "documentation-inline-skill", "responsive-audit-inline-skill"]`
     — **Why:** `npx … add plan-execution-inline-skill` must auto-install its four inline workers or the installed skill is broken standalone (#439 mechanics)
     — **Done when:** `python3 -c "import json; assert json.load(open('installer/dependency-map.json'))['requiresSkills']['plan-execution-inline-skill'] == ['testing-inline-skill','linting-inline-skill','documentation-inline-skill','responsive-audit-inline-skill']"` exits 0
     — **Consumers affected:** `test_requires_skills.bats` map equality (2.3), isolation guard handoff record (2.2)
-- [ ] **2.2** Extend `tests/test_skill_isolation.bats`: declare both handoffs in one uniform shape — `HANDOFF1_OWNER`/`HANDOFF1_TARGETS` (pptx pair) and `HANDOFF2_OWNER="plan-execution-inline-skill"`/`HANDOFF2_TARGETS` (space-separated four inline skills); teach test 3's allowlist to accept each declared owner→targets set
+    — **Done:** requiresSkills edge added (owner + four inline targets) and $comment updated to the two-handoff form; files: installer/dependency-map.json; fixes: none
+- [x] **2.2** Extend `tests/test_skill_isolation.bats`: declare both handoffs in one uniform shape — `HANDOFF1_OWNER`/`HANDOFF1_TARGETS` (pptx pair) and `HANDOFF2_OWNER="plan-execution-inline-skill"`/`HANDOFF2_TARGETS` (space-separated four inline skills); teach test 3's allowlist to accept each declared owner→targets set
     — **Why:** AGENTS.md §Skill Isolation Contract: the guard's HANDOFF vars are the source of truth for allowed cross-skill references; the new handoff must be declared there before any path-shaped reference could exist; one token shape keeps the derived pin in 2.3 single-form
     — **Done when:** `bats tests/test_skill_isolation.bats` exits 0; the new vars are greppable in the file; no scalar `HANDOFF_TARGET` (singular) remains
     — **Consumers affected:** `test_requires_skills.bats` (2.3 parses HANDOFF lines from this file), AGENTS.md + dependency-map $comment (2.5)
-- [ ] **2.3** Update `requires_skills_map_entry_matches_isolation_guard_handoff_pair` in `tests/test_requires_skills.bats` to build the expected map from ALL declared handoffs (parsed uniformly from the guard's OWNER/TARGETS pairs) and assert `requiresSkills == expected` (full-map equality preserved)
+    — **Done:** guard declares HANDOFF1/HANDOFF2 in uniform owner→targets shape; test 3 allowlist generalized to per-owner target sets; files: tests/test_skill_isolation.bats; fixes: none
+- [x] **2.3** Update `requires_skills_map_entry_matches_isolation_guard_handoff_pair` in `tests/test_requires_skills.bats` to build the expected map from ALL declared handoffs (parsed uniformly from the guard's OWNER/TARGETS pairs) and assert `requiresSkills == expected` (full-map equality preserved)
     — **Why:** the assertion is the anti-drift coupling between map and guard; adding an edge without updating it fails CI by design
     — **Done when:** `bats tests/test_requires_skills.bats` exits 0 (all four tests)
     — **Consumers affected:** none (leaf test)
-- [ ] **2.4** Register the new skill for visibility: add a `skill` permission allow rule for `plan-execution-inline-skill` in `opencode_app/opencode.json` (beside the four inline allows) and `"plan-execution-inline-skill"` to the `lean` array in `deploy/skill-profiles.json`; bump the lean-count literal in `tests/skill_profiles.bats` 77→78 (test name, count assertion, header comment)
+    — **Done:** map-equality assertion parses both handoff pairs uniformly (full-map equality kept); files: tests/test_requires_skills.bats; fixes: argv index for the opencode.json path 4→6 after argv widened (caught by phase gate)
+- [x] **2.4** Register the new skill for visibility: add a `skill` permission allow rule for `plan-execution-inline-skill` in `opencode_app/opencode.json` (beside the four inline allows) and `"plan-execution-inline-skill"` to the `lean` array in `deploy/skill-profiles.json`; bump the lean-count literal in `tests/skill_profiles.bats` 77→78 (test name, count assertion, header comment)
     — **Why:** new skills default hidden; primary visibility requires the opencode.json allow + lean-profile entry (AGENTS.md §Skill Allowlist); the profile test pins the exact lean count, so the same commit must move it or the phase gate self-contradicts
     — **Done when:** both config files contain the new name; `grep -c '"' <(sed -n '/^  "lean"/,/^\]/p' deploy/skill-profiles.json)`-style count equals 78; `bats tests/skill_profiles.bats` exits 0
     — **Consumers affected:** Docker deploy (3.1 touches the same file), lean deploy
-- [ ] **2.5** Update the guard's docs of record to the two-handoff shape: `AGENTS.md` §Skill Isolation Contract ("the single declared exception" → the two declared handoffs, HANDOFF vars named) and `installer/dependency-map.json` `$comment` ("The requiresSkills pair" → plural handoffs, owner→multi-target form)
+    — **Done:** permission allow + lean entry added; all six 77 literals in skill_profiles.bats moved to 78; files: opencode_app/opencode.json, deploy/skill-profiles.json, tests/skill_profiles.bats; fixes: none
+- [x] **2.5** Update the guard's docs of record to the two-handoff shape: `AGENTS.md` §Skill Isolation Contract ("the single declared exception" → the two declared handoffs, HANDOFF vars named) and `installer/dependency-map.json` `$comment` ("The requiresSkills pair" → plural handoffs, owner→multi-target form)
     — **Why:** the 2.2/2.3 redesign invalidates prose that pins the old singular shape; a contributor following stale AGENTS.md would duplicate code instead of declaring a handoff
     — **Done when:** `rg -n "single declared exception|requiresSkills pair" AGENTS.md installer/dependency-map.json` is empty; both files name the two handoffs
     — **Consumers affected:** future contributors; `test_requires_skills.bats` $comment-derived docs
+    — **Done:** AGENTS.md §Skill Isolation Contract rewritten to the two-declared-handoffs form; files: AGENTS.md (+ dependency-map $comment, test header comment); fixes: none
 
 ### Phase 3: Command + docs + preset de-branding
 

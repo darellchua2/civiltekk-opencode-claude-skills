@@ -601,6 +601,11 @@
             "effect": "allow"
         },
         {
+            "action": "skill",
+            "resource": "plan-execution-inline-skill",
+            "effect": "allow"
+        },
+        {
             "action": "codegraph*",
             "resource": "*",
             "effect": "allow"
