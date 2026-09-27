@@ -157,12 +157,7 @@
         },
         {
             "action": "skill",
-            "resource": "pr-creation-workflow-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "pr-merge-workflow-skill",
+            "resource": "civiltekk-pr-workflow-skill",
             "effect": "allow"
         },
         {

@@ -135,22 +135,26 @@ Consumers: agents/opentofu-explorer-subagent.md (7 allowlists → 1 + body chain
 Absorbs: `pr-creation-workflow-skill` + `pr-merge-workflow-skill`. references/: `create.md` (8-step pre-merge pipeline), `merge.md` (5-phase post-merge: divergence pre-flight, head-class classifier, CI monitor, auto-heal, cleanup/tracker). Routes: create | merge/post-merge.
 MUSTS (all step-pin rewords in the same phase): (a) `agents/pr-workflow-subagent.md` L119/147 cite "pr-creation-workflow-skill steps 2-3" → reword to reference anchors (`references/create.md` §steps); (b) `skills/gh-cli-setup-skill/SKILL.md:19` "(step 6)" anchor reword; (c) `skills/verification-loop-skill/SKILL.md` L65 table row repoint; (d) `skills/worktree-pipeline-skill/SKILL.md` cites "pr-merge-workflow-skill Phase 1 head-class rule" → host/merge route; (e) pr-workflow-subagent's allowlist GAINS civiltekk-pr-workflow-skill (it only allowlisted pr-creation — merge routing would break otherwise); (f) 3 bats files' pinned paths: test_default_behavior.bats (L366-377 pr-creation block), test_autoresearch_protocol.bats (L237-247 pr-creation block + L265-267 pr-merge crash-recovery cite — the merged pr host must cite BOTH `evaluator-contract.md` and `crash-recovery.md` from autoresearch-core), test_tiered_gating.bats L173-177 (asserts `GATE <sha> tier=full` + `never satisfies this check` INSIDE pr-creation's SKILL.md — the literals must live in the host or references/create.md and the test path repointed); (g) `skills/semantic-release-convention-skill/SKILL.md:18,:210` cite pr-merge-workflow-skill head-class rule → repoint (5th skill-body citer).
 Consumers: agents/pr-workflow-subagent.md + agents/repo-ops-specialist-subagent.md (2 allowlists → 1 each), presets pack-devops, README (Git/Workflow), the 5 skill-body citers above.
-- [ ] **5.1** Author host + references per template (pinned literals carried — gating preamble, Iteration Protocol if pinned)
+- [x] **5.1** Author host + references per template (pinned literals carried — gating preamble, Iteration Protocol if pinned)
     — **Why:** two halves of one PR lifecycle; the create→merge boundary becomes a route
     — **Done when:** host ≤140; both trigger sets preserved; tiered_gating's asserted strings present once
     — **Consumers affected:** pr-workflow-subagent, repo-ops-specialist
-- [ ] **5.2** Delete + repoint + ALL step-pin rewords (a–f) + allowlist gain
+    — **Done:** routes create|merge; 133-line host; both autoresearch citations (evaluator-contract + crash-recovery) in host + echoed in references/merge.md; category Framework (members actual - PLAN said Git/Workflow, members frontmatter wins); files: skills/civiltekk-pr-workflow-skill/{SKILL.md,references/create.md,references/merge.md}; fixes: none
+- [x] **5.2** Delete + repoint + ALL step-pin rewords (a–f) + allowlist gain
     — **Why:** step-number pins are prose contracts with subagents; stale pins misroute real PR flows
     — **Done when:** all six surfaces green in their tests; residue clean
     — **Consumers affected:** pipeline consumers, 4 citing skills
-- [ ] **5.3** Registry rebuild + scoped gate + count (121)
+    — **Done:** 2 dirs git-rm; all 6 lockstep surfaces + 2 grep-found extra citers (coverage-readme, nextjs-unit-test-creator); pr-workflow-subagent allowlist GAINED host; tiered_gating $PC -> references/create.md (test renamed, intent kept); default_behavior + autoresearch_protocol pr-blocks restructured 6->3 tests each (preamble once, citations loop both refs); repo-ops 2->1; pack-devops 2->1; README 122->121 (Framework 17->16); residue sanctioned-only; fixes: none
+- [x] **5.3** Registry rebuild + scoped gate + count (121)
     — **Why:** per-commit green
     — **Done when:** registry skills=121; tiered_gating + default_behavior + autoresearch_protocol green
     — **Consumers affected:** installer
-- [ ] **5.4** Commit + push
+    — **Done:** registry rebuilt (skills=121); scoped gate green first run (210 tests incl. restructured blocks); count 121; fixes: none
+- [x] **5.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 6: civiltekk-test-generation-skill (fixes the isolation gap)
 Absorbs: `test-generator-framework-skill` (the values host) + `python-pytest-creator-skill` + `nextjs-unit-test-creator-skill`. references/: `framework.md` (language/framework matrix + MagicMock pitfall — deduped here ONCE), `python.md` (pytest scenario taxonomies + template), `nextjs.md` (Next-16 render/action/route patterns). Routes: framework-matrix | python | nextjs.
@@ -210,3 +214,4 @@ GATE 8cf5b6c tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 0814744 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 1dea685 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 2b5a870 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE d1d0abe tier=light lint=- typecheck=- build=- unit=t e2e=n.a

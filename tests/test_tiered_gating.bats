@@ -164,13 +164,14 @@ WP="$SKILLS_DIR/worktree-pipeline-skill/SKILL.md"
   grep -qF '(unconditional) backstops' "$WP"
 }
 
-PC="$SKILLS_DIR/pr-creation-workflow-skill/SKILL.md"
+PC="$SKILLS_DIR/civiltekk-pr-workflow-skill/references/create.md"
 
 # =============================================================================
-# Phase 4 — memo-consumer update (pr-creation-workflow-skill)
+# Phase 4 — memo-consumer update (civiltekk-pr-workflow-skill, create route;
+# consolidated from the two former PR member skills, #604)
 # =============================================================================
 
-@test "tier4_gating_pr-creation_tier_full_memo_check" {
+@test "tier4_gating_pr-workflow_create_tier_full_memo_check" {
   [ -f "$PC" ]
   grep -qF 'GATE <sha> tier=full' "$PC"
   grep -qiF 'never satisfies this check' "$PC"

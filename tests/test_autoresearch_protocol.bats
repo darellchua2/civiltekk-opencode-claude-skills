@@ -232,40 +232,21 @@ CORE_REFS_DIR="$SKILLS_DIR/autoresearch-core-skill/references"
   done
 }
 
-# --- pr-creation-workflow (evaluator-contract) ---
-@test "tier2_pr-creation-workflow_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/pr-creation-workflow-skill/SKILL.md"
+# --- pr-workflow (both former PR member skills' protocol obligations now in the host, #604) ---
+@test "tier2_pr-workflow_has_iteration_protocol_section" {
+  skill_md="$SKILLS_DIR/civiltekk-pr-workflow-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
 }
-@test "tier2_pr-creation-workflow_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/pr-creation-workflow-skill/SKILL.md"
+@test "tier2_pr-workflow_has_opt_in_metadata" {
+  skill_md="$SKILLS_DIR/civiltekk-pr-workflow-skill/SKILL.md"
   [ -f "$skill_md" ]
   python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
 }
-@test "tier2_pr-creation-workflow_cites_expected_references" {
-  skill_md="$SKILLS_DIR/pr-creation-workflow-skill/SKILL.md"
+@test "tier2_pr-workflow_cites_expected_references" {
+  skill_md="$SKILLS_DIR/civiltekk-pr-workflow-skill/SKILL.md"
   [ -f "$skill_md" ]
-  for ref in evaluator-contract; do
-    grep -q "autoresearch-core-skill/references/${ref}.md" "$skill_md"
-  done
-}
-
-# --- pr-merge-workflow (crash-recovery) ---
-@test "tier2_pr-merge-workflow_has_iteration_protocol_section" {
-  skill_md="$SKILLS_DIR/pr-merge-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  grep -q '^## Iteration Protocol (opt-in)' "$skill_md"
-}
-@test "tier2_pr-merge-workflow_has_opt_in_metadata" {
-  skill_md="$SKILLS_DIR/pr-merge-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  python3 -c "import yaml; d=open('$skill_md').read(); fm=yaml.safe_load(d.split('---')[1]); assert fm['metadata'].get('protocol')=='autoresearch-opt-in'"
-}
-@test "tier2_pr-merge-workflow_cites_expected_references" {
-  skill_md="$SKILLS_DIR/pr-merge-workflow-skill/SKILL.md"
-  [ -f "$skill_md" ]
-  for ref in crash-recovery; do
+  for ref in evaluator-contract crash-recovery; do
     grep -q "autoresearch-core-skill/references/${ref}.md" "$skill_md"
   done
 }

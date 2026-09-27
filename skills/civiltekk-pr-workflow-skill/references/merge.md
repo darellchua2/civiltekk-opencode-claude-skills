@@ -1,22 +1,9 @@
----
-name: pr-merge-workflow-skill
-description: >-
-  Post-merge workflow — merges PR, monitors CI, auto-fixes failures, updates
-  JIRA, deletes source branch; promotions between long-lived lanes run a
-  divergence pre-flight (backmerge PR first, then the promote PR). Triggers:
-  'pr merge to [branch]', 'merge the PR', 'complete the PR', 'promote <branch>
-  to <branch>', 'promote to uat', 'backmerge <target> into <source>'. Not
-  'create pr'.
-metadata:
-  protocol: autoresearch-opt-in
-category: Framework
-license: Apache-2.0
-compatibility: opencode
----
+# Merge route — the 5-phase post-merge pipeline
 
-# PR Merge + Monitor + Fix Workflow
-
-Use when the user says phrases like "pr merge to main", "merge the PR to develop", "merge to [branch]", "complete the PR", or "merge it". This skill handles everything after the PR is approved and ready to merge.
+Route `merge` of `civiltekk-pr-workflow-skill` (#604; formerly the
+PR-merge member skill). Everything after the PR is approved and
+ready to merge: "pr merge to main", "merge the PR to develop", "merge
+to [branch]", "complete the PR", "merge it".
 
 ## Prerequisites
 
@@ -191,27 +178,14 @@ Or if failures occurred:
 ## Agent Requirements
 
 This skill expects the loading agent to have:
-- `bash: allow` — for gh CLI, git operations
+- `bash: allow` — for gh CLI, git operations (bash: git-bash/WSL on Windows)
 - `edit: allow` — for CI failure fixes
 - `read: allow` / `glob: allow` / `grep: allow` — for code analysis
 - `ticketing-skill` — for ticket transitions (tracker policy per
   `ticketing-skill` §MCP Availability Guard)
 
-## Iteration Protocol (opt-in)
-
-**DO NOT execute any of the following unless `AUTORESEARCH_PROTOCOL=1` is set in your environment.** When unset, this skill behaves exactly as documented in all sections above; the Iteration Protocol block is descriptive only.
-
-When `AUTORESEARCH_PROTOCOL=1`:
-
-### Auto-detection
-If invoked on an iterative task, prompt ONCE per session: "This looks iterative. Enable autoresearch protocol? (y/n)". Cache answer for session.
-
-### Skill-specific patterns
-
-**CI auto-fix crash recovery.** CI failure mode → response: (a) lint failure → auto-fix and re-push; (b) test failure → debug, fix, re-push (max 3 attempts); (c) build failure → revert + log; (d) environment/infra failure → wait + retry. All responses logged to `pr-merge-results.tsv`. See `crash-recovery.md`.
-
-### Citations
-- `autoresearch-core-skill/references/crash-recovery.md`
-
-### Imperative gating
-When `AUTORESEARCH_PROTOCOL` is unset, this section is descriptive only. Default behavior is documented in all sections above.
+The skill-wide Iteration Protocol (opt-in) lives in the host `SKILL.md`,
+stated once — including the merge route's CI auto-fix crash-recovery
+pattern with its `autoresearch-core-skill/references/evaluator-contract.md`
+and `autoresearch-core-skill/references/crash-recovery.md` citations.
+Not restated here.

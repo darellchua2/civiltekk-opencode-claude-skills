@@ -62,7 +62,7 @@ GATE <short-sha> tier=light|full lint=t typecheck=t build=t|- unit=t|-|n.a e2e=t
 | Surface | Role under this contract |
 |---------|--------------------------|
 | `plan-execution-skill` (--gate) | Runs the gate per PLAN phase; writes the memo |
-| `pr-creation-workflow-skill` | PR-boundary memo check; fills the PR Quality Checks slot from memo/assertion |
+| `civiltekk-pr-workflow-skill` (create route) | PR-boundary memo check; fills the PR Quality Checks slot from memo/assertion |
 | `worktree-pipeline-skill` | Sequences phases; its green assertion cites the final GATE line for the pushed SHA |
 | `pr-workflow-subagent` | Executes PR checks via this contract; owns no command table |
 | `linting-subagent` | Lint execution; `language-linting-skill` is its rules reference |
