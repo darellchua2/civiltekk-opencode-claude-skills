@@ -312,5 +312,5 @@ rg 'process\.env\.[A-Z_]+' --type ts --type tsx -g '!*.test.*' -g '!*.spec.*'
 - **`civiltekk-nextjs-skill`** (route `scaffold`) — scaffolds the Next.js project that this skill deploys
 - **`civiltekk-nextjs-skill`** (route `image-usage`) — configures `next.config.ts` `images.remotePatterns` (referenced by Rule 4)
 - **`civiltekk-react-quality-skill`** (routes `hooks-antipatterns` + `render-antipatterns`) — catch SSR/runtime anti-patterns that fail at runtime (Rule 7)
-- **`opentofu-aws-explorer-skill`** — manages the OpenTofu/Terraform infra module for Amplify + S3 + CloudFront
-- **`opentofu-provisioning-workflow-skill`** — state management for the infra side of rollbacks
+- **`civiltekk-opentofu-skill`** (route `explore`, AWS section) — manages the OpenTofu/Terraform infra module for Amplify + S3 + CloudFront
+- **`civiltekk-opentofu-skill`** (route `plan-apply`) — state management for the infra side of rollbacks

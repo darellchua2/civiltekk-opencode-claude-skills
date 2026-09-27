@@ -110,22 +110,26 @@ Consumers: agents/zai-media-subagent.md (4 allowlists → 1 + body), deploy/skil
 ### Phase 4: civiltekk-opentofu-skill
 Absorbs: 7 dirs — `opentofu-provider-setup-skill`, `opentofu-provisioning-workflow-skill`, `opentofu-aws-explorer-skill`, `opentofu-kubernetes-explorer-skill`, `opentofu-neon-explorer-skill`, `opentofu-keycloak-explorer-skill`, `opentofu-ecr-provision-skill`. references/: `provider-setup.md` (TRIM the 402-line tutorial while moving — keep chain-root + per-provider essentials), `workflow.md`, `explorers.md` (aws + neon + keycloak + kubernetes as four sections; kubernetes' HCL blocks may stay inline), `ecr.md` (external repo pin `ecr/betekk_probe_engine_main/` survives verbatim). Routes: first-time-setup | plan-apply workflow | explore <target> | ecr-provision.
 Consumers: agents/opentofu-explorer-subagent.md (7 allowlists → 1 + body chain-root references), presets pack-devops (7 → 1), README (category DevOps/Infrastructure — verify; count 128→122), fellow skills (grep stems — amplify cites opentofu skills). NOTE: no deploy/opencode.json rules exist for opentofu-* (allowlists live solely in the agent — verified).
-- [ ] **4.1** Author host + references (provider-setup trimmed; explorers collapsed) per template
+- [x] **4.1** Author host + references (provider-setup trimmed; explorers collapsed) per template
     — **Why:** biggest dir win of the program; the 4 explorers are one method modulo vocabulary
     — **Done when:** host ≤140; 7 trigger sets preserved; ecr pin intact; isolation green
     — **Consumers affected:** opentofu-explorer-subagent
-- [ ] **4.2** Delete + repoint (agent 7→1, preset, opencode.json, README, fellow skills incl. amplify)
+    — **Done:** routes first-time-setup|plan-apply|explore|ecr-provision; provider-setup trimmed 402->157 lines (chain root, pin table, auth essentials, backend selection kept); 4 explorers collapsed to one references/explorers.md (k8s HCL inline); ecr external pin verbatim; chain stated once in host; 687-char 7-way union description; files: skills/civiltekk-opentofu-skill/{SKILL.md,references/{provider-setup,workflow,explorers,ecr}.md}; fixes: none
+- [x] **4.2** Delete + repoint (agent 7→1, preset, opencode.json, README, fellow skills incl. amplify)
     — **Why:** the family's only consumer is one subagent — clean collapse
     — **Done when:** residue clean
     — **Consumers affected:** opentofu-explorer-subagent
-- [ ] **4.3** Registry rebuild + scoped gate + count (122)
+    — **Done:** 7 dirs git-rm; agent 7->1 (chain-root to routes); pack-devops 7->1; README 128->122 (OpenTofu 7->1); 3 fellow-skills repointed (aws-iac-safety, amplify, docker-containerization); opencode.json confirmed rule-free; agent-name mentions (AGENTS/setup/agent-tiers) correctly untouched; residue sanctioned-only; fixes: none
+- [x] **4.3** Registry rebuild + scoped gate + count (122)
     — **Why:** per-commit green
     — **Done when:** registry skills=122; affected bats green
     — **Consumers affected:** installer
-- [ ] **4.4** Commit + push
+    — **Done:** registry rebuilt (skills=122); scoped gate green; count 122; fixes: none
+- [x] **4.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 5: civiltekk-pr-workflow-skill
 Absorbs: `pr-creation-workflow-skill` + `pr-merge-workflow-skill`. references/: `create.md` (8-step pre-merge pipeline), `merge.md` (5-phase post-merge: divergence pre-flight, head-class classifier, CI monitor, auto-heal, cleanup/tracker). Routes: create | merge/post-merge.
@@ -205,3 +209,4 @@ WORK LOG - W2 base 8cf5b6c
 GATE 8cf5b6c tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 0814744 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 1dea685 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 2b5a870 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
