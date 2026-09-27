@@ -190,22 +190,26 @@ Consumers: agents/language-reviewer-subagent.md (packaging + fastapi), deploy/sk
 ### Phase 7: civiltekk-diagram-skill
 Absorbs: `ascii-diagram-creator-skill` + `mermaid-diagram-creator-skill`. references/: `ascii.md`, `mermaid.md`; move any scripts/ or assets/ the members ship (inspect dirs at execution; keep trees intact).
 Consumers: agents/documentation-subagent.md (ascii), agents/startup-founder-subagent.md (mermaid), presets pack-docs + pack-devops (both), tests/test_default_behavior.bats + test_autoresearch_protocol.bats (mermaid literals), README.md.
-- [ ] **7.1** Author host + references (+ moved scripts/assets) per template
+- [x] **7.1** Author host + references (+ moved scripts/assets) per template
     — **Why:** one "make a diagram" intent, two rendering variants
     — **Done when:** template satisfied; triggers intact; scripts functional; isolation green
     — **Consumers affected:** documentation-subagent, startup-founder
-- [ ] **7.2** Delete + repoint (2 agents, presets, bats literals, README)
+    — **Done:** routes ascii|mermaid, trigger-union description, category Git/Workflow (both members), protocol metadata preserved, bats-pinned literals carried once; members had no scripts/assets; files: skills/civiltekk-diagram-skill/{SKILL.md,references/ascii.md,references/mermaid.md}; fixes: none
+- [x] **7.2** Delete + repoint (2 agents, presets, bats literals, README)
     — **Why:** bats pin mermaid name
     — **Done when:** residue clean; affected bats green
     — **Consumers affected:** CI, agents, packs
-- [ ] **7.3** Registry + scoped gate + count (142)
+    — **Done:** 2 dirs git-rm; 10 files repointed: skill-profiles (mermaid lean slot -> host, lean stays 72), opencode.json, 2 agents, 2 presets, 2 bats literal sets (7 each), horseshoe fellow-ref, README (142 counts, Git/Workflow 13->12); residue exempt-only; fixes: none
+- [x] **7.3** Registry + scoped gate + count (142)
     — **Why:** per-commit green
     — **Done when:** count 142
     — **Consumers affected:** installer
-- [ ] **7.4** Commit + push
+    — **Done:** registry rebuilt (skills=142); scoped gate green; count 142; fixes: none
+- [x] **7.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 8: civiltekk-ponytail-audit-skill
 Absorbs: `ponytail-audit-skill` (host renames) + `ponytail-review-skill` + `ponytail-debt-skill`. references/: `audit.md`, `review.md`, `debt.md`. Routes: whole-repo audit | diff review | debt ledger. `shipsPlugins` edges in dependency-map.json: three entries collapse to one under the new name (same plugin artifacts); `pluginCompanions` unchanged (plugin-keyed).
@@ -330,3 +334,4 @@ GATE cde8214 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 135a641 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 9d8174a tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 4f1ca75 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE e1174fd tier=light lint=- typecheck=- build=- unit=t e2e=n.a

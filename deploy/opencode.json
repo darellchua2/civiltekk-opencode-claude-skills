@@ -322,12 +322,7 @@
         },
         {
             "action": "skill",
-            "resource": "ascii-diagram-creator-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "mermaid-diagram-creator-skill",
+            "resource": "civiltekk-diagram-skill",
             "effect": "allow"
         },
         {

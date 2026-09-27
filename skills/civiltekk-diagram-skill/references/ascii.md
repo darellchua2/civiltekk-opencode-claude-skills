@@ -1,14 +1,10 @@
----
-name: ascii-diagram-creator-skill
-description: Create ASCII diagrams from workflow definitions and save them as image files (PNG, SVG, etc.)
-license: Apache-2.0
-compatibility: opencode
-category: Git/Workflow
----
+# Ascii route (values)
 
-## What I do
+Create professional ASCII diagrams from user-defined workflow specifications and save them as image files. The host SKILL.md carries the METHOD (detect → route → load); this file carries the VALUES for the `ascii` route.
 
-I create professional ASCII diagrams from user-defined workflow specifications and save them as image files:
+**Scope:** visualizing workflows, processes, or system architecture as text-art rendered to PNG/SVG/PDF via ImageMagick. Markdown-native diagramming is the `mermaid` route (`references/mermaid.md` in this skill).
+
+## Workflow
 
 1. **Parse Workflow Definition**: Analyze the user's workflow description to understand the diagram structure
 2. **Generate ASCII Diagram**: Create a clean, well-formatted ASCII representation of the workflow
@@ -23,9 +19,8 @@ Supported diagram types:
 - System architecture diagrams
 - Decision trees
 
-## When to use me
+## When to use this route
 
-Use this workflow when:
 - You need to visualize a workflow, process, or system architecture
 - You want a quick, text-based diagram that can be saved as an image
 - You need to include diagrams in documentation or presentations
@@ -395,4 +390,3 @@ convert diagrams/workflow.png diagrams/workflow.pdf
 # Resize image
 convert diagrams/workflow.png -resize 800x600 diagrams/workflow-thumb.png
 ```
-

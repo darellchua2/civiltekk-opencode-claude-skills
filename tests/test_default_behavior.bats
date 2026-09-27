@@ -773,20 +773,20 @@ extract_section_range() {
   [ "$in_section" -eq "$total" ]
 }
 
-# --- mermaid-diagram-creator ---
-@test "default_behavior_mermaid-diagram-creator_has_imperative_gating_preamble" {
-  skill_md="$SKILLS_DIR/mermaid-diagram-creator-skill/SKILL.md"
+# --- civiltekk-diagram ---
+@test "default_behavior_civiltekk-diagram_has_imperative_gating_preamble" {
+  skill_md="$SKILLS_DIR/civiltekk-diagram-skill/SKILL.md"
   [ -f "$skill_md" ]
   grep -q 'DO NOT execute any of the following unless' "$skill_md"
 }
-@test "default_behavior_mermaid-diagram-creator_preamble_appears_exactly_once" {
-  skill_md="$SKILLS_DIR/mermaid-diagram-creator-skill/SKILL.md"
+@test "default_behavior_civiltekk-diagram_preamble_appears_exactly_once" {
+  skill_md="$SKILLS_DIR/civiltekk-diagram-skill/SKILL.md"
   [ -f "$skill_md" ]
   count=$(grep -c 'DO NOT execute any of the following unless' "$skill_md")
   [ "$count" -eq 1 ]
 }
-@test "default_behavior_mermaid-diagram-creator_evaluator_token_in_section_only" {
-  skill_md="$SKILLS_DIR/mermaid-diagram-creator-skill/SKILL.md"
+@test "default_behavior_civiltekk-diagram_evaluator_token_in_section_only" {
+  skill_md="$SKILLS_DIR/civiltekk-diagram-skill/SKILL.md"
   [ -f "$skill_md" ]
   range=$(extract_section_range "$skill_md")
   start=$(echo "$range" | awk '{print $1}')

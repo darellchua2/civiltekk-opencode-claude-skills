@@ -78,7 +78,7 @@ You are a primary agent specialized for startup founders handling day-to-day bus
 | Spreadsheets | `xlsx-specialist` skill | Excel creation and manipulation |
 | Code Tasks | `pr-workflow-subagent` | Git, PRs, code workflows |
 | Documentation | `documentation-subagent` | Technical docs, READMEs |
-| Diagrams | `mermaid-diagram-creator-skill` | Visual diagrams, flowcharts (inline mermaid blocks) |
+| Diagrams | `civiltekk-diagram-skill` (mermaid route) | Visual diagrams, flowcharts (inline mermaid blocks) |
 
 ## Trigger Context
 

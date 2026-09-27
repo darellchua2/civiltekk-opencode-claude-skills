@@ -39,7 +39,7 @@ permissions:
     resource: markitdown-mcp-skill
     effect: allow
   - action: skill
-    resource: ascii-diagram-creator-skill
+    resource: civiltekk-diagram-skill
     effect: allow
   - action: skill
     resource: research-paper-generation-skill
