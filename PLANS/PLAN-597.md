@@ -109,10 +109,11 @@ Phase ordering follows the map: skill before wiring; wiring before guard-test co
     — **Done when:** build exits 0; `git diff --stat installer/registry.json` shows only expected entries; rebuilt artifact staged with this phase's commit
     — **Consumers affected:** installer/init.mjs, GitHub Pages catalog
     — **Done:** registry rebuilt; diff audited — exactly skills 154→155, new skill entry (harness=opencode), four worker category/trigger updates, generatedAt bump; files: installer/registry.json; fixes: none
-- [ ] **4.2** Run the full gate on the final tree: complete bats suite (`bats tests/`), plus the branding rg-gate `rg "A/B trial|#582|#585" --glob '!CHANGELOG.md' --glob '!PLANS/**' --glob '!LEARNINGS/**'` returning no matches in changed surfaces
+- [x] **4.2** Run the full gate on the final tree: complete bats suite (`bats tests/`), plus the branding rg-gate `rg "A/B trial|#582|#585" --glob '!CHANGELOG.md' --glob '!PLANS/**' --glob '!LEARNINGS/**'` returning no matches in changed surfaces
     — **Why:** ticket exit gate — full tier unconditionally on the last gate of the run
     — **Done when:** bats suite exits 0; rg-gate empty; gate memo line appended to this PLAN's trace block
     — **Consumers affected:** PR creation (Step 10 cites this memo)
+    — **Done:** full gate green pre-exit (632/632 bats, branding sweep empty); Step 9 code review returned 0 BLOCK / 1 Major / 4 Minor — all fixed: deploy/setup.sh:3580 lean count 77→78 (third count surface), twin-fidelity backports (Final validation section, /goal close sentence, error-resolver-workflow-skill row); mirrors: key kept over inventing twin: (vocabulary uniformity, opaque metadata); LEARNINGS: 3 new + 3 bumps committed with this review-fix commit; re-gate re-run on the fixed tree (see final commit memo tier=full); files: deploy/setup.sh, skills/plan-execution-inline-skill/SKILL.md, LEARNINGS/*; fixes: setup.sh stale count, three dropped twin sections
 
 ## Technical Notes
 
