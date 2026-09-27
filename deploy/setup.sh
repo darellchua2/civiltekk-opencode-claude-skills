@@ -3499,7 +3499,7 @@ build_plan() {
             PLAN_STEPS+=("true|select-items|Select items to deploy|run_item_picker")
             PLAN_STEPS+=("true|deploy-selected-skills|Deploy selected skills|deploy_selected_skills")
             PLAN_STEPS+=("true|deploy-selected-agents|Deploy selected agents|deploy_selected_agents")
-            PLAN_STEPS+=("false|apply-selected-extras|Apply selected packs and extras|apply_selected_packs_extras")
+            PLAN_STEPS+=("false|apply-selected-extras|Apply selected packs|apply_selected_packs_extras")
         else
             PLAN_STEPS+=("true|agents|Deploy agents|deploy_agents")
             PLAN_STEPS+=("true|plugins|Deploy plugins|deploy_plugins")

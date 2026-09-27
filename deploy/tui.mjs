@@ -49,7 +49,7 @@ const parsed = parseArgs(process.argv.slice(3));
 //   print-plan (--print-plan + item flags: headless, zero TTY reads)
 // All three emit the SAME selection-plan JSON (equivalence is test-pinned).
 
-import { buildInventory, buildSelectionPlan, EXTRA_ITEMS, scanPackNames, scanPluginNames } from "../installer/deploy-plan-items.mjs";
+import { buildInventory, buildSelectionPlan, scanPackNames, scanPluginNames } from "../installer/deploy-plan-items.mjs";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -81,15 +81,14 @@ function planFromFlags(parsed) {
     // — defaults and the interactive inventory can never drift again (#537).
     const { registry, depMap, packNames, pluginNames } = loadPickerData();
     const allAgents = registry.agents.map((a) => a.stem);
-    const plan = buildSelectionPlan({ choices: { skills: lean, agents: allAgents, packs: packNames, plugins: pluginNames, extras: [] }, registry, depMap });
-    return { skills: plan.skills.map((s) => s.name), agents: plan.agents.map((a) => a.name), packs: plan.packs, plugins: plan.plugins, extras: [] };
+    const plan = buildSelectionPlan({ choices: { skills: lean, agents: allAgents, packs: packNames, plugins: pluginNames }, registry, depMap });
+    return { skills: plan.skills.map((s) => s.name), agents: plan.agents.map((a) => a.name), packs: plan.packs, plugins: plan.plugins };
   }
   return {
     skills: list(parsed.skills),
     agents: list(parsed.agents),
     packs: list(parsed.packs),
     plugins: list(parsed.plugins),
-    extras: list(parsed.extras),
   };
 }
 
@@ -99,7 +98,7 @@ async function flowSelectItems(_parsed) {
   // --print-plan/--defaults are booleans while --driver/--out/--skills… take
   // values — getting that wrong silently swallows the next flag (#473).
   const BOOL = new Set(["printPlan", "defaults"]);
-  const VALUE = new Set(["driver", "out", "skills", "agents", "packs", "plugins", "extras"]);
+  const VALUE = new Set(["driver", "out", "skills", "agents", "packs", "plugins"]);
   const parsed = {};
   const raw = process.argv.slice(3);
   for (let i = 0; i < raw.length; i++) {
@@ -138,7 +137,6 @@ function planChoicesToText(plan) {
   }
   parts.push(`packs: ${plan.packs.join(", ") || "(none)"}`);
   parts.push(`plugins: ${plan.plugins.join(", ") || "(none)"}`);
-  parts.push(`extras: ${plan.extras.join(", ") || "(none)"}`);
   return parts.join("\n");
 }
 
@@ -172,7 +170,7 @@ async function dashboardSelectItems(parsed, registry, depMap, inventory) {
   let done = false, cancelled = false;
 
   function choicesFromSelection() {
-    const choices = { skills: [], agents: [], packs: [], plugins: [], extras: [] };
+    const choices = { skills: [], agents: [], packs: [], plugins: [] };
     for (const line of lines) {
       if (line.kind !== "item" || !selected.has(`${line.group}:${line.id}`)) continue;
       choices[line.group].push(line.id);
@@ -275,7 +273,7 @@ async function linearSelectItems(parsed, registry, depMap, inventory) {
     return new Promise((res) => waiters.push(res));
   };
   try {
-    const choices = { skills: [], agents: [], packs: [], plugins: [], extras: [] };
+    const choices = { skills: [], agents: [], packs: [], plugins: [] };
     for (const group of inventory.groups) {
       console.error(`\n== ${group.label} ==`);
       const answer = await ask(`  (a)ll / (s)kip / (l)ist items? [a/s/l]: `);

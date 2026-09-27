@@ -202,3 +202,4 @@ GATE aff8c4f tier=light lint=n.a typecheck=n.a build=n.a unit=t(help-parity+ps1-
 GATE f99dcb6 tier=light lint=n.a typecheck=n.a build=n.a unit=t(resolver dry-run smoke) e2e=n.a
 GATE 555c737 tier=light lint=n.a typecheck=n.a build=n.a unit=t(count-drift+ships-plugins 0 fails; doc grep clean) e2e=n.a
 GATE 0cd5aee tier=full lint=n.a typecheck=n.a build=n.a unit=t(bats 630/630) e2e=n.a
+GATE 211fba2 tier=full lint=n.a typecheck=n.a build=n.a unit=t(bats 630/630 post-review-fix) e2e=n.a — review-fix re-gate (extras picker surface)

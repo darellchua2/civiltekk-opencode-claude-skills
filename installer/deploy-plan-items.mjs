@@ -1,7 +1,7 @@
 // installer/deploy-plan-items.mjs
 //
 // Pure module for the per-item deploy picker (#473): the selectable inventory
-// (skills by category, agents by tier, MCP packs, plugins, extras) and the
+// (skills by category, agents by tier, MCP packs, plugins) and the
 // selection→plan builder. The dependency closure is init.mjs's exported
 // resolveSelection — ONE implementation, so the dashboard's lock display is
 // exactly what `init.mjs add` installs (arch review: never fork the edge set).
@@ -11,8 +11,6 @@
 
 import { resolveSelection } from "./init.mjs";
 import { readdirSync } from "node:fs";
-
-export const EXTRA_ITEMS = ["local-llm", "vllm"];
 
 // Implied-MCP id → provider pack name (dependency-map.json impliesMcp values
 // are MCP server ids; the executor's pack merge consumes pack names). Pinned
@@ -65,14 +63,13 @@ export function buildInventory({ registry, packNames, pluginNames }) {
       { id: "agents", label: "Agents", kind: "multi", items: [...tiers.entries()].map(([tier, items]) => ({ id: `agents:${tier}`, label: tier, items })) },
       { id: "packs", label: "MCP Packs", kind: "multi", items: packNames.map((p) => ({ id: p, label: p, description: `provider pack (${p})` })) },
       { id: "plugins", label: "Plugins", kind: "multi", items: pluginNames.map((p) => ({ id: p, label: p })) },
-      { id: "extras", label: "Extras", kind: "multi", items: EXTRA_ITEMS.map((e) => ({ id: e, label: e })) },
     ],
-    counts: { skills: registry.skills.length, agents: registry.agents.length, packs: packNames.length, plugins: pluginNames.length, extras: EXTRA_ITEMS.length },
+    counts: { skills: registry.skills.length, agents: registry.agents.length, packs: packNames.length, plugins: pluginNames.length },
   };
 }
 
 /**
- * choices: { skills: [names], agents: [stems], packs: [names], plugins: [names], extras: [names] }
+ * choices: { skills: [names], agents: [stems], packs: [names], plugins: [names] }
  * Returns the plan: every inclusion annotated `direct` or `locked-by:<id>`
  * with a human reason, plus the resolver warnings (unknown names, etc.).
  * The closure is resolveSelection's — the same one `init.mjs add` executes.
@@ -115,12 +112,11 @@ export function buildSelectionPlan({ choices, registry, depMap }) {
     ...sel.mcps.map((m) => MCP_TO_PACK[m]).filter(Boolean),
   ])].sort();
   const plugins = (choices.plugins || []).sort();
-  const extras = (choices.extras || []).sort();
   return {
     skills: sel.skills.map((name) => ({ name, ...whoPulled("skills", name, directSkills, "skills") })),
     agents: sel.agents.map((name) => ({ name, ...whoPulled("agents", name, directAgents, "agents") })),
     mcps: sel.mcps.map((name) => ({ name, ...whoPulled("mcps", name, directPacks, "packs") })),
-    packs, plugins, extras,
+    packs, plugins,
     warnings: sel.warnings,
   };
 }
