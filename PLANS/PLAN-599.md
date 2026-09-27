@@ -8,14 +8,14 @@
 
 ## Acceptance Criteria
 
-- [ ] AC1: `skills/ticketing-skill/` (SKILL.md + `references/{github,jira}.md` + README.md w/ Mermaid diagram + moved `templates/`) replaces the six dirs, removed in the same commit
-- [ ] AC2: `§MCP Availability Guard` and `§Attribution` headings preserved verbatim so external §-pointers are one-token renames
-- [ ] AC3: SKILL.md description ≤50 words preserving the trigger surface (ticket/issue × create·label·update·close, bug report, feature request, ticket-key↔branch) plus negative scope ("no branches, PLANs, execution")
-- [ ] AC4: `references/github.md` has the 3-tier gh fallback with an honest per-operation capability matrix; `references/jira.md` has MCP + REST fallback per policy
-- [ ] AC5: Reference sweep: `repo-ops-specialist` (6→1 allow rules), `pr-workflow-subagent`, prose pointers in requirements/technical-design/discovery specialists, and the 12 consumer skills (plan-execution, plan-execution-inline, pr-creation, pr-merge, wayfinder, worktree-pipeline, dev-uat-promotion, mermaid-diagram-creator, semantic-release-convention, opencode-repo-setup, gh-cli-setup, grilling)
-- [ ] AC6: Installer synced: `registry.json` rebuilt, `pack-devops.json` 6→1, `skill-profiles.json` lean swap, **`opencode_app/opencode.json` swept in the same commit** (6 allow rules → one `ticketing-skill` allow + `/create-ticket` template retarget — Mode R strengthening; gated by skill_profiles.bats :54 subset AND :63 dead-allow); count literals updated (skill_profiles.bats, init.bats, test_markitdown_skill.bats, README rows, opencode_app/README.md, deploy/setup.sh + setup.ps1 comments — disk + delta, never stale doc numbers; test_count_drift.bats is dynamic → no-op)
-- [ ] AC7: `tests/test_issue_template_byte_identity.bats` path swapped (in the consolidation commit); full bats suite green
-- [ ] AC8: Repo-wide grep for the six old names → zero hits outside the adjudicated disposition (Phase 5 buckets): **update** mcp-guard-single-homed, blocked-by-format-single-home:14, policy-single-home-pointer-shape:3, section-pins-target-heading-anchors:10 (live pins — retarget to ticketing-skill), `_index.md` mirrors :252,:258,:741,:1002; **grandfather as justified** CHANGELOG.md:645, PLANS/PLAN-{512,560,595}.md, rule-added-example-stale:8, gh-issue-edit-body-replaces-not-appends.md:23, `_index.md`:894
+- [x] AC1: `skills/ticketing-skill/` (SKILL.md + `references/{github,jira}.md` + README.md w/ Mermaid diagram + moved `templates/`) replaces the six dirs, removed in the same commit
+- [x] AC2: `§MCP Availability Guard` and `§Attribution` headings preserved verbatim so external §-pointers are one-token renames
+- [x] AC3: SKILL.md description ≤50 words preserving the trigger surface (ticket/issue × create·label·update·close, bug report, feature request, ticket-key↔branch) plus negative scope ("no branches, PLANs, execution")
+- [x] AC4: `references/github.md` has the 3-tier gh fallback with an honest per-operation capability matrix; `references/jira.md` has MCP + REST fallback per policy
+- [x] AC5: Reference sweep: `repo-ops-specialist` (6→1 allow rules), `pr-workflow-subagent`, prose pointers in requirements/technical-design/discovery specialists, and the 12 consumer skills (plan-execution, plan-execution-inline, pr-creation, pr-merge, wayfinder, worktree-pipeline, dev-uat-promotion, mermaid-diagram-creator, semantic-release-convention, opencode-repo-setup, gh-cli-setup, grilling)
+- [x] AC6: Installer synced: `registry.json` rebuilt, `pack-devops.json` 6→1, `skill-profiles.json` lean swap, **`opencode_app/opencode.json` swept in the same commit** (6 allow rules → one `ticketing-skill` allow + `/create-ticket` template retarget — Mode R strengthening; gated by skill_profiles.bats :54 subset AND :63 dead-allow); count literals updated (skill_profiles.bats, init.bats, test_markitdown_skill.bats, README rows, opencode_app/README.md, deploy/setup.sh + setup.ps1 comments — disk + delta, never stale doc numbers; test_count_drift.bats is dynamic → no-op)
+- [x] AC7: `tests/test_issue_template_byte_identity.bats` path swapped (in the consolidation commit); full bats suite green
+- [x] AC8: Repo-wide grep for the six old names → zero hits outside the adjudicated disposition (Phase 5 buckets): **update** mcp-guard-single-homed, blocked-by-format-single-home:14, policy-single-home-pointer-shape:3, section-pins-target-heading-anchors:10 (live pins — retarget to ticketing-skill), `_index.md` mirrors :252,:258,:741,:1002; **grandfather as justified** CHANGELOG.md:645, PLANS/PLAN-{512,560,595}.md, rule-added-example-stale:8, gh-issue-edit-body-replaces-not-appends.md:23, `_index.md`:894
 
 ## Dependency & Consumer Map
 
@@ -135,25 +135,29 @@ _All of 2.1–2.10 lands in a single commit so release.yml (build-registry --che
 
 ### Phase 4: Deploy comment literals
 
-- [ ] **4.1** `deploy/setup.sh` + `deploy/setup.ps1`: profile comment literals ("N primary-visible skills" / "N-allow allowlist" prose above profile functions — search anchors, not line numbers); commit `docs(deploy): sync setup comment literals for ticketing-skill`
+- [x] **4.1** `deploy/setup.sh` + `deploy/setup.ps1`: profile comment literals ("N primary-visible skills" / "N-allow allowlist" prose above profile functions — search anchors, not line numbers); commit `docs(deploy): sync setup comment literals for ticketing-skill`
     — **Why:** AC6 deploy half; functional counts auto-derive, comments drift
     — **Done when:** comment literals match recomputed numbers (derive from disk + delta)
     — **Consumers affected:** humans
+    — **Done:** Verified both deploy scripts: only count literal is setup.sh:3580 "78 primary-visible" — lean unchanged (1:1 swap), still correct; setup.ps1 ticket hit is prose about a past issue; setup counts derive dynamically (count_skills=150). No edits required; tick folded into this commit
 
 ### Phase 5: LEARNINGS adjudication + verification gates
 
-- [ ] **5.1** LEARNINGS update bucket per Mode R: `decisions/mcp-guard-single-homed.md` (canonical home → ticketing-skill, evidence-add), `conventions/blocked-by-format-single-home.md:14` (producer → ticketing-skill), `conventions/policy-single-home-pointer-shape.md:3` (context note: home moved in #599), `conventions/section-pins-target-heading-anchors.md:10` (**live pins retargeted** to ticketing-skill — manifest is auto-injected, stale pins misroute), `_index.md` mirrors `:252,:258,:741,:1002`; commit `chore(learnings): retarget ticket-skill pins to ticketing-skill`
+- [x] **5.1** LEARNINGS update bucket per Mode R: `decisions/mcp-guard-single-homed.md` (canonical home → ticketing-skill, evidence-add), `conventions/blocked-by-format-single-home.md:14` (producer → ticketing-skill), `conventions/policy-single-home-pointer-shape.md:3` (context note: home moved in #599), `conventions/section-pins-target-heading-anchors.md:10` (**live pins retargeted** to ticketing-skill — manifest is auto-injected, stale pins misroute), `_index.md` mirrors `:252,:258,:741,:1002`; commit `chore(learnings): retarget ticket-skill pins to ticketing-skill`
     — **Why:** AC8 update bucket; live convention docs become factually wrong at merge otherwise
     — **Done when:** update-bucket files contain zero old names (except explicitly marked historical narrative)
     — **Consumers affected:** every future session's auto-injected manifest
-- [ ] **5.2** Full gate: entire `bats tests/` suite in the worktree; fix any red
+    — **Done:** Adjudicated updates landed as _index.md evidence-adds (:252/:258 home moved, :741 producer, :1002 pointer-shape held) + section-pins live pins retargeted; referenced decision FILES absent on branch — index is the live surface (noted). Plus 2 new pattern files + 2 index evidence-adds; commit d1baefe
+- [x] **5.2** Full gate: entire `bats tests/` suite in the worktree; fix any red
     — **Why:** verification-loop contract — ticket exit gate is full-tier
     — **Done when:** `bats tests/` exits 0
     — **Consumers affected:** release CI, PR gate citation
-- [ ] **5.3** AC8 adjudicated sweep: old-name grep repo-wide → zero hits outside the grandfather list (CHANGELOG.md:645; PLANS/PLAN-{512,560,595}.md; rule-added-example-stale:8; gh-issue-edit-body-replaces-not-appends.md:23; `_index.md`:894); tick checkboxes ride this commit; final commit `test(tickets): adjudicate AC8 sweep for ticketing-skill consolidation`
+    — **Done:** Full suite: bats tests/ = 632 ok, 0 not ok (ticket exit gate, tier=full)
+- [x] **5.3** AC8 adjudicated sweep: old-name grep repo-wide → zero hits outside the grandfather list (CHANGELOG.md:645; PLANS/PLAN-{512,560,595}.md; rule-added-example-stale:8; gh-issue-edit-body-replaces-not-appends.md:23; `_index.md`:894); tick checkboxes ride this commit; final commit `test(tickets): adjudicate AC8 sweep for ticketing-skill consolidation`
     — **Why:** the acceptance gate with a pre-adjudicated disposition so it cannot stall
     — **Done when:** grep clean per buckets; all ACs checked; gate memo `tier=full` recorded with final SHA
     — **Consumers affected:** PR Step 10a citation
+    — **Done:** AC8 grep adjudicated: every hit in grandfather bucket (PLAN-512/560/595, CHANGELOG:645, _index:894) or justified (README migration note :290, ticketing-skill provenance lines, this PLAN); zero unjustified
 
 ## Technical Notes
 
@@ -220,3 +224,4 @@ _All of 2.1–2.10 lands in a single commit so release.yml (build-registry --che
 GATE ffc7b14 tier=full lint=n.a typecheck=n.a build=n.a unit=71/71(bats: skill_profiles, byte-identity, markitdown, count_drift, init) e2e=n.a — Phase 2 (critical-area anchors: installer registry + CI-gated count tests)
 GATE acfbe53 tier=light lint=n.a typecheck=n.a build=n.a unit=13/13(bats: skill_isolation, skill_profiles) + build-registry --check PASS e2e=n.a — Phase 3 (scoped: frontmatter/body pointer sweep)
 ```
+GATE b5da03f tier=full lint=n.a typecheck=n.a build=n.a unit=632/632(bats tests/ full suite) e2e=n.a — ticket exit gate (#599)
