@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.2.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.1.0...v12.2.0) (2026-09-27)
+
+### Features
+
+* **init:** prune verb + --select registry convergence ([#610](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/610)) ([#621](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/621)) ([26970cc](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/26970cc789362d5d4bd8bc3f0130e5f0d3375c43))
+
+### Documentation
+
+* **readme:** fix documentation drift in README and AGENTS.md ([#615](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/615)) ([#619](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/619)) ([56ca9a4](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/56ca9a448951ecdb515722cb6df7c827b0a932f7)), closes [post-#616](https://github.com/darellchua2/post-/issues/616)
+
 ## [12.1.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.0.0...v12.1.0) (2026-09-27)
 
 ### Features
