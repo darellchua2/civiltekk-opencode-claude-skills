@@ -195,7 +195,7 @@ async function main() {
         const hasCmd = Array.isArray(cur?.command) && cur.command.length > 0;
         const hasUrl = typeof cur?.url === "string" && cur.url.trim() !== "";
         if (!cur || typeof cur !== "object" || (!hasCmd && !hasUrl)) {
-          die(`ERROR: pack '${name}' enables '${srv}', but the target config has no full definition for it (missing command/url). The deployed config predates this pack. Re-run setup.sh and answer 'y' to refresh the config, or re-copy opencode_app/opencode.json.`);
+          die(`ERROR: pack '${name}' enables '${srv}', but the target config has no full definition for it (missing command/url). The deployed config predates this pack. Re-run setup.sh and answer 'y' to refresh the config, or re-copy deploy/opencode.json.`);
         }
       }
       deepMerge(config.mcp, mcp);

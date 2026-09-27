@@ -127,7 +127,7 @@ PROJECT_OVERRIDES="${REPO_DIR}/.opencode/agent-overrides.json"
 RESOLVED_SIDECAR="${CONFIG_DIR}/.resolved-models.json"
 CONFIG_VERSION_FILE="${CONFIG_DIR}/.config-version"
 SCHEMA_VERSION="2.0"
-SOURCE_CONFIG="${REPO_DIR}/opencode_app/opencode.json"
+SOURCE_CONFIG="${REPO_DIR}/deploy/opencode.json"
 # Where dry-run stages complete resolved files (mirrors what would land in ~/.config)
 DRY_RUN_PREVIEW_DIR="${CONFIG_DIR}/.dry-run-preview"
 
@@ -2726,7 +2726,7 @@ setup_config() {
         fi
     fi
 
-    # Copy the config from the single source of truth (opencode_app/opencode.json).
+    # Copy the config from the single source of truth (deploy/opencode.json).
     # Historically this copied deploy/config.json, but maintaining a duplicate
     # caused drift (see PLAN-BT-74 Phase 12.2). The resolver (run later in
     # deploy_agents) patches this file in-place for explore/general models (and
@@ -3576,7 +3576,7 @@ deploy_plugins() {
 # ─────────────────────────────────────────────────────────────────────────────
 # Apply the skill profile (GIT-333): rewrites ONLY the skill rules
 # (action:"skill") inside the permissions array of the DEPLOYED config
-# (never the source opencode_app/opencode.json).
+# (never the source deploy/opencode.json).
 #   lean (default) -> 78 primary-visible skills + "*": "deny"
 #   full           -> verified no-op (shipped allowlist stays verbatim)
 # Mirrors run_pack_merger's dry-run contract (B1): in dry-run the resolver

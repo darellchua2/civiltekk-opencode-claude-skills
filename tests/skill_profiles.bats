@@ -1,13 +1,13 @@
 #!/usr/bin/env bats
 # GIT-333: skill-profile mechanism coverage (v2 shapes, PLAN-374).
 #   1. every lean key in deploy/skill-profiles.json matches a real skill dir
-#   2. lean ⊆ shipped skill allows in opencode_app/opencode.json (typo guard)
+#   2. lean ⊆ shipped skill allows in deploy/opencode.json (typo guard)
 #   3. lean count == 78
 #   4. apply-skill-profile.mjs lean rewrites a scratch deployed config to
 #      exactly 78 allow rules + a skill deny-all-first; full leaves the
 #      shipped permissions array verbatim. Non-skill rules are never touched.
-#   5. every shipped skill allow resolves on a skill surface (root skills/ ∪
-#      opencode_app/.opencode/skills) and the surfaces stay disjoint (#486)
+#   5. every shipped skill allow resolves on the root skills/ surface (#607
+#      retired the Docker-app second surface; single-surface contract)
 #   6. the dead-allow guard itself fails on a phantom rule (negative fixture)
 # Note: these tests intentionally do NOT assert the shipped skill-allow count
 # (count-drift tests own disk counts; allowlist size is profile-dependent).
@@ -26,15 +26,14 @@ lean_keys() {
     node -e "console.log(require('${PROJECT_ROOT}/deploy/skill-profiles.json').lean.join('\n'))"
 }
 
-# #486: skill-allow resources in an opencode.json must resolve to a SKILL.md dir
-# on SOME surface — root skills/ (deployable) ∪ opencode_app/.opencode/skills/
-# (Docker-app project surface). Raw readdir is NOT enough, so membership is
-# tested by SKILL.md presence.
+# #607: skill-allow resources in the config must resolve to a SKILL.md dir in
+# the root skills/ surface (the single deployable surface — the former
+# Docker-app project skills surface was removed with standalone mode, #607). Raw readdir is NOT enough, so membership is tested by SKILL.md presence.
 dead_allows() { # $1 = opencode.json path; prints allow resources matching no surface
     node -e "
 const fs=require('fs');
 const dirs=(p)=>fs.readdirSync(p).filter(d=>fs.existsSync(p+'/'+d+'/SKILL.md'));
-const union=new Set([...dirs('${PROJECT_ROOT}/skills'),...dirs('${PROJECT_ROOT}/opencode_app/.opencode/skills')]);
+const union=new Set([...dirs('${PROJECT_ROOT}/skills')]);
 const c=require('$1');
 console.log(c.permissions.filter(r=>r.action==='skill'&&r.effect==='allow'&&r.resource!=='*').map(r=>r.resource).filter(r=>!union.has(r)).join(' '));"
 }
@@ -54,31 +53,22 @@ console.log(c.permissions.filter(r=>r.action==='skill'&&r.effect==='allow'&&r.re
 @test "skill-profiles: lean is a subset of the shipped skill allows" {
     bad=$(node -e "
 const p=require('${PROJECT_ROOT}/deploy/skill-profiles.json');
-const c=require('${PROJECT_ROOT}/opencode_app/opencode.json');
+const c=require('${PROJECT_ROOT}/deploy/opencode.json');
 const allow=new Set(c.permissions.filter(r=>r.action==='skill'&&r.effect==='allow'&&r.resource!=='*').map(r=>r.resource));
 console.log(p.lean.filter(k=>!allow.has(k)).join(' '));")
     [ -z "$bad" ] || { echo "not in shipped skill allows: $bad"; return 1; }
 }
 
-@test "skill-profiles: every shipped skill allow resolves on a skill surface (root ∪ app)" {
-    bad=$(dead_allows "${PROJECT_ROOT}/opencode_app/opencode.json")
-    [ -z "$bad" ] || { echo "dead allow rules (no SKILL.md on root or app surface): $bad"; return 1; }
-    # inverse failure: a skill dir on BOTH surfaces collides (precedence
-    # unverified upstream; the assert is conservative under any rule)
-    overlap=$(node -e "
-const fs=require('fs');
-const dirs=(p)=>fs.readdirSync(p).filter(d=>fs.existsSync(p+'/'+d+'/SKILL.md'));
-const root=dirs('${PROJECT_ROOT}/skills');
-const app=dirs('${PROJECT_ROOT}/opencode_app/.opencode/skills');
-console.log(root.filter(d=>app.includes(d)).join(' '));")
-    [ -z "$overlap" ] || { echo "skill on BOTH surfaces (ambiguous shadowing): $overlap"; return 1; }
+@test "skill-profiles: every shipped skill allow resolves on the root skills surface" {
+    bad=$(dead_allows "${PROJECT_ROOT}/deploy/opencode.json")
+    [ -z "$bad" ] || { echo "dead allow rules (no SKILL.md on root surface): $bad"; return 1; }
 }
 
 @test "skill-profiles: dead-allow guard fails on a phantom rule (negative fixture)" {
     scratch="${TEST_HOME}/opencode.json"
     node -e "
 const fs=require('fs');
-const c=JSON.parse(fs.readFileSync('${PROJECT_ROOT}/opencode_app/opencode.json','utf8'));
+const c=JSON.parse(fs.readFileSync('${PROJECT_ROOT}/deploy/opencode.json','utf8'));
 c.permissions.push({action:'skill',resource:'not-a-real-skill',effect:'allow'});
 fs.writeFileSync('${scratch}',JSON.stringify(c,null,2));"
     bad=$(dead_allows "$scratch")
@@ -87,7 +77,7 @@ fs.writeFileSync('${scratch}',JSON.stringify(c,null,2));"
 
 @test "apply-skill-profile: lean rewrites scratch config to 78 allows + deny-all-first" {
     scratch="${TEST_HOME}/opencode.json"
-    cp "${PROJECT_ROOT}/opencode_app/opencode.json" "$scratch"
+    cp "${PROJECT_ROOT}/deploy/opencode.json" "$scratch"
     non_skill_before=$(node -e "const c=require('$scratch');console.log(c.permissions.filter(r=>r.action!=='skill').length)")
     run node "${PROJECT_ROOT}/deploy/apply-skill-profile.mjs" \
         --config "$scratch" \
@@ -107,7 +97,7 @@ console.log(allows.length, first.resource==='*'&&first.effect==='deny'?'deny-ok'
 
 @test "apply-skill-profile: full is a verified no-op on a fresh copy" {
     scratch="${TEST_HOME}/opencode.json"
-    cp "${PROJECT_ROOT}/opencode_app/opencode.json" "$scratch"
+    cp "${PROJECT_ROOT}/deploy/opencode.json" "$scratch"
     before=$(node -e "const c=require('${scratch}');console.log(JSON.stringify(c.permissions))")
     run node "${PROJECT_ROOT}/deploy/apply-skill-profile.mjs" \
         --config "$scratch" \
@@ -120,7 +110,7 @@ console.log(allows.length, first.resource==='*'&&first.effect==='deny'?'deny-ok'
 
 @test "apply-skill-profile: unknown profile and typo'd lean keys fail closed" {
     scratch="${TEST_HOME}/opencode.json"
-    cp "${PROJECT_ROOT}/opencode_app/opencode.json" "$scratch"
+    cp "${PROJECT_ROOT}/deploy/opencode.json" "$scratch"
     run node "${PROJECT_ROOT}/deploy/apply-skill-profile.mjs" --config "$scratch" \
         --profiles "${PROJECT_ROOT}/deploy/skill-profiles.json" --profile bogus
     [ "$status" -ne 0 ]

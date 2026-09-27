@@ -72,7 +72,7 @@ for name in sys.argv[1:3]:
   HANDOFF2_TARGETS="$(grep -oE '^HANDOFF2_TARGETS="[^"]+"' "$GUARD" | cut -d'"' -f2)"
   [ -n "$HANDOFF1_OWNER" ] && [ -n "$HANDOFF1_TARGETS" ]
   [ -n "$HANDOFF2_OWNER" ] && [ -n "$HANDOFF2_TARGETS" ]
-  python3 - "$DEPMAP" "$HANDOFF1_OWNER" "$HANDOFF1_TARGETS" "$HANDOFF2_OWNER" "$HANDOFF2_TARGETS" "${REPO}/opencode_app/opencode.json" <<'PYEOF'
+  python3 - "$DEPMAP" "$HANDOFF1_OWNER" "$HANDOFF1_TARGETS" "$HANDOFF2_OWNER" "$HANDOFF2_TARGETS" "${REPO}/deploy/opencode.json" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1]))
 owner1, targets1, owner2, targets2 = sys.argv[2:6]

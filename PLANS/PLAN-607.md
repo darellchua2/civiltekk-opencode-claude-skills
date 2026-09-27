@@ -33,34 +33,41 @@
 
 ### Phase 1: Relocate config source of truth
 
-- [ ] **1.1** `git mv opencode_app/opencode.json deploy/opencode.json` AND strip the `github-runners-setup-skill` skill-allow rule from the relocated config (that skill exists only on the app surface deleted in 2.1 — the rule is dead-on-arrival at the new path; plan-review Issue 2 / GAP 3)
+- [x] **1.1** `git mv opencode_app/opencode.json deploy/opencode.json` AND strip the `github-runners-setup-skill` skill-allow rule from the relocated config (that skill exists only on the app surface deleted in 2.1 — the rule is dead-on-arrival at the new path; plan-review Issue 2 / GAP 3)
     — **Why:** the file is the config source for ALL install modes, not Docker-only; it must leave `opencode_app/` before that dir is deleted, and a dead allow would fail the root-only dead-allow guard (1.6).
     — **Done when:** `git status` shows the rename staged; `deploy/opencode.json` exists; `opencode_app/opencode.json` does not; `grep -c 'github-runners-setup-skill' deploy/opencode.json` = 0.
     — **Consumers affected:** every consumer row in the map; all repointed in 1.2–1.7.
-- [ ] **1.2** Repoint `deploy/setup.sh`: `SOURCE_CONFIG` (line 130) and the two prose comments (≈2729, ≈3579) that name `opencode_app/opencode.json`
+    — **Done:** git mv executed; github-runners-setup-skill allow stripped (grep count 0); files: deploy/opencode.json; fixes: none
+- [x] **1.2** Repoint `deploy/setup.sh`: `SOURCE_CONFIG` (line 130) and the two prose comments (≈2729, ≈3579) that name `opencode_app/opencode.json`
     — **Why:** setup.sh is the deploy entrypoint; a stale path breaks every user-space deploy.
     — **Done when:** `grep -n 'opencode_app' deploy/setup.sh` returns no config-path hits (LLM-section hits remain until Phase 3).
     — **Consumers affected:** `./deploy/setup.sh` users, `setup.ps1` thin launcher.
-- [ ] **1.3** Repoint `installer/init.mjs` `SOURCE_OC` (line 56)
+    — **Done:** SOURCE_CONFIG + 2 comments repointed; verified by grep; files: deploy/setup.sh; fixes: none
+- [x] **1.3** Repoint `installer/init.mjs` `SOURCE_OC` (line 56)
     — **Why:** the npx installer generates project configs from this file.
     — **Done when:** `node installer/init.mjs --list categories` (or `--help`) runs without ENOENT.
     — **Consumers affected:** `npx github:darellchua2/...` installs, `opencode-init`.
-- [ ] **1.4** Repoint `.releaserc.json:133` and `.github/workflows/release.yml:86-87`
+    — **Done:** SOURCE_OC repointed; node --check green; files: installer/init.mjs; fixes: none
+- [x] **1.4** Repoint `.releaserc.json:133` and `.github/workflows/release.yml:86-87`
     — **Why:** release CI validates the config with jq; a stale path fails the release workflow.
     — **Done when:** `grep -rn 'opencode_app/opencode.json' .releaserc.json .github/` is empty.
     — **Consumers affected:** semantic-release config check, release workflow.
-- [ ] **1.5** Repoint guard tests: `test_mcp_count_consistency.bats:26` (+ source-of-truth comment :6), `test_docling_skill.bats:11`, `init.bats:10`, `test_requires_skills.bats:75`
+    — **Done:** jq-validation path + release file list repointed; files: .releaserc.json, .github/workflows/release.yml; fixes: none
+- [x] **1.5** Repoint guard tests: `test_mcp_count_consistency.bats:26` (+ source-of-truth comment :6), `test_docling_skill.bats:11`, `init.bats:10`, `test_requires_skills.bats:75`
     — **Why:** these read the config as source of truth; they fail ENOENT until repointed.
     — **Done when:** `bats tests/test_mcp_count_consistency.bats tests/test_docling_skill.bats tests/init.bats tests/test_requires_skills.bats` all pass in the worktree.
     — **Consumers affected:** CI bats suite.
-- [ ] **1.6** Rework `tests/skill_profiles.bats`: repoint config path to `deploy/opencode.json`; KEEP the dead-allow assert (≈63) and its negative fixture (≈77-86) repointed to the new path; DROP only the app-surface union/disjoint block (≈66-74 and the `dirs(opencode_app/...)` half of the union at ≈37) — #486 two-surface contract superseded
+    — **Done:** 4 test files repointed incl. source-of-truth comment; affected bats suite 84/84 green; files: tests/test_mcp_count_consistency.bats, tests/test_docling_skill.bats, tests/init.bats, tests/test_requires_skills.bats; fixes: none
+- [x] **1.6** Rework `tests/skill_profiles.bats`: repoint config path to `deploy/opencode.json`; KEEP the dead-allow assert (≈63) and its negative fixture (≈77-86) repointed to the new path; DROP only the app-surface union/disjoint block (≈66-74 and the `dirs(opencode_app/...)` half of the union at ≈37) — #486 two-surface contract superseded
     — **Why:** the two-surface contract is superseded by this ticket, but the dead-allow guard itself must survive root-only (future dead rules stay detectable); the app surface dies in Phase 2.
     — **Done when:** `grep -n 'opencode_app' tests/skill_profiles.bats` is empty and `bats tests/skill_profiles.bats` passes (incl. the negative fixture).
     — **Consumers affected:** skill-profile guard coverage (lean⊆shipped + dead-allow checks survive, app-union check retired).
-- [ ] **1.7** Update deploy/installer tooling comments/messages that name the old path: `deploy/skill-profiles.json` `_comment`, `deploy/apply-skill-profile.mjs:11`, `deploy/merge-packs.mjs:198`, `installer/dependency-map.json` `$comment` (MCP-key contract names `opencode_app/opencode.json` — plan-review Issue 3)
+    — **Done:** dead_allows now root-only, negative fixture kept, union/overlap block dropped, paths swapped; bats green; files: tests/skill_profiles.bats; fixes: none
+- [x] **1.7** Update deploy/installer tooling comments/messages that name the old path: `deploy/skill-profiles.json` `_comment`, `deploy/apply-skill-profile.mjs:11`, `deploy/merge-packs.mjs:198`, `installer/dependency-map.json` `$comment` (MCP-key contract names `opencode_app/opencode.json` — plan-review Issue 3)
     — **Why:** operator-facing error text and comments must not send users to a deleted path.
     — **Done when:** `grep -rn 'opencode_app' deploy/ installer/dependency-map.json` returns nothing (outside setup.sh LLM section, handled in Phase 3).
     — **Consumers affected:** pack-merge error messages, profile tooling readers, installer dependency map.
+    — **Done:** 4 tooling comments/messages repointed; grep clean; files: deploy/skill-profiles.json, deploy/apply-skill-profile.mjs, deploy/merge-packs.mjs, installer/dependency-map.json; fixes: none
 
 ### Phase 2: Delete Docker artifacts + coupled test reads
 
@@ -168,3 +175,7 @@ None — single executable ticket, no `blocked-by`.
 - **Hidden consumer of `--inject-primary` or the app-scoped skill** → pre-review grepped the repo (excluding history dirs); registry-diff check (6.1) and the final audit (6.4) backstop.
 - **Count drift in README** → counts are untouched (150/34); `test_count_drift.bats` guards.
 - **Live web endpoint depending on `restart-opencode-docker.sh`** → user-confirmed the endpoint is retired; removal is the intent of the ticket.
+
+## Gate Trace
+
+GATE 48ea788 tier=light lint=n.a typecheck=n.a build=n.a unit=t(84/84 affected bats) e2e=n.a
