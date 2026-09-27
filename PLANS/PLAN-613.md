@@ -77,7 +77,7 @@ Review returned 1 BLOCK + 3 Majors + 5 NOTEs; Requirements Gaps relayed to requi
 - Major (pack can't companion v2): +5 domain skills (clean-code, code-smells, security-audit, react-hooks/react-render-antipatterns — branch-consistent names), `$comment` synced, description scopes the companion claim to full deploys with the preflight caveat
 - NOTEs applied now: reviewer enumeration corrected to (architecture/uiux) — language review rides Step 9. NOTEs deferred to follow-ups: Docker dead-letter prune repo-wide, lean-profile playwright-responsive-audit gap (pre-existing), bats guard on the v2 entry, preflight asymmetry ticket (filed at PR time).
 
-GATE 837c127 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 633/633 — review-fix re-gate, final tree)
+GATE b337941 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 615/615 — review-fix re-gate after rebase onto origin/main #614/#616, final tree)
 
 ### Phase 3: Redeploy + end-to-end verification
 
