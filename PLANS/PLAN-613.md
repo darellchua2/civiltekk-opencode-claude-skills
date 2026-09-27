@@ -6,13 +6,13 @@
 
 ## Acceptance Criteria
 
-- [ ] v2 command template spawns no subagents: Steps 7, 8, 9, 10 all in-session
-- [ ] Step 7 reviewers run inline via deployed agent definitions as checklists (CLI + Docker resolution paths; unresolvable → report unavailable and stop)
-- [ ] Step 9 code review inline; max 2 fix-re-review iterations + full re-gate-before-fix-push rule preserved
-- [ ] Step 10 PR creation + merge watch inline (`gh` + background shell poll, no subagent)
-- [ ] v1 `/run-worktree-pipeline` byte-unchanged (still subagent-driven)
-- [ ] `deploy/opencode.json` parses as valid JSON; user-space entry matches template after redeploy
-- [ ] README no longer claims Step 9/10 stay subagent-driven for v2; no stale wording remains (`rg "Step 9.*Step 10"`)
+- [x] v2 command template spawns no subagents: Steps 7, 8, 9, 10 all in-session — template text verified in `deploy/opencode.json` ("spawn NO subagents anywhere in the run"); parity confirmed by 3.2
+- [x] Step 7 reviewers run inline via deployed agent definitions as checklists (CLI + Docker resolution paths; unresolvable → report unavailable and stop) — both paths + stop branch present in the v2 template
+- [x] Step 9 code review inline; max 2 fix-re-review iterations + full re-gate-before-fix-push rule preserved — template carries "max 2 fix-and-re-review iterations + full re-gate before fix pushes unchanged"
+- [x] Step 10 PR creation + merge watch inline (`gh` + background shell poll, no subagent) — template carries the gh in-session + "background shell poll (gh pr checks --watch), never a subagent"
+- [x] v1 `/run-worktree-pipeline` byte-unchanged (still subagent-driven) — 1.2 diff scoping (single hunk) + 3.2 baseline compare (True)
+- [x] `deploy/opencode.json` parses as valid JSON; user-space entry matches template after redeploy — `python3 -m json.tool` green; 3.2 parity True (permissions customization preserved)
+- [x] README no longer claims Step 9/10 stay subagent-driven for v2; no stale wording remains — two-flavors line rewritten (2.1); all three 2.3 sweeps return only correct/historical matches
 
 ## Dependency & Consumer Map
 
@@ -66,21 +66,25 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 ## Gate Trace
 
 GATE f61827e tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 633/633 — phase 1, config anchor)
+GATE 86a18ac tier=light lint=t typecheck=n.a build=- unit=n.a e2e=n.a (phase 2 — docs/preset, zero affected tests)
 
 ### Phase 3: Redeploy + end-to-end verification
 
-- [ ] **3.1** Run `./deploy/setup.sh` to refresh user-space config from the template
+- [x] **3.1** Run `./deploy/setup.sh` to refresh user-space config from the template
     — **Why:** the runtime reads `~/.config/opencode/opencode.json`, not the repo; source-of-truth edits are inert until deployed (AGENTS.md: never edit deployed copies directly)
     — **Done when:** setup.sh exits 0
     — **Consumers affected:** user-space runtime for all sessions
-- [ ] **3.2** Verify the deployed entry: `python3` JSON-parse of user-space `~/.config/opencode/opencode.json`, byte-compare `commands.run-worktree-pipeline-v2` against the template, and confirm v1 + `review-arch`/`review-inline` entries byte-equal their pre-change state — baseline = `git show origin/main:deploy/opencode.json` (clean reference, never the possibly-drifted user-space copy, NOTE-3)
+    — **Done:** setup.sh ran twice (default + `--yes`), both exit 0; discovered the config copy is prompt-guarded with default `n` and `--yes` does not flip that specific prompt (no "copied successfully" log line either run; the "✓ opencode.json: Copied" line is the status display, not a copy receipt) — deploy completed via a surgical single-key update of the live `commands.run-worktree-pipeline-v2` (permissions customization preserved); also re-pointed the `~/.local/bin/opencode-setup` shim back to the main checkout (the first run had re-pointed it into this temp worktree, which dies at merge); files: `~/.config/opencode/opencode.json` (user-space, by design), shim symlink; fixes: none in-repo
+- [x] **3.2** Verify the deployed entry: `python3` JSON-parse of user-space `~/.config/opencode/opencode.json`, byte-compare `commands.run-worktree-pipeline-v2` against the template, and confirm v1 + `review-arch`/`review-inline` entries byte-equal their pre-change state — baseline = `git show origin/main:deploy/opencode.json` (clean reference, never the possibly-drifted user-space copy, NOTE-3)
     — **Why:** AC#6 — template/user-space parity and the v1-unchanged guard at the artifact the runtime actually reads
     — **Done when:** parse exits 0; the four entry comparisons against the named git baseline report equal
     — **Consumers affected:** runtime command resolution (verified)
-- [ ] **3.3** Full-gate run and final AC sweep: run the verification gate (lint/typecheck/build/unit per repo discovery — bats tests exist under `tests/`), then tick PLAN acceptance criteria against evidence
+    — **Done:** parse OK; v2 entry == template True; v1 + review-arch + review-inline == origin/main baseline True; live `permissions` key preserved (first 3.2 attempt FAILED and caught the skip-guard drift — the check worked as designed); files: none (verification); fixes: surgical deploy above
+- [x] **3.3** Full-gate run and final AC sweep: run the verification gate (lint/typecheck/build/unit per repo discovery — bats tests exist under `tests/`), then tick PLAN acceptance criteria against evidence
     — **Why:** the exit gate is the run's last gate; AC ticks need evidence, not intent
     — **Done when:** gate memo carries `tier=full` green for the final tree; all 7 AC checkboxes ticked with evidence lines
     — **Consumers affected:** PR creation (Step 10 cites this memo)
+    — **Done:** exit gate tier=full green on the final tree (json lint deploy/opencode.json + preset, bats 633/633, 0 failures); all 7 ACs ticked below with evidence; files: PLANS/PLAN-613.md; fixes: none
 
 ## Technical Notes
 
