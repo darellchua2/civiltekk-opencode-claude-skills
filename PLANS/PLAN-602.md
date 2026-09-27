@@ -9,9 +9,9 @@
 - [x] `installer/dependency-map.json` carries `requiresSkills` entries for all three loop skills (`autoresearch-code-skill`, `autoresearch-ml-skill`, `autoresearch-research-skill` → `autoresearch-core-skill`)
 - [x] `tests/test_skill_isolation.bats` allowlist mirrors the edges via a new `HANDOFF3_OWNERS`/`HANDOFF3_TARGETS` pair (multi-owner guard extension)
 - [x] `tests/test_requires_skills.bats` exact-match pin extended to include HANDOFF3; one new live test proves `add autoresearch-ml-skill` auto-installs core with the notice
-- [ ] `AGENTS.md` §Skill Isolation Contract records the third declared exception group
-- [ ] `bats tests/` green
-- [ ] `installer/registry.json` deliberately NOT rebuilt (requiresSkills there is agent-frontmatter-sourced; dependency-map is read directly by init.mjs)
+- [x] `AGENTS.md` §Skill Isolation Contract records the third declared exception group
+- [x] `bats tests/` green
+- [x] `installer/registry.json` deliberately NOT rebuilt (requiresSkills there is agent-frontmatter-sourced; dependency-map is read directly by init.mjs)
 
 ## Dependency & Consumer Map
 
@@ -56,15 +56,17 @@
 
 ### Phase 3: Contract prose + full gate
 
-- [ ] **3.1** Update `AGENTS.md` §Skill Isolation Contract (L23): record the third declared exception group — `{autoresearch-code, autoresearch-ml, autoresearch-research}-skill → autoresearch-core-skill` (#602 — the loop skills cite the core protocol host's references at runtime) — and the `HANDOFF3_OWNERS`/`HANDOFF3_TARGETS` multi-owner shape
+- [x] **3.1** Update `AGENTS.md` §Skill Isolation Contract (L23): record the third declared exception group — `{autoresearch-code, autoresearch-ml, autoresearch-research}-skill → autoresearch-core-skill` (#602 — the loop skills cite the core protocol host's references at runtime) — and the `HANDOFF3_OWNERS`/`HANDOFF3_TARGETS` multi-owner shape
     — **Why:** AGENTS.md documents "the two declared exceptions"; leaving it stale after adding a third group makes the contract lie
     — **Done when:** `grep -c 'HANDOFF3_OWNERS' AGENTS.md installer/dependency-map.json tests/test_skill_isolation.bats tests/test_requires_skills.bats` shows ≥1 in each
     — **Consumers affected:** all agents/contributors reading the isolation contract
+    — **Done:** prose updated (three exception groups + HANDOFF3 multi-owner shape); grep shows 4/4 files; files: AGENTS.md; fixes: none
 
-- [ ] **3.2** Run the full gate: `bats tests/` (all files, incl. test_skill_isolation, test_requires_skills, skill_profiles, select_items, docling); confirm no registry change (`git status --porcelain installer/registry.json` empty); confirm skill count unchanged at 150
+- [x] **3.2** Run the full gate: `bats tests/` (all files, incl. test_skill_isolation, test_requires_skills, skill_profiles, select_items, docling); confirm no registry change (`git status --porcelain installer/registry.json` empty); confirm skill count unchanged at 150
     — **Why:** the ticket exit gate must be tier=full green on the final tree before review/PR
     — **Done when:** bats suite exits 0; registry untouched; `ls -d skills/*/ | wc -l` = 150
     — **Consumers affected:** PR citation (`GATE <sha> tier=full`), reviewer
+    — **Done:** exit=0, 633/633 ok, 0 failures; registry 0 changes; count 150; files: none (verification only); fixes: none
 
 ## Technical Notes
 
@@ -87,3 +89,4 @@ None — no blocked-by; independent of #603/#604 (Wave merges must re-point noth
 
 WORK LOG — Phases 1+2 landed as one commit (deliberate deviation from the PLAN's per-phase commit split): the exact-match pin in test_requires_skills #5 makes map+guard+tests a lockstep unit; separate commits would push a red gate between them. Tier judgment: light (config+tests only; exit gate Phase 3 runs full).
 GATE c3258f3 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 03e8f9e tier=full lint=- typecheck=- build=- unit=t e2e=n.a
