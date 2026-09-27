@@ -214,22 +214,26 @@ Consumers: agents/documentation-subagent.md (ascii), agents/startup-founder-suba
 ### Phase 8: civiltekk-ponytail-audit-skill
 Absorbs: `ponytail-audit-skill` (host renames) + `ponytail-review-skill` + `ponytail-debt-skill`. references/: `audit.md`, `review.md`, `debt.md`. Routes: whole-repo audit | diff review | debt ledger. `shipsPlugins` edges in dependency-map.json: three entries collapse to one under the new name (same plugin artifacts); `pluginCompanions` unchanged (plugin-keyed).
 Consumers: agents/code-review-subagent.md (review), agents/architecture-review-subagent.md (ponytail-audit allow), agents/repo-ops-specialist-subagent.md (debt), deploy/skill-profiles.json, deploy/opencode.json (trio's allow rules), tests/test_ships_plugins.bats (~15 invocation lines across ~10 tests pin the three names), plugins/ATTRIBUTION.md:36-40 (LIVE relative paths `../skills/ponytail-*-skill/SKILL.md` — repoint, not exempt), README.md.
-- [ ] **8.1** Rename + author host + references per template
+- [x] **8.1** Rename + author host + references per template
     — **Why:** one ponytail family, three scopes; mode skill (vendored `ponytail`) is untouched — different directory
     — **Done when:** template satisfied; three trigger sets intact; isolation green
     — **Consumers affected:** code-review, repo-ops agents
-- [ ] **8.2** Delete + repoint + collapse shipsPlugins map entries (2 agents, skill-profiles, test_ships_plugins, README)
+    — **Done:** git mv preserved history; routes whole-repo-audit|diff-review|debt-ledger; 9-phrase union description; vendored v4.10.0 attribution retained; files: skills/civiltekk-ponytail-audit-skill/{SKILL.md,references/audit.md,references/review.md,references/debt.md}; fixes: none
+- [x] **8.2** Delete + repoint + collapse shipsPlugins map entries (2 agents, skill-profiles, test_ships_plugins, README)
     — **Why:** dependency-map shipsPlugins pins travel with the rename or `npx add` loses the plugin edge
     — **Done when:** map has one entry; test_ships_plugins green; residue clean
     — **Consumers affected:** installer shipsPlugins path, agents
-- [ ] **8.3** Registry + scoped gate + count (140)
+    — **Done:** 2 dirs git-rm (net -2); shipsPlugins 3->1 in dependency-map; ATTRIBUTION live paths repointed to host; test_ships_plugins ~15 literals -> host (intent kept); 3 agents + architecture-review allow; skill-profiles lean 72->70 + six bats literals; opencode.json 3->1; README 142->140 (Code Quality 16->14); setup.sh; fixes: none
+- [x] **8.3** Registry + scoped gate + count (140)
     — **Why:** per-commit green
     — **Done when:** count 140 (3 dirs removed)
     — **Consumers affected:** installer
-- [ ] **8.4** Commit + push
+    — **Done:** registry rebuilt (skills=140); scoped gate green incl. ships_plugins + ponytail_plugin + requires_skills + isolation; count 140; fixes: none
+- [x] **8.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; fixes: n.a.
 
 ### Phase 9: civiltekk-api-spec-skill
 Absorbs: `api-design-skill` + `openapi-contract-adherence-skill`. references/: `design.md`, `adherence.md`. Routes: author spec | diff/review contract. §Authoring Quality Gate stays in host method (it is the method).
@@ -335,3 +339,4 @@ GATE 135a641 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 9d8174a tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 4f1ca75 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE e1174fd tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 15dbf7e tier=light lint=- typecheck=- build=- unit=t e2e=n.a

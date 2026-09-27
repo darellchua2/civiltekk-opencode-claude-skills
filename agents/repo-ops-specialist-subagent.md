@@ -74,7 +74,7 @@ permissions:
     resource: continuous-learning-skill
     effect: allow
   - action: skill
-    resource: ponytail-debt-skill
+    resource: civiltekk-ponytail-audit-skill
     effect: allow
 category: devops
 ---
@@ -137,6 +137,7 @@ Load these skills to apply the correct standards and conventions:
 - **ticketing-skill**: Full ticket lifecycle on GitHub Issues or JIRA — create, classify/label (incl. semver labels, PR-only), update from commits, close post-merge, ticket-key↔branch plumbing
 - **changelog-python-cliff**: Generate changelogs via git-cliff with PEP 440 versioning
 - **civiltekk-documentation-sync**: Keep docs synchronized when adding skills/subagents and audit doc drift (counts, PLAN-vs-reality, orphans)
+- **civiltekk-ponytail-audit** (`debt-ledger` route): Harvest `ponytail:` shortcut markers into a debt ledger — ceiling + upgrade trigger per marker, no-trigger rot flags — during repo audits
 - **plan-execution** (`--update` / `--soft`): Track and execute PLAN.md phases
 
 > **JIRA skills MCP dependency:** policy per `ticketing-skill` §MCP Availability Guard. GitHub-side operations are unaffected.

@@ -1,6 +1,6 @@
 ---
 name: complexity-management-skill
-description: "KISS/YAGNI/DRY tradeoff heuristics for minimizing accidental complexity. Triggers: complexity, accidental complexity. Not for smell detection (code-smells-skill), over-engineering audit (ponytail-audit-skill), or SOLID reference (solid-principles-skill)."
+description: "KISS/YAGNI/DRY tradeoff heuristics for minimizing accidental complexity. Triggers: complexity, accidental complexity. Not for smell detection (code-smells-skill), over-engineering audit (civiltekk-ponytail-audit-skill), or SOLID reference (solid-principles-skill)."
 license: Apache-2.0
 compatibility: opencode
 category: Code Quality

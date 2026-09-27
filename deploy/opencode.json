@@ -67,17 +67,7 @@
         },
         {
             "action": "skill",
-            "resource": "ponytail-audit-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "ponytail-review-skill",
-            "effect": "allow"
-        },
-        {
-            "action": "skill",
-            "resource": "ponytail-debt-skill",
+            "resource": "civiltekk-ponytail-audit-skill",
             "effect": "allow"
         },
         {

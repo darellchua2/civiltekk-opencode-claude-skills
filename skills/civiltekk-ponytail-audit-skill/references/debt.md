@@ -1,21 +1,9 @@
----
-name: ponytail-debt-skill
-description: "Harvest `ponytail:` comments into a debt ledger — ceiling and upgrade trigger per marker; flag no-trigger rot. Triggers: ponytail shortcuts, what did ponytail defer, tech debt markers."
-license: MIT
-compatibility: opencode
-category: Code Quality
----
+# Debt-ledger route (values)
 
-<!--
-  Vendored from @dietrichgebert/ponytail v4.10.0 (MIT)
-  Source: https://github.com/DietrichGebert/ponytail/blob/v4.10.0/skills/ponytail-debt/SKILL.md
-  Pinned at tag v4.10.0. Re-vendor deliberately on upstream bumps.
-  See ../../plugins/ATTRIBUTION.md for license and attribution.
--->
-
-Every deliberate ponytail shortcut is marked with a `ponytail:` comment naming
-its ceiling and upgrade path. This collects them into one ledger so a deferral
-can't quietly become permanent.
+Harvest `ponytail:` comments into a debt ledger. Every deliberate ponytail
+shortcut is marked with a `ponytail:` comment naming its ceiling and upgrade
+path. This collects them into one ledger so a deferral can't quietly become
+permanent.
 
 ## Scan
 
@@ -24,8 +12,8 @@ output:
 
 `grep -rnE '(#|//) ?ponytail:' .`  (add other comment prefixes if your stack uses them)
 
-Each hit is one ledger row. The comment prefix keeps prose that merely mentions
-the convention out of the ledger.
+Each hit is one ledger row. The comment prefix keeps prose that merely
+mentions the convention out of the ledger.
 
 ## Output
 

@@ -68,7 +68,7 @@ permissions:
     resource: blast-radius-skill
     effect: allow
   - action: skill
-    resource: ponytail-audit-skill
+    resource: civiltekk-ponytail-audit-skill
     effect: allow
   - action: skill
     resource: unslop-skill
@@ -228,6 +228,8 @@ Apply YAGNI at the architecture layer, not just the code layer:
 - When two architectures hold, the boring, fewer-component one wins unless you can name the concrete future need the richer one would block.
 
 This complements `clean-architecture-skill`'s dependency rule. It does **not** weaken boundary discipline or the Mandatory Blast-Radius & Consumer Traversal Gate.
+
+The allowlisted `civiltekk-ponytail-audit-skill` backs repo-wide sweeps via its `whole-repo-audit` route (`references/audit.md`) when a ranked findings report is wanted.
 
 ## Return Contract
 

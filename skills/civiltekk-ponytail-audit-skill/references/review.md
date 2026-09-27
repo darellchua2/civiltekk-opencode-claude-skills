@@ -1,20 +1,8 @@
----
-name: ponytail-review-skill
-description: "Diff-only over-engineering review — flag reinvented stdlib, unneeded deps, speculative abstractions with concrete replacements. Triggers: over-engineered diff, simplify this change, review for bloat."
-license: MIT
-compatibility: opencode
-category: Code Quality
----
+# Diff-review route (values)
 
-<!--
-  Vendored from @dietrichgebert/ponytail v4.10.0 (MIT)
-  Source: https://github.com/DietrichGebert/ponytail/blob/v4.10.0/skills/ponytail-review/SKILL.md
-  Pinned at tag v4.10.0. Re-vendor deliberately on upstream bumps.
-  See ../../plugins/ATTRIBUTION.md for license and attribution.
--->
-
-Review diffs for unnecessary complexity. One line per finding: location, what
-to cut, what replaces it. The diff's best outcome is getting shorter.
+Diff-only over-engineering review. Review diffs for unnecessary complexity.
+One line per finding: location, what to cut, what replaces it. The diff's
+best outcome is getting shorter.
 
 ## Format
 

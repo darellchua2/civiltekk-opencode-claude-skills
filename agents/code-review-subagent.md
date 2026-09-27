@@ -107,7 +107,7 @@ permissions:
     resource: performance-optimization-skill
     effect: allow
   - action: skill
-    resource: ponytail-review-skill
+    resource: civiltekk-ponytail-audit-skill
     effect: allow
   - action: skill
     resource: unslop-skill
@@ -301,6 +301,8 @@ Challenge over-engineering as a first-class finding, not just a style note:
 - A dependency added for what a few lines or the stdlib could do is a Major finding, named by package.
 
 This sharpens the over-engineering checklist into an active deletion bias. It does **not** relax the security/correctness gates, the Direct-Caller Verification gate, or the severity rubric above.
+
+The allowlisted `civiltekk-ponytail-audit-skill` backs this lens via its `diff-review` route (`references/review.md`) when a formatted tag/findings pass is wanted.
 
 ## Voice — terse tech lead, human-readable findings
 

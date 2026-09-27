@@ -1,24 +1,12 @@
----
-name: ponytail-audit-skill
-description: "Whole-repo over-engineering audit — ranked delete/stdlib/native/yagni/shrink findings with net removable count. One-shot report, applies nothing. Triggers: audit for over-engineering, find bloat, what can I delete."
-license: MIT
-compatibility: opencode
-category: Code Quality
----
+# Whole-repo-audit route (values)
 
-<!--
-  Vendored from @dietrichgebert/ponytail v4.10.0 (MIT)
-  Source: https://github.com/DietrichGebert/ponytail/blob/v4.10.0/skills/ponytail-audit/SKILL.md
-  Pinned at tag v4.10.0. Re-vendor deliberately on upstream bumps.
-  See ../../plugins/ATTRIBUTION.md for license and attribution.
--->
-
-ponytail-review-skill, repo-wide. Scan the whole tree instead of a diff. Rank
-findings biggest cut first.
+Whole-repo over-engineering audit — the `diff-review` route's lens
+(`references/review.md` in this skill), repo-wide: scan the whole tree
+instead of a diff. Rank findings biggest cut first.
 
 ## Tags
 
-Same as ponytail-review-skill:
+Same as the `diff-review` route:
 
 - `delete:` dead code, unused flexibility, speculative feature. Replacement: nothing.
 - `stdlib:` hand-rolled thing the standard library ships. Name the function.

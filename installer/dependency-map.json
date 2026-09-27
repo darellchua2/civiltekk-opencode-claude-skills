@@ -18,9 +18,7 @@
     "autoresearch-research-skill": ["autoresearch-core-skill"]
   },
   "shipsPlugins": {
-    "ponytail-audit-skill": ["opencode-ponytail-scoped.ts", "ponytail/", "ATTRIBUTION.md"],
-    "ponytail-review-skill": ["opencode-ponytail-scoped.ts", "ponytail/", "ATTRIBUTION.md"],
-    "ponytail-debt-skill": ["opencode-ponytail-scoped.ts", "ponytail/", "ATTRIBUTION.md"]
+    "civiltekk-ponytail-audit-skill": ["opencode-ponytail-scoped.ts", "ponytail/", "ATTRIBUTION.md"]
   },
   "pluginCompanions": {
     "$comment": "plugin -> companion artifacts in repo plugins/ that must land beside the plugin for it to work (trailing slash = whole directory). Consumed by the --select picker deploy path in deploy/setup.sh apply_selected_packs_extras (#537); the manifest path's shipsPlugins stays the skill->plugin edge. ONE declarative home for companion knowledge — never fork it into shell case arms.",
