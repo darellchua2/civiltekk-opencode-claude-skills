@@ -1903,3 +1903,21 @@
 - moved-files-self-references-repoint-on-host-consolidation
 - rename-residue-sweeps-need-lookbehind-anchor
 - lean-host-union-pulls-non-lean-member-content
+
+- **File**: `LEARNINGS/anti-patterns/command-template-overrides-skill-contract-seams.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: Command-template step overrides leave the skill's dependency/degradation contract unreconciled at every unmentioned seam — reconcile each seam explicitly (soft-dep→skip-with-note, hard-dep→stop) or ship a skill variant (#613 review)
+- **Date**: 2026-09-27
+
+- **File**: `LEARNINGS/solutions/inline-reviewer-worktree-cwd-scoping.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: In-session review of a worktree branch scopes every evidence op explicitly — git -C <ticket-repo> for diffs, absolute <root>/<KEY>/ paths for reads; the primary's cwd is the session checkout and relative reads return base-branch content (#613 review)
+- **Date**: 2026-09-27
+
+- **File**: `LEARNINGS/solutions/user-space-refresh-from-main-clobbers-worktree-deploy.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: setup.sh deploys from its own checkout, so a post-worktree-deploy refresh from main silently reverts user-space config; --yes does not flip the overwrite prompt and "✓ Copied" is a status display — verify parity at fix-push time (#613 review)
+- **Date**: 2026-09-27

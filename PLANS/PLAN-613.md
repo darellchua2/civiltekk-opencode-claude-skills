@@ -7,8 +7,8 @@
 ## Acceptance Criteria
 
 - [x] v2 command template spawns no subagents: Steps 7, 8, 9, 10 all in-session — template text verified in `deploy/opencode.json` ("spawn NO subagents anywhere in the run"); parity confirmed by 3.2
-- [x] Step 7 reviewers run inline via deployed agent definitions as checklists (CLI + Docker resolution paths; unresolvable → report unavailable and stop) — both paths + stop branch present in the v2 template
-- [x] Step 9 code review inline; max 2 fix-re-review iterations + full re-gate-before-fix-push rule preserved — template carries "max 2 fix-and-re-review iterations + full re-gate before fix pushes unchanged"
+- [x] Step 7 reviewers run inline via deployed agent definitions as checklists (CLI + Docker resolution paths; unresolvable → skip that reviewer with a note — soft-dep rule per Mode R adjudication, no unchecklisted review, no subagent fallback; hard stop reserved for the mandatory Step 9 checklist) — updated wording present in the v2 template
+- [x] Step 9 code review inline; max 2 fix-re-review iterations + full re-gate-before-fix-push rule preserved; checklist unresolvable → report unavailable and stop (Step 9 is the unconditional backstop) — template carries all three clauses
 - [x] Step 10 PR creation + merge watch inline (`gh` + background shell poll, no subagent) — template carries the gh in-session + "background shell poll (gh pr checks --watch), never a subagent"
 - [x] v1 `/run-worktree-pipeline` byte-unchanged (still subagent-driven) — 1.2 diff scoping (single hunk) + 3.2 baseline compare (True)
 - [x] `deploy/opencode.json` parses as valid JSON; user-space entry matches template after redeploy — `python3 -m json.tool` green; 3.2 parity True (permissions customization preserved)
@@ -67,6 +67,17 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 GATE f61827e tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 633/633 — phase 1, config anchor)
 GATE 86a18ac tier=light lint=t typecheck=n.a build=- unit=n.a e2e=n.a (phase 2 — docs/preset, zero affected tests)
+
+## Review-Fix Log (Step 9, iteration 1)
+
+Review returned 1 BLOCK + 3 Majors + 5 NOTEs; Requirements Gaps relayed to requirements-specialist Mode R before fixing (adjudication: soft-dep skip-with-note for optional Step 7 reviewers, hard stop reserved for the mandatory Step 9 checklist — template had the failure modes inverted). Applied:
+- BLOCK (user-space parity reverted by a main-checkout refresh at 20:19): surgical single-key re-deploy of the live v2 entry + parity re-verified at fix-push time (see solutions/user-space-refresh-from-main-clobbers-worktree-deploy.md)
+- Major (false worktree-cwd premise in Step 9 clause): template now scopes explicitly — `git -C <ticket-repo>` diffs, absolute `<root>/<KEY>/` reads, cwd disclaimer up front
+- Major (stop-vs-skill soft-dep conflict): Step 7 unresolvable → skip with note; Step 9 checklist unresolvable → stop (was missing entirely); Step 10 checklist unresolvable → stop (hard-dep consistency, Mode R note)
+- Major (pack can't companion v2): +5 domain skills (clean-code, code-smells, security-audit, react-hooks/react-render-antipatterns — branch-consistent names), `$comment` synced, description scopes the companion claim to full deploys with the preflight caveat
+- NOTEs applied now: reviewer enumeration corrected to (architecture/uiux) — language review rides Step 9. NOTEs deferred to follow-ups: Docker dead-letter prune repo-wide, lean-profile playwright-responsive-audit gap (pre-existing), bats guard on the v2 entry, preflight asymmetry ticket (filed at PR time).
+
+GATE 837c127 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 633/633 — review-fix re-gate, final tree)
 
 ### Phase 3: Redeploy + end-to-end verification
 
