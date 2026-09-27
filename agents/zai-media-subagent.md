@@ -28,16 +28,7 @@ permissions:
     resource: '*'
     effect: allow
   - action: skill
-    resource: zai-video-skill
-    effect: allow
-  - action: skill
-    resource: zai-asr-skill
-    effect: allow
-  - action: skill
-    resource: zai-ocr-skill
-    effect: allow
-  - action: skill
-    resource: zai-image-generation-skill
+    resource: civiltekk-zai-media-skill
     effect: allow
 category: media
 ---
@@ -69,12 +60,12 @@ save the result to disk, and return a short pointer — never raw media data.
 
 ## Playbook — artifact type → skill
 
-| Caller wants | Skill | Cost class |
-|--------------|-------|------------|
-| Image from a text prompt | `zai-image-generation-skill` | ~$0.01–0.015/image |
-| Video from text (or first-frame image) | `zai-video-skill` (async: submit → background-shell poll) | ~$0.20/video |
-| Transcript of an audio file | `zai-asr-skill` (wav/mp3, ≤25 MB, ≤30 s) | pay-as-you-go |
-| Text/layout from image or PDF | `zai-ocr-skill` | pay-as-you-go |
+| Caller wants | Skill · route | Cost class |
+|--------------|---------------|------------|
+| Image from a text prompt | `civiltekk-zai-media-skill` route `image` | ~$0.01–0.015/image |
+| Video from text (or first-frame image) | `civiltekk-zai-media-skill` route `video` (async: submit → background-shell poll) | ~$0.20/video |
+| Transcript of an audio file | `civiltekk-zai-media-skill` route `transcribe` (wav/mp3, ≤25 MB, ≤30 s) | pay-as-you-go |
+| Text/layout from image or PDF | `civiltekk-zai-media-skill` route `ocr` | pay-as-you-go |
 | Description/analysis of an existing image | perceive it natively — no skill needed | free |
 
 Announce the billable cost **before** the first submission. For video, submit only after the
@@ -83,7 +74,9 @@ caller confirmed intent (async tasks are billable once they run).
 ## Procedure
 
 1. Parse the request: artifact type, inputs (prompt / file path), output location if given.
-2. Load the matching skill and run its recipe verbatim — do not improvise endpoints or parameters.
+2. Load `civiltekk-zai-media-skill`, detect the route (image / video /
+   transcribe / ocr), and run that route's recipe verbatim — do not improvise
+   endpoints or parameters.
 3. For video, follow the skill's background-shell pattern (`background: true`; the
    session is notified when the poll command exits); never poll in a
    blocking loop inside the session.

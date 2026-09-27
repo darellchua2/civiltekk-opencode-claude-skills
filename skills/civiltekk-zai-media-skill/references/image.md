@@ -1,13 +1,7 @@
----
-name: zai-image-generation-skill
-description: >-
-  Generate images from text prompts via Z.AI GLM-Image API, saved as local PNGs
-  — direct /images/generations call. Triggers: image generation, generate image,
-  text to image, draw a picture.
-license: Apache-2.0
-compatibility: opencode
-category: Media Generation
----
+# Route `image` — GLM-Image text-to-image
+
+Route values for `civiltekk-zai-media-skill` route `image` (method lives in
+the host `SKILL.md` §Lifecycle). Requires bash (git-bash/WSL on Windows).
 
 ## What I do
 
@@ -26,8 +20,6 @@ The API returns a **temporary URL** (expires in ~30 days) on `mfile.z.ai`, so th
 - The result is a URL, not text — a file must be produced and its path returned to the caller.
 
 ## Prerequisite — API key resolution
-
-The recipe resolves the key robustly (env first, then opencode's credential store).
 
 > Harness binding (§Portability contract): the `ZAI_API_KEY` env var is the portable credential row — it alone works on every harness. The `~/.local/share/opencode/auth.json` fallback reads OpenCode's credential store (bonus row; ignore elsewhere — export the env var). Other/none (no auth.json store): export `ZAI_API_KEY` — the env var alone is sufficient. Recipe execution needs bash + curl + jq (any harness with a shell tool).
 

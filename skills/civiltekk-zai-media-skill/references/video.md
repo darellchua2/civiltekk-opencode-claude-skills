@@ -1,13 +1,8 @@
----
-name: zai-video-skill
-description: >-
-  Generate video from a text (or first-frame image) prompt via Z.AI CogVideoX-3
-  — submit then poll the async result, save as local MP4. Triggers: video
-  generation, generate video, text to video, image to video.
-license: Apache-2.0
-compatibility: opencode
-category: Media Generation
----
+# Route `video` — CogVideoX-3 text/image-to-video (async)
+
+Route values for `civiltekk-zai-media-skill` route `video` (method lives in
+the host `SKILL.md` §Lifecycle + §Background shells). Requires bash
+(git-bash/WSL on Windows).
 
 ## What I do
 

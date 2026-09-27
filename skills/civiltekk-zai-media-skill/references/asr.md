@@ -1,13 +1,7 @@
----
-name: zai-asr-skill
-description: >-
-  Transcribe audio files to text via the Z.AI GLM-ASR API — POST
-  /audio/transcriptions with a wav/mp3 (≤25MB, ≤30s). Triggers: transcribe,
-  speech to text, ASR, audio transcription.
-license: Apache-2.0
-compatibility: opencode
-category: Media Generation
----
+# Route `transcribe` — GLM-ASR speech-to-text
+
+Route values for `civiltekk-zai-media-skill` route `transcribe` (method lives
+in the host `SKILL.md` §Lifecycle). Requires bash (git-bash/WSL on Windows).
 
 ## What I do
 

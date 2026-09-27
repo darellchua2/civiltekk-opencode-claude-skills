@@ -86,22 +86,26 @@ Consumers: agents/nextjs-specialist-subagent.md (4 allowlists + body), presets p
 Absorbs: `zai-image-generation-skill` + `zai-video-skill` + `zai-asr-skill` + `zai-ocr-skill`. references/: `image.md`, `video.md`, `asr.md`, `ocr.md`. Routes: image | video | audio-transcribe | ocr.
 MUSTS: (a) preserve the endpoint-policy split as per-variant values — image → coding-plan endpoint + `ZAI_IMAGE_ENDPOINT` + its compliance warning; video/asr/ocr → PAYG + `ZAI_MEDIA_ENDPOINT` — do NOT unify; (b) key-resolution block moves to host once (jq key-order drift noted in review — keep per-variant copies verbatim instead of merging if orders differ); (c) sync-vs-async discriminator in the route table (video polls — background-shell harness binding in host method); (d) OCR's `ponytail:` debt marker survives.
 Consumers: agents/zai-media-subagent.md (4 allowlists → 1 + body), deploy/skill-profiles.json (zai-image-generation lean entry → host by SUBSTITUTION — lean stays 67 per the Wave-1 lean-host-union decision; no bats literal change), deploy/opencode.json (zai rules if any — grep), README category (AI/Media or similar — verify), pack presets if any (grep), fellow skills (grep stems `zai-image` / `zai-video` / `zai-asr` / `zai-ocr`).
-- [ ] **3.1** Author host + references per template (policy split preserved)
+- [x] **3.1** Author host + references per template (policy split preserved)
     — **Why:** one API family, four media variants; the split IS the compliance surface
     — **Done when:** host ≤140; four trigger sets preserved; per-variant env/endpoint values verbatim; isolation green
     — **Consumers affected:** zai-media-subagent
-- [ ] **3.2** Delete + repoint (agent, skill-profiles lean entry substituted by host — count stays 67, no literal edits, opencode.json if rules exist, README counts)
+    — **Done:** routes image|video|transcribe|ocr; sync-vs-async discriminator + background-shell harness binding in host; endpoint-policy split verbatim per-variant (ZAI_IMAGE_ENDPOINT coding-plan vs ZAI_MEDIA_ENDPOINT PAYG); ponytail debt marker survived in ocr.md; 771-char 16-phrase union description; files: skills/civiltekk-zai-media-skill/{SKILL.md,references/{image,video,asr,ocr}.md}; fixes: none
+- [x] **3.2** Delete + repoint (agent, skill-profiles lean entry substituted by host — count stays 67, no literal edits, opencode.json if rules exist, README counts)
     — **Why:** zai-image-generation is primary-visible — the rename must carry the lean entry or the skill vanishes from primaries (substitution, per the Wave-1 union decision)
     — **Done when:** skill_profiles green with lean still 67; residue clean
     — **Consumers affected:** primary sessions, zai-media-subagent
-- [ ] **3.3** Registry rebuild + scoped gate + count (128)
+    — **Done:** 4 dirs git-rm; agent 4->1; skill-profiles lean SUBSTITUTION (stays 67, no literal edits — verified only zai-image was lean); opencode.json 4->1; README 131->128 (Media Generation 4->1); zero fellow-cites (grep truth); residue sanctioned-only; fixes: none
+- [x] **3.3** Registry rebuild + scoped gate + count (128)
     — **Why:** per-commit green
     — **Done when:** registry skills=128; skill_profiles + isolation green
     — **Consumers affected:** installer
-- [ ] **3.4** Commit + push
+    — **Done:** registry rebuilt (skills=128); scoped gate green (128 tests incl. portability + isolation); count 128; fixes: none
+- [x] **3.4** Commit + push
     — **Why:** atomicity
     — **Done when:** pushed
     — **Consumers affected:** none beyond phase
+    — **Done:** committed + pushed with PLAN ticks; separate fix(skills) commit resolved stash-recovery markers in the P2 host (caught by P3 residue sweep); fixes: conflict-marker resolution
 
 ### Phase 4: civiltekk-opentofu-skill
 Absorbs: 7 dirs — `opentofu-provider-setup-skill`, `opentofu-provisioning-workflow-skill`, `opentofu-aws-explorer-skill`, `opentofu-kubernetes-explorer-skill`, `opentofu-neon-explorer-skill`, `opentofu-keycloak-explorer-skill`, `opentofu-ecr-provision-skill`. references/: `provider-setup.md` (TRIM the 402-line tutorial while moving — keep chain-root + per-provider essentials), `workflow.md`, `explorers.md` (aws + neon + keycloak + kubernetes as four sections; kubernetes' HCL blocks may stay inline), `ecr.md` (external repo pin `ecr/betekk_probe_engine_main/` survives verbatim). Routes: first-time-setup | plan-apply workflow | explore <target> | ecr-provision.
@@ -194,8 +198,10 @@ None active (the #614 hold resolved — Wave 1 merged as 7a725c5 before this PLA
 
 - **Phase 5 step-pin rewords are prose contracts** — each citing surface verified by its own test or explicit grep in the same commit; five skill-body citers incl. semantic-release.
 - **Phase 6 pinned-literal migration** — six bats blocks; any literal landing twice/zero times trips `appears_exactly_once` or a failed grep; per-block verification in 6.2.
+- **Conflict-marker guard** — Phase 7 adds a repo-wide `grep -rn "^<<<<<<<"` to the exit sweep (the P2 incident shipped markers through a green scoped gate; prose is untested surface).
 - **impliesMcp key rename** — test_requires_skills asserts values ⊆ deploy/opencode.json servers; value unchanged, key renamed — green by construction, verified in 2.3.
 - **Count arithmetic** — 22−6=−16 → 119; re-derive from disk at 7.2, never from this note.
 WORK LOG - W2 base 8cf5b6c
 GATE 8cf5b6c tier=light lint=- typecheck=- build=- unit=t e2e=n.a
 GATE 0814744 tier=light lint=- typecheck=- build=- unit=t e2e=n.a
+GATE 1dea685 tier=light lint=- typecheck=- build=- unit=t e2e=n.a

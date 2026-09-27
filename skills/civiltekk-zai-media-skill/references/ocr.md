@@ -1,13 +1,7 @@
----
-name: zai-ocr-skill
-description: >-
-  Extract text and layout from images or PDFs via the Z.AI GLM-OCR
-  layout_parsing API — structured, layout-aware OCR. Triggers: OCR, extract
-  text from image, layout parsing, document text extraction.
-license: Apache-2.0
-compatibility: opencode
-category: Media Generation
----
+# Route `ocr` — GLM-OCR layout-aware text extraction
+
+Route values for `civiltekk-zai-media-skill` route `ocr` (method lives in
+the host `SKILL.md` §Lifecycle). Requires bash (git-bash/WSL on Windows).
 
 ## What I do
 
