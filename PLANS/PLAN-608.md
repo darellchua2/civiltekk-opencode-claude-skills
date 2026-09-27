@@ -76,3 +76,4 @@ None. (`init.mjs update --prune` already shipped and tested at `tests/update.bat
 GATE 31c4830 tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 75126e2 tier=light lint=t typecheck=n.a build=n.a unit=t e2e=n.a
 GATE b9eb7c9 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 632/632 — ticket exit gate)
+GATE a8566da tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 632/632 — review-fix re-gate)
