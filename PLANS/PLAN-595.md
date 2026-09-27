@@ -33,6 +33,7 @@
 
 GATE 45bd3b7 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — grep IBIS=0 x4 convention owners; ABC-123 examples present; bats test_skill_isolation 5/5 ok
 GATE bd0bca6 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — IBIS=0 in 4 Phase-2 files; pins resolve (plan-execution ×2, pr-creation ×1, mermaid ×1); pr-creation frontmatter byte-identical
+GATE 72284bb tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — atlassian_=0 in pipeline/pr-merge/wayfinder; ticket regex intact; pr-merge frontmatter untouched
 
 ## Implementation Phases
 
@@ -102,14 +103,16 @@ GATE bd0bca6 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a — IBIS
 
 ### Phase 4: Tier 2 — agents: keep enforcement points, compress restatements
 
-- [ ] **4.1** In `agents/pr-workflow-subagent.md`: keep the `permissions` allowlist and the MCP GUARD paragraph; compress the restated JIRA tool call-sheet (L121-145 region) to one-line references (`jira-status-updater-skill`, `jira-git-integration-skill`)
+- [x] **4.1** In `agents/pr-workflow-subagent.md`: keep the `permissions` allowlist and the MCP GUARD paragraph; compress the restated JIRA tool call-sheet (L121-145 region) to one-line references (`jira-status-updater-skill`, `jira-git-integration-skill`)
     — **Why:** The agent is the guard's enforcement point, but call-sheets duplicate the skills' contracts and drift.
     — **Done when:** JIRA section ≤ one short paragraph + references; `permissions` block byte-identical; `Closes <TICKET_ID>` instruction untouched.
     — **Consumers affected:** Step 10 PR creation (behavior unchanged).
-- [ ] **4.2** In `agents/repo-ops-specialist-subagent.md`: keep the `permissions` skill rules; compress the prose skill inventory (L154-166) so each JIRA-family entry is one line naming the skill
+    — **Done:** JIRA Integration + JIRA MCP Tools (10 lines) → 3-line pin section with guard verbatim; 3 prose mentions → tracker-neutral; permissions diff empty; "Closes" absent on main too (pre-existing — instruction rides the pipeline Task prompt); files: agents/pr-workflow-subagent.md; fixes: none
+- [x] **4.2** In `agents/repo-ops-specialist-subagent.md`: keep the `permissions` skill rules; compress the prose skill inventory (L154-166) so each JIRA-family entry is one line naming the skill
     — **Why:** Inventory prose duplicates skill descriptions the loader already surfaces.
     — **Done when:** `permissions` block byte-identical; inventory entries one line each.
     — **Consumers affected:** repo-ops delegation prompts (shorter, same routing).
+    — **Done:** inventory already one-line-per-skill (verified); MCP-dependency blockquote compressed to a one-line policy pin; permissions diff empty; files: agents/repo-ops-specialist-subagent.md; fixes: none
 
 ### Phase 5: Tier 2 — dev-uat-promotion conditionalization
 

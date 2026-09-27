@@ -112,22 +112,16 @@ Do NOT trigger for "merge the PR" / "pr merge to [branch]" / "merge it" — thos
 Common target branch patterns: main, master, develop, dev, staging, production
 
 PR Workflows by Framework:
-- pr-creation-workflow: Generic PR creation with configurable quality checks and JIRA image handling
+- pr-creation-workflow: Generic PR creation with configurable quality checks and image handling
 
 Quality Checks — defer to the contract:
 - Gate commands come from manifest discovery per `verification-loop-skill` §The gate contract — this agent owns no framework command table.
 - PR-boundary execution is `pr-creation-workflow-skill` steps 2-3 (framework detect + gate contract/memo check); coverage badges via `coverage-readme-workflow` on the standalone path only; docstring validation via `docstring-generator`.
 
-JIRA Integration:
-- Attribution: self-assign the linked ticket (fetch own accountId — see ticket-creation-skill §Attribution; REST `PUT /rest/api/3/issue/{key}/assignee` is the guaranteed path) and create the PR with `--assignee @me` (author = `gh auth` user by construction)
-- Update JIRA tickets with PR links via atlassian MCP tools
-- Transition ticket status after PR merge via jira-status-updater
-- Add PR screenshots/images as attachments
+JIRA Integration (policy per `jira-git-integration-skill` §MCP Availability Guard):
+- Attribution: self-assign the linked ticket (see ticket-creation-skill §Attribution); PR author = the `gh auth` user by construction
+- PR-link comments, post-merge transitions, and image attachments: delegate to `jira-git-integration-skill` / `jira-status-updater-skill` per their contracts
 - MCP GUARD: the `atlassian` server is disabled by default (opt-in). If `atlassian_*` tools are absent from your tool list, do NOT attempt them — skip JIRA integration, note it in the PR report, and suggest per-project enable via `opencode-repo-setup-skill` (or its REST fallback). Never fail the PR flow on a disabled server.
-
-JIRA MCP Tools:
-- atlassian_addCommentToJiraIssue: Add PR link to ticket
-- atlassian_transitionJiraIssue: Transition ticket to "In Review" / "Done" (use atlassian_getTransitionsForJiraIssue to find the transition id)
 
 Built-in Subagent Delegation:
 - Delegate to `explore` for project analysis:
@@ -137,12 +131,12 @@ Built-in Subagent Delegation:
 - Delegate to `general` for parallelizable quality checks:
   - Run lint + typecheck in parallel (both are independent reads)
   - Generate coverage report while preparing PR description
-  - Collect JIRA ticket info while running build checks
+  - Collect tracker ticket info while running build checks
 - Delegate to `documentation-subagent` for the pre-PR docstring sweep:
   - Diff-scope only: hand it the PR-diff file list; it fills missing docstrings (PEP 257 / Javadoc / JSDoc-TSDoc / C# XML)
   - You compute the diff, re-run lint, and make the semantic commit — the delegate has `bash: deny`
 - Delegate to `image-analyzer-subagent` for visual PR artifacts:
-  - Attaching PR screenshots/images to JIRA tickets (step 6)
+  - Attaching PR screenshots/images to tracker tickets (per the JIRA Integration pin above)
   - Reviewing generated diagram or screenshot diffs when they appear in the PR
 - Use `explore` via Task tool with subagent_type="explore" for discovery, `general` via subagent_type="general" for parallel work
 
@@ -162,7 +156,7 @@ Workflow:
 7. Use skills for specialized tasks (linting, testing, docs as needed)
 8. Inform user to say "pr merge to [branch]" when ready to merge
 
-**Pipeline mode** (parent states gates are green — e.g. worktree-pipeline Step 10 after `/run-plan`): skip steps 2, 2.5, 3, and 4 — the gate ran per-phase upstream, docstrings were filled before the gate, coverage badges would mutate the README after code review, and the PLAN is ticked and committed; CI (`gh pr checks`) is the merge gate. Proceed via step 1 (framework detect) → step 5 (PR create) → step 6 (JIRA link); step 8's merge handoff is moot — the orchestrator owns the merge via the CI gate. Standalone callers (direct "create pr" without a green-gates assertion) keep the full workflow. In pipeline mode this skip supersedes every other restatement of steps 2/2.5/3/4 in this file (e.g. the PLAN.md Sync section, the docstring-sweep delegation bullet, the closing gates line) — those apply on the standalone path only.
+**Pipeline mode** (parent states gates are green — e.g. worktree-pipeline Step 10 after `/run-plan`): skip steps 2, 2.5, 3, and 4 — the gate ran per-phase upstream, docstrings were filled before the gate, coverage badges would mutate the README after code review, and the PLAN is ticked and committed; CI (`gh pr checks`) is the merge gate. Proceed via step 1 (framework detect) → step 5 (PR create) → step 6 (tracker link); step 8's merge handoff is moot — the orchestrator owns the merge via the CI gate. Standalone callers (direct "create pr" without a green-gates assertion) keep the full workflow. In pipeline mode this skip supersedes every other restatement of steps 2/2.5/3/4 in this file (e.g. the PLAN.md Sync section, the docstring-sweep delegation bullet, the closing gates line) — those apply on the standalone path only.
 
 PLAN.md Sync:
 - Before creating PR, invoke plan-execution-skill in --update mode
