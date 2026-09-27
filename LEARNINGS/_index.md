@@ -1876,3 +1876,27 @@
 - **Scope**: project
 - **Date**: 2026-09-27
 - **Summary**: Docker standalone mode fully removed (#607); supersedes the #486 two-surface contract — one skill surface (root skills/, root-only dead-allow guard) and the config source of truth now lives at deploy/opencode.json. Provider presets local-llm/vllm/ollama survive (model routing, not containers).
+
+- **File**: `decisions/add-merges-manifest-convergence-rides-update-prune.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: init.mjs add merges the manifest (entries survive add --all), so deploy-set convergence rides the existing update --prune arm wired at deploy_content() — new convergent modes route through deploy_content(), prune never duplicated elsewhere (#608)
+- **Date**: 2026-09-27
+
+- **File**: `anti-patterns/wiring-pins-must-anchor-the-wired-file.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: A wiring Done-when is false when the test invokes the dependency directly — wiring guards need a source-level anchor (grep the invocation in the wired file), dependency tests prove mechanics (#608)
+- **Date**: 2026-09-27
+
+- **File**: `conventions/non-fatal-installer-calls-capture-rc.md`
+- **Confidence**: 0.75
+- **Scope**: project
+- **Summary**: Non-fatal installer calls capture rc and warn with (exit N) per the update_manifest template — if ! wrappers lose the status and misdiagnose every non-2 failure (#608 review)
+- **Date**: 2026-09-27
+
+- **File**: `patterns/destructive-convergence-after-snapshot.md`
+- **Confidence**: 0.7
+- **Scope**: project
+- **Summary**: Destructive convergence arms (update --prune) go after the same-run content-backup snapshot so every pruned file is restorable from that run's backup (#608 review)
+- **Date**: 2026-09-27
