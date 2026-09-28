@@ -43,6 +43,7 @@ LEARNINGS/**/*.md
 !LEARNINGS/solutions/process-exit-truncates-async-pipe-writes-drain-first.md
 !LEARNINGS/anti-patterns/guard-test-literals-are-plan-consumers.md
 !LEARNINGS/decisions/preset-closure-over-new-requireskills-handoffs.md
+!LEARNINGS/decisions/commands-pin-agent-per-execution-mode.md
 !LEARNINGS/solutions/opencode-v2-commands-agent-subagent-semantics.md
 !LEARNINGS/solutions/commands-model-pins-bypass-tier-resolver.md
 !LEARNINGS/anti-patterns/plan-done-claims-outrun-committed-tree.md

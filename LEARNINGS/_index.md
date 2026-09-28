@@ -1964,3 +1964,9 @@
 - **Scope**: project
 - **Summary**: A working-tree sed between `git add` and `git commit --amend` commits the stale index — same-second amends are byte-identical no-ops, the SHA silently stays, and the placeholder ships (working-tree grep shows the fixed text because it reads the uncommitted file). Re-stage before amending; verify via `git show HEAD:<file>` (#636)
 - **Date**: 2026-09-28
+
+- **File**: `LEARNINGS/decisions/commands-pin-agent-per-execution-mode.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: State-mutating pipeline commands pin `agent: "build"` (unpinning = plan-mode half-run at first mutating step); read-only preview variants pin `agent: "plan"`; plan-mode value ships as a separate preview command, never by loosening the pin; shipped entries stay model-free (#638)
+- **Date**: 2026-09-28
