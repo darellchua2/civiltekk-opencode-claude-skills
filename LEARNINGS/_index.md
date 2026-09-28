@@ -15,6 +15,14 @@
 
 ## Entries
 
+### setup.sh repoints the opencode-setup shim to the clone it runs in
+
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/setup-sh-repoint-shim-to-invoking-clone.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: Running `deploy/setup.sh` from an ephemeral pipeline worktree symlinks `~/.local/bin/opencode-setup` to the worktree (`deploy/setup.sh:4731`) — merge cleanup then dangles the user's shim. Always redeploy from the main checkout, post-merge (#631).
+
 ### A `grep -c` in a pipeline's last position only asserts "at least one"
 
 - **Category**: anti-patterns

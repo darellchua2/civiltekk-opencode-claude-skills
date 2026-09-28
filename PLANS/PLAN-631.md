@@ -51,6 +51,7 @@ Repo-wide grep (verified on `feat/631` @ e042937): the mandate strings exist ONL
 ## Gate Trace
 
 - GATE cd7da83 tier=full lint=n.a typecheck=n.a build=n.a unit=t(89/89: skill-isolation, count-drift, portability, backup-rollback, requires-skills, pack-permissions, kilo/kimi targets) e2e=n.a
+- GATE d8db149 tier=full lint=n.a typecheck=n.a build=n.a unit=t(89/89 re-run on Step 9 learnings tree) e2e=n.a — final pushed SHA carries this memo
 
 ### Phase 2: Post-merge redeploy (runs from the MAIN checkout, after the PR merges)
 
