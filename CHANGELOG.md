@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.3.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.2.1...v12.3.0) (2026-09-28)
+
+### Features
+
+* **plugins:** keep busy sessions alive past the 60-min location TTL ([#624](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/624)) ([#629](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/629)) ([d85b6ec](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/d85b6ec817078d62fb743f4e6be12096af6e1004))
+
 ## [12.2.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.2.0...v12.2.1) (2026-09-28)
 
 ### Bug Fixes
