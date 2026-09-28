@@ -1922,3 +1922,21 @@
 - **Summary**: setup.sh deploys from its own checkout, so a post-worktree-deploy refresh from main silently reverts user-space config; --yes does not flip the overwrite prompt and "✓ Copied" is a status display — verify parity at fix-push time (#613 review)
 - **Date**: 2026-09-27
 - bats-file-level-path-expansion-before-home-swap
+
+- **File**: `LEARNINGS/solutions/disposed-gate-finally-rearm-timer.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: Recursive async sweep timers re-arm via `.finally(schedule)` behind a `disposed` flag — sync re-arm overlaps sweeps; cleanup mid-sweep re-arms a leaked timer otherwise (#624 gate flake)
+- **Date**: 2026-09-28
+
+- **File**: `LEARNINGS/conventions/plugin-stream-death-must-surface.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: Bare `catch {}` around event.subscribe hides abnormal stream death; mirror auto-continue: `if (!controller.signal.aborted) logAlways(..., 'error')` (#624 review WARN)
+- **Date**: 2026-09-28
+
+- **File**: `LEARNINGS/decisions/opencode-v2-location-ttl-same-title-update-touch.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: v2.0.18 refreshes the 60-min location TTL only on durable events; same-title `ctx.session.update` is the keepalive touch — `rename`/`active` absent at 2.0.18, falsy titles regenerate (#624)
+- **Date**: 2026-09-28
