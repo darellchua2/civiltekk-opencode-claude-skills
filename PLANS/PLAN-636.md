@@ -102,38 +102,42 @@ regen).
 
 ### Phase 3: AGENTS.md — remove dead/duplicated behavior, precision fixes
 
-- [ ] **3.1** Delete the dangling `deploy/.AGENTS.md §Secret Hygiene` pointer
+- [x] **3.1** Delete the dangling `deploy/.AGENTS.md §Secret Hygiene` pointer
     sentence in §Secret Masking (AGENTS.md:26).
     — **Why:** the section was deleted from `deploy/.AGENTS.md` in e278d2d;
     a pointer to a nonexistent section is a false instruction.
     — **Done when:** `rg 'Secret Hygiene' AGENTS.md` → 0 hits.
     — **Consumers affected:** session prompt consumers only.
+    — **Done:** dropped the pointer sentence, kept the security-audit-skill sentence; also fixed PRE-EXISTING red tests/test_docling_skill.bats test 15 (pinned the deleted "4-tier routing in repo-root" string, absent from deploy/.AGENTS.md since e278d2d on origin/main) — repointed as a negative no-duplicate guard per the sentinel-grep convention; files: AGENTS.md, tests/test_docling_skill.bats; fixes: docling suite 18/19 → 19/19
 
-- [ ] **3.2** Delete §Extract-then-Delegate (AGENTS.md § of that name).
+- [x] **3.2** Delete §Extract-then-Delegate (AGENTS.md § of that name).
     — **Why:** generic behavior whose user-level home (§Delegation in
     `deploy/.AGENTS.md`) was deliberately removed; the repo file keeps
     conventions only.
     — **Done when:** `rg 'Extract-then-Delegate' AGENTS.md` → 0 hits.
     — **Consumers affected:** none — delegation routing is carried by agent
     descriptions and skills.
+    — **Done:** removed heading + body; verified zero hits in AGENTS.md; files: AGENTS.md; fixes: none
 
-- [ ] **3.3** Compress §Repository Purpose to ≤5 lines + README pointer.
+- [x] **3.3** Compress §Repository Purpose to ≤5 lines + README pointer.
     — **Why:** duplicates README install/target docs against the file's own
     header rule ("Do not duplicate here").
     — **Done when:** the section is ≤5 lines and names `README.md` as the
     usage-doc home.
     — **Consumers affected:** session prompt size (reduction); README
     untouched.
+    — **Done:** compressed ~15-line target enumeration to 2 paragraphs (4 content lines) naming README.md + issue #304, and installer/dependency-map.json; files: AGENTS.md; fixes: none
 
-- [ ] **3.4** Shrink §Project Learnings to the template note + pointer to
+- [x] **3.4** Shrink §Project Learnings to the template note + pointer to
     user-level Memory Hygiene.
     — **Why:** duplicates `deploy/.AGENTS.md` §Memory Hygiene behavior at
     repo level.
     — **Done when:** the section is ≤3 lines with no Recall/Capture
     duplication.
     — **Consumers affected:** none.
+    — **Done:** reduced to one body line (template note + §Memory Hygiene pointer), dropped the stale memory-plugin watch text; files: AGENTS.md; fixes: none
 
-- [ ] **3.5** Precision fixes: `registry.json` → `installer/registry.json`
+- [x] **3.5** Precision fixes: `registry.json` → `installer/registry.json`
     and `dependency-map.json` → `installer/dependency-map.json` where
     referenced bare; attribute the explore/general model pins to
     `deploy/setup.sh` injection into the deployed `opencode.json`.
@@ -142,6 +146,7 @@ regen).
     — **Done when:** no bare `commit registry.json` phrasing remains; the
     tier paragraph names `deploy/setup.sh`.
     — **Consumers affected:** doc readers following instructions.
+    — **Done:** installer/registry.json + installer/dependency-map.json (×2 sites) path fixes; explore/general pins attributed to deploy/setup.sh:728-743 writing the deployed opencode.json; files: AGENTS.md; fixes: none
 
 ### Phase 4: Gates + exit
 
