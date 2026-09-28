@@ -236,9 +236,9 @@ Default state of every pack is **OFF**. Design history: [issue #268](https://git
 </details>
 
 <details>
-<summary><strong>Plugins — vibeguard, ponytail, learnings auto-inject, auto-continue, question repair</strong></summary>
+<summary><strong>Plugins — vibeguard, ponytail, learnings auto-inject, auto-continue, question repair, location keepalive</strong></summary>
 
-Five local plugins ship in `plugins/` — zero runtime npm dependencies, air-gap safe, active on OpenCode v2.
+Six local plugins ship in `plugins/` — zero runtime npm dependencies, air-gap safe, active on OpenCode v2.
 
 **Vibeguard (secret masking).** Masks `.env` secrets in provider-bound traffic via regex patterns (`vibeguard.config.json`); the LLM provider never sees plaintext values, tools receive real values at execution time. Verify with `OPENCODE_VIBEGUARD_DEBUG=1 opencode` (replace-counts > 0). Per-project keywords: uncommitted `./vibeguard.config.json` at project root (first config wins — re-include the global patterns). Residual risks (documented honestly): `/share` exports plaintext (never share sessions that processed secrets); no fail-closed if config is missing; session DB stores plaintext locally; MCP structured (non-string) output bypasses redaction. Prefer `$ENV_VAR` references over inline literals in everything you generate.
 
@@ -249,6 +249,8 @@ Five local plugins ship in `plugins/` — zero runtime npm dependencies, air-gap
 **Auto-continue v2.** Self-heals long-running sessions two ways: (1) transient provider errors (SSE timeouts, ECONNRESET, context overflow, tool-protocol failures) get a "continue" with exponential backoff at idle boundaries; (2) a busy-stall watchdog aborts sessions frozen "working" on a silent event stream (upstream #46310/#24900) after `OPENCODE_AUTO_CONTINUE_STALL_MS` (default 15 min; `0` disables) and resumes them the same way. Never aborts fresh-activity sessions, never resumes a user-cancelled session (ESC latch), hard cap 5 consecutive recoveries (reset by a real user message). Env prefix: `OPENCODE_AUTO_CONTINUE_*`.
 
 **Question repair.** Normalizes malformed `question` tool payloads before the schema validator hard-fails (fills missing `label`/`description`/`question`/`header` from their counterparts, defaults `multiple`, drops beyond-repair items). Valid payloads pass through as the same reference. Debug: `OPENCODE_QUESTION_REPAIR_DEBUG=1` at server start.
+
+**Location keepalive v2.** Protects actively-running sessions from OpenCode v2's 60-minute location TTL: the server evicts any location (per project directory) with no *durable* session event for 60 min and interrupts its running sessions — but streaming deltas and `session.tool.progress` are ephemeral, so a healthy agent inside a long silent tool or generation looks idle and dies mid-run with `reason: "inactivity"` (verified against v2.0.18: bulk same-second session interruptions matching `location services evicted` log lines). Every interval (default 30 min), each probe-confirmed busy session is PATCHed with its own unchanged title, publishing a durable `session.renamed` that resets the TTL; idle sessions are never touched, so idle locations still evict. Keep `OPENCODE_AUTO_CONTINUE_STALL_MS` (15 min default) below the keepalive interval so the auto-continue watchdog still wins races for true silent hangs. Env prefix: `OPENCODE_LOCATION_KEEPALIVE_*` (`ENABLED` on, `INTERVAL_MS` 30 min with a 90%-of-TTL clamp, `DEBUG` off).
 
 Attribution: `plugins/ATTRIBUTION.md`; skill-level attributions in `THIRD_PARTY_LICENSES.md`.
 </details>
