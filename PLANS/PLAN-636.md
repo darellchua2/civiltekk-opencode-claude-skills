@@ -191,3 +191,4 @@ GATE ab6165a tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
 GATE 3e29811 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 3e937c5 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 GATE 3083957 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 9ec90a8 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a

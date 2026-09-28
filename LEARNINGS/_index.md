@@ -1958,3 +1958,9 @@
 - **Scope**: project
 - **Summary**: Profile membership changes touch four surfaces together (shipped allows, profile array, count-pin assertions, README prose) — enumerate deferral chains of lean skills before merging (#617 review)
 - **Date**: 2026-09-28
+
+- **File**: `LEARNINGS/anti-patterns/amend-after-sed-needs-restage.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: A working-tree sed between `git add` and `git commit --amend` commits the stale index — same-second amends are byte-identical no-ops, the SHA silently stays, and the placeholder ships (working-tree grep shows the fixed text because it reads the uncommitted file). Re-stage before amending; verify via `git show HEAD:<file>` (#636)
+- **Date**: 2026-09-28
