@@ -74,20 +74,23 @@
 
 ### Phase 3: v2 pipeline rewiring
 
-- [ ] **3.1** Rewrite the Step 9 sentence of `commands.run-worktree-pipeline-v2` in `deploy/opencode.json`: replace the inline-checklist instruction ("load agents/code-review-subagent.md as your in-session checklist … review the diff yourself — compute git -C … write LEARNINGS …") with "invoke the skill `code-review-inline-skill` for the Step 9 review (pass the ticket repo + `origin/<base>` diff base; the skill owns baseline-first + checklist resolution — it reports unavailable → you stop: Step 9 is the unconditional backstop with no further net)"; keep the trailing "max 2 fix-and-re-review iterations + full re-gate before fix pushes" clause; Steps 7/8/10 sentences and the "spawn NO subagents" directive untouched
+- [x] **3.1** Rewrite the Step 9 sentence of `commands.run-worktree-pipeline-v2` in `deploy/opencode.json`: replace the inline-checklist instruction ("load agents/code-review-subagent.md as your in-session checklist … review the diff yourself — compute git -C … write LEARNINGS …") with "invoke the skill `code-review-inline-skill` for the Step 9 review (pass the ticket repo + `origin/<base>` diff base; the skill owns baseline-first + checklist resolution — it reports unavailable → you stop: Step 9 is the unconditional backstop with no further net)"; keep the trailing "max 2 fix-and-re-review iterations + full re-gate before fix pushes" clause; Steps 7/8/10 sentences and the "spawn NO subagents" directive untouched
     — **Why:** single invocation path — the skill owns mechanics the template currently restates; template shrinks, contract unchanged
     — **Done when:** template still carries the zero-subagent directive + pr-workflow checklist + reviewer-baseline pins; no `/app/.opencode/agents` substring anywhere in the file; the phrase "agents/code-review-subagent.md as your in-session checklist" is gone from the template
     — **Consumers affected:** every `/run-worktree-pipeline-v2` run, contract test pins
+    — **Done:** Step 9 sentence now invokes the skill (range + backstop-stop + iteration + re-gate clauses kept); command description names the skill too (same-accuracy concern); zero-subagent directive, pr-workflow + baseline pins, subagent:false all verified intact; files: deploy/opencode.json; fixes: none
 
-- [ ] **3.2** Update `skills/worktree-pipeline-skill/SKILL.md`: dependency-preflight bullet — inline arm hard-requires `plan-execution-inline-skill` (Step 8) + **skill `code-review-inline-skill`** (Step 9, which itself resolves the deployed `agents/code-review-subagent.md` checklist) + `agents/pr-workflow-subagent.md` file (Step 10); Step 9 section — prepend one routing sentence ("inline arm: invoke `code-review-inline-skill` — it owns checklist resolution and the review loop"), keep the v1 arm's spawn mechanics + edit:deny rationale intact
+- [x] **3.2** Update `skills/worktree-pipeline-skill/SKILL.md`: dependency-preflight bullet — inline arm hard-requires `plan-execution-inline-skill` (Step 8) + **skill `code-review-inline-skill`** (Step 9, which itself resolves the deployed `agents/code-review-subagent.md` checklist) + `agents/pr-workflow-subagent.md` file (Step 10); Step 9 section — prepend one routing sentence ("inline arm: invoke `code-review-inline-skill` — it owns checklist resolution and the review loop"), keep the v1 arm's spawn mechanics + edit:deny rationale intact
     — **Why:** the skill's own preflight is arm-aware and pins hard deps; drift between template and skill prose breaks per-skill installs
     — **Done when:** both arm strings present; grep pins for `plan-execution-inline-skill` and `resolved per arm` still hit; v1 Step 9 prose unchanged in meaning
     — **Consumers affected:** pipeline runs on both arms, per-skill install preflight
+    — **Done:** preflight names skill code-review-inline-skill (Step 9, wrapper resolves the checklist itself) + pr-workflow file (Step 10); Step 9 heading gained the inline-arm routing parenthetical, subagent-arm prose verbatim; arm-aware greps still hit; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
 
-- [ ] **3.3** Update `tests/test_v2_pipeline_contract.bats` lines 27-32: replace the `agents/code-review-subagent.md as your in-session checklist` pin with `code-review-inline-skill`; keep pr-workflow + reviewer-baseline pins
+- [x] **3.3** Update `tests/test_v2_pipeline_contract.bats` lines 27-32: replace the `agents/code-review-subagent.md as your in-session checklist` pin with `code-review-inline-skill`; keep pr-workflow + reviewer-baseline pins
     — **Why:** the contract guard exists to be updated WITH the contract, not after — same PR or drift ships
     — **Done when:** `bats tests/test_v2_pipeline_contract.bats` green
     — **Consumers affected:** CI
+    — **Done:** pin swapped to `code-review-inline-skill`; pr-workflow + reviewer-baseline pins kept; 7/7 green; files: tests/test_v2_pipeline_contract.bats; fixes: none
 
 ### Phase 4: New skill test + docs sweep + suite
 

@@ -67,10 +67,10 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   (Step 9) + `pr-workflow-subagent` (Step 10). The inline arm
   (`/run-worktree-pipeline-v2` — its template's "spawn NO subagents"
   directive marks it) hard-requires skill `plan-execution-inline-skill`
-  (Step 8) and the same agent definition FILES as in-session checklists —
-  `agents/code-review-subagent.md` (Step 9) +
-  `agents/pr-workflow-subagent.md` (Step 10), resolved at the deploy-mode
-  path. Any missing dep for the resolved arm → abort
+  (Step 8) + skill `code-review-inline-skill` (Step 9 — the wrapper
+  resolves the deployed `agents/code-review-subagent.md` checklist itself)
+  + the `agents/pr-workflow-subagent.md` definition FILE as the in-session
+  checklist (Step 10), resolved at the deploy-mode path. Any missing dep for the resolved arm → abort
   (`failed`) with the install hint
   `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>`. Soft deps
   degrade with a note: `ticketing-skill` (only for new-work tickets,
@@ -186,7 +186,9 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    skill defines none of them); the executor commits + pushes per phase and
    writes the gate memo, and the run's last gate — the **ticket exit
    gate** — is full.
-9. **Code review**: `code-review-subagent` has `edit: deny` (bash is allowlisted to read-only git, and its cwd is the session checkout, not the worktree) — **you compute
+9. **Code review** (inline arm: invoke `code-review-inline-skill` — it owns
+   baseline-first, checklist resolution, and the review loop; the remainder
+   of this section describes the subagent arm): `code-review-subagent` has `edit: deny` (bash is allowlisted to read-only git, and its cwd is the session checkout, not the worktree) — **you compute
    the diff** (`git diff origin/<base>...feat/<KEY>` and `--stat`) and embed
    it (file list + hunks) in the Task prompt. Fix findings: severity ≥
    Major mandatory; Minor by judgment. **Re-gate after review fixes**: fix
