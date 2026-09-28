@@ -47,7 +47,7 @@ export interface KeepaliveConfig {
 
 export const DEFAULTS: KeepaliveConfig = {
   enabled: true,
-  intervalMs: 1_800_000, // 30 min — half the 60-min TTL, one missed sweep of margin
+  intervalMs: 1_800_000, // 30 min — one in-flight touch attempt before the 60-min TTL; two consecutive failures race eviction
   debug: false,
 };
 
@@ -162,9 +162,13 @@ export async function _setup(ctx: any, cfg: KeepaliveConfig): Promise<() => void
         const sid = extractSessionID(ev);
         if (sid) candidates.set(sid, Date.now());
       }
-    } catch {
-      // stream errors are non-fatal: existing candidates keep sweeping; a
-      // dead stream means no new candidates, never a wrong touch
+    } catch (err) {
+      // stream errors are non-fatal: existing candidates keep sweeping; but a
+      // NON-self-aborted death silently ends protection for every session
+      // started after it — that must be visible (mirror auto-continue:453-458)
+      if (!controller.signal.aborted) {
+        logAlways(`event stream died: ${err instanceof Error ? err.message : String(err)}`, 'error');
+      }
     }
   })();
 
@@ -216,7 +220,6 @@ export async function _setup(ctx: any, cfg: KeepaliveConfig): Promise<() => void
           logAlways(`sweep error: ${err instanceof Error ? err.message : String(err)}`, 'error');
         })
         .finally(schedule); // recursive: sweeps never overlap within one tick chain
-      timer?.unref?.();
     }, intervalMs);
     timer?.unref?.();
   };

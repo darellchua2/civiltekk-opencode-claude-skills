@@ -16,8 +16,9 @@ import plugin, {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// Fake ctx: queue-fed event stream + recording session API.
-function makeFakeCtx(opts: { sessions?: Record<string, { status?: string; title?: string }>; updateRejects?: string[] } = {}) {
+// Fake ctx: queue-fed event stream + recording session API. `manualResolve`
+// sids get a probe promise the test resolves later (drives in-flight sweeps).
+function makeFakeCtx(opts: { sessions?: Record<string, { status?: string; title?: string }>; updateRejects?: string[]; manualResolve?: string[] } = {}) {
   const state = {
     getCalls: [] as string[],
     updateCalls: [] as { sessionID: string; title?: string }[],
@@ -27,6 +28,7 @@ function makeFakeCtx(opts: { sessions?: Record<string, { status?: string; title?
   };
   const queue: unknown[] = [];
   const wake: ((v?: unknown) => void)[] = [];
+  const pending: Record<string, { resolve: (v: unknown) => void; promise: Promise<unknown> }> = {};
   const sessions = opts.sessions ?? {};
   const ctx = {
     event: {
@@ -45,6 +47,11 @@ function makeFakeCtx(opts: { sessions?: Record<string, { status?: string; title?
     session: {
       get: async ({ sessionID }: { sessionID: string }) => {
         state.getCalls.push(sessionID);
+        if (opts.manualResolve?.includes(sessionID) && pending[sessionID]) {
+          const p = pending[sessionID];
+          delete pending[sessionID];
+          return p.promise;
+        }
         return sessions[sessionID] ?? { status: 'idle', title: 't' };
       },
       update: async (input: { sessionID: string; title?: string }) => {
@@ -60,7 +67,14 @@ function makeFakeCtx(opts: { sessions?: Record<string, { status?: string; title?
       },
     },
   };
-  return { ctx, state, feed: (ev: unknown) => { queue.push(ev); wake.splice(0).forEach((r) => r()); } };
+  const feed = (ev: unknown) => { queue.push(ev); wake.splice(0).forEach((r) => r()); };
+  const blockProbe = (sid: string) => {
+    let resolve!: (v: unknown) => void;
+    const promise = new Promise((r) => { resolve = r; });
+    pending[sid] = { resolve, promise };
+    return (v: unknown) => pending[sid] ? pending[sid].resolve(v) : resolve(v);
+  };
+  return { ctx, state, feed, blockProbe };
 }
 
 // ── pure helpers ───────────────────────────────────────────────────────────────
@@ -130,16 +144,36 @@ test('missing ctx APIs: logged no-op, never a crash', async () => {
   cleanup();
 });
 
-test('busy candidate: probed, then touched with its OWN unchanged title', async () => {
+test('busy candidate: probed, then touched with its OWN unchanged title, self-sustaining across sweeps', async () => {
   const { ctx, state, feed } = makeFakeCtx({ sessions: { s1: { status: 'busy', title: 'Long build review' } } });
   const cleanup = await _setup(ctx, { enabled: true, intervalMs: 20, debug: false });
   feed({ properties: { sessionID: 's1' } });
-  await sleep(70);
+  await sleep(70); // ~3 sweeps: the touch's own session.renamed re-feeds the candidate map
   assert.ok(state.getCalls.includes('s1'), 'probe ran');
-  const touch = state.updateCalls.find((c) => c.sessionID === 's1');
-  assert.ok(touch, 'update ran');
-  assert.equal(touch.title, 'Long build review');
+  const touches = state.updateCalls.filter((c) => c.sessionID === 's1');
+  assert.ok(touches.length >= 2, `self-sustaining touch (long silent tool property), got ${touches.length}`);
+  for (const t of touches) assert.equal(t.title, 'Long build review');
   cleanup();
+});
+
+test('disposed-race regression: cleanup during an in-flight sweep must not re-arm the timer', async () => {
+  // The gate flake this plugin shipped with: a sweep awaiting its probe when
+  // cleanup() runs would re-arm a leaked timer via .finally(schedule) unless
+  // the disposed gate blocks it. Sync-resolving fakes cannot see this — the
+  // probe promise must resolve AFTER cleanup.
+  const { ctx, state, feed, blockProbe } = makeFakeCtx({
+    sessions: { s1: { status: 'busy', title: 'T' } },
+    manualResolve: ['s1'],
+  });
+  const cleanup = await _setup(ctx, { enabled: true, intervalMs: 25, debug: false });
+  const release = blockProbe('s1');
+  feed({ properties: { sessionID: 's1' } });
+  await sleep(60); // first sweep fired; its probe is pending
+  assert.equal(state.getCalls.filter((s) => s === 's1').length, 1, 'sweep in flight on the blocked probe');
+  cleanup(); // disposed while the sweep is mid-flight
+  release({ status: 'busy', title: 'T' }); // sweep completes → .finally(schedule) must be a no-op
+  await sleep(80); // a re-armed timer would probe again at ~+25ms
+  assert.equal(state.getCalls.filter((s) => s === 's1').length, 1, 'no sweep after cleanup despite in-flight completion');
 });
 
 test('idle probe: no update, candidate dropped (idle locations still evict)', async () => {
