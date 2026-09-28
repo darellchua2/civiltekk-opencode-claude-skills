@@ -89,5 +89,6 @@ None. Upstream issue to `anomalyco/opencode` (make `tool.progress` durable / exe
 ```
 GATE 6d85123 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (node --test 39/39 + bats 618/618 exit 0; lint substituted with module-load smoke — no linter configured; escalated full: new file enters the global plugin-loader glob)
 GATE 87061d0 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a (select-items + ships-plugins bats green, node --test 14/14 post-hardening; docs phase)
-GATE 87061d0 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (ticket exit gate on final tree: bats 618/618 exit 0, node --test 39/39, module-load OK)
+GATE 87061d0 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (ticket exit gate: bats 618/618 exit 0, node --test 39/39, module-load OK)
+GATE 24e3d04 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (review-fix re-gate after rebase onto origin/main a8b95be, final tree: bats 621/621 exit 0, node --test 40/40, module-load OK)
 ```
