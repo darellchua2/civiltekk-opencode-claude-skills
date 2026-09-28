@@ -43,6 +43,12 @@
 GATE 311c868 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (bats 615/615 — phase 1, cross-module anchor; SKILL.md-only change, no linter target)
 GATE 652a625 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a (phase 2 — json x3 + contract/skill_profiles affected tests)
 
+## Review-Fix Log (Step 9, iteration 1)
+
+In-session review (code-review checklist applied): 2 MINOR wording findings (post-prune "deploy-mode paths" plurals in SKILL.md:72 + v2 template Steps 9/10 — one path remains), fixed; forensics confirmed zero stale Docker refs repo-wide; learning gate yielded 2 entries (count-pins-hide-in-assertion-strings, skill-profile-membership-four-surface-sync). Re-gate tier=full green (0 failures).
+
+GATE 8f597c9 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats — review-fix re-gate, final tree)
+
 ### Phase 2: #613-comment follow-ups
 
 - [x] **2.1** Prune the Docker dead-letter path `/app/.opencode/agents/` from both command templates in `deploy/opencode.json` (v2 entry, `review-inline`) — keep the CLI path + unresolvable handling as the sole resolution branch
