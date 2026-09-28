@@ -36,7 +36,7 @@ import re
 from typing import Any, Dict, List, Optional, Tuple
 
 from density_mode import DEFAULT_DENSITY_MODE, validate_density
-from schemas import SLIDE_SCHEMAS, VALID_SLIDE_TYPES
+from schemas import ALL_FIELD_SPECS, SLIDE_SCHEMAS, VALID_SLIDE_TYPES
 
 # Allowed scalar python types for each declared field ``type`` string.
 _TYPE_CHECKERS = {
@@ -206,6 +206,54 @@ def _validate_field(
                 )
 
 
+def _validate_generic_fields(
+    slide_data: Dict[str, Any],
+    slide_index: int,
+    result: "ValidationResult",
+) -> None:
+    """GIT-93 Phase 4 — validate a ``layout_name``-targeted slide generically.
+
+    Used when ``slide_type`` is unknown but ``layout_name`` is present. Instead
+    of the per-type schema (which doesn't exist for the unknown type), this
+    validates each PRESENT field against the union catalog ``ALL_FIELD_SPECS``
+    and enforces a minimal cross-field invariant set.
+
+    Invariant downshift (documented): unknown-type slides lose the per-type
+    REQUIRED guarantee in favor of recommended-warnings. ``title`` and
+    ``notes`` are warned-if-absent (non-fatal). The chart pair
+    (``chart_type`` → ``categories``+``series``) stays hard-error.
+    """
+    # Per-field validation against the union catalog.
+    for field, value in slide_data.items():
+        if field in ("slide_type", "layout_name"):
+            continue
+        spec = ALL_FIELD_SPECS.get(field)
+        if spec:
+            _validate_field(value, spec, slide_index, field, result)
+        else:
+            result.add(ValidationIssue(
+                f"unknown field '{field}' for layout_name-targeted slide",
+                slide_index=slide_index, field_path=field, severity="warning",
+            ))
+    # T4.2b: title / notes recommended (warn-if-absent) — restores parity with
+    # the per-type schemas' required-field intent, kept non-fatal.
+    for req_field in ("title", "notes"):
+        if req_field not in slide_data or slide_data[req_field] in (None, ""):
+            result.add(ValidationIssue(
+                f"missing recommended field '{req_field}' for "
+                f"layout_name-targeted slide",
+                slide_index=slide_index, field_path=req_field, severity="warning",
+            ))
+    # T4.3: chart pair enforcement — hard error (a chart without data is broken).
+    if slide_data.get("chart_type"):
+        for req in ("categories", "series"):
+            if not slide_data.get(req):
+                result.add(ValidationIssue(
+                    f"chart slide missing required field '{req}'",
+                    slide_index=slide_index, field_path=req, severity="error",
+                ))
+
+
 def validate_slide(slide_data: Any, slide_index: int) -> ValidationResult:
     """Validate a single slide object against its ``slide_type`` schema."""
     result = ValidationResult()
@@ -236,13 +284,20 @@ def validate_slide(slide_data: Any, slide_index: int) -> ValidationResult:
     if slide_type not in SLIDE_SCHEMAS:
         # Unknown slide_type: the engine skips these gracefully, so this is a
         # warning, not a fatal error (keeps backward compatibility).
-        result.add(ValidationIssue(
-            f"unknown slide_type '{slide_type}' — will be skipped "
-            f"(valid types: {list(VALID_SLIDE_TYPES)})",
-            slide_index=slide_index,
-            field_path="slide_type",
-            severity="warning",
-        ))
+        # GIT-93 Phase 4: a layout_name-targeted slide (unknown slide_type) is
+        # validated via the generic per-field path instead of being skipped.
+        if slide_data.get("layout_name"):
+            _validate_generic_fields(slide_data, slide_index, result)
+        else:
+            # Unknown slide_type: the engine skips these gracefully, so this is a
+            # warning, not a fatal error (keeps backward compatibility).
+            result.add(ValidationIssue(
+                f"unknown slide_type '{slide_type}' — will be skipped "
+                f"(valid types: {list(VALID_SLIDE_TYPES)}, or supply layout_name)",
+                slide_index=slide_index,
+                field_path="slide_type",
+                severity="warning",
+            ))
         return result
 
     schema = SLIDE_SCHEMAS[slide_type]
@@ -312,8 +367,12 @@ def validate_slide_data_list(
 
     if strict:
         # Promote recommended-field warnings (e.g. missing notes) to errors.
+        # GIT-93 MINOR-4: broaden the match so the generic layout_name path
+        # ("missing recommended field 'notes' for layout_name-targeted slide")
+        # is also promoted — previously only the per-type "missing required
+        # field 'notes'" substring matched.
         for issue in result.issues:
-            if not issue.is_error and "missing required field 'notes'" in issue.reason:
+            if not issue.is_error and "missing" in issue.reason and "'notes'" in issue.reason:
                 issue.severity = "error"
 
     # Density budget check (always non-fatal, even in strict mode). Runs on

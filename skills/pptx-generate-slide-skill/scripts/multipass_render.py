@@ -1,74 +1,29 @@
-"""BT-142 Phase 3.5a — Multi-pass render + merge (engine hard limit L1).
+"""GIT-93 Phase 5 — single-pass render + deck merge.
 
-The chenyu engine's ``slide_type`` enum has exactly 8 values
-(``title_slide``, ``content_slide``, ``section_header_slide``,
-``two_content_slide``, ``comparison_slide``, ``content_image_slide``,
-``chart_slide``, ``closing_slide``). Each ``slide_type`` resolves to ONE
-layout via fingerprint/name match. Designer decks routinely need >8
-distinct layouts (BETEKK V9.1.1 needs 10: Cover, Story, Problem Impact,
-Problem, Solution/Brand, Solution/Demo, Market Validation, Business Model,
-Team, Ask/Closing).
+Originally (BT-142 Phase 3.5a) this module worked around the engine's 8-type
+``slide_type`` ceiling by partitioning slides into ≤8-layout batches,
+pseudo-typing each batch (``_custom_N``), and merging. GIT-93 made
+``layout_name`` a first-class field (Phase 2), so a single
+``generate_ppt_from_data`` pass renders N distinct layouts — the batching /
+pseudo-typing machinery is obsolete and was deleted.
 
-This module solves L1 in three steps:
-
-  1. **Partition** ``slide_data_list`` into batches of ≤8 distinct target
-     layouts. Each slide may carry an extended field ``layout_name`` that
-     names the target layout explicitly (falls back to ``slide_type`` when
-     absent). The orchestrator assigns pseudo-types ``_custom_1`` ...
-     ``_custom_8`` so each batch fits the engine's enum cap.
-  2. **Render** each batch via ``ppt_builder.generate_ppt_from_data`` to a
-     separate ``batch_N.pptx``. The engine treats pseudo-types as
-     ``content_slide`` and we pin the layout via ``config_overrides``.
-  3. **Merge** the per-batch decks into a single output PPTX, deep-copying
-     each slide + its rels + media parts.
-
-The merge primitive (``merge_decks``) is also independently useful: any
-caller that already has multiple rendered decks can stitch them.
-
-Public API:
+This module now exposes:
   - ``merge_decks(primary_path, other_paths, output_path)`` → str (output path)
-  - ``partition_slides(slide_data_list, max_layouts=8)`` → List[List[dict]]
-  - ``multipass_render(slide_data_list, template_path, output_path, **kw)`` → str
-"""
+    — independently useful for stitching pre-rendered decks.
+  - ``multipass_render(slide_data_list, template_path, output_path, render_fn=None)``
+    → str — retained as a thin single-pass wrapper for callers that used the
+    old API; delegates directly to ``generate_ppt_from_data``.
 
+The merge primitives (``_copy_slide`` / ``_relink_image_rels``) are unchanged.
+"""
 from __future__ import annotations
 
 import logging
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_MAX_LAYOUTS_PER_BATCH = 8
-
-
-def partition_slides(
-    slide_data_list: List[dict],
-    max_layouts: int = DEFAULT_MAX_LAYOUTS_PER_BATCH,
-) -> List[List[dict]]:
-    """Group ``slide_data_list`` into batches of ≤ ``max_layouts`` distinct layouts.
-
-    Each slide's layout is determined by its ``layout_name`` field if present,
-    else its ``slide_type``. Slides sharing a layout stay in the same batch
-    (so a batch never wastes a layout slot on a duplicate).
-    """
-    if max_layouts < 1:
-        raise ValueError("max_layouts must be ≥ 1")
-    batches: List[List[dict]] = []
-    current: List[dict] = []
-    current_layouts: set = set()
-    for slide in slide_data_list:
-        layout = slide.get("layout_name") or slide.get("slide_type", "content_slide")
-        if layout not in current_layouts and len(current_layouts) >= max_layouts:
-            batches.append(current)
-            current = []
-            current_layouts = set()
-        current.append(slide)
-        current_layouts.add(layout)
-    if current:
-        batches.append(current)
-    return batches
 
 
 def _copy_slide(src_slide, dst_prs) -> None:
@@ -217,79 +172,32 @@ def merge_decks(
     return str(Path(output_path).resolve())
 
 
-def _batch_to_engine_slides(
-    batch: List[dict],
-) -> Tuple[List[dict], Dict[str, str]]:
-    """Convert a batch (with extended ``layout_name``) to engine-compatible slides.
-
-    Returns ``(engine_slides, config_overrides)`` where ``config_overrides``
-    maps pseudo-types to layout names (the engine pins via
-    ``<slide_type>_layout`` keys).
-
-    Slides WITHOUT ``layout_name`` pass through unchanged (their original
-    ``slide_type`` is preserved — pseudo-typing only kicks in when the caller
-    explicitly targets a layout by name, which is the >8-layout case).
-    """
-    config_overrides: Dict[str, str] = {}
-    layout_to_pseudo: Dict[str, str] = {}
-    engine_slides: List[dict] = []
-    next_idx = 1
-    for slide in batch:
-        # Only pseudo-type when layout_name is explicitly set; otherwise pass
-        # the original slide_type through unchanged (the engine handles it).
-        layout_name = slide.get("layout_name")
-        if not layout_name:
-            engine_slides.append(slide)
-            continue
-        if layout_name not in layout_to_pseudo:
-            pseudo = f"_custom_{next_idx}"
-            next_idx += 1
-            layout_to_pseudo[layout_name] = pseudo
-            config_overrides[f"{pseudo}_layout"] = layout_name
-        pseudo = layout_to_pseudo[layout_name]
-        # Copy and remap slide_type to the pseudo-type. The engine treats
-        # unknown types as ``content_slide`` (per ppt_builder error handling),
-        # and the config pin routes to the correct layout.
-        new_slide = dict(slide)
-        new_slide["slide_type"] = pseudo
-        # Preserve original slide_type in notes so the engine can still
-        # classify subtitle/body behaviour. ppt_builder keys behaviour off
-        # _LAYOUTS_WITH_BODY / _LAYOUTS_WITH_SUBTITLE sets — pseudo-types
-        # won't be in either, so we mark them as content-like via the body
-        # field presence.
-        if "body" not in new_slide and "body_left" not in new_slide:
-            new_slide.setdefault("body", "")
-        engine_slides.append(new_slide)
-    return engine_slides, config_overrides
-
-
 def multipass_render(
     slide_data_list: List[dict],
     template_path: str,
     output_path: str,
-    max_layouts: int = DEFAULT_MAX_LAYOUTS_PER_BATCH,
-    render_fn=None,
+    render_fn: Optional[Any] = None,
 ) -> str:
-    """Render ``slide_data_list`` to ``output_path``, using multi-pass if >8 layouts.
+    """Render ``slide_data_list`` to ``output_path`` in a single pass.
 
-    When the distinct layout count ≤ ``max_layouts``, calls ``render_fn``
-    once directly (no merge overhead). When > ``max_layouts``, partitions
-    into batches, renders each, and merges.
+    GIT-93 Phase 5: ``layout_name`` is now native (Phase 2), so a single
+    ``generate_ppt_from_data`` pass renders N distinct layouts — no batching
+    or pseudo-typing is needed. This wrapper is retained for callers that
+    used the old >8-layout multipass API; it delegates directly.
 
     Args:
-        slide_data_list: list of slide dicts (extended with optional ``layout_name``)
-        template_path: source template
-        output_path: final PPTX path
-        max_layouts: per-batch cap (default 8)
+        slide_data_list: list of slide dicts (may carry ``layout_name``).
+        template_path: source template.
+        output_path: final PPTX path.
         render_fn: callable ``(slides, template_path, output_path,
             config_overrides) -> str`` — defaults to a thin wrapper over
-            ``ppt_builder.generate_ppt_from_data``
+            ``ppt_builder.generate_ppt_from_data``.
 
     Returns:
-        absolute path to ``output_path``
+        absolute path to ``output_path``.
     """
     if render_fn is None:
-        from ppt_builder import generate_ppt_from_data, DEFAULT_OUTPUT_DIR
+        from ppt_builder import generate_ppt_from_data
 
         def render_fn(slides, tpl, out, overrides):
             return generate_ppt_from_data(
@@ -299,39 +207,12 @@ def multipass_render(
                 config_overrides=overrides,
             )
 
-    batches = partition_slides(slide_data_list, max_layouts=max_layouts)
-    if len(batches) == 1:
-        engine_slides, overrides = _batch_to_engine_slides(batches[0])
-        return render_fn(engine_slides, template_path, output_path, overrides)
-
-    # Multi-pass: render each batch to a temp file, then merge.
-    out_dir = Path(output_path).parent
-    out_dir.mkdir(parents=True, exist_ok=True)
-    stem = Path(output_path).stem
-    batch_paths: List[str] = []
-    for i, batch in enumerate(batches):
-        engine_slides, overrides = _batch_to_engine_slides(batch)
-        batch_path = str(out_dir / f"{stem}.__batch{i}.pptx")
-        logger.info("multipass_render: batch %d (%d slides, %d layouts)",
-                    i, len(engine_slides), len(overrides))
-        render_fn(engine_slides, template_path, batch_path, overrides)
-        batch_paths.append(batch_path)
-
-    primary = batch_paths[0]
-    rest = batch_paths[1:]
-    result = merge_decks(primary, rest, output_path)
-    # Clean up batch files
-    for p in batch_paths:
-        try:
-            Path(p).unlink()
-        except OSError:
-            pass
-    return result
+    # Single pass — no batching. config_overrides is empty: layout_name is
+    # resolved natively by _select_layout, and pseudo-typing is obsolete.
+    return render_fn(slide_data_list, template_path, output_path, {})
 
 
 __all__ = [
-    "DEFAULT_MAX_LAYOUTS_PER_BATCH",
-    "partition_slides",
     "merge_decks",
     "multipass_render",
 ]

@@ -75,48 +75,93 @@ class OverflowFinding:
         }
 
 
+def _resolve_layout_contract(
+    slide_data: Dict[str, Any],
+    contract: Optional[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    """GIT-93 Phase 6 — resolve the contract layout dict for a slide.
+
+    Precedence: ``layout_name`` → exact name match in ``contract["layouts"]``;
+    else ``slide_type`` → fingerprint match via ``layout_contract``. Returns
+    the layout dict or ``None``.
+    """
+    if contract is None or not isinstance(contract, dict):
+        return None
+    layouts = contract.get("layouts")
+    if not isinstance(layouts, list) or not layouts:
+        return None
+    # 1. layout_name (GIT-93): explicit per-slide targeting. Match the SAME
+    # way the render path does (_resolve_layout: case-insensitive exact, then
+    # normalized stripping ``^\d+_``) so a slide that renders also gets overflow
+    # geometry — previously this used bare ``==`` and silently deferred
+    # case/prefix-divergent names (code-review MINOR-2).
+    layout_name = slide_data.get("layout_name")
+    if layout_name:
+        from layout_contract import _normalize_layout_name
+        target_lower = layout_name.lower()
+        target_norm = _normalize_layout_name(layout_name)
+        for L in layouts:
+            if not isinstance(L, dict):
+                continue
+            lname = L.get("name", "")
+            if lname.lower() == target_lower:
+                return L
+        for L in layouts:
+            if not isinstance(L, dict):
+                continue
+            if _normalize_layout_name(L.get("name", "")) == target_norm:
+                return L
+        return None  # name given but not found → no silent fallback (explicit)
+    # 2. slide_type: fingerprint match (pure, operates on the contract dict).
+    slide_type = slide_data.get("slide_type")
+    if slide_type:
+        try:
+            from layout_contract import _resolve_layout_by_fingerprint
+            idx, _ = _resolve_layout_by_fingerprint(slide_type, contract)
+            if idx is not None and 0 <= idx < len(layouts):
+                return layouts[idx]
+        except Exception:
+            pass
+    return None
+
+
 def _available_height_for_field(
     field_name: str,
-    slide_type: str,
+    slide_data: Dict[str, Any],
     contract: Optional[Dict[str, Any]],
 ) -> Optional[float]:
     """Look up the available content height (in inches) for a body field.
 
-    Returns ``None`` when the contract is missing or the field is unknown —
-    in that case the caller treats overflow detection as best-effort (a missing
-    ceiling means we cannot confidently say OVERFLOW, so default to FIT and
-    let the post-render image verification (Phase 2.4b) catch real overflow).
+    GIT-93 Phase 6 (NF-1/NF-2): resolves geometry by ``layout_name`` →
+    ``contract["layouts"][i]`` → ``placeholders`` (falling back to slide_type
+    fingerprint). Reads ``ph.get("type")`` (the contract emits ``"type"`` —
+    e.g. ``"OBJECT"``/``"body"``), NOT the dead ``"role"`` key. Retires the
+    ``layouts_by_slide_type`` dead key (NF-2 bug-fix). Returns ``None`` when
+    geometry is unavailable (defer to image oracle).
     """
-    if contract is None:
-        return None
-    # The contract exposes per-layout placeholder geometry. Look up by slide_type.
-    layouts_by_type = contract.get("layouts_by_slide_type") if isinstance(contract, dict) else None
-    if not isinstance(layouts_by_type, dict):
-        return None
-    layout = layouts_by_type.get(slide_type)
-    if not isinstance(layout, dict):
+    layout = _resolve_layout_contract(slide_data, contract)
+    if not layout:
         return None
     placeholders = layout.get("placeholders") if isinstance(layout.get("placeholders"), list) else []
-    # Match by role: 'body' → 'body'; 'body_left'/'body_right' → look for left/right
     for ph in placeholders:
         if not isinstance(ph, dict):
             continue
-        ph_role = ph.get("role", "")
+        ph_type = ph.get("type", "")  # NF-1: contract emits "type", not "role"
         ph_height = ph.get("height_in")
         if ph_height is None:
             continue
-        if field_name == "body" and ph_role in ("body", "OBJECT", "object"):
+        if field_name == "body" and ph_type in ("body", "OBJECT", "object"):
             try:
                 return float(ph_height)
             except (TypeError, ValueError):
                 continue
-        if field_name in ("body_left", "body_right") and ph_role in ("body", "OBJECT", "object"):
+        if field_name in ("body_left", "body_right") and ph_type in ("body", "OBJECT", "object"):
             # Two-body layouts report a single body height per column; use as estimate.
             try:
                 return float(ph_height)
             except (TypeError, ValueError):
                 continue
-        if field_name == "subtitle" and ph_role in ("subtitle", "SUBTITLE"):
+        if field_name == "subtitle" and ph_type in ("subtitle", "SUBTITLE"):
             try:
                 return float(ph_height)
             except (TypeError, ValueError):
@@ -210,7 +255,7 @@ def overflow_check(
             text = _text_for_field(slide, field_name)
             if not text:
                 continue
-            avail = _available_height_for_field(field_name, slide_type, template_contract)
+            avail = _available_height_for_field(field_name, slide, template_contract)
             if avail is None:
                 deferred = True
                 continue

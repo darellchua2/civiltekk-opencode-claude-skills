@@ -7,6 +7,7 @@ import a single, stable entry point::
 """
 
 from .slide_schemas import (
+    ALL_FIELD_SPECS,
     CHART_OPTIONS_SPEC,
     CHART_TYPES,
     SLIDE_SCHEMAS,
@@ -15,6 +16,7 @@ from .slide_schemas import (
 
 __all__ = [
     "SLIDE_SCHEMAS",
+    "ALL_FIELD_SPECS",
     "CHART_OPTIONS_SPEC",
     "CHART_TYPES",
     "VALID_SLIDE_TYPES",

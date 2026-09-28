@@ -211,6 +211,52 @@ def servable_slide_types(contract: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     return report
 
 
+def available_layouts(contract: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Report ALL layouts a template's contract exposes (GIT-93 Phase 1).
+
+    Unlike :func:`servable_slide_types` (which reports only the 8 standard
+    engine slide_types and whether the contract can serve each), this returns
+    **every** layout in the contract so the agent can target any of them via a
+    ``layout_name`` field — including layouts whose placeholder composition
+    does not fingerprint-match any of the 8 standard types (e.g. Agenda,
+    Timeline, Team, Quote layouts in a designer deck).
+
+    Each entry: ``{"name", "index", "fingerprint", "content_area_in2"}``.
+    """
+    layouts = (contract or {}).get("layouts", [])
+    return [
+        {
+            "name": L.get("name", ""),
+            "index": L.get("index"),
+            "fingerprint": list(L.get("fingerprint", [])),
+            "content_area_in2": L.get("content_area_in2", 0),
+        }
+        for L in layouts
+    ]
+
+
+def classify_layout_fingerprint(fp: List[str]) -> Optional[str]:
+    """Map an arbitrary placeholder-composition fingerprint to the nearest
+    standard engine slide_type (GIT-93 Phase 1).
+
+    Reuses :func:`_composition_diff` against the 8 ideal fingerprints and
+    returns the slide_type with the fewest missing placeholders (ties broken
+    by fewest extras, then dict order). Returns ``None`` when ``fp`` is empty.
+    Useful as a semantic hint for non-standard layouts so the agent can pick a
+    sensible field set (e.g. a ``[TITLE, OBJECT]`` Agenda layout →
+    ``"content_slide"`` → use ``body``).
+    """
+    if not fp:
+        return None
+    best: Optional[Tuple[int, int, str]] = None  # (missing, extra, slide_type)
+    for slide_type, ideal in _SLIDE_TYPE_FINGERPRINT.items():
+        missing, extra = _composition_diff(ideal, fp)
+        candidate = (missing, extra, slide_type)
+        if best is None or candidate[:2] < best[:2]:
+            best = candidate
+    return best[2] if best else None
+
+
 # ---------------------------------------------------------------------------
 # Embedded-schema probe helpers + render-contract entrypoint (US-4.1)
 # ---------------------------------------------------------------------------
