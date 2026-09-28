@@ -6,10 +6,10 @@
 
 ## Acceptance Criteria
 
-- [ ] `deploy/opencode.json` gains exactly one new `commands` key (`worktree-pipeline-preview`) with `agent: "plan"`, `subagent: false`, no `model:` key; all 7 existing entries byte-unchanged
-- [ ] New template carries the zero-subagent directive and no `app/.opencode/agents` Docker path
-- [ ] `bats tests/test_v2_pipeline_contract.bats` passes
-- [ ] README.md documents `/worktree-pipeline-preview` next to the two-flavors note
+- [x] `deploy/opencode.json` gains exactly one new `commands` key (`worktree-pipeline-preview`) with `agent: "plan"`, `subagent: false`, no `model:` key; all 7 existing entries byte-unchanged
+- [x] New template carries the zero-subagent directive and no `app/.opencode/agents` Docker path
+- [x] `bats tests/test_v2_pipeline_contract.bats` passes
+- [x] README.md documents `/worktree-pipeline-preview` next to the two-flavors note
 - [ ] Live `~/.config/opencode/opencode.json` gets the surgical single-key insert; live entry equals the template; command surfaces in a new Plan-mode session
 
 ## Dependency & Consumer Map
