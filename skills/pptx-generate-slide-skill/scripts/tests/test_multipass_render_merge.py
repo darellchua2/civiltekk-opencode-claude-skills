@@ -165,11 +165,12 @@ def test_merge_decks_with_shared_image_no_corruption(tmp_path):
 # Test 3: three-batch partition end-to-end
 # ---------------------------------------------------------------------------
 
-def test_multipass_render_three_batches_preserves_all_slides(tmp_path):
-    """End-to-end: 3 distinct valid slide_types → 3 batches → all 3 slides merged.
+def test_multipass_render_single_pass_preserves_all_slides(tmp_path):
+    """GIT-93 Phase 5: 3 distinct slide_types → single pass → all 3 slides.
 
-    Uses real slide_types (not pseudo-types) so the schema validator accepts
-    them. With max_layouts=1, each distinct slide_type becomes its own batch.
+    Previously this forced 3 batches via max_layouts=1; multipass_render is
+    now always single-pass (layout_name native), so all slides render in one
+    generate_ppt_from_data call.
     """
     template_path = _make_minimal_template(tmp_path)
     slide_data = [
@@ -179,18 +180,15 @@ def test_multipass_render_three_batches_preserves_all_slides(tmp_path):
         {"slide_type": "section_header_slide", "title": "S2",
          "notes": GOOD_NOTES},
     ]
-    out = str(tmp_path / "three_batch.pptx")
-    # Force multi-pass by setting max_layouts=1 (so each layout is its own batch)
+    out = str(tmp_path / "single_pass.pptx")
     result = multipass_render(
         slide_data,
         template_path=template_path,
         output_path=out,
-        max_layouts=1,
     )
     prs = Presentation(result)
-    # Each batch renders 1 slide; merge produces 3 total.
     assert len(prs.slides) >= 3, (
-        f"expected ≥3 slides after 3-batch merge, got {len(prs.slides)}"
+        f"expected ≥3 slides after single-pass render, got {len(prs.slides)}"
     )
 
 
@@ -231,25 +229,19 @@ def test_merge_handles_unknown_layout_gracefully(tmp_path):
 # Test 5: idempotency of multipass_render — single-batch optimization
 # ---------------------------------------------------------------------------
 
-def test_multipass_render_single_batch_no_merge_needed(tmp_path):
-    """When all slides fit one batch (≤ max_layouts distinct), no merge happens.
-
-    Uses valid slide_types only (the engine's 8-type enum is the constraint).
-    With 2 distinct types and max_layouts=8, the partition produces one batch
-    and the fast path renders directly (no merge).
-    """
+def test_multipass_render_single_pass_two_slides(tmp_path):
+    """GIT-93 Phase 5: multipass_render renders all slides in one pass (no merge)."""
     template_path = _make_minimal_template(tmp_path)
     slide_data = [
         {"slide_type": "title_slide", "title": "S0", "subtitle": "x",
          "notes": GOOD_NOTES},
         {"slide_type": "closing_slide", "title": "S1", "notes": GOOD_NOTES},
     ]
-    out = str(tmp_path / "single_batch.pptx")
+    out = str(tmp_path / "single_pass.pptx")
     result = multipass_render(
         slide_data,
         template_path=template_path,
         output_path=out,
-        max_layouts=8,  # both fit in one batch
     )
     prs = Presentation(result)
     assert len(prs.slides) >= 2, f"expected ≥2 slides, got {len(prs.slides)}"

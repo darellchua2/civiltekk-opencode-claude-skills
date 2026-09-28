@@ -123,23 +123,11 @@ _PT_TO_ROLE = {"title": "title", "subtitle": "subtitle", "body": "body"}
 # historical 12/14 visual hierarchy (0.857) now that sizes are template-derived.
 _BODY_DESC_RATIO = 0.85
 
-_REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-
 # PLAN-GIT-72: _LAYOUT_NAME_MAP / _SLIDE_TYPE_FINGERPRINT / _SERVES_LAYOUT moved
-# to layout_contract (shared). _LAYOUTS_WITH_* below are fill-specific (stay).
+# to layout_contract (shared). GIT-93 Phase 3 retired the _LAYOUTS_WITH_*
+# fill-gate sets — fill dispatch is now field-presence + placeholder-driven.
 
-_LAYOUTS_WITH_SUBTITLE = {
-    "title_slide", "closing_slide",
-}
-_LAYOUTS_WITH_BODY = {
-    "content_slide", "content_image_slide",
-}
-_LAYOUTS_WITH_TWO_BODIES = {
-    "two_content_slide", "comparison_slide",
-}
-_LAYOUTS_WITH_CHART = {
-    "chart_slide",
-}
+_REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 
 # Slide types whose body/content area is the primary selection concern
 # (used for the content_area_in2 tie-break).
@@ -313,19 +301,43 @@ def _select_layout(
     exact_idx: Dict[str, Any],
     norm_idx: Dict[str, Any],
     page_num: int,
+    layout_name: Optional[str] = None,
 ) -> Optional[Any]:
-    """Resolve a slide_type to a concrete ``SlideLayout`` (issue #44).
+    """Resolve a slide_type to a concrete ``SlideLayout`` (issue #44 + GIT-93).
 
-    Precedence: config pin (``<slide_type>_layout``) → fingerprint match →
-    name-based fallback → degradation (skip + warn). Without a contract the path
-    is the original name-based matching, so behaviour is backward compatible.
+    Precedence (GIT-93 Phase 2): **layout_name** (highest) → config pin →
+    fingerprint match → name-based fallback → degradation (skip + warn).
+
+    ``layout_name`` is the first-class mechanism that makes ANY template layout
+    targetable — including layouts outside the 8 standard types. The config pin
+    branch now also rescues pseudo-types (``_custom_N``) because the gate no
+    longer rejects unknown types when a rescue path exists (T2.3/T2.4 bug fix).
     """
-    if slide_type not in _SLIDE_TYPE_FINGERPRINT and slide_type not in _LAYOUT_NAME_MAP:
+    # 0. layout_name — explicit per-slide layout targeting (GIT-93 Phase 2).
+    #    Highest precedence: per-slide authoring wins over deck-wide operator
+    #    config (NIT-1 policy). Resolves by name against the live template.
+    if layout_name:
+        layout = _resolve_layout([layout_name], exact_idx, norm_idx)
+        if layout is not None:
+            return layout
+        logger.warning(
+            "Page %d: layout_name '%s' not found on template; falling back",
+            page_num, layout_name,
+        )
+
+    pinned = config.get(f"{slide_type}_layout")
+    is_known = (slide_type in _SLIDE_TYPE_FINGERPRINT
+                or slide_type in _LAYOUT_NAME_MAP)
+
+    # Gate (GIT-93 T2.3): an unknown slide_type with NO layout_name and NO
+    # config pin cannot be resolved — skip it. Previously this rejected unknown
+    # types unconditionally BEFORE the config-pin branch, which silently broke
+    # the pseudo-type escape hatch (T2.4 bug fix).
+    if not is_known and not layout_name and not pinned:
         logger.warning("Page %d: unknown slide_type '%s', skipped", page_num, slide_type)
         return None
 
-    # 1. Config pin — explicit layout name (highest precedence; all 8 types).
-    pinned = config.get(f"{slide_type}_layout")
+    # 1. Config pin — explicit layout name (all types incl. pseudo-types).
     if pinned:
         layout = _resolve_layout([pinned], exact_idx, norm_idx)
         if layout is not None:
@@ -334,7 +346,7 @@ def _select_layout(
             "Page %d: config pin '%s' not found; falling back", page_num, pinned)
 
     # 2. Fingerprint match (contract-aware; names are a tie-breaker).
-    if contract:
+    if contract and slide_type in _SLIDE_TYPE_FINGERPRINT:
         idx, reason = _resolve_layout_by_fingerprint(slide_type, contract)
         if idx is not None:
             return prs.slide_layouts[idx]
@@ -387,6 +399,7 @@ def _validate_template(
     prs: Presentation,
     template_path: str,
     contract: Optional[Dict[str, Any]] = None,
+    slide_data_list: Optional[List[Dict[str, Any]]] = None,
 ) -> None:
     """US-4.7 pre-flight: abort with :class:`TemplateError` on severe problems.
 
@@ -394,6 +407,11 @@ def _validate_template(
     types. Openability is checked by the caller (``Presentation(...)`` is wrapped).
     Minor issues (missing fonts, no header/footer, small content area, no embedded
     schema) are NOT checked here — they stay non-fatal warnings elsewhere.
+
+    GIT-93 T2.5: "serves none of the 8 types" is downgraded from fatal to warning
+    when at least one slide carries an explicit ``layout_name`` (it targets a
+    layout directly, bypassing the 8-type fingerprint servability check). Stays
+    fatal when no slide carries ``layout_name`` (preserves the original guard).
     """
     try:
         masters = list(prs.slide_masters)
@@ -422,10 +440,23 @@ def _validate_template(
             served = {}
         available = [t for t, info in served.items() if info and info.get("available")]
         if not available:
-            raise TemplateError(
-                f"Template serves none of the 8 slide types — cannot generate "
-                f"any slide: {template_path}"
+            # GIT-93 T2.5: relax if >=1 slide carries an explicit layout_name.
+            has_layout_name = bool(slide_data_list) and any(
+                isinstance(s, dict) and s.get("layout_name")
+                for s in slide_data_list
             )
+            if has_layout_name:
+                logger.warning(
+                    "Template serves none of the 8 standard slide types, but >=1 "
+                    "slide carries an explicit layout_name — proceeding (layouts "
+                    "targeted directly, bypassing fingerprint servability): %s",
+                    template_path,
+                )
+            else:
+                raise TemplateError(
+                    f"Template serves none of the 8 slide types — cannot generate "
+                    f"any slide (and no slide carries a layout_name): {template_path}"
+                )
 
 
 def _remove_all_slides(prs: Presentation) -> int:
@@ -1410,7 +1441,7 @@ def generate_ppt_from_data(
     # US-4.7 (AC4/AC5/AC6): severe template problems abort before the render loop.
     # Structural checks (no master / zero layouts) always run; servability (AC6)
     # runs only when the contract is available. See ``_validate_template``.
-    _validate_template(prs, str(template), contract)
+    _validate_template(prs, str(template), contract, slide_data_list)
 
     # US-4.2: build a {layout_name: {role: size_pt}} map from the embedded
     # schema (best-effort) for the M1 base-size resolution chain. Absent/corrupt
@@ -1448,9 +1479,11 @@ def generate_ppt_from_data(
     for page_num, slide_data in enumerate(slide_data_list, start=1):
         slide_type = slide_data.get("slide_type", "")
 
-        # Resolve layout: config pin → fingerprint match → name fallback (#44).
+        # Resolve layout: layout_name (GIT-93) → config pin → fingerprint match
+        # → name fallback (#44).
         layout = _select_layout(
-            slide_type, contract, config, prs, exact_idx, norm_idx, page_num
+            slide_type, contract, config, prs, exact_idx, norm_idx, page_num,
+            layout_name=slide_data.get("layout_name"),
         )
         if layout is None:
             continue  # degradation warning already logged
@@ -1480,69 +1513,73 @@ def generate_ppt_from_data(
                         slide_report.append(entry)
                     logger.info("  Title: \"%s\"", title_text)
 
-            # Fill subtitle (for title, agenda, closing, section-header-sub).
+            # Fill/clear subtitle (GIT-93 Phase 3: field-driven + sweep).
             # With content -> fill (overrides inheritance). Without content ->
             # REMOVE the placeholder so the layout's inherited sample text (e.g.
             # closing's "Prepared by: Lecturer Name", title's "Click to edit
             # Master subtitle style") cannot bleed in (an empty <a:p/> still
-            # inherits — verified empirically).
-            if slide_type in _LAYOUTS_WITH_SUBTITLE:
-                sub_ph = _find_placeholder(slide, _SUBTITLE_TYPE)
-                if sub_ph:
-                    if slide_type == "closing_slide":
-                        # closing sign-off from presenter fields; fall back to an
-                        # explicit subtitle; both empty -> removed below.
-                        subtitle_text = _compose_signoff(slide_data) or slide_data.get("subtitle", "")
-                    else:
-                        subtitle_text = slide_data.get("subtitle", "")
-                    if subtitle_text:
-                        fit = _set_text(
-                            sub_ph, subtitle_text,
-                            role="subtitle", schema_font_map=schema_font_map, layout=layout,
+            # inherits — verified empirically). MAJOR-1: the sweep MUST survive
+            # the field-driven refactor for the standard title/closing types.
+            sub_ph = _find_placeholder(slide, _SUBTITLE_TYPE)
+            if sub_ph:
+                if slide_type == "closing_slide":
+                    # closing sign-off from presenter fields; fall back to an
+                    # explicit subtitle; both empty -> removed below.
+                    # (NF-3: preserve _compose_signoff.)
+                    subtitle_text = _compose_signoff(slide_data) or slide_data.get("subtitle", "")
+                else:
+                    subtitle_text = slide_data.get("subtitle", "")
+                if subtitle_text:
+                    fit = _set_text(
+                        sub_ph, subtitle_text,
+                        role="subtitle", schema_font_map=schema_font_map, layout=layout,
+                    )
+                    if fit and fit.adjusted:
+                        logger.info(
+                            "  Subtitle auto-shrunk %g→%gpt",
+                            fit.base_size_pt, fit.applied_size_pt,
                         )
-                        if fit and fit.adjusted:
-                            logger.info(
-                                "  Subtitle auto-shrunk %g→%gpt",
-                                fit.base_size_pt, fit.applied_size_pt,
-                            )
-                        entry = _font_fit_report_entry("subtitle", "subtitle", fit)
+                    entry = _font_fit_report_entry("subtitle", "subtitle", fit)
+                    if entry:
+                        slide_report.append(entry)
+                    logger.info("  Subtitle: \"%s\"", subtitle_text[:50])
+                else:
+                    _remove_placeholder(sub_ph)
+                    logger.info("  Subtitle: removed (no content; no inherited-sample bleed)")
+
+            # Fill body text (GIT-93 Phase 3: field-driven — any slide with a
+            # body field whose layout has a BODY/OBJECT placeholder). Guard
+            # against body_left/body_right so a slide carrying BOTH does not
+            # double-fill/overwrite (the two fields were mutually exclusive
+            # under the old type-membership gates).
+            body_text = slide_data.get("body", "")
+            if body_text and not (slide_data.get("body_left") or slide_data.get("body_right")):
+                body_ph = _find_body_placeholder(slide)
+                if body_ph:
+                    fit = _set_body_text(
+                        body_ph, body_text,
+                        role="body", schema_font_map=schema_font_map, layout=layout,
+                    )
+                    if fit:
+                        entry = _font_fit_report_entry("body", "body", fit)
                         if entry:
                             slide_report.append(entry)
-                        logger.info("  Subtitle: \"%s\"", subtitle_text[:50])
-                    else:
-                        _remove_placeholder(sub_ph)
-                        logger.info("  Subtitle: removed (no content; no inherited-sample bleed)")
+                        if fit.adjusted:
+                            logger.info(
+                                "  Body auto-shrunk %g→%gpt",
+                                fit.base_size_pt, fit.applied_size_pt,
+                            )
+                        if not fit.fits:
+                            logger.warning(
+                                "  Body still overflows at %gpt floor (AC1 best-effort)",
+                                fit.applied_size_pt,
+                            )
+                    logger.info("  Body: %d lines", len([l for l in body_text.split("\n") if l.strip()]))
 
-            # Fill body text (for content slides)
-            if slide_type in _LAYOUTS_WITH_BODY:
-                body_text = slide_data.get("body", "")
-                if body_text:
-                    body_ph = _find_body_placeholder(slide)
-                    if body_ph:
-                        fit = _set_body_text(
-                            body_ph, body_text,
-                            role="body", schema_font_map=schema_font_map, layout=layout,
-                        )
-                        if fit:
-                            entry = _font_fit_report_entry("body", "body", fit)
-                            if entry:
-                                slide_report.append(entry)
-                            if fit.adjusted:
-                                logger.info(
-                                    "  Body auto-shrunk %g→%gpt",
-                                    fit.base_size_pt, fit.applied_size_pt,
-                                )
-                            if not fit.fits:
-                                logger.warning(
-                                    "  Body still overflows at %gpt floor (AC1 best-effort)",
-                                    fit.applied_size_pt,
-                                )
-                        logger.info("  Body: %d lines", len([l for l in body_text.split("\n") if l.strip()]))
-
-            # Fill two body areas (for two-content slides)
-            if slide_type in _LAYOUTS_WITH_TWO_BODIES:
-                body_left = slide_data.get("body_left", "")
-                body_right = slide_data.get("body_right", "")
+            # Fill two body areas (GIT-93 Phase 3: field-driven).
+            body_left = slide_data.get("body_left", "")
+            body_right = slide_data.get("body_right", "")
+            if body_left or body_right:
                 objects = _find_placeholders(slide, _OBJECT_TYPE)
                 # BODY placeholders serve the same role as OBJECT (the
                 # introspector normalizes BODY→OBJECT in the contract, but
@@ -1587,8 +1624,11 @@ def generate_ppt_from_data(
                         "  Two-content slide has no content placeholders; "
                         "body_left/body_right dropped")
 
-            # Add chart (for chart slides)
-            if slide_type in _LAYOUTS_WITH_CHART:
+            # Add chart (GIT-93 Phase 3: field-driven — any slide carrying
+            # chart_type; PLUS a known chart_slide whose chart_type is absent
+            # so _add_chart_to_slide still applies its bar default, preserving
+            # backward compat).
+            if slide_type == "chart_slide" or slide_data.get("chart_type"):
                 _add_chart_to_slide(slide, slide_data)
 
             # Embed image (any slide carrying image_path) — #18

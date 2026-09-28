@@ -1,109 +1,51 @@
-"""Tests for BT-142 Phase 3.5a multipass_render."""
+"""Tests for GIT-93 Phase 5 — multipass_render single-pass wrapper.
 
+The partition/pseudo-type machinery (``partition_slides`` /
+``_batch_to_engine_slides``) was deleted: ``layout_name`` is native now
+(Phase 2), so a single pass renders N distinct layouts. These tests verify
+``multipass_render`` delegates to ``render_fn`` in a single pass and that the
+deleted symbols are gone.
+"""
 from __future__ import annotations
 
-import sys
+import importlib
 import pathlib
+import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from multipass_render import partition_slides, _batch_to_engine_slides
 
-
-def test_partition_single_batch_under_cap():
-    slides = [{"slide_type": f"t{i}"} for i in range(5)]
-    batches = partition_slides(slides, max_layouts=8)
-    assert len(batches) == 1
-    assert batches[0] == slides
-
-
-def test_partition_splits_when_over_cap():
-    slides = [{"slide_type": f"t{i}"} for i in range(10)]
-    batches = partition_slides(slides, max_layouts=8)
-    assert len(batches) == 2
-    assert len(batches[0]) == 8
-    assert len(batches[1]) == 2
-
-
-def test_partition_groups_same_layout_together():
-    """Slides sharing a layout do not consume a new slot in the next batch."""
-    slides = [
-        {"slide_type": "a"},
-        {"slide_type": "b"},
-        {"slide_type": "a"},  # reuse — does not consume new slot
-        {"slide_type": "c"},
-        {"slide_type": "d"},
-        {"slide_type": "e"},
-        {"slide_type": "f"},
-        {"slide_type": "g"},
-        {"slide_type": "h"},
-        {"slide_type": "i"},  # 9th distinct — triggers split
-    ]
-    batches = partition_slides(slides, max_layouts=8)
-    assert len(batches) == 2
-    # First batch has 9 slides (8 distinct + 1 reuse), then 1 slide (i)
-    assert len(batches[0]) == 9
-    assert len(batches[1]) == 1
-
-
-def test_partition_layout_name_overrides_slide_type():
-    slides = [
-        {"slide_type": "content_slide", "layout_name": "Cover"},
-        {"slide_type": "content_slide", "layout_name": "Story"},
-        {"slide_type": "content_slide", "layout_name": "Cover"},  # reuse
-    ]
-    batches = partition_slides(slides, max_layouts=8)
-    assert len(batches) == 1
-    assert len(batches[0]) == 3  # 2 distinct layouts + 1 reuse
-
-
-def test_partition_invalid_cap():
-    import pytest
-    with pytest.raises(ValueError):
-        partition_slides([], max_layouts=0)
-
-
-def test_batch_to_engine_slides_assigns_pseudo_types():
-    batch = [
-        {"slide_type": "x", "layout_name": "Cover"},
-        {"slide_type": "y", "layout_name": "Story"},
-        {"slide_type": "x", "layout_name": "Cover"},  # reuse
-    ]
-    engine, overrides = _batch_to_engine_slides(batch)
-    # Two distinct layouts → two pseudo-types
-    assert len(overrides) == 2
-    assert engine[0]["slide_type"] == "_custom_1"
-    assert engine[1]["slide_type"] == "_custom_2"
-    assert engine[2]["slide_type"] == "_custom_1"  # reuse maps back
-    # Override keys are <pseudo>_layout
-    keys = list(overrides.keys())
-    assert all(k.endswith("_layout") for k in keys)
-
-
-def test_batch_to_engine_preserves_layout_name_pin():
-    batch = [{"slide_type": "x", "layout_name": "Cover"}]
-    engine, overrides = _batch_to_engine_slides(batch)
-    assert overrides["_custom_1_layout"] == "Cover"
-
-
-def test_multipass_render_uses_single_pass_when_under_cap(tmp_path):
-    """When ≤8 layouts, multipass_render calls render_fn exactly once."""
+def test_multipass_render_always_single_pass(tmp_path):
+    """multipass_render calls render_fn exactly once, regardless of layout count."""
     calls = []
 
     def fake_render(slides, tpl, out, overrides):
-        calls.append(out)
-        # Touch the output so the file exists
+        calls.append((len(slides), overrides))
         with open(out, "w") as f:
             f.write("ok")
         return out
 
     from multipass_render import multipass_render
-    out = multipass_render(
-        [{"slide_type": f"t{i}"} for i in range(3)],
+    multipass_render(
+        [{"slide_type": f"t{i}"} for i in range(12)],  # >8, but no batching now
         template_path="/dev/null",
         output_path=str(tmp_path / "out.pptx"),
-        max_layouts=8,
         render_fn=fake_render,
     )
-    assert len(calls) == 1
-    assert calls[0] == out
+    assert len(calls) == 1  # single pass, even with >8 layouts
+    assert calls[0][0] == 12  # all 12 slides in one pass
+    assert calls[0][1] == {}  # no pseudo-type overrides
+
+
+def test_deleted_functions_no_longer_importable():
+    """partition_slides / _batch_to_engine_slides / cap were removed (Phase 5)."""
+    mod = importlib.import_module("multipass_render")
+    assert not hasattr(mod, "partition_slides")
+    assert not hasattr(mod, "_batch_to_engine_slides")
+    assert not hasattr(mod, "DEFAULT_MAX_LAYOUTS_PER_BATCH")
+
+
+def test_merge_decks_still_importable():
+    """merge_decks is retained (independently useful)."""
+    from multipass_render import merge_decks
+    assert callable(merge_decks)
