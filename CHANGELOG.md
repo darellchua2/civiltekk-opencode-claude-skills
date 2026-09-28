@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.8.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.7.0...v12.8.0) (2026-09-28)
+
+### Features
+
+* **skill:** code-review-inline-skill + v2 pipeline Step 9 rewiring ([#640](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/640)) ([53ba20d](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/53ba20dd7aab46c21c748297b9aabb781da5456b)), closes [#635](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/635)
+
 ## [12.7.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.6.1...v12.7.0) (2026-09-28)
 
 ### Features
