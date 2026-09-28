@@ -70,7 +70,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   (Step 8) and the same agent definition FILES as in-session checklists —
   `agents/code-review-subagent.md` (Step 9) +
   `agents/pr-workflow-subagent.md` (Step 10), resolved at the deploy-mode
-  paths. Any missing dep for the resolved arm → abort
+  path. Any missing dep for the resolved arm → abort
   (`failed`) with the install hint
   `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>`. Soft deps
   degrade with a note: `ticketing-skill` (only for new-work tickets,
