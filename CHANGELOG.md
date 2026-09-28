@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.2.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.2.0...v12.2.1) (2026-09-28)
+
+### Bug Fixes
+
+* **deploy:** reconcile skill-allow rules on declined config copy ([#625](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/625)) ([#626](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/626)) ([8669123](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/86691238ffd2bf807fd214fbafb1484278a5a675))
+
+### Documentation
+
+* **readme:** correct review preset row count 21 to 26 ([#622](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/622)) ([f81d9e6](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/f81d9e68706dd9439d72acc1a898097f10a6d455)), closes [#620](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/620)
+
 ## [12.2.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.1.0...v12.2.0) (2026-09-27)
 
 ### Features
