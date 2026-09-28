@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.5.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.4.0...v12.5.0) (2026-09-28)
+
+### Features
+
+* **pptx:** layout_name first-class targeting — port [#261](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/261) to the post-restructure tree ([#632](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/632)) ([05423a0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/05423a041ac59a3e86967ee2c7618e10d1d5de4c))
+
 ## [12.4.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.3.0...v12.4.0) (2026-09-28)
 
 ### Features
