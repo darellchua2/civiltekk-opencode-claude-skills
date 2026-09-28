@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.7.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.6.1...v12.7.0) (2026-09-28)
+
+### Features
+
+* **commands:** add plan-mode-safe /worktree-pipeline-preview ([#639](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/639)) ([9e7cc3a](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/9e7cc3a30dc5cce7d953369cab082874bf5d7ff4)), closes [#638](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/638) [#638](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/638)
+
 ## [12.6.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.6.0...v12.6.1) (2026-09-28)
 
 ### Bug Fixes
