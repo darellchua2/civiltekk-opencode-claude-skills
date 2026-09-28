@@ -72,14 +72,15 @@ regen).
 
 ### Phase 2: MIGRATION.md — drop dead pointer, fix tier story, date the numbers
 
-- [ ] **2.1** Remove the dead `PLANS/PLAN-BT-74.md` pointer sentence
+- [x] **2.1** Remove the dead `PLANS/PLAN-BT-74.md` pointer sentence
     (MIGRATION.md:326), keeping the `installer/provider-presets.json` pointer.
     — **Why:** `PLANS/` starts at PLAN-506; the referenced file does not
     exist.
     — **Done when:** `rg 'PLAN-BT-74' MIGRATION.md` → 0 hits.
     — **Consumers affected:** none (doc readers).
+    — **Done:** dropped the sentence, kept the provider-presets pointer; verified zero hits; files: MIGRATION.md; fixes: none
 
-- [ ] **2.2** Fix both tier mentions (:52 "4 tiers", :143 "5 categories") to
+- [x] **2.2** Fix both tier mentions (:52 "4 tiers", :143 "5 categories") to
     the registry truth: `reasoning`/`long-context`/`fast`/`docs`/`vision`
     plus the `primary` slot (`installer/agent-tiers.json` distinct values).
     — **Why:** internal inconsistency (4 vs 5) and drift vs the actual
@@ -88,14 +89,16 @@ regen).
     primary slot.
     — **Consumers affected:** doc readers; AGENTS.md §Subagent Model Tiering
     is the canonical table and stays untouched.
+    — **Done:** ":52" now reads "5 tiers + primary slot" naming long-context; ":143" now reads "6 categories" naming long-context; files: MIGRATION.md; fixes: none
 
-- [ ] **2.3** Qualify the lean numbers (MIGRATION.md:19, "45 … instead of
+- [x] **2.3** Qualify the lean numbers (MIGRATION.md:19, "45 … instead of
     105") as at-v2.0.0 values with a pointer to `deploy/skill-profiles.json`
     (current lean = 68).
     — **Why:** house convention — dated narratives keep period-true numbers
     but must not read as current state.
     — **Done when:** the sentence carries an explicit as-of qualifier.
     — **Consumers affected:** none.
+    — **Done:** reworded to "at v2.0.0 the primary session saw 45 … (current profile: deploy/skill-profiles.json, lean = 68 as of 2026-09-28)"; files: MIGRATION.md; fixes: none
 
 ### Phase 3: AGENTS.md — remove dead/duplicated behavior, precision fixes
 
