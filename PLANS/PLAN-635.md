@@ -22,7 +22,7 @@
 | `installer/dependency-map.json` | skill dir exists | `installer/init.mjs` dependency resolution, per-skill `add` auto-install | med |
 | `installer/registry.json` (generated) | SKILL.md frontmatter | `installer/init.mjs`, `--list`, tests/init.bats count-agnostic pin | med (must regen + commit) |
 | `deploy/opencode.json` (permissions + v2 command template) | — | opencode runtime (skill gating, `/run-worktree-pipeline-v2` invocation), `deploy/setup.sh` copy, `tests/test_v2_pipeline_contract.bats`, `tests/test_ships_plugins.bats` | high (command behavior + gating) |
-| `deploy/skill-profiles.json` (lean array) | — | `deploy/setup.sh --skill-profile lean`, README:220 count | med |
+| `deploy/skill-profiles.json` (lean array) | — | `deploy/setup.sh --skill-profile lean`, README:220 count, `tests/skill_profiles.bats` (pins lean count == 68 at lines 41-43, 78) | med |
 | `installer/presets/pack-inline-workers.json` | skill dir exists | `installer/init.mjs --preset inline-workers`, membership test in test_v2_pipeline_contract.bats | med |
 | `skills/worktree-pipeline-skill/SKILL.md` (preflight + Step 9) | — | every pipeline run (both arms), arm-aware grep pin in test_v2_pipeline_contract.bats | med (shared arm prose — v1 semantics must survive) |
 | `tests/test_v2_pipeline_contract.bats` | template change lands first | CI contract guard | low |
@@ -90,9 +90,9 @@
     — **Done when:** `bats tests/test_code_review_inline_skill.bats` green
     — **Consumers affected:** CI
 
-- [ ] **4.2** Docs count sweep: README.md — line 5 "119 ready-to-load skills" → 120; line 76 "34 agents + 119 skills" → 120; line 102 "119 skill directories" → 120; line 220 "68 primary-visible" → 69; line 259/261 catalog count 119 → 120; line 274-278 Code Quality row (14) → (15) + add `code-review-inline-skill` to the row; line 24 two-flavors prose gains the skill name; `deploy/setup.sh:3304` comment "67 primary-visible" → 69 (pre-existing stale-by-one — reality was 68; note in commit body)
+- [ ] **4.2** Docs count sweep: README.md — line 5 "119 ready-to-load skills" → 120; line 76 "34 agents + 119 skills" → 120; line 102 "119 skill directories" → 120; line 220 "68 primary-visible" → 69; line 259/261 catalog count 119 → 120; line 274-278 Code Quality row (14) → (15) + add `code-review-inline-skill` to the row; line 24 two-flavors prose gains the skill name; `deploy/setup.sh:3304` comment "67 primary-visible" → 69 (pre-existing stale-by-one — reality was 68; note in commit body); `tests/skill_profiles.bats` — lean-count pins 68 → 69 (lines ~41-43 header comment 3, ~78 test name + assertion)
     — **Why:** README/setup counts are restatements that drift silently; LEARNINGS `directory-scoped-rename-sweep-misses-root-docs` + PLAN-597 3.2 precedent demand a full sweep
-    — **Done when:** `grep -rn "119" README.md deploy/setup.sh` clean of skill-count hits; Code Quality row lists the new skill; bats docs tests (if any) green
+    — **Done when:** `grep -rn "119" README.md deploy/setup.sh` clean of skill-count hits; `grep -rn "68" tests/skill_profiles.bats` clean; Code Quality row lists the new skill; bats docs tests (if any) green
     — **Consumers affected:** README readers, doc-drift audits
 
 - [ ] **4.3** Run the full bats suite; fix failures until green
