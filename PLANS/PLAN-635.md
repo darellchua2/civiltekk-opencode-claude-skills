@@ -34,20 +34,23 @@
 
 ### Phase 1: Skill authoring + metadata wiring
 
-- [ ] **1.1** Create `skills/code-review-inline-skill/SKILL.md` — frontmatter: `name: code-review-inline-skill`, description ≤50 words with trigger phrases (inline code review, review diff in-session, pipeline Step 9 inline review), `license: Apache-2.0`, `compatibility: opencode`, `metadata: {mirrors: code-review-subagent}`, `category: Code Quality`; body: in-session delegate role, decision tree (skip check → checklist unresolvable → report unavailable, stop), no-subagent pin (never spawn in place of the checklist), checklist resolution binding (OpenCode CLI `~/.config/opencode/agents/code-review-subagent.md`; Claude Code `~/.claude/agents/…`; other → stop; NO `/app/.opencode/agents` Docker dead-letter path per test_v2_pipeline_contract.bats:34-38 ruling), loop contract (load `reviewer-baseline-skill` first → checklist → diff computed by caller/`git -C` → severity gates BLOCK/WARN/NOTE + Direct-Caller Verification → Requirements Gaps array → LEARNINGS written directly → max 2 fix→re-review iterations → full re-gate before fix pushes per `verification-loop-skill`), enforcement-deltas table vs the subagent, reviewer Return Contract (Status/Output/Summary/Issues/Requirements Gaps/Patterns applied-violated)
+- [x] **1.1** Create `skills/code-review-inline-skill/SKILL.md` — frontmatter: `name: code-review-inline-skill`, description ≤50 words with trigger phrases (inline code review, review diff in-session, pipeline Step 9 inline review), `license: Apache-2.0`, `compatibility: opencode`, `metadata: {mirrors: code-review-subagent}`, `category: Code Quality`; body: in-session delegate role, decision tree (skip check → checklist unresolvable → report unavailable, stop), no-subagent pin (never spawn in place of the checklist), checklist resolution binding (OpenCode CLI `~/.config/opencode/agents/code-review-subagent.md`; Claude Code `~/.claude/agents/…`; other → stop; NO `/app/.opencode/agents` Docker dead-letter path per test_v2_pipeline_contract.bats:34-38 ruling), loop contract (load `reviewer-baseline-skill` first → checklist → diff computed by caller/`git -C` → severity gates BLOCK/WARN/NOTE + Direct-Caller Verification → Requirements Gaps array → LEARNINGS written directly → max 2 fix→re-review iterations → full re-gate before fix pushes per `verification-loop-skill`), enforcement-deltas table vs the subagent, reviewer Return Contract (Status/Output/Summary/Issues/Requirements Gaps/Patterns applied-violated)
     — **Why:** the skill is the deliverable; every later step consumes or pins it
     — **Done when:** file exists, frontmatter passes the contract (name==dir, ≤50-word description, Apache-2.0, category present), body contains the no-subagent pin, the stop-on-unresolvable rule, and the reviewer-baseline-first step
     — **Consumers affected:** registry build, preset, tests, v2 pipeline Step 9
+    — **Done:** skill authored (45-word description, Apache-2.0, mirrors=code-review-subagent, category Code Quality; body: no-subagent pin, stop-on-unresolvable, CLI/claude/other resolution, baseline-first loop, re-gate citation, reviewer Return Contract); files: skills/code-review-inline-skill/SKILL.md; fixes: none
 
-- [ ] **1.2** Add `"code-review-inline-skill": ["reviewer-baseline-skill", "language-review-checklists-skill"]` to `installer/dependency-map.json`
+- [x] **1.2** Add `"code-review-inline-skill": ["reviewer-baseline-skill", "language-review-checklists-skill"]` to `installer/dependency-map.json`
     — **Why:** per-skill `add code-review-inline-skill` must auto-install its knowledge closure — the installer cannot resolve skills→agents, so the closure is declared here
     — **Done when:** JSON parses and the new key resolves both skills that exist on disk
     — **Consumers affected:** installer init/add flows
+    — **Done:** edge added + $comment names HANDOFF4; guard test_skill_isolation.bats gained HANDOFF4_OWNER/TARGETS wired through argv (the map↔guard invariant demanded it — PLAN under-specified, deviation logged: guard edit folded into 1.2, not 4.x); files: installer/dependency-map.json, tests/test_skill_isolation.bats; fixes: none
 
-- [ ] **1.3** Rebuild the registry (`node installer/build-registry.mjs`) and verify `registry.json` gained the skill with `category: Code Quality`
+- [x] **1.3** Rebuild the registry (`node installer/build-registry.mjs`) and verify `registry.json` gained the skill with `category: Code Quality`
     — **Why:** AGENTS.md frontmatter contract: any frontmatter change requires the rebuild + commit; init.bats pins registry==disk counts
     — **Done when:** `registry.json` lists 120 skills, new entry present, `git status` shows it staged with Phase 1
     — **Consumers affected:** installer `--list`, init.mjs, tests/init.bats
+    — **Done:** rebuilt — 120 skills, entry present with category Code Quality, staged with this phase commit; files: installer/registry.json; fixes: none
 
 ### Phase 2: Visibility + packaging
 
