@@ -6,13 +6,13 @@
 
 ## Acceptance Criteria
 
-- [ ] `skills/code-review-inline-skill/SKILL.md` ships with contract-conformant frontmatter; body pins the no-subagent rule, stop-on-unresolvable-checklist, and the portability binding block (#515)
-- [ ] Skill loads `reviewer-baseline-skill` first, then the deployed `agents/code-review-subagent.md` as in-session checklist with resolution paths + stop fallback
-- [ ] `dependency-map.json` requiresSkills closure (`reviewer-baseline-skill`, `language-review-checklists-skill`); `registry.json` rebuilt and committed
-- [ ] Visibility wired: skill-allow rule in `deploy/opencode.json`, lean entry in `deploy/skill-profiles.json`, `pack-inline-workers` membership + description update
-- [ ] `/run-worktree-pipeline-v2` Step 9 invokes the skill; "spawn NO subagents" pin and unconditional-backstop stop rule preserved; `worktree-pipeline-skill` inline-arm preflight + Step 9 note updated
-- [ ] `tests/test_v2_pipeline_contract.bats` pins the new routing; new bats test covers the skill; count pins swept (`init.bats`, `setup.sh`, `setup.ps1`, README)
-- [ ] Full test suite green
+- [x] `skills/code-review-inline-skill/SKILL.md` ships with contract-conformant frontmatter; body pins the no-subagent rule, stop-on-unresolvable-checklist, and the portability binding block (#515)
+- [x] Skill loads `reviewer-baseline-skill` first, then the deployed `agents/code-review-subagent.md` as in-session checklist with resolution paths + stop fallback
+- [x] `dependency-map.json` requiresSkills closure (`reviewer-baseline-skill`, `language-review-checklists-skill`); `registry.json` rebuilt and committed
+- [x] Visibility wired: skill-allow rule in `deploy/opencode.json`, lean entry in `deploy/skill-profiles.json`, `pack-inline-workers` membership + description update
+- [x] `/run-worktree-pipeline-v2` Step 9 invokes the skill; "spawn NO subagents" pin and unconditional-backstop stop rule preserved; `worktree-pipeline-skill` inline-arm preflight + Step 9 note updated
+- [x] `tests/test_v2_pipeline_contract.bats` pins the new routing; new bats test covers the skill; count pins swept (`init.bats`, `setup.sh`, `setup.ps1`, README)
+- [x] Full test suite green — **deviation recorded**: 641/642; the single red (`deploy_agents_md_references_routing_rule`) is pre-existing on main from e278d2d, reproduces on clean main, unrelated to this branch (zero new failures)
 
 ## Dependency & Consumer Map
 
@@ -94,20 +94,23 @@
 
 ### Phase 4: New skill test + docs sweep + suite
 
-- [ ] **4.1** Create `tests/test_code_review_inline_skill.bats` pinning: frontmatter (name==dir, Apache-2.0, category `Code Quality`, mirrors metadata), body invariants (no-subagent directive, stop-on-unresolvable rule, reviewer-baseline-first, `verification-loop-skill` re-gate citation, absence of `/app/.opencode/agents` dead-letter path), wiring (dependency-map entry, pack-inline-workers membership, lean membership, opencode.json allow rule)
+- [x] **4.1** Create `tests/test_code_review_inline_skill.bats` pinning: frontmatter (name==dir, Apache-2.0, category `Code Quality`, mirrors metadata), body invariants (no-subagent directive, stop-on-unresolvable rule, reviewer-baseline-first, `verification-loop-skill` re-gate citation, absence of `/app/.opencode/agents` dead-letter path), wiring (dependency-map entry, pack-inline-workers membership, lean membership, opencode.json allow rule)
     — **Why:** per-feature contract guard, mirroring the v2 guard's rationale — reshaped contracts need drift pins
     — **Done when:** `bats tests/test_code_review_inline_skill.bats` green
     — **Consumers affected:** CI
+    — **Done:** 9 tests (frontmatter, no-subagent pin, stop-on-unresolvable, baseline+re-gate citations, dead-letter absence, map↔HANDOFF4 mirror, preset membership+description, lean+allow wiring, thin-wrapper anti-duplication pin) — 9/9 green; files: tests/test_code_review_inline_skill.bats; fixes: one line-wrap-safe grep tightening on the stop-rule pin
 
-- [ ] **4.2** Docs count sweep: README.md — line 5 "119 ready-to-load skills" → 120; line 76 "34 agents + 119 skills" → 120; line 102 "119 skill directories" → 120; line 220 "68 primary-visible" → 69; line 259/261 catalog count 119 → 120; line 274-278 Code Quality row (14) → (15) + add `code-review-inline-skill` to the row; line 24 two-flavors prose gains the skill name; `deploy/setup.sh:3304` comment "67 primary-visible" → 69 (pre-existing stale-by-one — reality was 68; note in commit body); `tests/skill_profiles.bats` — lean-count pins 68 → 69 (lines ~41-43 header comment 3, ~78 test name + assertion)
+- [x] **4.2** Docs count sweep: README.md — line 5 "119 ready-to-load skills" → 120; line 76 "34 agents + 119 skills" → 120; line 102 "119 skill directories" → 120; line 220 "68 primary-visible" → 69; line 259/261 catalog count 119 → 120; line 274-278 Code Quality row (14) → (15) + add `code-review-inline-skill` to the row; line 24 two-flavors prose gains the skill name; `deploy/setup.sh:3304` comment "67 primary-visible" → 69 (pre-existing stale-by-one — reality was 68; note in commit body); `tests/skill_profiles.bats` — lean-count pins 68 → 69 (lines ~41-43 header comment 3, ~78 test name + assertion)
     — **Why:** README/setup counts are restatements that drift silently; LEARNINGS `directory-scoped-rename-sweep-misses-root-docs` + PLAN-597 3.2 precedent demand a full sweep
     — **Done when:** `grep -rn "119" README.md deploy/setup.sh` clean of skill-count hits; `grep -rn "68" tests/skill_profiles.bats` clean; Code Quality row lists the new skill; bats docs tests (if any) green
     — **Consumers affected:** README readers, doc-drift audits
+    — **Done:** README L5/76/102/220/259/261 → 120 + 69, L24 + L95 name the skill, Code Quality row (15) lists it; setup.sh:3304 67→69; skill_profiles.bats pins updated in Phase 2; verification greps clean; files: README.md, deploy/setup.sh; fixes: none
 
-- [ ] **4.3** Run the full bats suite; fix failures until green
+- [x] **4.3** Run the full bats suite; fix failures until green
     — **Why:** exit gate — registry consistency, isolation guard, target tests, deploy guards all run here
     — **Done when:** `bats tests/` (all files) exits 0
     — **Consumers affected:** CI, merge watcher
+    — **Done:** 641/642 ok — the single failure (`deploy_agents_md_references_routing_rule`) is pre-existing main breakage from e278d2d (deliberate 62-line truncation of deploy/.AGENTS.md; reproduces on clean main; restoring user-deleted content or re-pinning the test is out of #635 scope — surfaced to the user); branch introduces zero new failures; fixes: test_requires_skills.bats HANDOFF4 argv shift bug (sys.argv[8]→[10]); files: tests/test_requires_skills.bats
 
 ## Technical Notes
 
@@ -130,3 +133,10 @@
 - **Count restatement misses**: sweep is a dedicated step (4.2) with a verification grep, not a side effect.
 - **Template over-shrink**: 3.1 keeps the backstop-stop + iteration + re-gate clauses verbatim; the contract test update (3.3) lands in the same phase.
 - **Stale-deploy confusion for users**: README line 24 notes the skill is the Step 9 path on fresh deploys; users on pre-#618 deploys still see old behavior until redeploy (out of scope).
+
+## Trace
+
+GATE a706fd9 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 1: isolation+profiles+init 59/59, registry 120==disk)
+GATE 041abd5 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 2: skill_profiles + v2 contract 15/15, allows 91, lean 69, preset 17)
+GATE 2c975bb tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 3: v2 contract 7/7, JSON valid, subagent:false, no dead-letter paths)
+GATE ece5760 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (Phase 4 exit after rebase onto 30c12a4: full suite 642/642 — prior pre-existing main failure fixed by #637)
