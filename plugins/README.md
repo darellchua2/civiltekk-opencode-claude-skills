@@ -3,6 +3,12 @@
 OpenCode runtime plugins for this configurator. Glob-discovered by the OpenCode
 plugin loader — no registration needed.
 
+**Activation:** plugins load at service start. `deploy/setup.sh` restarts the
+background service automatically when the deployed plugin set changes — but
+only from an interactive terminal; headless runs (tests, CI, agent-driven)
+print the `opencode service restart` instruction instead, so a deploy never
+kills the session that launched it. Unchanged re-deploys never restart.
+
 ## Naming convention (#456)
 
 | Prefix | Meaning | Deployed to OpenCode? |

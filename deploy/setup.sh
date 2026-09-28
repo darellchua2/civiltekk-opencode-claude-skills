@@ -3232,7 +3232,14 @@ deploy_plugins() {
     done
 
     # Copy each plugin subdirectory (skip dotfiles, node_modules).
+    # Pre-copy change detection (activation gate): compare source vs the
+    # CURRENT destination so the signal is identical in real runs and --dry-run
+    # (the copy itself is a no-op in preview). diff -r -q is POSIX-portable.
     local count=0
+    local changed=false
+    for legacy in vibeguard.ts ponytail-scoped.ts question-repair.ts learnings-autoinject.ts learnings-autoinject.README.md; do
+        [ -e "$PLUGINS_DEST_DIR/$legacy" ] && changed=true
+    done
     for item in "${PLUGINS_SRC_DIR}"/*; do
         [ -e "$item" ] || continue  # robust against empty glob
         local name
@@ -3240,6 +3247,9 @@ deploy_plugins() {
         case "$name" in
             .*|node_modules) continue ;;
         esac
+        if [ ! -e "${PLUGINS_DEST_DIR}/${name}" ] || ! diff -r -q "$item" "${PLUGINS_DEST_DIR}/${name}" >/dev/null 2>&1; then
+            changed=true
+        fi
         run_cmd cp -r "$item" "${PLUGINS_DEST_DIR}/"
         count=$((count + 1))
     done
@@ -3248,6 +3258,39 @@ deploy_plugins() {
         log_success "Plugins copied successfully to ${PLUGINS_DEST_DIR} (${count} plugin$([ "$count" -ne 1 ] && echo s))"
     else
         log_info "No repo plugins found to deploy."
+    fi
+
+    # Activation: the background service loads plugins only at start, so a
+    # changed plugin set takes effect after `opencode service restart`.
+    # #588 lesson: routine re-deploys of an UNCHANGED set never restart (no
+    # live-session interruptions). TTY-gated on purpose — headless contexts
+    # (tests, CI, agent-driven runs) get the printed instruction instead of a
+    # restart that would kill the very session running setup.sh. Bounded and
+    # non-fatal: deploy_plugins is a critical plan step, a failed restart
+    # warns and the deploy still succeeds.
+    if [ "$changed" != true ]; then
+        log_info "Plugin set unchanged - no service restart needed"
+        return 0
+    fi
+    if ! command_exists opencode; then
+        log_warn "Plugin set changed but opencode not found - run 'opencode service restart' manually to activate"
+        return 0
+    fi
+    if [ "$DRY_RUN" = true ]; then
+        log_info "[DRY-RUN] Would restart the opencode background service (plugin set changed)"
+        return 0
+    fi
+    if [ ! -t 0 ]; then
+        log_info "Plugin set changed - activate with: opencode service restart (restarts interrupt live opencode sessions)"
+        return 0
+    fi
+    local restart_cmd=(opencode service restart)
+    command_exists timeout && restart_cmd=(timeout 15 "${restart_cmd[@]}")
+    log_info "Restarting opencode background service (plugin set changed) - live opencode sessions will be interrupted"
+    if "${restart_cmd[@]}" >/dev/null 2>&1; then
+        log_success "opencode service restarted - new plugins are active"
+    else
+        log_warn "opencode service restart failed - run it manually to activate the new plugins"
     fi
     return 0
 }
