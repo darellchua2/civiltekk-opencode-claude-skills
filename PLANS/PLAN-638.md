@@ -25,10 +25,11 @@ Cross-module signal: `deploy/opencode.json` has consumers beyond itself (deploy 
 ## Implementation Phases
 
 ### Phase 1: Command entry in the deploy template
-- [ ] **1.1** Add the `worktree-pipeline-preview` key to the `commands` block of `deploy/opencode.json` — description (read-only preview contract + usage), template (load `worktree-pipeline-skill` in preview mode for `$ARGUMENTS`: inspect-only via `git status/log/diff` + `gh issue view`; no fetch/pull/push, no worktree, no branches, no commits, no PRs, no file writes; would-be PLAN content in-chat, never writing `PLANS/`; stop before Step 8 execution; spawn NO subagents; **if the skill does not resolve/load, report unavailable and stop with the install hint `npx github:darellchua2/civiltekk-opencode-claude-skills add worktree-pipeline-skill`** — preset-only installs lack the skill), `agent: "plan"`, `subagent: false`, and NO `model:` key
+- [x] **1.1** Add the `worktree-pipeline-preview` key to the `commands` block of `deploy/opencode.json` — description (read-only preview contract + usage), template (load `worktree-pipeline-skill` in preview mode for `$ARGUMENTS`: inspect-only via `git status/log/diff` + `gh issue view`; no fetch/pull/push, no worktree, no branches, no commits, no PRs, no file writes; would-be PLAN content in-chat, never writing `PLANS/`; stop before Step 8 execution; spawn NO subagents; **if the skill does not resolve/load, report unavailable and stop with the install hint `npx github:darellchua2/civiltekk-opencode-claude-skills add worktree-pipeline-skill`** — preset-only installs lack the skill), `agent: "plan"`, `subagent: false`, and NO `model:` key
     — **Why:** the deploy template is the single source for shipped commands; the contract test, deploy flow, and live insert all key off this entry, so every downstream artifact derives from it
     — **Done when:** `node -e "require('./deploy/opencode.json')"` parses; the commands block has exactly 8 keys; the 7 sibling entries deep-equal their `origin/main` versions; the new entry has no `model:` key
     — **Consumers affected:** `deploy/setup.sh` (copies the file), `tests/test_v2_pipeline_contract.bats` (greps all templates), opencode runtime (new Plan-mode command)
+    — **Done:** added the key with `agent: "plan"`, `subagent: false`, skill-resolution guard, no `model:`; gate verified 8 keys / zero sibling drift / zero Docker-path strings; files: deploy/opencode.json; fixes: none
 
 ### Phase 2: README documentation
 - [ ] **2.1** Extend the two-flavors note at `README.md` ~line 24 with one sentence: Plan-mode sessions get read-only `/worktree-pipeline-preview`; real execution stays on the Build-pinned `/run-worktree-pipeline` + `-v2`
@@ -69,3 +70,5 @@ Cross-module signal: `deploy/opencode.json` has consumers beyond itself (deploy 
 ## Trace
 
 _Gate memo lines appended by the executor (verification-loop-skill format)._
+
+GATE dad93f4 tier=light lint=t(json-parse) typecheck=n.a build=n.a unit=t(scoped equality+invariants) e2e=n.a
