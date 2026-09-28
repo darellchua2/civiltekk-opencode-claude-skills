@@ -39,7 +39,7 @@ regen).
 
 ### Phase 1: LEARNINGS — merge orphan fragment + index patch
 
-- [ ] **1.1** Merge the untracked #515 fragment from the main checkout
+- [x] **1.1** Merge the untracked #515 fragment from the main checkout
     (`../../civiltekk-opencode-claude-skills/LEARNINGS/embedded-diff-hunks-unverifiable-probe-git-head-first.md`
     — gitignored, hence absent from this worktree) into
     `LEARNINGS/anti-patterns/embedded-diff-hunks-unverifiable-probe-git-head-first.md`
@@ -55,13 +55,20 @@ regen).
     modified.
     — **Consumers affected:** session auto-inject (gains the #515 rule);
     `_index.md` readers.
+    — **Done:** published the learning as a tracked file (body verbatim +
+    `## Evidence add (2026-09-28, #515 instance)`) with `.gitignore`
+    negation line per the tracked-LEARNINGS convention; deleted BOTH
+    untracked main-checkout copies (root fragment + superseded
+    categorized file — content superset preserved here, and the main
+    checkout stays pullable); files: LEARNINGS/anti-patterns/embedded-diff-hunks-unverifiable-probe-git-head-first.md, .gitignore; fixes: none
 
-- [ ] **1.2** Patch the `LEARNINGS/_index.md:605` summary to cite
+- [x] **1.2** Patch the `LEARNINGS/_index.md:605` summary to cite
     `plugins/opencode-vibeguard-v2.ts:504-508`, matching the learning file's
     2026-09-26 #517 update.
     — **Why:** the index snapshot contradicts the file it indexes.
     — **Done when:** `rg 'vibeguard\.ts:490' LEARNINGS/` → 0 hits.
     — **Consumers affected:** auto-inject manifest consumers.
+    — **Done:** swapped the citation to `plugins/opencode-vibeguard-v2.ts:504-508`; verified zero `vibeguard\.ts:490` hits tree-wide in LEARNINGS/; files: LEARNINGS/_index.md; fixes: none
 
 ### Phase 2: MIGRATION.md — drop dead pointer, fix tier story, date the numbers
 
