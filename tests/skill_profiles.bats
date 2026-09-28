@@ -2,7 +2,7 @@
 # GIT-333: skill-profile mechanism coverage (v2 shapes, PLAN-374).
 #   1. every lean key in deploy/skill-profiles.json matches a real skill dir
 #   2. lean ⊆ shipped skill allows in deploy/opencode.json (typo guard)
-#   3. lean count == 67
+#   3. lean count == 68
 #   4. apply-skill-profile.mjs lean rewrites a scratch deployed config to
 #      exactly 68 allow rules + a skill deny-all-first; full leaves the
 #      shipped permissions array verbatim. Non-skill rules are never touched.
@@ -75,7 +75,7 @@ fs.writeFileSync('${scratch}',JSON.stringify(c,null,2));"
     [ "$bad" = "not-a-real-skill" ] || { echo "guard missed phantom (got: '${bad}')"; return 1; }
 }
 
-@test "apply-skill-profile: lean rewrites scratch config to 67 allows + deny-all-first" {
+@test "apply-skill-profile: lean rewrites scratch config to 68 allows + deny-all-first" {
     scratch="${TEST_HOME}/opencode.json"
     cp "${PROJECT_ROOT}/deploy/opencode.json" "$scratch"
     non_skill_before=$(node -e "const c=require('$scratch');console.log(c.permissions.filter(r=>r.action!=='skill').length)")
@@ -92,7 +92,7 @@ const first=rules[0]||{};
 const nonSkill=c.permissions.filter(r=>r.action!=='skill').length;
 console.log(allows.length, first.resource==='*'&&first.effect==='deny'?'deny-ok':'no-deny', nonSkill===${non_skill_before}?'non-skill-ok':'non-skill-lost');")
     echo "result: $out"
-    [ "$out" = "67 deny-ok non-skill-ok" ]
+    [ "$out" = "68 deny-ok non-skill-ok" ]
 }
 
 @test "apply-skill-profile: full is a verified no-op on a fresh copy" {

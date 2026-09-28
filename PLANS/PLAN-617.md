@@ -6,12 +6,12 @@
 
 ## Acceptance Criteria
 
-- [ ] A preset-`inline-workers`-only install can run `/run-worktree-pipeline-v2` through preflight without abort (preflight resolves the Step 8 executor per arm)
-- [ ] v1 `/run-worktree-pipeline` preflight behavior unchanged (subagent arm still hard-requires `plan-execution-skill` + both reviewer agents)
-- [ ] The preset description no longer carries the "pack-only installs lack the pipeline skill's hard dependency preflight" caveat (removed when fixed)
-- [ ] `bats tests/` green, including a new guard pinning the v2 zero-subagent contract string + preset membership
-- [ ] Docker dead-letter agent-path references pruned repo-wide (v2 entry + `/review-inline`)
-- [ ] `playwright-responsive-audit-skill` present in the lean profile (closes the inline responsive-audit deferral gap)
+- [x] A preset-`inline-workers`-only install can run `/run-worktree-pipeline-v2` through preflight without abort (preflight resolves the Step 8 executor per arm) — SKILL.md preflight names both arm sets; the inline set (`plan-execution-inline-skill` + checklist files) rides preset/full deploys; guard test 7 pins arm-awareness
+- [x] v1 `/run-worktree-pipeline` preflight behavior unchanged (subagent arm still hard-requires `plan-execution-skill` + both reviewer agents) — 1.2 diff check: all three v1 hard deps + abort/hint intact
+- [x] The preset description no longer carries the "pack-only installs lack the pipeline skill's hard dependency preflight" caveat (removed when fixed) — caveat dropped (2.4); guard test 5 pins it
+- [x] `bats tests/` green, including a new guard pinning the v2 zero-subagent contract string + preset membership — full suite 0 failures (622 tests incl. 7-test guard)
+- [x] Docker dead-letter agent-path references pruned repo-wide (v2 entry + `/review-inline`) — zero `app/.opencode/agents` matches in deploy/opencode.json; guard test 4 pins it
+- [x] `playwright-responsive-audit-skill` present in the lean profile (closes the inline responsive-audit deferral gap) — four surfaces updated (shipped allow, lean array, count pins, README prose); skill_profiles.bats green
 
 ## Dependency & Consumer Map
 
@@ -41,6 +41,7 @@
 ## Gate Trace
 
 GATE 311c868 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (bats 615/615 — phase 1, cross-module anchor; SKILL.md-only change, no linter target)
+GATE 652a625 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a (phase 2 — json x3 + contract/skill_profiles affected tests)
 
 ### Phase 2: #613-comment follow-ups
 
@@ -58,7 +59,7 @@ GATE 311c868 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (bats 615
     — **Why:** `responsive-audit-inline-skill` (lean ✓) defers to it in-session; on lean deploys that load hits a denied skill (review NOTE-4); the two-file + two-count coupling was missed in the original step (review WARN-1)
     — **Done when:** all four surfaces updated; `bats tests/skill_profiles.bats` green; `rg -c "67 primary-visible" README.md` returns 0
     — **Consumers affected:** lean-profile deploys; count-pin tests; README accuracy
-    — **Done:** shipped allow added adjacent to responsive-audit-inline-skill; lean array +1; count pin 67→68 (test + comment header); README prose 67→68; skill_profiles.bats green; files: deploy/opencode.json, deploy/skill-profiles.json, tests/skill_profiles.bats, README.md; fixes: none
+    — **Done:** all four surfaces updated; shipped allow added adjacent to responsive-audit-inline-skill; lean array +1; count pins updated in THREE places (test name + assertion string "68 deny-ok" + header comment — the assertion-string pin was caught by the full gate, not the affected-subset run); README prose 67→68; files: deploy/opencode.json, deploy/skill-profiles.json, tests/skill_profiles.bats, README.md; fixes: lean count assertion "67 deny-ok" → "68 deny-ok" (full-gate catch, fix attempt 1)
 - [x] **2.4** Remove the caveat clause " — pack-only installs lack the pipeline skill's hard dependency preflight" from `installer/presets/pack-inline-workers.json` description (keep the "on full deploys" scoping only if still accurate post-1.1 — if preflight is now arm-aware, drop the whole caveat)
     — **Why:** #617 AC3 — the caveat is false once the preflight resolves per arm
     — **Done when:** the description carries no preflight caveat; 2.1 membership guard still green
@@ -67,14 +68,16 @@ GATE 311c868 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a (bats 615
 
 ### Phase 3: user-space refresh + exit gate
 
-- [ ] **3.1** Surgical user-space refresh: copy the updated `skills/worktree-pipeline-skill/SKILL.md` to `~/.config/opencode/skills/worktree-pipeline-skill/SKILL.md`; surgically update the live `commands.run-worktree-pipeline-v2` + `commands.review-inline` entries to the pruned template text (single-key updates, `permissions` untouched); verify live == template for both entries
+- [x] **3.1** Surgical user-space refresh: copy the updated `skills/worktree-pipeline-skill/SKILL.md` to `~/.config/opencode/skills/worktree-pipeline-skill/SKILL.md`; surgically update the live `commands.run-worktree-pipeline-v2` + `commands.review-inline` entries to the pruned template text (single-key updates, `permissions` untouched); verify live == template for both entries
     — **Why:** the v2 arm reads the deployed SKILL.md + deployed commands — repo edits are inert until deployed; full setup.sh re-copy is avoided to protect the live `permissions` customization (the #613 deploy lesson)
     — **Done when:** deployed SKILL.md matches the repo file; both live command entries byte-equal the template; `permissions` key intact
     — **Consumers affected:** live v2 arm behavior (the point of the ticket)
-- [ ] **3.2** Full-gate run and final AC sweep: `bats tests/` (whole suite, includes the new guard) + json lints on changed JSON files; tick ACs against evidence
+    — **Done:** SKILL.md copied; both live entries surgically updated; parity True/True, permissions intact, deployed SKILL.md matches — all four checks PASS; files: ~/.config/opencode/ (user-space, by design); fixes: none
+- [x] **3.2** Full-gate run and final AC sweep: `bats tests/` (whole suite, includes the new guard) + json lints on changed JSON files; tick ACs against evidence
     — **Why:** ticket exit gate runs full unconditionally; AC ticks need evidence
     — **Done when:** gate memo `tier=full` green for the final tree; all 6 ACs ticked with evidence
     — **Consumers affected:** PR creation (cites this memo)
+    — **Done:** full gate green — first run caught the missed "67 deny-ok" assertion pin (fixed, attempt 1), re-run 0 failures (622 tests = 615 + 7 new guard tests); json lints green; all 6 ACs ticked below; files: PLANS/PLAN-617.md, tests/skill_profiles.bats; fixes: 1 (lean count assertion)
 
 ## Technical Notes
 
