@@ -47,7 +47,7 @@ GATE 652a625 tier=light lint=t typecheck=n.a build=- unit=t e2e=n.a (phase 2 —
 
 In-session review (code-review checklist applied): 2 MINOR wording findings (post-prune "deploy-mode paths" plurals in SKILL.md:72 + v2 template Steps 9/10 — one path remains), fixed; forensics confirmed zero stale Docker refs repo-wide; learning gate yielded 2 entries (count-pins-hide-in-assertion-strings, skill-profile-membership-four-surface-sync). Re-gate tier=full green (0 failures).
 
-GATE 8f597c9 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats — review-fix re-gate, final tree)
+GATE 4a61fbc tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats — review-fix re-gate after rebase onto origin/main (12.2.x line), final tree)
 
 ### Phase 2: #613-comment follow-ups
 
