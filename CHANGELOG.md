@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.6.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.5.0...v12.6.0) (2026-09-28)
+
+### Features
+
+* **deploy:** activate changed plugin sets via service restart ([#633](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/633)) ([ec99d5e](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/ec99d5e7dc690a50a1c6273decfb64f7a343f07c)), closes [#624](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/624) [#588](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/588)
+
 ## [12.5.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.4.0...v12.5.0) (2026-09-28)
 
 ### Features
