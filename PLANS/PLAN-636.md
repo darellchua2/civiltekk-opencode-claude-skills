@@ -6,17 +6,17 @@
 
 ## Acceptance Criteria
 
-- [ ] Root `LEARNINGS/` holds only `_index.md`; the #515 fragment exists as a
+- [x] Root `LEARNINGS/` holds only `_index.md`; the #515 fragment exists as a
       dated evidence-add inside the anti-patterns copy
-- [ ] `rg 'vibeguard\.ts:490' LEARNINGS/` → 0 hits; `_index.md` cites
+- [x] `rg 'vibeguard\.ts:490' LEARNINGS/` → 0 hits; `_index.md` cites
       `plugins/opencode-vibeguard-v2.ts:504-508`
-- [ ] `rg 'PLAN-BT-74' MIGRATION.md` → 0 hits
-- [ ] MIGRATION.md tier mentions match the registry; 45/105 qualified as
+- [x] `rg 'PLAN-BT-74' MIGRATION.md` → 0 hits
+- [x] MIGRATION.md tier mentions match the registry; 45/105 qualified as
       at-v2.0.0
-- [ ] `rg 'Secret Hygiene|Extract-then-Delegate' AGENTS.md` → 0 hits;
+- [x] `rg 'Secret Hygiene|Extract-then-Delegate' AGENTS.md` → 0 hits;
       §Repository Purpose ≤5 lines + README pointer; §Project Learnings
       reduced to the template note
-- [ ] Gates green: `bats tests/test_docling_skill.bats
+- [x] Gates green: `bats tests/test_docling_skill.bats
       tests/test_skill_isolation.bats tests/test_pack_permissions.bats
       tests/test_count_drift.bats` (bats on PATH; repo's
       `tests/lib/bats-core/bin/bats` vendoring is absent)
@@ -150,7 +150,7 @@ regen).
 
 ### Phase 4: Gates + exit
 
-- [ ] **4.1** Run the four bats suites (`bats` on PATH) plus the rg zero-hit
+- [x] **4.1** Run the four bats suites (`bats` on PATH) plus the rg zero-hit
     gates from the ACs; fix any failure; tick the PLAN ACs; append the
     `GATE <short-sha> tier=full` memo line for the final SHA.
     — **Why:** the docs are pinned by tests; the ticket exit gate is
@@ -158,6 +158,7 @@ regen).
     — **Done when:** all suites green, all ACs ticked, memo line present in
     the PLAN trace.
     — **Consumers affected:** Step 10a PR citation requires the memo.
+    — **Done:** full gate 42/42 green (docling 19 + isolation 14 + pack 18 red-key guard + count-drift — per-suite counts in /tmp/opencode/fullgate.out); all six AC rg checks zero-hit/n.a; files: PLANS/PLAN-636.md; fixes: none at exit (one fix in Phase 3: docling test 15)
 
 ## Technical Notes
 
@@ -182,3 +183,11 @@ None. No `blocked-by:` refs.
 - Out-of-band deletion in 1.1 (untracked + ignored file in the main
   checkout): the merged content rides `feat/636` first; the deletion removes
   a file no git object references.
+
+## Gate Trace
+
+GATE fb1d63b tier=plan lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
+GATE ab6165a tier=light lint=n.a typecheck=n.a build=n.a unit=n.a e2e=n.a
+GATE 3e29811 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 3e937c5 tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
+GATE 3083957 tier=full lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
