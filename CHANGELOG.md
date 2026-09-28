@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.6.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.6.0...v12.6.1) (2026-09-28)
+
+### Bug Fixes
+
+* AGENTS.md ([e278d2d](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/e278d2d648545880af10c1f5c4f7128a01451bc8))
+
+### Documentation
+
+* **agents:** drop subagent-first mandate from §Delegation ([#634](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/634)) ([2ff643c](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/2ff643c37961585d8231488af2921aca025ebe78)), closes [#631](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/631)
+* purge stale doc references; minimize AGENTS.md ([#636](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/636)) ([#637](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/637)) ([bec8d8c](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/bec8d8c16256b353dba5f4447b3fcfe62a3fc91e))
+
 ## [12.6.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.5.0...v12.6.0) (2026-09-28)
 
 ### Features
