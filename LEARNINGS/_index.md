@@ -602,7 +602,7 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-20 (#448 plan review)
-- **Summary**: Every local plugin that hooks `ctx.tool.hook('execute.before')` becomes a **concurrent writer** on the same `event.input` field, with ordering decided by plugin glob order (an implementation detail, currently alphabetical). `plugins/vibeguard.ts:490-496` registers an unguarded (all-tools) hook that mutates `event.input` **in place** (`restoreDeep`) to unmask `__VG_…__` placeholders before executio
+- **Summary**: Every local plugin that hooks `ctx.tool.hook('execute.before')` becomes a **concurrent writer** on the same `event.input` field, with ordering decided by plugin glob order (an implementation detail, currently alphabetical). `plugins/opencode-vibeguard-v2.ts:504-508` registers an unguarded (all-tools) hook that mutates `event.input` **in place** (`restoreDeep`) to unmask `__VG_…__` placeholders before executio
 
 ### `setup.sh --dry-run` under non-interactive stdin takes the skills-only path — plugin deploy is never previewed
 
@@ -1957,4 +1957,10 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Summary**: Profile membership changes touch four surfaces together (shipped allows, profile array, count-pin assertions, README prose) — enumerate deferral chains of lean skills before merging (#617 review)
+- **Date**: 2026-09-28
+
+- **File**: `LEARNINGS/anti-patterns/amend-after-sed-needs-restage.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: A working-tree sed between `git add` and `git commit --amend` commits the stale index — same-second amends are byte-identical no-ops, the SHA silently stays, and the placeholder ships (working-tree grep shows the fixed text because it reads the uncommitted file). Re-stage before amending; verify via `git show HEAD:<file>` (#636)
 - **Date**: 2026-09-28

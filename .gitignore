@@ -65,6 +65,8 @@ LEARNINGS/**/*.md
 !LEARNINGS/patterns/background-command-templates-inline-scoping-flags.md
 !LEARNINGS/patterns/contracts-adding-rebases-must-state-force-push.md
 !LEARNINGS/anti-patterns/worktree-teardown-leaves-opencode-registry-rows.md
+!LEARNINGS/anti-patterns/embedded-diff-hunks-unverifiable-probe-git-head-first.md
+!LEARNINGS/anti-patterns/amend-after-sed-needs-restage.md
 
 # Generated research-report artifacts (regenerate from docs/opencode-agent-tooling-research-2026-09-24.md)
 docs/OpenCode-Agent-Tooling-Research-2026-09-24.docx

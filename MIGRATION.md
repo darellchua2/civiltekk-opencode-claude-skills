@@ -16,8 +16,10 @@ migration, and how to revert.
   `./deploy/setup.sh` and answer the provider prompt).
 - To re-resolve models only: `./deploy/setup.sh --models-only`.
 - **Behavior change (#333): deploys now default to the `lean` skill profile** —
-  the primary session sees 45 primary-visible skills instead of 105 (~5.4k
-  tokens less startup context at ~90 tokens/description). Opt back in with `--skill-profile full`
+  at v2.0.0 the primary session saw 45 primary-visible skills instead of 105
+  (~5.4k tokens less startup context at ~90 tokens/description; the current
+  profile ships in `deploy/skill-profiles.json`, lean = 68 as of 2026-09-28).
+  Opt back in with `--skill-profile full`
   (PowerShell: `-SkillProfile full`). Subagents are unaffected under either
   profile; re-running setup applies the profile to your deployed config.
 - **Behavior change (#333): auto-start MCP servers reduced 6 → 2** —
@@ -49,7 +51,8 @@ migration, and how to revert.
 
 ### New concepts
 
-- **4 tiers**: `reasoning`, `fast`, `docs`, `vision`. Each agent is categorized
+- **5 tiers**: `reasoning`, `long-context`, `fast`, `docs`, `vision` (plus the
+  `primary` slot for the main session). Each agent is categorized
   in `installer/agent-tiers.json`.
 - **Resolver** (`installer/resolve-models.mjs`): injects concrete `model:` into the
   *deployed* agent files at deploy time + patches `opencode.json`.
@@ -140,7 +143,7 @@ Then `./deploy/setup.sh --models-only`.
 
 ### Mixing providers per category
 
-Each of the 5 categories — `primary`, `reasoning`, `fast`, `docs`, `vision` — can
+Each of the 6 categories — `primary`, `reasoning`, `long-context`, `fast`, `docs`, `vision` — can
 use a **different provider/model**. Pick interactively (recommended):
 
 ```bash
@@ -323,7 +326,7 @@ Backups are retained per `--keep-backups` (default 5 most recent).
 
 ---
 
-See `PLANS/PLAN-BT-74.md` for the full design and `installer/provider-presets.json`
+See `installer/provider-presets.json`
 for the available provider model IDs.
 
 ## Frontmatter normalized to opencode v2 (#380)
