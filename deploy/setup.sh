@@ -2982,6 +2982,26 @@ run_resolver() {
         $dry_arg \
         $extra_args
     local resolver_rc=$?
+    # Declined-copy migration (#625): when the user keeps their existing
+    # config, its skill-allow rules are frozen at the last accepted write —
+    # renames/consolidations on main then dead-end apply-skill-profile's
+    # lean typo-guard. Reconcile skill allows against the shipped config:
+    # add missing shipped allows, drop rules whose resource no longer exists
+    # (repo OR deployed skills dirs), preserve everything non-skill.
+    # Preview-only under --dry-run. Failure warns — apply-skill-profile
+    # remains the loud failure point downstream.
+    if [ "$SKIP_CONFIG_COPY" = true ] && [ "$resolver_rc" -eq 0 ] && [ -f "$CONFIG_FILE" ]; then
+        local reconcile_dry_args=""
+        if [ "$DRY_RUN" = true ]; then
+            reconcile_dry_args="--dry-run"
+        fi
+        node "$APPLY_SKILL_PROFILE_SCRIPT" \
+            --reconcile-shipped "$SOURCE_CONFIG" \
+            --config "$CONFIG_FILE" \
+            --skills-dir "${REPO_DIR}/skills" \
+            --deployed-skills-dir "${CONFIG_DIR}/skills" \
+            $reconcile_dry_args || log_warn "skill-allow reconcile failed — apply-skill-profile may report stale allows (see its remediation hint)"
+    fi
     # An apply-mode resolver write can create opencode.json beside a live
     # jsonc (decline-copy path, --models-only/--migrate-only): park it here so
     # every run that writes the config ends with exactly one live config
