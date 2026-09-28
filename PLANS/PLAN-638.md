@@ -39,10 +39,11 @@ Cross-module signal: `deploy/opencode.json` has consumers beyond itself (deploy 
     — **Done:** one sentence appended to the two-flavors note documenting the read-only preview command; diff scoped to README.md; files: README.md; fixes: none
 
 ### Phase 3: Verification gate
-- [ ] **3.1** Run the verification gate scoped to this diff: `bats tests/test_v2_pipeline_contract.bats`; JSON sibling byte-equality vs `origin/main`; grep proves the new template contains the zero-subagent directive and zero `app/.opencode/agents` occurrences
+- [x] **3.1** Run the verification gate scoped to this diff: `bats tests/test_v2_pipeline_contract.bats`; JSON sibling byte-equality vs `origin/main`; grep proves the new template contains the zero-subagent directive and zero `app/.opencode/agents` occurrences
     — **Why:** the contract test pins commands-block invariants (Docker dead-letter absence, subagent directives) — catching drift here is cheaper than CI catching it
     — **Done when:** bats exits 0 and every scoped check exits 0; gate memo appended to this PLAN's trace
     — **Consumers affected:** CI (runs the same suite)
+    — **Done:** full bats suite 51/51 files green (incl. test_v2_pipeline_contract.bats); sibling byte-equality + invariant greps green in Phase 1 gate; files: none (verification-only); fixes: none
 
 ### Phase 4: Post-merge user-space deploy (no repo commit)
 - [ ] **4.1** After merge: surgically insert the single `worktree-pipeline-preview` key into live `~/.config/opencode/opencode.json` (python3 json read-modify-write preserving the local `permissions` customization), then deep-compare live entry vs template entry and confirm `permissions` byte-equal before/after
@@ -74,3 +75,4 @@ _Gate memo lines appended by the executor (verification-loop-skill format)._
 
 GATE dad93f4 tier=light lint=t(json-parse) typecheck=n.a build=n.a unit=t(scoped equality+invariants) e2e=n.a
 GATE 731760b tier=light lint=t(docs grep) typecheck=n.a build=n.a unit=t(diff-scope) e2e=n.a
+GATE 0d495a2 tier=full lint=n.a typecheck=n.a build=n.a unit=t(51/51 bats files) e2e=n.a
