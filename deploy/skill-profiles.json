@@ -53,6 +53,7 @@
     "linting-inline-skill",
     "civiltekk-documentation-inline-skill",
     "responsive-audit-inline-skill",
+    "playwright-responsive-audit-skill",
     "civiltekk-react-quality-skill",
     "reviewer-baseline-skill",
     "search-first-skill",

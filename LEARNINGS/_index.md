@@ -1939,4 +1939,14 @@
 - **Confidence**: 0.95
 - **Scope**: project
 - **Summary**: v2.0.18 refreshes the 60-min location TTL only on durable events; same-title `ctx.session.update` is the keepalive touch — `rename`/`active` absent at 2.0.18, falsy titles regenerate (#624)
+- **File**: `LEARNINGS/anti-patterns/count-pins-hide-in-assertion-strings.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: Pinned counts hide in assertion string literals, not just test names/comments — grep the payloads when bumping, and count gate failures instead of tailing output (#617 review)
+- **Date**: 2026-09-28
+
+- **File**: `LEARNINGS/conventions/skill-profile-membership-four-surface-sync.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: Profile membership changes touch four surfaces together (shipped allows, profile array, count-pin assertions, README prose) — enumerate deferral chains of lean skills before merging (#617 review)
 - **Date**: 2026-09-28
