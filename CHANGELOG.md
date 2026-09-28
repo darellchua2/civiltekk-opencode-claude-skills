@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.4.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.3.0...v12.4.0) (2026-09-28)
+
+### Features
+
+* **skills:** arm-aware pipeline preflight + v2 contract guard + follow-up sweep ([#627](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/627)) ([b016e8c](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/b016e8ca6f3d703fc1010f0535b82fcf9bfebb89)), closes [#617](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/617)
+
 ## [12.3.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.2.1...v12.3.0) (2026-09-28)
 
 ### Features
