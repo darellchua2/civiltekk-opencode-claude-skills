@@ -32,10 +32,11 @@ Cross-module signal: `deploy/opencode.json` has consumers beyond itself (deploy 
     — **Done:** added the key with `agent: "plan"`, `subagent: false`, skill-resolution guard, no `model:`; gate verified 8 keys / zero sibling drift / zero Docker-path strings; files: deploy/opencode.json; fixes: none
 
 ### Phase 2: README documentation
-- [ ] **2.1** Extend the two-flavors note at `README.md` ~line 24 with one sentence: Plan-mode sessions get read-only `/worktree-pipeline-preview`; real execution stays on the Build-pinned `/run-worktree-pipeline` + `-v2`
+- [x] **2.1** Extend the two-flavors note at `README.md` ~line 24 with one sentence: Plan-mode sessions get read-only `/worktree-pipeline-preview`; real execution stays on the Build-pinned `/run-worktree-pipeline` + `-v2`
     — **Why:** repo sync rules require shipped commands to be documented where command flavors are taught; undocumented commands drift
     — **Done when:** README mentions `/worktree-pipeline-preview` with its read-only contract; `git diff` shows exactly one modified line-block in README.md
     — **Consumers affected:** README readers; docs-sync audits
+    — **Done:** one sentence appended to the two-flavors note documenting the read-only preview command; diff scoped to README.md; files: README.md; fixes: none
 
 ### Phase 3: Verification gate
 - [ ] **3.1** Run the verification gate scoped to this diff: `bats tests/test_v2_pipeline_contract.bats`; JSON sibling byte-equality vs `origin/main`; grep proves the new template contains the zero-subagent directive and zero `app/.opencode/agents` occurrences
@@ -72,3 +73,4 @@ Cross-module signal: `deploy/opencode.json` has consumers beyond itself (deploy 
 _Gate memo lines appended by the executor (verification-loop-skill format)._
 
 GATE dad93f4 tier=light lint=t(json-parse) typecheck=n.a build=n.a unit=t(scoped equality+invariants) e2e=n.a
+GATE 731760b tier=light lint=t(docs grep) typecheck=n.a build=n.a unit=t(diff-scope) e2e=n.a

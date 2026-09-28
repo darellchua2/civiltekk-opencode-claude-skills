@@ -21,7 +21,7 @@ These four commands carry most of my day-to-day flow. **Slash commands ship with
 
 The first two compose: `/create-ticket` makes the ticket, `/run-worktree-pipeline #NNN` takes it to a merged PR.
 
-**Two execution flavors, manual choice**: `/run-plan` + `/run-worktree-pipeline` execute with worker subagents (`plan-execution-skill`); `/run-plan-v2` + `/run-worktree-pipeline-v2` execute the same loops fully in-session — zero subagents end to end (the v2 pipeline's plan review, execution via `plan-execution-inline-skill`, code review, and PR steps all run in-session, loading the deployed agent definitions as checklists). Pick per run by invoking the command you want.
+**Two execution flavors, manual choice**: `/run-plan` + `/run-worktree-pipeline` execute with worker subagents (`plan-execution-skill`); `/run-plan-v2` + `/run-worktree-pipeline-v2` execute the same loops fully in-session — zero subagents end to end (the v2 pipeline's plan review, execution via `plan-execution-inline-skill`, code review, and PR steps all run in-session, loading the deployed agent definitions as checklists). Pick per run by invoking the command you want. Plan-mode sessions get read-only `/worktree-pipeline-preview` — the same pipeline walked in preview mode (no worktree, no commits, no pushes, no PRs, no file writes); real execution stays pinned to Build via the two commands above.
 
 ## Installation
 
