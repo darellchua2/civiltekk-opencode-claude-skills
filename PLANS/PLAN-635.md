@@ -54,20 +54,23 @@
 
 ### Phase 2: Visibility + packaging
 
-- [ ] **2.1** Add `{action: skill, resource: code-review-inline-skill, effect: allow}` to `deploy/opencode.json` permissions, adjacent to the inline-family allows (after `plan-execution-inline-skill`)
+- [x] **2.1** Add `{action: skill, resource: code-review-inline-skill, effect: allow}` to `deploy/opencode.json` permissions, adjacent to the inline-family allows (after `plan-execution-inline-skill`)
     — **Why:** deny-all-first allowlist — without the allow the skill is invisible to the primary that invokes it during v2 runs
     — **Done when:** JSON parses; rule count for action=skill increases by 1; deny-all remains first
     — **Consumers affected:** runtime skill gating on every deploy
+    — **Done:** rule added after plan-execution-inline-skill (action=skill allows 90→91, deny-all still first); files: deploy/opencode.json; fixes: none
 
-- [ ] **2.2** Append `code-review-inline-skill` to the `lean` array in `deploy/skill-profiles.json` (68 → 69)
+- [x] **2.2** Append `code-review-inline-skill` to the `lean` array in `deploy/skill-profiles.json` (68 → 69)
     — **Why:** lean is the default deploy profile; the primary must see the skill at startup
     — **Done when:** array parses, length 69, README:220 restated to 69 in Phase 4
     — **Consumers affected:** `setup.sh --skill-profile lean` deploys
+    — **Done:** appended after playwright-responsive-audit-skill (length 69); skill_profiles.bats count pins updated 68→69 in-phase (header comment, test name, assertion, and the hidden line-95 allow-count pin — red phase gate otherwise); files: deploy/skill-profiles.json, tests/skill_profiles.bats; fixes: none — deviation: pins pulled forward from 4.2, its grep sweep remains final verification
 
-- [ ] **2.3** Add `code-review-inline-skill` to `pack-inline-workers.json` members and extend its `$comment`/`description` to name it
+- [x] **2.3** Add `code-review-inline-skill` to `pack-inline-workers.json` members and extend its `$comment`/`description` to name it
     — **Why:** the preset is the per-project install unit for the v2 inline family — its contract test asserts members resolve on disk and the family description must not drift
     — **Done when:** members length 17, description mentions the code-review inline skill, `tests/test_v2_pipeline_contract.bats` preset tests still pass
     — **Consumers affected:** `--preset inline-workers` installs, contract test
+    — **Done:** member added after responsive-audit-inline-skill (17 members), $comment + description name the wrapper; contract preset tests green; files: installer/presets/pack-inline-workers.json; fixes: none
 
 ### Phase 3: v2 pipeline rewiring
 

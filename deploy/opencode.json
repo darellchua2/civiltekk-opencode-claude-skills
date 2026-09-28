@@ -481,6 +481,11 @@
             "effect": "allow"
         },
         {
+            "action": "skill",
+            "resource": "code-review-inline-skill",
+            "effect": "allow"
+        },
+        {
             "action": "codegraph*",
             "resource": "*",
             "effect": "allow"
