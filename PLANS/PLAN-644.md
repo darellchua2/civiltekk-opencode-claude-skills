@@ -32,15 +32,15 @@ _Single-node docs-only change. Consumer check done at plan time: repo-wide grep 
     — **Done when:** `git diff` on the file contains no deleted lines touching the "Zero configured checks" sentence or `timeout 1800`, and the full bats suite (`bats tests/*.bats`, vendored bats-core when present) passes.
     — **Consumers affected:** none (verification-only step).
     — **Done:** diff is 15 insertions / 0 deletions, single hunk inside the 10b block — "Zero configured checks", `timeout 1800`, merge command, `-R` mandate, and no-local-git-mutations text all outside the hunk, untouched; files: none (verification-only); fixes: none
-- [ ] **1.3** Run the verification gate at `tier=full` (repo gate: `bats tests/*.bats` via vendored bats-core; content self-check from 1.1/1.2) on the final tree, commit the edit, and push `feat/644`.
+- [x] **1.3** Run the verification gate at `tier=full` (repo gate: `bats tests/*.bats` via vendored bats-core; content self-check from 1.1/1.2) on the final tree, commit the edit, and push `feat/644`.
     — **Why:** The ticket exit gate is full and must be green on the exact SHA Step 10a cites in the PR body; committing and pushing the PLAN-riding edit is what makes the branch PR-ready.
     — **Done when:** The PLAN trace block carries a `GATE <short-sha> tier=full` line whose SHA matches the pushed HEAD, and `git log origin/feat/644` shows the commit.
     — **Consumers affected:** Step 10a (cites the memo line in the PR body); CI (runs the same bats suite).
-    — **Done:** exit gate tier=full green — `bats tests/*.bats` exit 0, 642 ok / 0 failed (system bats; no vendored bats-core, CI parity), lint/typecheck/build n.a. (no scripts in package.json), e2e n.a.; files: skills/worktree-pipeline-skill/SKILL.md, PLANS/PLAN-644.md; fixes: none
+    — **Done:** exit gate tier=full green on implementation SHA cc2b2f0 (pushed) — `bats tests/*.bats` exit 0, 642 ok / 0 failed (system bats; no vendored bats-core, CI parity), lint/typecheck/build n.a. (no scripts in package.json), e2e n.a.; deviation: the Gate Trace memo below names gated impl SHA cc2b2f0 while the final HEAD rides the docs-only end-of-ticket learnings commit (worktree-pipeline Step 9 sweep carve-out: "its memo names the gated implementation SHA Step 10a cites"); files: skills/worktree-pipeline-skill/SKILL.md, PLANS/PLAN-644.md; fixes: none
 
 ## Gate Trace
 
-GATE <impl-sha> tier=full lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. (bats 642/642 exit 0 — ticket exit gate; docs-only change, repo has no lint/typecheck/build scripts)
+GATE cc2b2f0 tier=full lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. (bats 642/642 exit 0 — ticket exit gate; docs-only change, repo has no lint/typecheck/build scripts; Step 9 review: 0 BLOCK / 0 WARN / 1 NOTE, no fix commits, no re-gate owed)
 
 ## Technical Notes
 

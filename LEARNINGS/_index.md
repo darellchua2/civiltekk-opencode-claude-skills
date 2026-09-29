@@ -1970,3 +1970,12 @@
 - **Scope**: project
 - **Summary**: State-mutating pipeline commands pin `agent: "build"` (unpinning = plan-mode half-run at first mutating step); read-only preview variants pin `agent: "plan"`; plan-mode value ships as a separate preview command, never by loosening the pin; shipped entries stay model-free (#638)
 - **Date**: 2026-09-28
+
+### statusCheckRollup SKIPPED conclusions are not red
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/statuscheckrollup-skipped-conclusions-not-red.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: A merge-watcher red verdict matches only `FAILURE`/`TIMED_OUT`/`CANCELLED` — GitHub marks not-applicable jobs `SKIPPED`, so docs-only PRs roll them up while green and a "not SUCCESS/NEUTRAL = red" guard refuses good merges (#642/#644 evidence, #644)
+- **Date**: 2026-09-29
