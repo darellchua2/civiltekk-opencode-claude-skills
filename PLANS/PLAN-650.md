@@ -43,13 +43,13 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Consumers affected:** 1.2, 2.1, 3.1, 3.2
 - [ ] **1.2** Rework `agents/architecture-review-subagent.md` into a thin orchestrator: body states the skill is the review-knowledge source of truth and retains only orchestration mechanics (baseline-first load order, CodeGraph integration, explore delegation, LEARNINGS-candidate rule, Return Contract pointer); add `action: skill, resource: architecture-review-skill, effect: allow` to permissions
     — **Why:** the subagent must load the skill instead of embedding it, or the two copies drift (#437 isolation contract by analogy: single checklist source)
-    — **Done when:** body no longer restates rubric/gate/schema content verbatim; permissions include the new skill; `/review-arch` command's agent ref still resolves
+    — **Done when:** the moved sections (Mandatory Blast-Radius Gate, Plan Atomicity Check, review axes) live in the skill only — `grep -c "Mandatory Blast-Radius & Consumer Traversal Gate" agents/architecture-review-subagent.md` = 0; permissions include `architecture-review-skill: allow`; `/review-arch` command's agent ref still resolves
     — **Consumers affected:** 2.1 (templates keep pointing at the same agent for v1), 3.2 (registry rebuild reads new frontmatter)
 
 ### Phase 2: Rewire inline consumers
 - [ ] **2.1** Rewrite the `run-worktree-pipeline-v2` template Step 7 sentence and the `/review-inline` command in `deploy/opencode.json` to load skill `architecture-review-skill` (with `reviewer-baseline-skill` first) in place of the deployed agent-file checklist; keep the skip-with-note fallback rule for unresolvable skills; update both `description` fields to say "skill-driven"
     — **Why:** this is the ticket's core deliverable — the v2 arm stops depending on a deployed agent file for architecture review
-    — **Done when:** `grep "load the deployed file agents/architecture-review-subagent.md" deploy/opencode.json` returns nothing for the v2 template and `/review-inline`; `/review-arch` template untouched
+    — **Done when:** the v2 template's Step 7 sentence no longer routes reviewers through the `agents/<reviewer>-subagent.md` placeholder checklist (`grep -c "load the deployed file agents/<reviewer>-subagent.md" deploy/opencode.json` = 0) and `grep -c "architecture-review-skill" deploy/opencode.json` ≥ 2 (v2 template + `/review-inline`); `/review-arch` template untouched
     — **Consumers affected:** deployed-command users; `worktree-pipeline-skill` docs (2.2)
 - [ ] **2.2** Update `skills/worktree-pipeline-skill/SKILL.md` Step 1 soft-dep line and Step 7: inline arm routes architecture review to skill `architecture-review-skill` in-session; v1 arm text unchanged
     — **Why:** the skill doc is the pipeline's behavioral contract — the command template and the skill must not disagree
