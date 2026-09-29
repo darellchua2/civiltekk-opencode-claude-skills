@@ -258,6 +258,21 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
     §Phase 1 head-class rule); capture the merge
     SHA via `gh pr view -R <owner/name> <num> --json mergeCommit`; report the outcome to the
     main session (merge SHA on success; the failing check names on red).
+    **Red-verdict guard:** a red verdict matches only `statusCheckRollup`
+    conclusions `FAILURE` / `TIMED_OUT` / `CANCELLED` (plus the
+    pending-at-timeout rule below) — `SKIPPED` and `NEUTRAL` are never red
+    (GitHub marks not-applicable jobs `SKIPPED`, so docs-only PRs carry them
+    in the rollup and stay green). A green watch (exit 0) proceeds to merge
+    even when the rollup contains `SKIPPED` entries — exit 0 remains the
+    primary green signal. When the watch exits non-zero with checks
+    reported, classify before declaring red:
+
+    ```bash
+    jq '[.statusCheckRollup[] | select(.conclusion == "FAILURE" or .conclusion == "TIMED_OUT" or .conclusion == "CANCELLED")] | length'
+    ```
+
+    Nonzero count → red; zero → not red — report for manual verdict rather
+    than auto-merge (the green watch, not the count, authorizes merging).
     The `-R <owner/name>` flags are mandatory — the watcher runs
     unattended, so prose scoping rules elsewhere never reach it (session
     repo ≠ ticket repo for `repo/KEY` tickets).
