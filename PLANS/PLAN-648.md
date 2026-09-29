@@ -5,11 +5,11 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] AC1 — `ticketing-skill` SKILL.md documents a Start lifecycle op with a check-first idempotency guard; `references/jira.md` §Transitions defines the in-progress target selection
-- [ ] AC2 — `worktree-pipeline-skill` Step 4 transitions tracker tickets to In Progress after worktree creation; JIRA-unavailable degrades with a report (MCP Availability Guard), GitHub issues no-op with a note
-- [ ] AC3 — `--dry-run` and `/worktree-pipeline-preview` perform no transitions (read-only contract intact)
-- [ ] AC4 — Failed/deferred tickets may legitimately remain In Progress — documented as honest state
-- [ ] AC5 — Guard tests updated where they pin Step 4 or the lifecycle op list (none currently pin — verified 2026-09-29; sweep confirms)
+- [x] AC1 — `ticketing-skill` SKILL.md documents a Start lifecycle op with a check-first idempotency guard; `references/jira.md` §Transitions defines the in-progress target selection
+- [x] AC2 — `worktree-pipeline-skill` Step 4 transitions tracker tickets to In Progress after worktree creation; JIRA-unavailable degrades with a report (MCP Availability Guard), GitHub issues no-op with a note
+- [x] AC3 — `--dry-run` and `/worktree-pipeline-preview` perform no transitions (read-only contract intact)
+- [x] AC4 — Failed/deferred tickets may legitimately remain In Progress — documented as honest state
+- [x] AC5 — Guard tests updated where they pin Step 4 or the lifecycle op list (none currently pin — verified 2026-09-29; sweep confirms)
 
 ## Dependency & Consumer Map
 
@@ -106,3 +106,4 @@ None — no blocked-by tickets.
 GATE 51a3d61 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642 — Phase 1)
 GATE df1ebf9 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642 — Phase 2; command-template diff empty)
 GATE 2ae5b3e tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (bats 642/642 — Phase 3; registry regen committed, diff scoped)
+GATE 67bc88f tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (bats 642/642 — ticket exit gate, final implementation tree; AC1–AC5 PASS)
