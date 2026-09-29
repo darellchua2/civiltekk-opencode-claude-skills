@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.11.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.10.0...v12.11.0) (2026-09-29)
+
+### Features
+
+* **skills:** add architecture-review-skill, route v2 arch review to it ([#651](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/651)) ([f392061](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/f392061c3fa05416bcb393c5ee2f0c2da22533b0)), closes [#650](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/650) [#650](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/650) [#650](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/650)
+
 ## [12.10.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.9.0...v12.10.0) (2026-09-29)
 
 ### Features
