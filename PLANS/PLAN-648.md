@@ -55,22 +55,26 @@
     — **Done:** Start paragraph added at the end of Step 4 (worktree-exists trigger, check-first idempotent, GitHub no-op, MCP-guard degrade, honest-state pointer, read-only contract); `deploy/opencode.json` untouched; files: `skills/worktree-pipeline-skill/SKILL.md`; fixes: none
 
 ### Phase 3: downstream consumer sync
-- [ ] **3.1** Update the Git/Workflow category row in `README.md` ("the full ticket lifecycle (create/classify/update/close …)") to include start
+- [x] **3.1** Update the Git/Workflow category row in `README.md` ("the full ticket lifecycle (create/classify/update/close …)") to include start
     — **Why:** README is a registered consumer of the lifecycle wording; directory-scoped sweeps miss root docs (documented anti-pattern).
     — **Done when:** the row mentions start; no count numbers change (120 unchanged — no skill added).
     — **Consumers affected:** docs readers.
-- [ ] **3.2** Regenerate `installer/registry.json` (`node installer/build-registry.mjs`) and verify the diff touches only the ticketing-skill entry's description
+    — **Done:** row now reads `create/classify/start/update/close`; build-registry confirms `skills=120` unchanged; files: `README.md`; fixes: none
+- [x] **3.2** Regenerate `installer/registry.json` (`node installer/build-registry.mjs`) and verify the diff touches only the ticketing-skill entry's description
     — **Why:** House rule — after ANY frontmatter change, registry is rebuilt and committed; a stale registry breaks installer reads.
     — **Done when:** `git diff installer/registry.json` shows only ticketing-skill description text; `node installer/build-registry.mjs` exits 0.
     — **Consumers affected:** `installer/init.mjs`.
-- [ ] **3.3** Sweep guard tests for newly-created pins: run `grep -rn "classify/label\|create/classify" tests/` and the isolation/v2 guards; record the AC5 verdict (expected: no pins exist, no test edits needed)
+    — **Done:** regen exit 0 (agents=34, skills=120); diff = ticketing-skill description + `generatedAt` timestamp (inherent to regen); JSON valid; files: `installer/registry.json`; fixes: none
+- [x] **3.3** Sweep guard tests for newly-created pins: run `grep -rn "classify/label\|create/classify" tests/` and the isolation/v2 guards; record the AC5 verdict (expected: no pins exist, no test edits needed)
     — **Why:** AC5 is conditional — the sweep is the evidence that the condition stayed false after the edits.
     — **Done when:** sweep output recorded in the step's Done line; zero unexpected test failures.
     — **Consumers affected:** none.
-- [ ] **3.4** Update the lifecycle restatement in `agents/repo-ops-specialist-subagent.md` (line 133) to include start, matching the SKILL.md list
+    — **Done:** sweep `grep -rn "classify/label\|create/classify" tests/` → zero matches (exit 1) — AC5 verdict: **no test pins exist, no test edits needed**; `test_skill_isolation.bats` + `test_v2_pipeline_contract.bats` exit 0; files: none; fixes: none
+- [x] **3.4** Update the lifecycle restatement in `agents/repo-ops-specialist-subagent.md` (line 133) to include start, matching the SKILL.md list
     — **Why:** Plan review's restatement sweep found this agent guidance lists the old four-op lifecycle; a stale list leaves the Start op unroutable from repo-ops guidance.
     — **Done when:** line 133's lifecycle list includes start; `grep -rn "create, classify/label" agents/` returns no start-less restatements.
     — **Consumers affected:** repo-ops-specialist-subagent runtime guidance.
+    — **Done:** `start (in-progress)` inserted into the lifecycle list; the follow-up grep returns only the updated line — no start-less restatements remain; files: `agents/repo-ops-specialist-subagent.md`; fixes: none
 
 ### Phase 4: exit verification
 - [ ] **4.1** Full verification gate on the final tree: run the repo's guard-test suite scoped to touched areas (`tests/test_skill_isolation.bats`, `tests/test_v2_pipeline_contract.bats`, plus any ticketing-named guard), confirm all green
@@ -99,3 +103,4 @@ None — no blocked-by tickets.
 - WORK LOG: Phase 2 full-tier escalation — `skills/worktree-pipeline-skill/SKILL.md` Step 4 is a cross-module map node (tier rule 1); command-template diff verified empty.
 
 GATE 51a3d61 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642 — Phase 1)
+GATE df1ebf9 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642 — Phase 2; command-template diff empty)
