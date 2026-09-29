@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.10.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.9.0...v12.10.0) (2026-09-29)
+
+### Features
+
+* **ticketing:** Start ticket transition — In Progress at worktree creation ([#649](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/649)) ([bf2ecaf](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/bf2ecafc1eb19fcc4c46ea2967b27f78364839fa)), closes [#648](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/648)
+
 ## [12.9.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.8.1...v12.9.0) (2026-09-29)
 
 ### Features
