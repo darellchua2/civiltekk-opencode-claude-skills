@@ -8,13 +8,13 @@
 
 Inherited from ticket #642 (definition of done — the PLAN never rewrites them):
 
-- [ ] LEARNINGS captures land committed + pushed with a defined owner: **standalone sessions commit at write time** (one `chore(learnings): <slug>` commit: body + `_index.md` entry + `.gitignore` negation when the repo ignores `LEARNINGS/**/*.md`); **plan/pipeline runs never commit mid-phase** and land **one trailing `chore(learnings)` commit at end of ticket**. Push: only when the session's flow pushes — a local commit already clears the `pull`/`rebase` clash, and unconditional push would break on protected branches (plan-review gap resolution, 2026-09-29).
-- [ ] No instruction surface leaves a checkout holding a dirty tracked `_index.md` at rest.
-- [ ] The `.gitignore` `!`-negation requirement is taught wherever the commit rule lives (the add otherwise errors on / silently drops the ignored body file).
-- [ ] `scope=user` captures (`~/.config/opencode/LEARNINGS/`) explicitly skip the commit (not a git repo).
-- [ ] No SKILL.md frontmatter touched → `installer/registry.json` byte-identical (`node installer/build-registry.mjs --check` clean).
-- [ ] No new fenced bash blocks in skill bodies (portability Bash rule) — new commands stay inline.
-- [ ] `deploy/.AGENTS.md` change propagated to `~/.config/opencode/AGENTS.md` via redeploy, verified.
+- [x] LEARNINGS captures land committed + pushed with a defined owner: **standalone sessions commit at write time** (one `chore(learnings): <slug>` commit: body + `_index.md` entry + `.gitignore` negation when the repo ignores `LEARNINGS/**/*.md`); **plan/pipeline runs never commit mid-phase** and land **one trailing `chore(learnings)` commit at end of ticket**. Push: only when the session's flow pushes — a local commit already clears the `pull`/`rebase` clash, and unconditional push would break on protected branches (plan-review gap resolution, 2026-09-29).
+- [x] No instruction surface leaves a checkout holding a dirty tracked `_index.md` at rest.
+- [x] The `.gitignore` `!`-negation requirement is taught wherever the commit rule lives (the add otherwise errors on / silently drops the ignored body file).
+- [x] `scope=user` captures (`~/.config/opencode/LEARNINGS/`) explicitly skip the commit (not a git repo).
+- [x] No SKILL.md frontmatter touched → `installer/registry.json` byte-identical (`node installer/build-registry.mjs --check` clean).
+- [x] No new fenced bash blocks in skill bodies (portability Bash rule) — new commands stay inline.
+- [x] `deploy/.AGENTS.md` change propagated to `~/.config/opencode/AGENTS.md` via redeploy, verified.
 
 ## Dependency & Consumer Map
 
@@ -76,6 +76,7 @@ Cross-module signal for Step 7 triage: `deploy/.AGENTS.md` is consumed by `deplo
 
 GATE 80ca01a tier=light lint=n.a typecheck=n.a build=t unit=n.a e2e=n.a
 GATE 4778db9 tier=light lint=n.a typecheck=n.a build=t unit=n.a e2e=n.a
+GATE f569fc5 tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a
 
 ### Phase 3: Verify + propagate
 
