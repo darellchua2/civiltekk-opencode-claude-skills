@@ -96,7 +96,7 @@ GATE 224605d tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/6
 
 GATE 39506ab tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642; lint=deploy/opencode.json JSON.parse; full tier: deploy-config anchor)
 
-GATE 5e3c453 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (ticket exit gate; bats 642/642 exit 0; registry idempotent modulo generatedAt; AC1–AC5 PASS)
+GATE 73f92fc tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (ticket exit gate, run on the phase-3 tree before its commit; bats 642/642 exit 0; registry idempotent modulo generatedAt; AC1–AC5 PASS)
 
 ## Technical Notes
 - Guard semantics (verified in `tests/test_skill_isolation.bats`): sibling-skill violations trigger only on path refs inside fenced code blocks of SKILL.md — prose mentions are documentation. The new skill needs NO new HANDOFF entry.
