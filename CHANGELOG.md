@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.8.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.8.0...v12.8.1) (2026-09-29)
+
+### Bug Fixes
+
+* **skills:** LEARNINGS captures commit at write time and end of ticket ([#643](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/643)) ([60657ed](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/60657edea13123fae8bd39ba2ccce28a341d04bd)), closes [#642](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/642) [#642](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/642) [#642](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/642)
+
 ## [12.8.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.7.0...v12.8.0) (2026-09-28)
 
 ### Features
