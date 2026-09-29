@@ -77,13 +77,13 @@ teardown() { rm -rf "$TMP_PROJ"; }
   [ "$has_img" = "True" ]
 }
 
-@test "install review --yes lands exactly 4 agents + 31 skills + codegraph (resolver deps)" {
+@test "install review --yes lands exactly 4 agents + 27 skills + codegraph (resolver deps)" {
   run $INIT --project "$TMP_PROJ" --preset review --yes
   [ "$status" -eq 0 ]
   agent_files=$(ls "$TMP_PROJ/.opencode/agents/" | wc -l)
   skill_dirs=$(ls "$TMP_PROJ/.agents/skills/" | wc -l)
   [ "$agent_files" -eq 4 ]
-  [ "$skill_dirs" -eq 26 ]
+  [ "$skill_dirs" -eq 27 ]
 }
 
 @test "each installed agent has a model: frontmatter line" {

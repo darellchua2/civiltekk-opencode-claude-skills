@@ -75,7 +75,9 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>`. Soft deps
   degrade with a note: `ticketing-skill` (only for new-work tickets,
   Step 3), `architecture-review-subagent` / `uiux-reviewer-subagent` /
-  `requirements-specialist-subagent` (Step 7 skip-with-note rule).
+  `requirements-specialist-subagent` (Step 7 skip-with-note rule). The
+  inline arm routes architecture review to skill `architecture-review-skill`
+  (reviewer-baseline-skill first) instead of the deployed agent file.
 - **Execution model (pipelined)**: ticket order = authoring order, but only
   **one implementation runs at a time**. The next ticket's implementation
   starts once the active ticket has **created its PR (Step 10a)** — not once
@@ -163,7 +165,9 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    ones only (a selected reviewer absent from this session's agent list →
    skip it with a note; per-skill installs may not carry every reviewer):
    - `architecture-review-subagent` iff the Consumer Map has **cross-module
-     nodes** (a consumer beyond the node itself).
+     nodes** (a consumer beyond the node itself). Inline arm: run the review
+     in-session via skill `architecture-review-skill` (reviewer-baseline-skill
+     first) — the Task-call route below is the v1 arm.
    - `uiux-reviewer-subagent` iff **frontend signal** (tsx/jsx/vue/svelte/css
      files, components/pages/app paths, UI keywords in the diff).
    No proactive requirements review — requirements coverage is
