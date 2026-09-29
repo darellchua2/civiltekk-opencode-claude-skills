@@ -78,8 +78,8 @@ for name in sys.argv[1:3]:
 
 @test "requires_skills_map_entry_matches_isolation_guard_handoff_pair" {
   # AGENTS.md: HANDOFF{1,2}_OWNER/HANDOFF{1,2}_TARGETS plus the HANDOFF3
-  # multi-owner pair and the HANDOFF4 pair in the guard are the source of
-  # truth — the installer edges must be exactly those handoffs
+  # multi-owner pair and the HANDOFF4/HANDOFF5 pairs in the guard are the
+  # source of truth — the installer edges must be exactly those handoffs
   # (owner -> multi-target), never drift.
   HANDOFF1_OWNER="$(grep -oE '^HANDOFF1_OWNER="[^"]+"' "$GUARD" | cut -d'"' -f2)"
   HANDOFF1_TARGETS="$(grep -oE '^HANDOFF1_TARGETS="[^"]+"' "$GUARD" | cut -d'"' -f2)"
@@ -89,22 +89,26 @@ for name in sys.argv[1:3]:
   HANDOFF3_TARGETS="$(grep -oE '^HANDOFF3_TARGETS="[^"]+"' "$GUARD" | cut -d'"' -f2)"
   HANDOFF4_OWNER="$(grep -oE '^HANDOFF4_OWNER="[^"]+"' "$GUARD" | cut -d'"' -f2)"
   HANDOFF4_TARGETS="$(grep -oE '^HANDOFF4_TARGETS="[^"]+"' "$GUARD" | cut -d'"' -f2)"
+  HANDOFF5_OWNER="$(grep -oE '^HANDOFF5_OWNER="[^"]+"' "$GUARD" | cut -d'"' -f2)"
+  HANDOFF5_TARGETS="$(grep -oE '^HANDOFF5_TARGETS="[^"]+"' "$GUARD" | cut -d'"' -f2)"
   [ -n "$HANDOFF1_OWNER" ] && [ -n "$HANDOFF1_TARGETS" ]
   [ -n "$HANDOFF2_OWNER" ] && [ -n "$HANDOFF2_TARGETS" ]
   [ -n "$HANDOFF3_OWNERS" ] && [ -n "$HANDOFF3_TARGETS" ]
   [ -n "$HANDOFF4_OWNER" ] && [ -n "$HANDOFF4_TARGETS" ]
-  python3 - "$DEPMAP" "$HANDOFF1_OWNER" "$HANDOFF1_TARGETS" "$HANDOFF2_OWNER" "$HANDOFF2_TARGETS" "$HANDOFF3_OWNERS" "$HANDOFF3_TARGETS" "$HANDOFF4_OWNER" "$HANDOFF4_TARGETS" "${REPO}/deploy/opencode.json" <<'PYEOF'
+  [ -n "$HANDOFF5_OWNER" ] && [ -n "$HANDOFF5_TARGETS" ]
+  python3 - "$DEPMAP" "$HANDOFF1_OWNER" "$HANDOFF1_TARGETS" "$HANDOFF2_OWNER" "$HANDOFF2_TARGETS" "$HANDOFF3_OWNERS" "$HANDOFF3_TARGETS" "$HANDOFF4_OWNER" "$HANDOFF4_TARGETS" "$HANDOFF5_OWNER" "$HANDOFF5_TARGETS" "${REPO}/deploy/opencode.json" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1]))
-owner1, targets1, owner2, targets2, owners3, targets3, owner4, targets4 = sys.argv[2:10]
+owner1, targets1, owner2, targets2, owners3, targets3, owner4, targets4, owner5, targets5 = sys.argv[2:12]
 expected = {owner1: targets1.split(), owner2: targets2.split()}
 for o in owners3.split():
     expected[o] = targets3.split()
 expected[owner4] = targets4.split()
+expected[owner5] = targets5.split()
 got = d.get("requiresSkills", {})
 assert got == expected, f"requiresSkills {got} != guard handoffs {expected}"
 # impliesMcp values must be real MCP server keys (dependency-map $comment claim)
-oc = json.load(open(sys.argv[10]))
+oc = json.load(open(sys.argv[12]))
 servers = set((oc.get("mcp") or {}).get("servers") or {})
 for skill, mcps in d.get("impliesMcp", {}).items():
     for m in mcps:
