@@ -75,23 +75,27 @@ Cross-module signal for Step 7 triage: `deploy/.AGENTS.md` is consumed by `deplo
 ## Gate Trace
 
 GATE 80ca01a tier=light lint=n.a typecheck=n.a build=t unit=n.a e2e=n.a
+GATE 4778db9 tier=light lint=n.a typecheck=n.a build=t unit=n.a e2e=n.a
 
 ### Phase 3: Verify + propagate
 
-- [ ] **3.1** Verification greps + registry guard: `grep -c "chore(learnings)"` ≥1 in each of the 5 edited files; `grep -n "scope=user"` present in the new continuous-learning step; `grep -n "end of ticket"` present in plan-execution-skill and worktree-pipeline-skill; `node installer/build-registry.mjs --check` clean (frontmatter untouched → registry byte-identical); `git diff --stat origin/main` shows exactly the 6 files (5 skill bodies + `deploy/.AGENTS.md`), nothing else.
+- [x] **3.1** Verification greps + registry guard: `grep -c "chore(learnings)"` ≥1 in each of the 5 edited files; `grep -n "scope=user"` present in the new continuous-learning step; `grep -n "end of ticket"` present in plan-execution-skill and worktree-pipeline-skill; `node installer/build-registry.mjs --check` clean (frontmatter untouched → registry byte-identical); `git diff --stat origin/main` shows exactly the 6 files (5 skill bodies + `deploy/.AGENTS.md`), nothing else.
     — **Why:** Mechanical proof the ACs (frontmatter untouched, scope of change, rule present everywhere) hold before commit-heavy verification runs.
     — **Done when:** every listed command exits green / prints the expected count.
     — **Consumers affected:** none (verification only).
+    — **Done:** greps green (chore(learnings) 5/5 files; scope=user 1; end-of-ticket present — plan-execution uses hyphenated "end-of-ticket" in the subroutine clause, grep pattern corrected); registry no-drift (agents=34, skills=120); diff scope vs origin/main = expected 8 files (6 planned + PLANS/PLAN-642.md + LEARNINGS/_index.md #445 refresh from plan review), nothing else; files: none (verification); fixes: none
 
-- [ ] **3.2** Full bats suite from the repo root (`bats tests/` or per-file if runner lacks bats, per CI invocation conventions) — the ticket exit-gate rehearsal for a docs-only change.
+- [x] **3.2** Full bats suite from the repo root (`bats tests/` or per-file if runner lacks bats, per CI invocation conventions) — the ticket exit-gate rehearsal for a docs-only change.
     — **Why:** The Consumer Map names tests as consumers; the suite is the repo's only executable guard that could regress on body-text changes (verified no pins on edited spans, so expectation: green).
     — **Done when:** suite exits 0 (or N/A cleanly reported where the runner lacks deps — then the exit gate records INCONCLUSIVE per verification-loop-skill, not silently skipped).
     — **Consumers affected:** CI mirrors this locally.
+    — **Done:** full suite 642 tests, exit 0; files: none; fixes: none
 
-- [ ] **3.3** Redeploy + verify propagation: run `./deploy/setup.sh` (propagates `deploy/.AGENTS.md` → `~/.config/opencode/AGENTS.md`), then `grep -n "chore(learnings)" ~/.config/opencode/AGENTS.md` shows the new bullet.
+- [x] **3.3** Redeploy + verify propagation: run `./deploy/setup.sh` (propagates `deploy/.AGENTS.md` → `~/.config/opencode/AGENTS.md`), then `grep -n "chore(learnings)" ~/.config/opencode/AGENTS.md` shows the new bullet.
     — **Why:** The ticket's Environment names the user-space deploy as the delivery vehicle; without redeploy the rule stays inert for all other projects.
     — **Done when:** redeploy exits clean and the grep hits.
     — **Consumers affected:** every project using the deployed config.
+    — **Done:** setup.sh completed clean; new Commit bullet verified at ~/.config/opencode/AGENTS.md:14; files: none (user-space deploy); fixes: none
 
 ## Technical Notes
 
