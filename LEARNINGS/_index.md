@@ -1979,3 +1979,15 @@
 - **Scope**: project
 - **Summary**: A merge-watcher red verdict matches only `FAILURE`/`TIMED_OUT`/`CANCELLED` — GitHub marks not-applicable jobs `SKIPPED`, so docs-only PRs roll them up while green and a "not SUCCESS/NEUTRAL = red" guard refuses good merges (#642/#644 evidence, #644)
 - **Date**: 2026-09-29
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/done-when-grep-template-placeholder-false-green.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: A Done-when grep keyed on concrete text that the pre-edit template carries only in placeholder form (`agents/<reviewer>-subagent.md`) can never fail — always confirm the grep returns nonzero on the base tree first; for placeholders, grep the placeholder sentence to 0 plus a positive count of the new reference (#650)
+- **Date**: 2026-09-29
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/count-guards-close-in-adder-phase.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: End-state count guards (registry totals, doc-count tables, resolver-count tests) go red in any phase that adds the counted entity — pull the registry/doc-count closure steps into the same phase gate window as the addition instead of splitting them across phases (#650, contrast #648 which added nothing)
+- **Date**: 2026-09-29
