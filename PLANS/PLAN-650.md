@@ -5,11 +5,11 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] `skills/architecture-review-skill/SKILL.md` exists, self-contained, passes `tests/test_skill_isolation.bats`
-- [ ] No v2 path references "load agents/architecture-review-subagent.md" anymore (grep-verifiable)
-- [ ] `/review-arch` + v1 pipeline Step 7 still resolve (thin subagent loads the skill)
-- [ ] `installer/registry.json` regenerated and committed
-- [ ] README / setup.sh / setup.ps1 skill counts updated
+- [x] `skills/architecture-review-skill/SKILL.md` exists, self-contained, passes `tests/test_skill_isolation.bats`
+- [x] No v2 path references "load agents/architecture-review-subagent.md" anymore (grep-verifiable)
+- [x] `/review-arch` + v1 pipeline Step 7 still resolve (thin subagent loads the skill)
+- [x] `installer/registry.json` regenerated and committed
+- [x] README / setup.sh / setup.ps1 skill counts updated
 
 ## Dependency & Consumer Map
 
@@ -76,22 +76,27 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done:** Step 1 soft-dep inline-arm note + Step 7 inline-arm skill route; v1 Task-call text verbatim; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
 
 ### Phase 3: Docs remainder + verification
-- [ ] **3.1** Update `README.md` remaining wording: the line-24 "loading the deployed agent definitions as checklists" sentence to reflect the skill-driven arch review, and the inline-workers pack line (95) naming the arch wrapper
+- [x] **3.1** Update `README.md` remaining wording: the line-24 "loading the deployed agent definitions as checklists" sentence to reflect the skill-driven arch review, and the inline-workers pack line (95) naming the arch wrapper
     — **Why:** README is the usage-docs home; the v2 flavor description must match the new routing
     — **Done when:** line-24 sentence describes skill-driven arch review; pack line names `architecture-review-skill`; `grep -c "architecture-review-skill" README.md` ≥ 3
     — **Consumers affected:** none (docs)
-- [ ] **3.2** Verify `deploy/setup.sh` + `deploy/setup.ps1` carry no hardcoded skill counts (`count_skills` is dynamic) — record the finding instead of editing when dynamic
+    — **Done:** line-24 v2 flavor sentence + inline-workers pack row updated; files: README.md; fixes: none
+- [x] **3.2** Verify `deploy/setup.sh` + `deploy/setup.ps1` carry no hardcoded skill counts (`count_skills` is dynamic) — record the finding instead of editing when dynamic
     — **Why:** ticket AC names setup counts; if they are computed, "updated" means verified-not-stale, and an edit would be make-work
     — **Done when:** grep for hardcoded skill totals in both scripts returns none, noted in the phase commit message
     — **Consumers affected:** none (verification)
-- [ ] **3.3** Run the full verification set: `tests/test_skill_isolation.bats`, `node installer/build-registry.mjs` idempotence (no diff), AC greps (no agent-file load in v2 paths; `/review-arch` + v1 Step 7 intact)
+    — **Done:** no hardcoded counts — count_skills dynamic (setup.sh:4636), ps1 thin launcher guard-enforced; recorded, no edit; fixes: none
+- [x] **3.3** Run the full verification set: `tests/test_skill_isolation.bats`, `node installer/build-registry.mjs` idempotence (no diff), AC greps (no agent-file load in v2 paths; `/review-arch` + v1 Step 7 intact)
     — **Why:** exit-gate evidence for the ticket ACs
     — **Done when:** bats suite exits 0; registry rebuild is a no-op; all AC greps return the expected result
     — **Consumers affected:** Step 9 code review, Step 10 PR citation
+    — **Done:** bats 642/642 exit 0; registry idempotent (timestamp-only diff reverted); AC greps: v2 agent-file refs 0/0, /review-arch + v1 Step 7 intact 1/1, README skill refs 3; fixes: none
 
 GATE 224605d tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642; lint=JSON.parse substitutes on dep-map+preset; full tier: cross-module Consumer Map node + manifest anchors; 3 gate fix rounds: plan resequencing pulled 1.3–1.5 into phase, HANDOFF5 contract added to guard+mirror, argv index fix)
 
 GATE 39506ab tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642; lint=deploy/opencode.json JSON.parse; full tier: deploy-config anchor)
+
+GATE 5e3c453 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (ticket exit gate; bats 642/642 exit 0; registry idempotent modulo generatedAt; AC1–AC5 PASS)
 
 ## Technical Notes
 - Guard semantics (verified in `tests/test_skill_isolation.bats`): sibling-skill violations trigger only on path refs inside fenced code blocks of SKILL.md — prose mentions are documentation. The new skill needs NO new HANDOFF entry.
