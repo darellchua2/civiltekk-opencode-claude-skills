@@ -1,8 +1,9 @@
 # ticketing-skill
 
 One skill for the whole ticket lifecycle on **GitHub Issues** or **JIRA** —
-create, classify/label, update from commits, close post-merge, and the
-ticket-key ↔ branch ↔ commit plumbing that ties tickets to git.
+create, start (in-progress), classify/label, update from commits, close
+post-merge, and the ticket-key ↔ branch ↔ commit plumbing that ties tickets
+to git.
 
 Consolidates six former skills (#599): `ticket-creation-skill`,
 `git-issue-labeler-skill`, `git-issue-updater-skill`,
@@ -24,6 +25,7 @@ flowchart TD
 
     L -->|create| C["§Create — intake · classify · validate · preview · submit"]
     L -->|classify / label| CL["§Classify/Label — type + priority; PRs: exactly one semver label"]
+    L -->|start| S["§Start — execution begins; check-first idempotent"]
     L -->|update| U["§Update — commit → progress comment, idempotent"]
     L -->|close| X["§Close — post-merge transition, exactly once"]
     L -->|plumbing| K["§Git plumbing — key ↔ branch ↔ commit footers"]
