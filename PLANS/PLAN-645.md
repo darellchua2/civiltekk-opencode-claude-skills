@@ -6,10 +6,10 @@
 
 ## Acceptance Criteria
 
-- [ ] All 120 SKILL.md frontmatters parse under strict `yaml.safe_load` (frontmatter block extracted, not whole file)
-- [ ] The maintainer skill's §Validation snippet no longer false-positives on a clean library (extracts the `---`-delimited block before parsing)
-- [ ] `references/create.md` step 7 documents the working REST label fallback for the live-broken `gh pr edit --add-label`, keeping step numbering and all external § anchors intact
-- [ ] `node installer/build-registry.mjs --check` green; bats suite green where installed
+- [x] All 120 SKILL.md frontmatters parse under strict `yaml.safe_load` (frontmatter block extracted, not whole file)
+- [x] The maintainer skill's §Validation snippet no longer false-positives on a clean library (extracts the `---`-delimited block before parsing)
+- [x] `references/create.md` step 7 documents the working REST label fallback for the live-broken `gh pr edit --add-label`, keeping step numbering and all external § anchors intact
+- [x] `node installer/build-registry.mjs --check` green; bats suite green where installed
 
 ## Dependency & Consumer Map
 
@@ -41,10 +41,11 @@
 
 ### Phase 2: Ticket exit gate (full)
 
-- [ ] **2.1** Run the full gate on the final tree: strict-YAML validation over all skills (proves 1.1 + 1.2 together), `node installer/build-registry.mjs --check`, bats suite if `bats` is installed (else record the substitute evidence: strict-YAML + registry checks); lint/typecheck n.a (no toolchain configured for this docs+shell repo — recorded, not silently skipped)
+- [x] **2.1** Run the full gate on the final tree: strict-YAML validation over all skills (proves 1.1 + 1.2 together), `node installer/build-registry.mjs --check`, bats suite if `bats` is installed (else record the substitute evidence: strict-YAML + registry checks); lint/typecheck n.a (no toolchain configured for this docs+shell repo — recorded, not silently skipped)
     — **Why:** Issue AC — registry green + strict parse green + tests-where-runnable is the strongest verification this repo's manifests expose.
     — **Done when:** all applicable checks green; `GATE <sha> tier=full` memo line recorded in the PLAN trace block.
     — **Consumers affected:** Step 10a PR creation (cites this memo line).
+    — **Done:** full gate green on final tree (strict-YAML 120/120, registry no drift, bats suite exit 0); lint/typecheck recorded n.a — no toolchain configured in manifests (docs+shell repo); anchor grep: all 5 external citation sites resolve; files: PLANS/PLAN-645.md; fixes: none
 
 ## Technical Notes
 
@@ -64,3 +65,4 @@
 ## Gate Trace
 
 - GATE 137353d tier=full lint=n.a typecheck=n.a build=t(registry --check, no drift) unit=t(strict-YAML 120/120 clean + bats suite green) e2e=n.a(no frontend) — Phase 1 exit, zero fixes
+- GATE 3895c5b tier=full lint=n.a typecheck=n.a build=t(registry no drift) unit=t(strict-YAML 120/120 + bats green) e2e=n.a — TICKET EXIT GATE on final tree, zero fixes
