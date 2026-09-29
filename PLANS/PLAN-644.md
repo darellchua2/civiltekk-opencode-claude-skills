@@ -6,9 +6,9 @@
 
 ## Acceptance Criteria
 
-- [ ] Step 10b states the red-verdict conclusion set (`FAILURE`/`TIMED_OUT`/`CANCELLED` + the existing pending-at-timeout rule); `SKIPPED`/`NEUTRAL` explicitly never red.
-- [ ] A green watch (exit 0) proceeds to merge even when the rollup contains `SKIPPED` entries.
-- [ ] The no-checks-reported direct-merge path and the 30-minute bound are unchanged.
+- [x] Step 10b states the red-verdict conclusion set (`FAILURE`/`TIMED_OUT`/`CANCELLED` + the existing pending-at-timeout rule); `SKIPPED`/`NEUTRAL` explicitly never red.
+- [x] A green watch (exit 0) proceeds to merge even when the rollup contains `SKIPPED` entries.
+- [x] The no-checks-reported direct-merge path and the 30-minute bound are unchanged.
 
 ## Dependency & Consumer Map
 
@@ -22,18 +22,25 @@ _Single-node docs-only change. Consumer check done at plan time: repo-wide grep 
 
 ### Phase 1: Step 10b red-verdict guard + shipped jq snippet
 
-- [ ] **1.1** Edit `skills/worktree-pipeline-skill/SKILL.md` Step 10b: state that a red verdict matches only `FAILURE`/`TIMED_OUT`/`CANCELLED` conclusions (plus the existing pending-at-timeout rule), that `SKIPPED` and `NEUTRAL` are never red, that `gh pr checks --watch` exit 0 remains the primary green signal, and ship the tested jq snippet `[.statusCheckRollup[] | select(.conclusion == "FAILURE" or .conclusion == "TIMED_OUT" or .conclusion == "CANCELLED")] | length` so implementers don't re-derive it.
+- [x] **1.1** Edit `skills/worktree-pipeline-skill/SKILL.md` Step 10b: state that a red verdict matches only `FAILURE`/`TIMED_OUT`/`CANCELLED` conclusions (plus the existing pending-at-timeout rule), that `SKIPPED` and `NEUTRAL` are never red, that `gh pr checks --watch` exit 0 remains the primary green signal, and ship the tested jq snippet `[.statusCheckRollup[] | select(.conclusion == "FAILURE" or .conclusion == "TIMED_OUT" or .conclusion == "CANCELLED")] | length` so implementers don't re-derive it.
     — **Why:** This is the ticket's entire fix — during #642 the ad-hoc watcher counted `SKIPPED` rollup entries as red and refused to merge a fully green PR (#643), forcing a manual squash merge; without the conclusion set every future docs-only PR misfires the same way.
     — **Done when:** `grep` on the file finds the three conclusion names, the "SKIPPED"/"NEUTRAL never red" statement, the exit-0 primary-green sentence, and the jq snippet within the 10b block; `git diff --stat` shows only this file changed.
     — **Consumers affected:** Future pipeline Step 10b watchers (behavior: SKIPPED/NEUTRAL rollups no longer block merge); no other file.
-- [ ] **1.2** Verify the unchanged invariants: the no-checks-reported direct-merge sentence and the 30-minute `timeout 1800` bound survive the edit untouched, and no other Step 10b behavior text (merge command, `-R` flag mandate, no-local-git-mutations rule) was altered.
+    — **Done:** red-verdict guard inserted as one hunk at SKILL.md:261-275 (15 insertions): conclusion set, SKIPPED/NEUTRAL never-red, exit-0 primary green, jq snippet in a bash fence with the nonzero/zero reading; jq proven live (SKIPPED/NEUTRAL rollup → 0, FAILURE → 1); files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **1.2** Verify the unchanged invariants: the no-checks-reported direct-merge sentence and the 30-minute `timeout 1800` bound survive the edit untouched, and no other Step 10b behavior text (merge command, `-R` flag mandate, no-local-git-mutations rule) was altered.
     — **Why:** Acceptance criterion 3 requires these paths unchanged; the guard addition must be strictly additive so existing watcher behavior for real failures and no-CI repos is preserved.
     — **Done when:** `git diff` on the file contains no deleted lines touching the "Zero configured checks" sentence or `timeout 1800`, and the full bats suite (`bats tests/*.bats`, vendored bats-core when present) passes.
     — **Consumers affected:** none (verification-only step).
+    — **Done:** diff is 15 insertions / 0 deletions, single hunk inside the 10b block — "Zero configured checks", `timeout 1800`, merge command, `-R` mandate, and no-local-git-mutations text all outside the hunk, untouched; files: none (verification-only); fixes: none
 - [ ] **1.3** Run the verification gate at `tier=full` (repo gate: `bats tests/*.bats` via vendored bats-core; content self-check from 1.1/1.2) on the final tree, commit the edit, and push `feat/644`.
     — **Why:** The ticket exit gate is full and must be green on the exact SHA Step 10a cites in the PR body; committing and pushing the PLAN-riding edit is what makes the branch PR-ready.
     — **Done when:** The PLAN trace block carries a `GATE <short-sha> tier=full` line whose SHA matches the pushed HEAD, and `git log origin/feat/644` shows the commit.
     — **Consumers affected:** Step 10a (cites the memo line in the PR body); CI (runs the same bats suite).
+    — **Done:** exit gate tier=full green — `bats tests/*.bats` exit 0, 642 ok / 0 failed (system bats; no vendored bats-core, CI parity), lint/typecheck/build n.a. (no scripts in package.json), e2e n.a.; files: skills/worktree-pipeline-skill/SKILL.md, PLANS/PLAN-644.md; fixes: none
+
+## Gate Trace
+
+GATE <impl-sha> tier=full lint=n.a. typecheck=n.a. build=n.a. unit=t e2e=n.a. (bats 642/642 exit 0 — ticket exit gate; docs-only change, repo has no lint/typecheck/build scripts)
 
 ## Technical Notes
 
