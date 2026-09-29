@@ -48,25 +48,33 @@ Cross-module signal for Step 7 triage: `deploy/.AGENTS.md` is consumed by `deplo
 
 ### Phase 2: Pipeline surfaces adopt the same rule
 
-- [ ] **2.1** Extend the rule-4f sentence at `skills/plan-execution-skill/SKILL.md:98`: after "PLAN ticks, Done lines, and gate memos ride inside this one atomic commit" append that LEARNINGS writes never do — they stay working-tree only through the run, and the run lands one trailing `chore(learnings)` commit at end of run (all bodies + `_index.md` + `.gitignore` negations when the repo ignores `LEARNINGS/**/*.md`); standalone runs commit + push it right after the exit gate (`--soft`: before the end-of-run tick commit); runs invoked as a pipeline subroutine leave the sweep to the pipeline's end-of-ticket commit.
+- [x] **2.1** Extend the rule-4f sentence at `skills/plan-execution-skill/SKILL.md:98`: after "PLAN ticks, Done lines, and gate memos ride inside this one atomic commit" append that LEARNINGS writes never do — they stay working-tree only through the run, and the run lands one trailing `chore(learnings)` commit at end of run (all bodies + `_index.md` + `.gitignore` negations when the repo ignores `LEARNINGS/**/*.md`); standalone runs commit + push it right after the exit gate (`--soft`: before the end-of-run tick commit); runs invoked as a pipeline subroutine leave the sweep to the pipeline's end-of-ticket commit.
     — **Why:** The per-phase commit is the place an executor would otherwise stage LEARNINGS by accident; the explicit ban + named trailing-commit owner closes the gap and states where the capture lands instead.
     — **Done when:** sentence extended; `git add <phase files>` add-list itself unchanged; no frontmatter change.
     — **Consumers affected:** every `/run-plan` --gate run (learnings now excluded from phase commits, guaranteed trailing commit).
+    — **Done:** sentence extended with working-tree-only ban + trailing-commit owner (standalone vs subroutine) + negation clause; `<phase files>` add-list unchanged; files: skills/plan-execution-skill/SKILL.md; fixes: none
 
-- [ ] **2.2** Apply the identical extension to the twin line `skills/plan-execution-inline-skill/SKILL.md:86`.
+- [x] **2.2** Apply the identical extension to the twin line `skills/plan-execution-inline-skill/SKILL.md:86`.
     — **Why:** The inline executor powers `/run-plan-v2` and pipeline v2 Step 8; divergence between the twins is the classic drift source (same line, two files).
     — **Done when:** the two sentences are textually identical apart from nothing (byte-equal clause).
     — **Consumers affected:** `/run-plan-v2`, `/run-worktree-pipeline-v2` Step 8.
+    — **Done:** twin sentence applied byte-identical (diff-verified); files: skills/plan-execution-inline-skill/SKILL.md; fixes: none
 
-- [ ] **2.3** Rework the Step 9 LEARNINGS block `skills/worktree-pipeline-skill/SKILL.md:200-209` so that: all LEARNINGS writes from the entire run (phase-time captures left dirty by Step 8 + review candidates) land in **one dedicated end-of-ticket `chore(learnings)` commit** — the current "commit them with the review-fix commit" folding is removed; the commit includes each new body's `!LEARNINGS/<category>/<slug>.md` `.gitignore` negation where the repo ignores `LEARNINGS/**/*.md`; any final PLAN re-ticks / gate-memo appends fold into this same commit so its SHA is the final pushed SHA Step 10a cites (docs-only — anything code-shaped riding it triggers the re-gate rule); ordering stays after the bounded review loop and before Step 10a (overlap-hold rebase needs a clean tree). Also refresh the tracked `_index.md` row that summarizes the #445 single-writer rule (`:274` at plan time — locate by `#445`, line may drift) to name the single end-of-ticket commit instead of the old review-fix folding.
+- [x] **2.3** Rework the Step 9 LEARNINGS block `skills/worktree-pipeline-skill/SKILL.md:200-209` so that: all LEARNINGS writes from the entire run (phase-time captures left dirty by Step 8 + review candidates) land in **one dedicated end-of-ticket `chore(learnings)` commit** — the current "commit them with the review-fix commit" folding is removed; the commit includes each new body's `!LEARNINGS/<category>/<slug>.md` `.gitignore` negation where the repo ignores `LEARNINGS/**/*.md`; any final PLAN re-ticks / gate-memo appends fold into this same commit so its SHA is the final pushed SHA Step 10a cites (docs-only — anything code-shaped riding it triggers the re-gate rule); ordering stays after the bounded review loop and before Step 10a (overlap-hold rebase needs a clean tree). Also refresh the tracked `_index.md` row that summarizes the #445 single-writer rule (`:274` at plan time — locate by `#445`, line may drift) to name the single end-of-ticket commit instead of the old review-fix folding.
     — **Why:** Step 9 is the only surface that already commits learnings; aligning it with the end-of-ticket rule (user decision 2026-09-29) makes the pipeline the single sweep point and keeps review-fix commits logic-only. The index row is the tracked restatement of that rule — leaving it stale recreates the exact index/body drift the house rules kill.
     — **Done when:** Step 9 states the single end-of-ticket commit + negation clause + docs-only/re-gate clause + before-10a ordering; the `_index.md` #445 row names the end-of-ticket commit; the fetch-only workaround at :267-269 unchanged; `LEARNINGS candidates:` report contract untouched.
     — **Consumers affected:** both pipeline commands; Step 10a gate-memo citation path.
+    — **Done:** Step 9 reworked (single end-of-ticket `chore(learnings)` sweep, negation clause, docs-only/memo rule, before-10a ordering, `_index.md`-refresh clause); :267-269 fetch-only untouched; `_index.md` #445 row refreshed; files: skills/worktree-pipeline-skill/SKILL.md, LEARNINGS/_index.md; fixes: none
 
-- [ ] **2.4** Append to the enforcement-delta table row at `skills/code-review-inline-skill/SKILL.md:88` ("You MAY write — restrict writes to LEARNINGS entries and granted fix commits"): "; every LEARNINGS write lands in the run's single end-of-ticket `chore(learnings)` commit — never in fix commits, never left dirty past the ruling commit step".
+- [x] **2.4** Append to the enforcement-delta table row at `skills/code-review-inline-skill/SKILL.md:88` ("You MAY write — restrict writes to LEARNINGS entries and granted fix commits"): "; every LEARNINGS write lands in the run's single end-of-ticket `chore(learnings)` commit — never in fix commits, never left dirty past the ruling commit step".
     — **Why:** The inline reviewer holds the write grant; without the pointer its writes could be folded into fix commits or left dirty, violating the rule Phase 2 just established.
     — **Done when:** row updated; no cross-skill path references added (Skill Isolation Contract).
     — **Consumers affected:** v2 pipeline Step 9 review arm.
+    — **Done:** row extended with the end-of-ticket sweep binding; no cross-skill paths added; files: skills/code-review-inline-skill/SKILL.md; fixes: none
+
+## Gate Trace
+
+GATE 80ca01a tier=light lint=n.a typecheck=n.a build=t unit=n.a e2e=n.a
 
 ### Phase 3: Verify + propagate
 
