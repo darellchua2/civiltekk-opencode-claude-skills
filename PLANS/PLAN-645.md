@@ -23,18 +23,21 @@
 
 ### Phase 1: Fix the three audit defects
 
-- [ ] **1.1** Fold `skill-generalizer`'s `description:` into the `>-` block style (content unchanged, colon-safe), matching the other 119 skills
+- [x] **1.1** Fold `skill-generalizer`'s `description:` into the `>-` block style (content unchanged, colon-safe), matching the other 119 skills
     — **Why:** Issue defect 1 — the plain scalar contains `origin: strip` (colon+space), the only strict-YAML parse failure in the library; folded style is the established house pattern.
     — **Done when:** strict frontmatter parse over all 120 SKILL.md files reports zero failures.
     — **Consumers affected:** registry builder (already lenient — no behavior change); strict external consumers (now work).
-- [ ] **1.2** Fix the maintainer skill's §Validation snippet to extract the `---`-delimited frontmatter block before `yaml.safe_load` (one fenced code block replacement; same check semantics otherwise)
+    — **Done:** description folded to `>-` with a live assert that the parsed string is byte-identical (registry.json cannot drift); files: skills/skill-generalizer/SKILL.md; fixes: none
+- [x] **1.2** Fix the maintainer skill's §Validation snippet to extract the `---`-delimited frontmatter block before `yaml.safe_load` (one fenced code block replacement; same check semantics otherwise)
     — **Why:** Issue defect 2 — the current snippet parses frontmatter + markdown body as one YAML document, reporting 120/120 false "bad-YAML" on a clean library; an audit step that always fires is worse than none.
     — **Done when:** the snippet, run as written in a clean checkout, reports zero bad-YAML lines for all 120 skills.
     — **Consumers affected:** future audit runs (deployed copies refresh on reinstall).
-- [ ] **1.3** In `references/create.md` step 7, keep `gh pr edit --add-label` as first attempt and document the REST fallback (`gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=<label>'`) for the Projects-classic GraphQL breakage; step numbering and heading anchors unchanged
+    — **Done:** §Validation python line now extracts the `---`-delimited block before yaml.safe_load; the fixed snippet was executed verbatim in the Phase 1 gate over all 120 skills — zero bad-YAML lines; files: skills/opencode-skills-maintainer-skill/SKILL.md; fixes: none
+- [x] **1.3** In `references/create.md` step 7, keep `gh pr edit --add-label` as first attempt and document the REST fallback (`gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=<label>'`) for the Projects-classic GraphQL breakage; step numbering and heading anchors unchanged
     — **Why:** Issue defect 3 — the documented command is live-broken (observed 2026-09-29); external § anchor consumers (pr-workflow-subagent, gh-cli-setup-skill, own SKILL.md) cite this file's steps, so the fix must be additive inside step 7, not a renumber.
     — **Done when:** step 7 shows attempt-then-fallback; `grep -c '§Steps'` citations still resolve; steps still numbered 1–8.
     — **Consumers affected:** pr-workflow runs (working labels again); anchor consumers (unbroken by construction).
+    — **Done:** step 7 keeps `gh pr edit` as first attempt + documents the REST `gh api` fallback with the observed 2026-09-29 error signature; step count verified 8, external §Steps citations unchanged; files: skills/civiltekk-pr-workflow-skill/references/create.md; fixes: none
 
 ### Phase 2: Ticket exit gate (full)
 
@@ -57,3 +60,7 @@
 
 - **Anchor drift in create.md**: additive-only edit inside step 7; gate greps the external citations still resolve.
 - **Snippet fix changes the maintainer skill's own deployed behavior**: the corrected snippet is strictly stronger (frontmatter-only parse); no semantics lost.
+
+## Gate Trace
+
+- GATE 137353d tier=full lint=n.a typecheck=n.a build=t(registry --check, no drift) unit=t(strict-YAML 120/120 clean + bats suite green) e2e=n.a(no frontend) — Phase 1 exit, zero fixes

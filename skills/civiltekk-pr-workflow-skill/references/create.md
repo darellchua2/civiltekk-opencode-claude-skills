@@ -16,7 +16,7 @@ tracker.
 4. **Tracking system**: commit messages/branch naming (tracker key per `ticketing-skill`, `#123`) → GitHub Issues or tracker; include `Closes <ref>` (keep the `#` for GitHub) in the body.
 5. **Git status check**: clean tree, all changes committed before creating.
 6. **Create PR** (`gh pr create --assignee @me`); body template: Summary / (Tracker|Issue) Reference / Changes / Quality Checks (per-step pass results) / Files Modified / Checklist. Author = the `gh auth` user by construction — attribution rule per `ticketing-skill` §Attribution; `@me` self-assigns the same identity. If `command -v gh` fails, load `gh-cli-setup-skill`, then continue.
-7. **Semver label** from the PR title: `type!:` → `major`; `feat:` → `minor`; `fix:` and everything else → `patch`. Governance: `semantic-release-convention-skill`. Apply via `gh pr edit --add-label`.
+7. **Semver label** from the PR title: `type!:` → `major`; `feat:` → `minor`; `fix:` and everything else → `patch`. Governance: `semantic-release-convention-skill`. Apply via `gh pr edit --add-label`; if that fails with the Projects-classic GraphQL deprecation error (observed 2026-09-29 — `repository.pullRequest.projectCards`), fall back to the REST API: `gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=<label>'`.
 8. **Images**: any generated diagrams/visuals are committed and referenced in the body (never inlined as base64).
 
 ## Handoff

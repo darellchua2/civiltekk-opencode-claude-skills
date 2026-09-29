@@ -31,7 +31,7 @@ for dir in */; do
   grep -q '^name:' "$f" || echo "no name: $dir"
   grep -q '^description:' "$f" || echo "no description: $dir"
   [ "${dir%/}" = "$(grep '^name:' "$f" | head -1 | cut -d' ' -f2)" ] || echo "name/dir mismatch: $dir"
-  python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$f" 2>/dev/null || echo "bad YAML: $dir"
+  python3 -c "import re,yaml,sys; m=re.match(r'^---\n(.*?)\n---\n', open(sys.argv[1]).read(), re.S); sys.exit('no frontmatter') if not m else yaml.safe_load(m.group(1))" "$f" 2>/dev/null || echo "bad YAML: $dir"
 done
 node installer/build-registry.mjs --check  # from repo root
 ```
