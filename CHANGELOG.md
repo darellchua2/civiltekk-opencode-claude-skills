@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.9.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.8.1...v12.9.0) (2026-09-29)
+
+### Features
+
+* **skill:** harden Step 10b merge watcher guard against SKIPPED checks ([#647](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/647)) ([442031a](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/442031a3d4fd9ee9bbbb3d70e9dfdca9c84dd0ab)), closes [#644](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/644) [#644](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/644) [#644](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/644)
+
+### Bug Fixes
+
+* **skills:** audit defects — skill-generalizer YAML, maintainer self-check, REST label fallback ([#645](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/645)) ([#646](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/646)) ([ae1d24d](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/ae1d24d1dc80754d309575aef0b3f39df7e552e5))
+
 ## [12.8.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.8.0...v12.8.1) (2026-09-29)
 
 ### Bug Fixes
