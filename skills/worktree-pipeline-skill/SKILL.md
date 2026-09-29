@@ -142,6 +142,15 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    `info/exclude` is not honored by linked worktrees). Never symlink the
    main checkout's `.codegraph/` into the worktree — the index reflects the
    main checkout's branch state and paths (sharing undocumented).
+   **Ticket start transition (worktree exists = work began)**: once the
+   worktree is created, tracker tickets get the `ticketing-skill` §Start
+   transition (check-first idempotent; GitHub issues = no-op with a note —
+   no status field, `Closes #N` covers close-on-merge). The Atlassian §MCP
+   Availability Guard applies — JIRA unavailable → report the transition
+   skipped, never block the run. A ticket that later fails or stays held
+   legitimately remains In Progress (`ticketing-skill` §Start honest-state
+   rule). `--dry-run` and `/worktree-pipeline-preview` stay read-only: they
+   stop before any mutation and never transition.
 5. **Re-validate**: cross-check the ticket description once more against the
    latest `origin/<base>` content **in the worktree**; if stale, update the
    ticket and note deltas before proceeding.

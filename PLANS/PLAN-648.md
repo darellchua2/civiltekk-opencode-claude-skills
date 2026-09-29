@@ -48,10 +48,11 @@
     — **Done:** prose list + mermaid `|start|` node added between classify and update; files: `skills/ticketing-skill/README.md`; fixes: none
 
 ### Phase 2: worktree-pipeline-skill Step 4 wiring
-- [ ] **2.1** Add to Step 4 of `skills/worktree-pipeline-skill/SKILL.md`, after the worktree-creation prose: tracker tickets get the `ticketing-skill` §Start transition once the worktree exists; GitHub issues skip with a note (no status field); Atlassian MCP Availability Guard applies — JIRA unavailable → report the transition skipped, never block the run; explicitly state the dry-run/preview read-only contract is untouched (AC2, AC3)
+- [x] **2.1** Add to Step 4 of `skills/worktree-pipeline-skill/SKILL.md`, after the worktree-creation prose: tracker tickets get the `ticketing-skill` §Start transition once the worktree exists; GitHub issues skip with a note (no status field); Atlassian MCP Availability Guard applies — JIRA unavailable → report the transition skipped, never block the run; explicitly state the dry-run/preview read-only contract is untouched (AC2, AC3)
     — **Why:** Step 4 is the "work has physically begun" boundary the ticket names as the In Progress trigger point.
     — **Done when:** Step 4 contains the Start sentence with MCP-guard degrade and GitHub no-op wording; Step 1 `--dry-run` bullet and the preview command template remain unmodified (`git diff` shows no changes outside Step 4's paragraph).
     — **Consumers affected:** both pipeline command arms at runtime (inherit automatically); no template changes.
+    — **Done:** Start paragraph added at the end of Step 4 (worktree-exists trigger, check-first idempotent, GitHub no-op, MCP-guard degrade, honest-state pointer, read-only contract); `deploy/opencode.json` untouched; files: `skills/worktree-pipeline-skill/SKILL.md`; fixes: none
 
 ### Phase 3: downstream consumer sync
 - [ ] **3.1** Update the Git/Workflow category row in `README.md` ("the full ticket lifecycle (create/classify/update/close …)") to include start
@@ -91,3 +92,10 @@ None — no blocked-by tickets.
 - Registry rebuild diffs unrelated entries → verify diff scope in 3.2 before committing; investigate any out-of-scope hunk.
 - A guard test pinned to lifecycle wording but not matching the grep → 3.3's sweep plus 4.1's full guard run catches it; AC5 verdict recorded either way.
 - Frontmatter description drift beyond 50 words → word-count check in 1.2's Done when.
+
+## Gate Trace
+
+- WORK LOG: Phase 1 full-tier escalation — `skills/ticketing-skill/SKILL.md` is a Dependency & Consumer Map node with cross-module consumers (tier rule 1); build regen pre-verified (+2/−2, ticketing-skill description only), artifact commit owned by step 3.2.
+- WORK LOG: Phase 2 full-tier escalation — `skills/worktree-pipeline-skill/SKILL.md` Step 4 is a cross-module map node (tier rule 1); command-template diff verified empty.
+
+GATE 51a3d61 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642 — Phase 1)
