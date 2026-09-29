@@ -45,8 +45,9 @@ Files: [related paths, if any]
 3. **Categorize** per the folder table above.
 4. **Write the entry** — always, in the body format above.
 5. **Update `LEARNINGS/_index.md` in the same write as the entry file**: insert the new entry **directly below the single `<!-- Entries are appended here automatically when new learnings are saved -->` marker** — never re-add the marker (duplicates split the index), never leave the entry unwritten (an unindexed learning is invisible to the `_index.md` fallback search). Match the existing entry shape: `### <title>` + Category / File / Confidence / Scope / (Date) / Summary lines. When an existing learning's facts change, update its index entry (heading + summary) in the same write — a corrected file under a stale index entry is the exact drift this rule exists to kill.
-6. **Suggest applications**: where the learning should change behavior next session (one line).
-7. **Evolve**: a learning re-confirmed in later sessions raises confidence; contradicted → revise or demote (never silently delete — mark superseded).
+6. **Commit the capture — never leave `LEARNINGS/` dirty at rest** (a dirty tracked `_index.md` in the main checkout breaks later `pull`/`rebase` when a worktree pipeline merges its own `_index.md`). Standalone session: commit at write time — one commit: `git add LEARNINGS/_index.md LEARNINGS/<category>/<slug>.md` → `git commit -m "chore(learnings): <slug>"`, pushed only when the session's flow pushes (a local commit already clears the clash; unconditional push breaks on protected branches). Inside a plan-execution / worktree-pipeline run: do NOT commit mid-phase — LEARNINGS writes stay working-tree only and the run lands one trailing `chore(learnings)` commit at end of ticket. When the repo ignores `LEARNINGS/**/*.md`, the committing step also appends the matching `!LEARNINGS/<category>/<slug>.md` negation to `.gitignore` in the same commit — otherwise the add errors on / silently drops the ignored body file. Skip entirely when `scope=user` (`~/.config/opencode/LEARNINGS/` is not a git repo).
+7. **Suggest applications**: where the learning should change behavior next session (one line).
+8. **Evolve**: a learning re-confirmed in later sessions raises confidence; contradicted → revise or demote (never silently delete — mark superseded).
 
 ## Retrieval (recall procedure)
 
