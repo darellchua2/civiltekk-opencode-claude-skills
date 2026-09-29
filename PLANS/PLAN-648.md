@@ -77,10 +77,11 @@
     — **Done:** `start (in-progress)` inserted into the lifecycle list; the follow-up grep returns only the updated line — no start-less restatements remain; files: `agents/repo-ops-specialist-subagent.md`; fixes: none
 
 ### Phase 4: exit verification
-- [ ] **4.1** Full verification gate on the final tree: run the repo's guard-test suite scoped to touched areas (`tests/test_skill_isolation.bats`, `tests/test_v2_pipeline_contract.bats`, plus any ticketing-named guard), confirm all green
+- [x] **4.1** Full verification gate on the final tree: run the repo's guard-test suite scoped to touched areas (`tests/test_skill_isolation.bats`, `tests/test_v2_pipeline_contract.bats`, plus any ticketing-named guard), confirm all green
     — **Why:** Ticket exit gate runs full unconditionally; this is the tier=full memo the PR citation names.
     — **Done when:** all invoked guards exit 0; the `GATE <sha> tier=full` memo line is appended to this PLAN's trace block.
     — **Consumers affected:** Step 10a PR citation.
+    — **Done:** full bats suite 642/642 green on the final tree; registry re-regen drift = timestamp-only (0 content lines); AC verdicts: AC1 PASS (§Start + jira.md indeterminate selector), AC2 PASS (Step 4 paragraph, MCP-guard + GitHub no-op), AC3 PASS (`git diff origin/main...HEAD -- deploy/opencode.json` = 0 lines), AC4 PASS (§Start honest-state line), AC5 PASS (sweep zero pins, guards green); files: none (verification); fixes: none
 
 ## Technical Notes
 - Insertion anchors (verified on origin/main at b61022d): routing line `skills/ticketing-skill/SKILL.md:22`; §Close at `:180-195` (transition-once guard pattern to mirror); jira.md `## Transitions (post-merge close)` at `:112-120`; Step 4 worktree prose at `skills/worktree-pipeline-skill/SKILL.md:121-147`; Done site `:308-310` (unchanged).
@@ -104,3 +105,4 @@ None — no blocked-by tickets.
 
 GATE 51a3d61 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642 — Phase 1)
 GATE df1ebf9 tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642 — Phase 2; command-template diff empty)
+GATE 2ae5b3e tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (bats 642/642 — Phase 3; registry regen committed, diff scoped)
