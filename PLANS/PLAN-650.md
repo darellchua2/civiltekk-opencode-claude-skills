@@ -64,14 +64,16 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Done:** README counts 120→121 (5 sites) + Code Quality row 15→16 with new skill; files: README.md; fixes: none
 
 ### Phase 2: Rewire inline consumers
-- [ ] **2.1** Rewrite the `run-worktree-pipeline-v2` template Step 7 sentence and the `/review-inline` command in `deploy/opencode.json` to load skill `architecture-review-skill` (with `reviewer-baseline-skill` first) in place of the deployed agent-file checklist; keep the skip-with-note fallback rule for unresolvable skills; update both `description` fields to say "skill-driven"
+- [x] **2.1** Rewrite the `run-worktree-pipeline-v2` template Step 7 sentence and the `/review-inline` command in `deploy/opencode.json` to load skill `architecture-review-skill` (with `reviewer-baseline-skill` first) in place of the deployed agent-file checklist; keep the skip-with-note fallback rule for unresolvable skills; update both `description` fields to say "skill-driven"
     — **Why:** this is the ticket's core deliverable — the v2 arm stops depending on a deployed agent file for architecture review
     — **Done when:** the v2 template's Step 7 sentence no longer routes reviewers through the `agents/<reviewer>-subagent.md` placeholder checklist (`grep -c "load the deployed file agents/<reviewer>-subagent.md" deploy/opencode.json` = 0) and `grep -c "architecture-review-skill" deploy/opencode.json` ≥ 2 (v2 template + `/review-inline`); `/review-arch` template untouched
     — **Consumers affected:** deployed-command users; `worktree-pipeline-skill` docs (2.2)
-- [ ] **2.2** Update `skills/worktree-pipeline-skill/SKILL.md` Step 1 soft-dep line and Step 7: inline arm routes architecture review to skill `architecture-review-skill` in-session; v1 arm text unchanged
+    — **Done:** v2 Step 7 sentence + both description fields rewritten to skill routing; files: deploy/opencode.json; fixes: none
+- [x] **2.2** Update `skills/worktree-pipeline-skill/SKILL.md` Step 1 soft-dep line and Step 7: inline arm routes architecture review to skill `architecture-review-skill` in-session; v1 arm text unchanged
     — **Why:** the skill doc is the pipeline's behavioral contract — the command template and the skill must not disagree
     — **Done when:** Step 7 names the inline-arm skill route; v1 Task-call text for `architecture-review-subagent` remains verbatim
     — **Consumers affected:** pipeline runs in both arms
+    — **Done:** Step 1 soft-dep inline-arm note + Step 7 inline-arm skill route; v1 Task-call text verbatim; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
 
 ### Phase 3: Docs remainder + verification
 - [ ] **3.1** Update `README.md` remaining wording: the line-24 "loading the deployed agent definitions as checklists" sentence to reflect the skill-driven arch review, and the inline-workers pack line (95) naming the arch wrapper
@@ -88,6 +90,8 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Consumers affected:** Step 9 code review, Step 10 PR citation
 
 GATE 224605d tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642; lint=JSON.parse substitutes on dep-map+preset; full tier: cross-module Consumer Map node + manifest anchors; 3 gate fix rounds: plan resequencing pulled 1.3–1.5 into phase, HANDOFF5 contract added to guard+mirror, argv index fix)
+
+GATE 39506ab tier=full lint=t typecheck=n.a build=n.a unit=t e2e=n.a (bats 642/642; lint=deploy/opencode.json JSON.parse; full tier: deploy-config anchor)
 
 ## Technical Notes
 - Guard semantics (verified in `tests/test_skill_isolation.bats`): sibling-skill violations trigger only on path refs inside fenced code blocks of SKILL.md — prose mentions are documentation. The new skill needs NO new HANDOFF entry.
