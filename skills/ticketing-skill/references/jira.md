@@ -109,7 +109,9 @@ by platform (`web`, `mobile`). Components are project entities — find
 existing ones via `atlassian_search`; skip assignment when absent. *Verify
 locally: component names are per-project.*
 
-## Transitions (post-merge close)
+## Transitions (start / post-merge close)
+
+### Close (done target)
 
 Pick target by priority: `to.name == "Done"` → `"Closed"` → any
 `to.statusCategory.key == "done"`
@@ -118,6 +120,16 @@ check-current-status-first / transition-exactly-once contract is SKILL.md
 §Close (method, not repeated here). *Verify locally: some projects customize
 priorities and transition names — `atlassian_getJiraIssueTypeMetaWithFields`
 lists the project's available values.*
+
+### Start (in-progress target)
+
+Pick the start target by priority: any transition whose
+`to.statusCategory.key == "indeterminate"` → `to.name == "In Progress"`
+(jq: `.transitions[] | select(.to.statusCategory.key=="indeterminate") | .id`
+— take the first match). The category selector is the portable form:
+projects customize status names, not status categories. Method
+(check-first, transition-once) is SKILL.md §Start; same endpoints as close
+(`GET`/`POST /rest/api/3/issue/{key}/transitions`).
 
 ## Ticket key format & git plumbing
 
