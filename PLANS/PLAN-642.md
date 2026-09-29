@@ -77,6 +77,7 @@ Cross-module signal for Step 7 triage: `deploy/.AGENTS.md` is consumed by `deplo
 GATE 80ca01a tier=light lint=n.a typecheck=n.a build=t unit=n.a e2e=n.a
 GATE 4778db9 tier=light lint=n.a typecheck=n.a build=t unit=n.a e2e=n.a
 GATE f569fc5 tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a
+GATE be5b97e tier=full lint=n.a typecheck=n.a build=t unit=t e2e=n.a (post-review-fix re-gate: 642 bats, registry; fix = one-line add-list extension, review M1)
 
 ### Phase 3: Verify + propagate
 
