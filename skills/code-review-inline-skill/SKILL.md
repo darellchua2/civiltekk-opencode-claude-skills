@@ -85,7 +85,7 @@ its row; unknown harnesses fall through to the fallback):
 | Subagent enforcement | Inline discipline (you) |
 |---|---|
 | Fresh context window | State the reviewed diff range + file list before starting so scope drift is visible |
-| `edit: deny` + read-only git allowlist | You MAY write — restrict writes to LEARNINGS entries and granted fix commits; list every write in Output |
+| `edit: deny` + read-only git allowlist | You MAY write — restrict writes to LEARNINGS entries and granted fix commits; list every write in Output; every LEARNINGS write lands in the run's single end-of-ticket `chore(learnings)` commit — never in fix commits, never left dirty past the ruling commit step |
 | Isolated fix-report loop | Fixes land in the working tree directly; re-gate rule above is mandatory, not orchestrator-enforced |
 | Tier model | Same model as the caller — flag uncertainty instead of suppressing findings |
 

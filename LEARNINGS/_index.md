@@ -271,7 +271,7 @@
 - **File**: `LEARNINGS/decisions/reviewer-learnings-return-as-content.md`
 - **Confidence**: n.a.
 - **Scope**: project
-- **Summary**: Reviewer subagents hold no edit permissions — they emit `LEARNINGS candidates:` blocks (Category/File/Confidence/Scope/Summary/Date) and the pipeline orchestrator writes files, appends _index.md, and commits in the worktree (#445 single-writer rule).
+- **Summary**: Reviewer subagents hold no edit permissions — they emit `LEARNINGS candidates:` blocks (Category/File/Confidence/Scope/Summary/Date) and the pipeline orchestrator writes files, appends _index.md, and lands one end-of-ticket `chore(learnings)` commit in the worktree (#445 single-writer rule; commit timing per `continuous-learning-skill` step 6).
 
 ### v1-to-v2 CLI migration must uninstall before install
 

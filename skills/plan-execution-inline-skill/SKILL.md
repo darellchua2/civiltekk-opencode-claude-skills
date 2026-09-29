@@ -83,7 +83,7 @@ Rules: `fixes:` MUST list every gate fix for that step; one logical line; only t
 
 ### Commit + push
 
-`git add <phase files> PLANS/PLAN-*.md` → `git commit -m "<type>(<scope>): implement Phase N — <summary>" -m "Plan: <file>. Gate: … green. Trace: per-step Done lines."` → `git push`. PLAN ticks, Done lines, and gate memos ride inside this one atomic commit — a standalone `docs(plan)` commit mid-run is never allowed. Conventions per `civiltekk-git-commits-skill`; project commitlint overrides; never mix style-only with logic. Push rejected (non-FF) → stop and ask, never force-push.
+`git add <phase files> PLANS/PLAN-*.md` → `git commit -m "<type>(<scope>): implement Phase N — <summary>" -m "Plan: <file>. Gate: … green. Trace: per-step Done lines."` → `git push`. PLAN ticks, Done lines, and gate memos ride inside this one atomic commit — a standalone `docs(plan)` commit mid-run is never allowed. LEARNINGS writes never do: they stay working-tree only through the run (canonical rule: `continuous-learning-skill` step 6) and the run lands one trailing `chore(learnings)` commit at end of run — a standalone run commits + pushes it right after the exit gate (`--soft`: before the end-of-run tick commit); a run invoked as a pipeline subroutine leaves the sweep to the pipeline's end-of-ticket commit. In repos that ignore `LEARNINGS/**/*.md`, that sweep commit also appends each new body's `!LEARNINGS/<category>/<slug>.md` negation to `.gitignore`. Conventions per `civiltekk-git-commits-skill`; project commitlint overrides; never mix style-only with logic. Push rejected (non-FF) → stop and ask, never force-push.
 
 ### Final validation
 
