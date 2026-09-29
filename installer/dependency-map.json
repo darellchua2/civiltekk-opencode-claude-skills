@@ -17,6 +17,7 @@
       "reviewer-baseline-skill",
       "language-review-checklists-skill"
     ],
+    "architecture-review-skill": ["reviewer-baseline-skill"],
     "autoresearch-code-skill": ["autoresearch-core-skill"],
     "autoresearch-ml-skill": ["autoresearch-core-skill"],
     "autoresearch-research-skill": ["autoresearch-core-skill"]

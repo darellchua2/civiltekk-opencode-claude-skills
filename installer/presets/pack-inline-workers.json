@@ -1,7 +1,7 @@
 {
-    "$comment": "Preset 'inline-workers' for installer/init.mjs (--preset inline-workers). HAND-MAINTAINED (unlike the derived presets): the /tmp/gen-presets.mjs generator is not in-repo, so regeneration would drop this file. The inline delegation family — the inline plan executor plus the 4 inline decision-tree skills, the in-session code-review wrapper (code-review-inline-skill), and their knowledge-skill dependency closure (the closure rides preset membership for the knowledge skills; the 4 workers + plan-execution-inline-skill are ALSO covered by dependency-map.json requiresSkills edges), plus the reviewer baselines the /run-worktree-pipeline-v2 inline-review arm names explicitly and the code-review checklist's core knowledge skills. Opt-in: default setup.sh deploy is unaffected.",
+    "$comment": "Preset 'inline-workers' for installer/init.mjs (--preset inline-workers). HAND-MAINTAINED (unlike the derived presets): the /tmp/gen-presets.mjs generator is not in-repo, so regeneration would drop this file. The inline delegation family — the inline plan executor plus the 4 inline decision-tree skills, the in-session code-review wrapper (code-review-inline-skill) and the architecture-review-skill decision-tree reviewer (the /run-worktree-pipeline-v2 Step 7 inline architecture-review route), plus their knowledge-skill dependency closure (the closure rides preset membership for the knowledge skills; the 4 workers + plan-execution-inline-skill are ALSO covered by dependency-map.json requiresSkills edges), plus the reviewer baselines the /run-worktree-pipeline-v2 inline-review arm names explicitly and the code-review checklist's core knowledge skills. Opt-in: default setup.sh deploy is unaffected.",
     "name": "inline-workers",
-    "description": "Inline delegation family — plan-execution-inline-skill, the testing/linting/documentation/responsive-audit inline skills, the in-session code-review wrapper (code-review-inline-skill), the knowledge skills they defer to, and the reviewer baselines for inline pipeline reviews (reviewer-baseline-skill, language-review-checklists-skill). Companion to the /run-plan-v2 and /run-worktree-pipeline-v2 commands on full deploys.",
+    "description": "Inline delegation family — plan-execution-inline-skill, the testing/linting/documentation/responsive-audit inline skills, the in-session code-review wrapper (code-review-inline-skill), the architecture-review-skill decision-tree reviewer, the knowledge skills they defer to, and the reviewer baselines for inline pipeline reviews (reviewer-baseline-skill, language-review-checklists-skill). Companion to the /run-plan-v2 and /run-worktree-pipeline-v2 commands on full deploys.",
     "agents": [],
     "skills": [
         "plan-execution-inline-skill",
@@ -10,6 +10,7 @@
         "civiltekk-documentation-inline-skill",
         "responsive-audit-inline-skill",
         "code-review-inline-skill",
+        "architecture-review-skill",
         "language-linting-skill",
         "verification-loop-skill",
         "technical-writing-skill",
