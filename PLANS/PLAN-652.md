@@ -59,16 +59,19 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 ## Gate Trace
 
 - GATE 789e61d tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t (bats contract: 6/6 selected — line-30 pin intentionally stale until 2.1) e2e=n.a. — scoped: JSON parse + v2-entry `pr-workflow-subagent` sweep clean
+- GATE 5530582 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t (bats contract 7/7 full file) e2e=n.a.
 
 ### Phase 2: contract pin + preset closure
-- [ ] **2.1** Update the Step 10 pin in `tests/test_v2_pipeline_contract.bats` from "agents/pr-workflow-subagent.md as your in-session checklist" to the new skill-invocation phrase
+- [x] **2.1** Update the Step 10 pin in `tests/test_v2_pipeline_contract.bats` from "agents/pr-workflow-subagent.md as your in-session checklist" to the new skill-invocation phrase
     — **Why:** the test pins the old checklist phrase verbatim; after 1.1 the assertion fails and CI goes red
     — **Done when:** the assertion matches the post-1.1 template text and `bats tests/test_v2_pipeline_contract.bats` passes
     — **Consumers affected:** CI gate
-- [ ] **2.2** Add `civiltekk-pr-workflow-skill`, `ticketing-skill`, `semantic-release-convention-skill`, `gh-cli-setup-skill` to `installer/presets/pack-inline-workers.json` and update its `$comment` + `description`
+    — **Done:** pin replaced with `civiltekk-pr-workflow-skill` + `create route` assertions (backtick-free — no command-substitution risk in [[ ]]); full contract file 7/7 green; files: tests/test_v2_pipeline_contract.bats; fixes: none
+- [x] **2.2** Add `civiltekk-pr-workflow-skill`, `ticketing-skill`, `semantic-release-convention-skill`, `gh-cli-setup-skill` to `installer/presets/pack-inline-workers.json` and update its `$comment` + `description`
     — **Why:** per-skill installs of the inline family need the Step 10 route and its runtime deps — `dependency-map.json` has no `requiresSkills` coverage for the PR skill, so preset membership is the only closure
     — **Done when:** the preset lists the four skills, every member resolves on disk, and the description carries no preflight caveat (both contract-test checks)
     — **Consumers affected:** `installer/init.mjs --preset inline-workers`
+    — **Done:** 4 skills appended (22 total, all resolve on disk); $comment + description name the PR route closure; both preset contract tests green; files: installer/presets/pack-inline-workers.json; fixes: none
 ### Phase 3: README accuracy
 - [ ] **3.1** Reword the README two-flavor paragraph so the v2 claim matches reality (PR route skill-driven; the remaining agent-file checklist loads are the Step 7 uiux reviewer and the requirements relay)
     — **Why:** the paragraph currently claims all phases load "skills and the remaining deployed agent definitions as checklists" — false for Step 10 after 1.1; wording drift here misleads adopters (per command-description restatement drift learning, restatements must change with the source)

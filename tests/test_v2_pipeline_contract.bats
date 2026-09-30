@@ -27,7 +27,8 @@ v2_template() {
 @test "v2_pipeline: template carries in-session checklist mechanics for steps 7/9/10" {
   run v2_template
   [[ "$output" == *"code-review-inline-skill"* ]]
-  [[ "$output" == *"agents/pr-workflow-subagent.md as your in-session checklist"* ]]
+  [[ "$output" == *"civiltekk-pr-workflow-skill"* ]]
+  [[ "$output" == *"create route"* ]]
   [[ "$output" == *"reviewer-baseline-skill"* ]]
 }
 
