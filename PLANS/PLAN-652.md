@@ -61,6 +61,7 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 - GATE 789e61d tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t (bats contract: 6/6 selected — line-30 pin intentionally stale until 2.1) e2e=n.a. — scoped: JSON parse + v2-entry `pr-workflow-subagent` sweep clean
 - GATE 5530582 tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t (bats contract 7/7 full file) e2e=n.a.
 - GATE 9f9a14e tier=full lint=n.a. typecheck=n.a. build=n.a. unit=t (bats tests/ 642 ok / 0 failed — full suite) e2e=n.a. — full: SKILL.md/template edits could ripple into isolation/portability/tiering guards, so the entire 52-file suite ran (ticket exit gate)
+- GATE 456176d tier=full lint=n.a. typecheck=n.a. build=n.a. unit=t (bats tests/ 642 ok / 0 failed — re-run on the final pushed tree; supersedes the 9f9a14e memo whose SHA predated the Phase 3 + docs commits) e2e=n.a.
 
 ### Phase 2: contract pin + preset closure
 - [x] **2.1** Update the Step 10 pin in `tests/test_v2_pipeline_contract.bats` from "agents/pr-workflow-subagent.md as your in-session checklist" to the new skill-invocation phrase
