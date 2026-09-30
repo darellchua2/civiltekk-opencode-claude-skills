@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.12.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.11.0...v12.12.0) (2026-09-30)
+
+### Features
+
+* **pipeline:** route v2 Step 10 PR creation through civiltekk-pr-workflow-skill ([#653](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/653)) ([54a6caf](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/54a6caf91099b7fc164347e647f65e83ab74696f)), closes [#652](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/652) [#652](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/652) [#652](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/652)
+
 ## [12.11.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.10.0...v12.11.0) (2026-09-29)
 
 ### Features
