@@ -1991,3 +1991,11 @@
 - **Scope**: project
 - **Summary**: End-state count guards (registry totals, doc-count tables, resolver-count tests) go red in any phase that adds the counted entity — pull the registry/doc-count closure steps into the same phase gate window as the addition instead of splitting them across phases (#650, contrast #648 which added nothing)
 - **Date**: 2026-09-29
+- **Summary**: A bats `[[ ]]` phrase pin containing backticks runs the backtick content as command substitution — pin backtick-free substrings (one assertion per fragment) when the template prose quotes skill names (#652)
+- **Date**: 2026-09-30
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/bats-backtick-phrase-pins-command-substitution.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Merged tickets' PLAN edits never route through the worktree pipeline — Step 2's merged-check skips before PLAN work; reconcile stale PLAN content on merged tickets as a direct docs PR against the base branch (#652, canvastekk DA-3151/DA-3152)
+- **Date**: 2026-09-30
