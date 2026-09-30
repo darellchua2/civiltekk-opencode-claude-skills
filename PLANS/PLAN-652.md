@@ -5,12 +5,12 @@
 **Base**: main
 
 ## Acceptance Criteria
-- [ ] v2 command template Step 10 invokes `civiltekk-pr-workflow-skill` (create route); no pr-workflow-subagent reference remains in the v2 entry
-- [ ] worktree-pipeline-skill: inline-arm preflight hard dep = the skill; Step 10a carries the inline-arm routing sentence; "What I do" is arm-aware
-- [ ] tests/test_v2_pipeline_contract.bats pins the skill name
-- [ ] pack-inline-workers preset includes civiltekk-pr-workflow-skill, ticketing-skill, semantic-release-convention-skill, gh-cli-setup-skill
-- [ ] README two-flavor paragraph accurate
-- [ ] bats tests/test_v2_pipeline_contract.bats green
+- [x] v2 command template Step 10 invokes `civiltekk-pr-workflow-skill` (create route); no pr-workflow-subagent reference remains in the v2 entry
+- [x] worktree-pipeline-skill: inline-arm preflight hard dep = the skill; Step 10a carries the inline-arm routing sentence; "What I do" is arm-aware
+- [x] tests/test_v2_pipeline_contract.bats pins the skill name
+- [x] pack-inline-workers preset includes civiltekk-pr-workflow-skill, ticketing-skill, semantic-release-convention-skill, gh-cli-setup-skill
+- [x] README two-flavor paragraph accurate
+- [x] bats tests/test_v2_pipeline_contract.bats green
 
 ## Dependency & Consumer Map
 
