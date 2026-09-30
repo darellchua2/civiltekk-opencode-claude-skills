@@ -35,22 +35,31 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
     — **Consumers affected:** <who depends on this; none if N/A>
 
 ### Phase 1: v2 entry + pipeline skill rewire
-- [ ] **1.1** Rewrite the Step 10 sentence of `commands.run-worktree-pipeline-v2` in `deploy/opencode.json` (template + description) to invoke the skill `civiltekk-pr-workflow-skill` (create route) with the declared-hard-dep stop rule, keeping every pipeline pin (target `<base>`, `tier=full` memo citation, `Closes <TICKET_ID>`, background-shell merge watch, "never a subagent") and the pinned phrases ("spawn NO subagents anywhere in the run", "code-review-inline-skill", "reviewer-baseline-skill")
+- [x] **1.1** Rewrite the Step 10 sentence of `commands.run-worktree-pipeline-v2` in `deploy/opencode.json` (template + description) to invoke the skill `civiltekk-pr-workflow-skill` (create route) with the declared-hard-dep stop rule, keeping every pipeline pin (target `<base>`, `tier=full` memo citation, `Closes <TICKET_ID>`, background-shell merge watch, "never a subagent") and the pinned phrases ("spawn NO subagents anywhere in the run", "code-review-inline-skill", "reviewer-baseline-skill")
     — **Why:** the v2 entry is the last place binding Step 10 to the `agents/pr-workflow-subagent.md` file; every v2 run resolves it and the preflight aborts without it
     — **Done when:** the v2 entry contains "civiltekk-pr-workflow-skill (create route)" and zero `pr-workflow-subagent` substrings; `node -e` JSON parse of `deploy/opencode.json` exits 0
     — **Consumers affected:** v2 runs, contract-test pins (synced in 2.1), README:24 (3.1)
-- [ ] **1.2** Make the "What I do" actor line of `skills/worktree-pipeline-skill/SKILL.md` arm-aware (inline arm = the skill, v1 = `pr-workflow-subagent`)
+    — **Done:** template Step 10 sentence + description rewritten to the skill invocation with pins kept; v2 entry sweeps clean of `pr-workflow-subagent`; JSON parse OK; files: deploy/opencode.json; fixes: none
+- [x] **1.2** Make the "What I do" actor line of `skills/worktree-pipeline-skill/SKILL.md` arm-aware (inline arm = the skill, v1 = `pr-workflow-subagent`)
     — **Why:** Step 6 PLAN authoring copies this line's actor name into authored PLAN step labels (observed: canvastekk PLAN-DA-3151.md:39 "PR (pr-workflow-subagent)")
     — **Done when:** the line names `civiltekk-pr-workflow-skill` for the inline arm and names `pr-workflow-subagent` only as the v1-arm worker
     — **Consumers affected:** future authored PLANs in all repos
-- [ ] **1.3** Update the Step 1 dependency preflight of `skills/worktree-pipeline-skill/SKILL.md`: inline arm's Step 10 hard dep = skill `civiltekk-pr-workflow-skill` (create route), replacing the `agents/pr-workflow-subagent.md` definition-FILE dep
+    — **Done:** actor line now names the inline/v1 pair for execution and the PR step; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **1.3** Update the Step 1 dependency preflight of `skills/worktree-pipeline-skill/SKILL.md`: inline arm's Step 10 hard dep = skill `civiltekk-pr-workflow-skill` (create route), replacing the `agents/pr-workflow-subagent.md` definition-FILE dep
     — **Why:** preflight is the run gate — it must demand the new authority, not the retired checklist file
     — **Done when:** the inline-arm sentence names the skill; pinned preflight phrases "resolved per arm" and "plan-execution-inline-skill" remain intact (contract-test greps)
     — **Consumers affected:** v2 preflight; v1 preflight sentence untouched
-- [ ] **1.4** Prepend the inline-arm routing sentence to Step 10a of `skills/worktree-pipeline-skill/SKILL.md` (Step 9's pattern: "inline arm: invoke the skill … the remainder of this section describes the subagent arm")
+    — **Done:** inline-arm dep now = skill `civiltekk-pr-workflow-skill` (Step 10, create route) resolved by the skill loader; pinned phrases intact (arm-aware bats green); files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+- [x] **1.4** Prepend the inline-arm routing sentence to Step 10a of `skills/worktree-pipeline-skill/SKILL.md` (Step 9's pattern: "inline arm: invoke the skill … the remainder of this section describes the subagent arm")
     — **Why:** Step 10a prose is Task-prompt mechanics for the subagent arm; the inline arm needs its routing sentence ahead of the pins so v2 runs execute the skill route
     — **Done when:** an "inline arm" sentence precedes the Task-prompt prose; the `tier=full` citation, skip-steps, and `Closes <TICKET_ID>` pins read unchanged
     — **Consumers affected:** v2 Step 10 execution
+    — **Done:** inline-arm routing sentence prepended to 10a with pins declared and the 10b-watcher pointer; subagent-arm prose unchanged below; files: skills/worktree-pipeline-skill/SKILL.md; fixes: none
+
+## Gate Trace
+
+- GATE 789e61d tier=light lint=n.a. typecheck=n.a. build=n.a. unit=t (bats contract: 6/6 selected — line-30 pin intentionally stale until 2.1) e2e=n.a. — scoped: JSON parse + v2-entry `pr-workflow-subagent` sweep clean
+
 ### Phase 2: contract pin + preset closure
 - [ ] **2.1** Update the Step 10 pin in `tests/test_v2_pipeline_contract.bats` from "agents/pr-workflow-subagent.md as your in-session checklist" to the new skill-invocation phrase
     — **Why:** the test pins the old checklist phrase verbatim; after 1.1 the assertion fails and CI goes red

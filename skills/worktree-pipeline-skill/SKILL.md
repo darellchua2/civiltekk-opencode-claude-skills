@@ -17,9 +17,10 @@ category: Git/Workflow
 I run the **full ticket-to-merged-PR pipeline**, one ticket at a time, each in
 its own **git worktree** so the main working tree stays free. I am the
 orchestrator: heavy knowledge lives in the skills/subagents I drive
-(`ticketing-skill` for new tickets, `plan-execution-skill` --gate for
-execution, `pr-workflow-subagent` for the PR) — I own sequencing, PLAN
-authoring, worktree lifecycle, and re-validation.
+(`ticketing-skill` for new tickets, `plan-execution-skill` --gate (v1) or
+`plan-execution-inline-skill` (v2) for execution, `pr-workflow-subagent`
+(v1) or skill `civiltekk-pr-workflow-skill` create route (v2 inline) for the
+PR) — I own sequencing, PLAN authoring, worktree lifecycle, and re-validation.
 
 Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 
@@ -69,8 +70,8 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   directive marks it) hard-requires skill `plan-execution-inline-skill`
   (Step 8) + skill `code-review-inline-skill` (Step 9 — the wrapper
   resolves the deployed `agents/code-review-subagent.md` checklist itself)
-  + the `agents/pr-workflow-subagent.md` definition FILE as the in-session
-  checklist (Step 10), resolved at the deploy-mode path. Any missing dep for the resolved arm → abort
+  + skill `civiltekk-pr-workflow-skill` (Step 10, create route), resolved by
+  the skill loader. Any missing dep for the resolved arm → abort
   (`failed`) with the install hint
   `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>`. Soft deps
   degrade with a note: `ticketing-skill` (only for new-work tickets,
@@ -233,7 +234,13 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    **Bounded loop: max 2
    fix-and-re-review iterations** — exhaustion → halt per §Failure Policy.
 10. **PR + merge watching** — split: 10a foreground, 10b background.
-    **10a — PR creation (foreground).** First the **authoritative overlap
+    **10a — PR creation (foreground).** Inline arm: invoke skill
+    `civiltekk-pr-workflow-skill` (create route) — it owns framework
+    detection, the gate-memo check, the PR body, and the semver label; the
+    pipeline pins below (target `<base>`, the `tier=full` memo citation,
+    `Closes <TICKET_ID>`) still apply, and the merge watcher is 10b's
+    background shell (never a subagent); the remainder of this section
+    describes the subagent arm. First the **authoritative overlap
     re-check** (the §6f early leg is advisory only): `comm -12` of
     `git -C <ticket-repo> diff --name-only origin/<base>...feat/<KEY> | sort`
     against each earlier
