@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.16.0](https://github.com/darellchua2/civiltekk-skills/compare/v12.15.0...v12.16.0) (2026-10-01)
+
+### Features
+
+* **skills:** add civiltekk-install-assistant catalog install skill ([#661](https://github.com/darellchua2/civiltekk-skills/issues/661)) ([bdc5bfb](https://github.com/darellchua2/civiltekk-skills/commit/bdc5bfb01214f9bb1bfca11f9327fc3d9d376e18)), closes [#657](https://github.com/darellchua2/civiltekk-skills/issues/657) [#657](https://github.com/darellchua2/civiltekk-skills/issues/657)
+
+### Documentation
+
+* **readme:** skill-allow workflow + count-literal drift enforcement ([#660](https://github.com/darellchua2/civiltekk-skills/issues/660)) ([3389b17](https://github.com/darellchua2/civiltekk-skills/commit/3389b17a69a85ddd734b7a05daad312f5c415389)), closes [#659](https://github.com/darellchua2/civiltekk-skills/issues/659)
+
 ## [12.15.0](https://github.com/darellchua2/civiltekk-skills/compare/v12.14.0...v12.15.0) (2026-10-01)
 
 ### Features
