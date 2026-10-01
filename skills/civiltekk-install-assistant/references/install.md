@@ -32,10 +32,12 @@ plugin artifacts — say that when honoring it).
 | Global (user scope) | `add <name>` (no `--project`) | ask explicitly — touches `~/.config/opencode/skills`, `~/.claude/skills`, `~/.agents/skills` etc. per target |
 
 Per-target project destinations: opencode `.agents/skills/` +
-`.opencode/agents/`, claude `.claude/` (workspace: agents `.claude/agents/`),
-copilot skills `.github/skills/`; zcode is user-scope only (no project
-destination — the installer notes the degradation). Targets with transform
-modes (claude/copilot translate agents) are handled by the installer.
+`.opencode/agents/`, kimi `.kimi-code/`, kilo `.kilo/`, copilot skills
+`.github/skills/` (agents `.claude/agents/`). claude and zcode are
+user-scope only — `--project` with them degrades to the opencode project
+dirs and the installer prints a "no project destination" note. Targets with
+transform modes (claude/copilot translate agents) are handled by the
+installer.
 
 ## 4. Add
 

@@ -121,3 +121,4 @@ None — standalone ticket (no `blocked-by:`).
 
 GATE a1e8011 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (Phase 1 evidence: full suite 642/642 after 1 gate-fix round — Phase 2 doc edits pulled in; registry regen skills=124; full tier: cross-module Consumer Map node registry.json + count anchors)
 GATE ba95831 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (ticket exit gate, run on the phase-3 tree before its commit; bats 642/642 exit 0; registry skills=124 idempotent; sweep clean incl. 5th count surface README:220; AC1-AC7 PASS)
+GATE 2e42b94 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (review-fix re-gate on the fixed tree; bats 642/642 exit 0; build-registry --check: no drift, skills=124; fixes: install.md target-destination table)
