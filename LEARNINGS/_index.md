@@ -2017,3 +2017,11 @@
 - **Scope**: project
 - **Summary**: Template-added permission entries never reach a customized live config (prompt-guarded copy preserves permissions); surgical deploys must diff+restore the allowlist; a mid-run skill-load denial is a drift signal (#656)
 - **Date**: 2026-10-01
+
+### Step-level soft deps promoted into preflight hard lists
+
+- **File**: `LEARNINGS/anti-patterns/soft-dep-promoted-into-hard-preflight.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: A dep its step rule classifies skip-with-note must not appear in the preflight hard-abort list — two homes, opposite dispositions, abort wins; hard-list = run-meaningful deps only (#656)
+- **Date**: 2026-10-01
