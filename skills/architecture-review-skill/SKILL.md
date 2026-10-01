@@ -18,7 +18,7 @@ category: Code Quality
 
 I provide the reusable domain knowledge for architecture review. I am loaded
 by `architecture-review-subagent` and by inline pipeline arms
-(`/run-worktree-pipeline-v2` Step 7, `/review-inline`) as the single source of
+(`worktree-pipeline-skill` Step 7 default inline arm, `/review-inline`) as the single source of
 truth for:
 
 1. **Evidence-first methodology** — the gate rule every finding must pass

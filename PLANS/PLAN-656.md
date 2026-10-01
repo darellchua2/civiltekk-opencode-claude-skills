@@ -81,12 +81,15 @@ GATE e849424 tier=light lint=t (JSON.parse + deep-equal siblings vs HEAD) typech
 
 ### Phase 3: Tests — repin the consolidated contract (one commit)
 
-- [ ] **3.1** Repurpose `tests/test_v2_pipeline_contract.bats` to pin the consolidated entries: retarget the template assertions from the deleted `run-worktree-pipeline-v2` key to `run-worktree-pipeline` (zero-subagent directive, `code-review-inline-skill` / `civiltekk-pr-workflow-skill` / `create route` / `reviewer-baseline-skill` phrases, `subagent:false`); add assertions that BOTH `-v2` keys are absent and that `run-plan` names `plan-execution-inline-skill` as default + carries the opt-in phrase; keep the Docker dead-letter, preset-caveat, preset-membership, and arm-aware preflight tests (preflight grep pins stay valid — 1.1 preserved the phrases).
+— **Done (3.1):** contract guard rewritten: 11 tests pinning the consolidated entries (subagent:false, zero-subagent directive, steps 7/9/10 inline mechanics, opt-in sentence, run-plan inline routing, both -v2 keys ABSENT, Docker dead-letter, preset guards, arm-aware preflight, sibling one-liner pins) — bats 11/11 green; files: tests/test_v2_pipeline_contract.bats; fixes: none
+— **Done (3.2):** sweep complete — live hits dispositioned: README + pack-inline-workers.json → Phase 4; skills/architecture-review-skill/SKILL.md → fixed in place (dead command reference repointed to the skill's inline arm, body-only); LEARNINGS ×2 → immutable-history skip; tests file → absence-pin only; files: skills/architecture-review-skill/SKILL.md; fixes: none
+
+- [x] **3.1** Repurpose `tests/test_v2_pipeline_contract.bats` to pin the consolidated entries: retarget the template assertions from the deleted `run-worktree-pipeline-v2` key to `run-worktree-pipeline` (zero-subagent directive, `code-review-inline-skill` / `civiltekk-pr-workflow-skill` / `create route` / `reviewer-baseline-skill` phrases, `subagent:false`); add assertions that BOTH `-v2` keys are absent and that `run-plan` names `plan-execution-inline-skill` as default + carries the opt-in phrase; keep the Docker dead-letter, preset-caveat, preset-membership, and arm-aware preflight tests (preflight grep pins stay valid — 1.1 preserved the phrases).
     — **Why:** the contract test is the drift guard for a template reshaped 3× before; it must pin the new shape or CI green-lies.
     — **Done when:** `bats tests/test_v2_pipeline_contract.bats` passes against the Phase 2 tree; every assertion names an entry that exists; the two sibling SKILL.md bodies (plan-execution-inline-skill, plan-execution-skill) each match a grep for the routing one-liner phrase "explicit user request" (all skill-layer restatements of the 3-condition rule CI-pinned — review Finding 2).
     — **Consumers affected:** CI gate on every PR; future template edits (guarded).
 
-- [ ] **3.2** Sweep the repo for `run-worktree-pipeline-v2` / `run-plan-v2` in live files (exclude `PLANS/`, `CHANGELOG.md`, `.git/`): every hit dispositioned — README and installer preset fixed in Phase 4, historical LEARNINGS bodies left intact with a one-line justification (immutable history), any hit in `opencode_app/` or other configs fixed in place.
+- [x] **3.2** Sweep the repo for `run-worktree-pipeline-v2` / `run-plan-v2` in live files (exclude `PLANS/`, `CHANGELOG.md`, `.git/`): every hit dispositioned — README and installer preset fixed in Phase 4, historical LEARNINGS bodies left intact with a one-line justification (immutable history), any hit in `opencode_app/` or other configs fixed in place.
     — **Why:** stale spellings in live docs teach users the dead command; the sweep is the AC's "no test anywhere pins run-plan-v2" plus its generalization.
     — **Done when:** the grep lists zero live-file hits outside the documented skips.
     — **Consumers affected:** readers of README/preset; future greppers.
@@ -132,3 +135,4 @@ GATE e849424 tier=light lint=t (JSON.parse + deep-equal siblings vs HEAD) typech
 - **Test pins drift from template wording** → 3.1 authored against the exact 2.1 phrases; executor re-runs bats after Phase 2+3.
 - **Live-config surgical edit clobbers permissions** → 5.1 asserts sibling entries byte-unchanged; baseline = `git show origin/main:deploy/opencode.json` for template equality, never the possibly-drifted live copy.
 - **Hand-maintained preset dropped by a careless regen** → 4.2 is surgical string edits; no generator runs.
+GATE 487e8b1 tier=light lint=n.a typecheck=n.a build=n.a unit=t (bats contract 11/11; sweep dispositioned) e2e=n.a
