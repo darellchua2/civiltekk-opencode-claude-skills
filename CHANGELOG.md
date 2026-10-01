@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.14.0](https://github.com/darellchua2/civiltekk-skills/compare/v12.13.0...v12.14.0) (2026-10-01)
+
+### Features
+
+* **skill:** civiltekk-coding-harness-setup-skill for cross-harness parity ([#655](https://github.com/darellchua2/civiltekk-skills/issues/655)) ([4fd5fb9](https://github.com/darellchua2/civiltekk-skills/commit/4fd5fb90550ab9c25a64256510aa7612fd1ec7ca)), closes [#654](https://github.com/darellchua2/civiltekk-skills/issues/654) [#630](https://github.com/darellchua2/civiltekk-skills/issues/630)
+
 ## [12.13.0](https://github.com/darellchua2/civiltekk-skills/compare/v12.12.1...v12.13.0) (2026-10-01)
 
 ### Features
