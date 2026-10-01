@@ -6,11 +6,11 @@
 
 ## Acceptance Criteria
 
-- [ ] README carries an "allowing an installed skill" subsection: deny-all-first mechanics, the `{"action":"skill","resource":"<name>","effect":"allow"}` JSON shape, reconcile-via-`setup.sh` flow, `--skill-profile full` alternative
-- [ ] The section links the two LEARNINGS entries as the deeper checklist
-- [ ] `test_count_drift.bats` derives the skill count + lean length mechanically and asserts README's count literals match both
-- [ ] Negative fixture: a deliberately stale literal fails the new test (the test proves it can fail)
-- [ ] Full guard suite green (52-file bats suite, registry drift check)
+- [x] README carries an "allowing an installed skill" subsection: deny-all-first mechanics, the `{"action":"skill","resource":"<name>","effect":"allow"}` JSON shape, reconcile-via-`setup.sh` flow, `--skill-profile full` alternative
+- [x] The section links the two LEARNINGS entries as the deeper checklist
+- [x] `test_count_drift.bats` derives the skill count + lean length mechanically and asserts README's count literals match both
+- [x] Negative fixture: a deliberately stale literal fails the new test (the test proves it can fail)
+- [x] Full guard suite green (52-file bats suite, registry drift check)
 
 ## Dependency & Consumer Map
 
@@ -45,10 +45,11 @@
 
 ### Phase 3: exit gate
 
-- [ ] **3.1** Run the full gate on the final tree: lint axes (`node --check installer/*.mjs`, `jq . package.json`, tarball guard), build (`node installer/build-registry.mjs --check` — no drift expected: no frontmatter touched), full unit suite (`for f in tests/*.bats`), and the final `grep -n "^- \[ \]"` PLAN residue check.
+- [x] **3.1** Run the full gate on the final tree: lint axes (`node --check installer/*.mjs`, `jq . package.json`, tarball guard), build (`node installer/build-registry.mjs --check` — no drift expected: no frontmatter touched), full unit suite (`for f in tests/*.bats`), and the final `grep -n "^- \[ \]"` PLAN residue check.
     — **Why:** the ticket exit gate runs full unconditionally; this change touches a CI-consumed test file (anchor).
     — **Done when:** all axes green, zero unchecked PLAN boxes; append the `GATE <sha> tier=full` memo for the final implementation SHA.
     — **Consumers affected:** CI; the PR citation.
+    — **Done:** lint axes green (node --check, jq, tarball), registry drift OK (skills=123, zero regen), full 52-file bats suite green; files: none; fixes: none
 
 ## Technical Notes
 
@@ -68,3 +69,5 @@ None. No `blocked-by` refs.
 - **Base moving again mid-run** (third time today) → the pipeline's rebase-re-gate path already proven on #654; reuse it verbatim if 10a blocks.
 
 ## Execution trace
+GATE 95b729d tier=light lint=n.a typecheck=n.a build=- unit=n.a e2e=n.a (Phase 1 — docs-only; no test reads README pre-2.1)
+GATE f5679da tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (52 bats files, registry drift OK — Phase 2 anchor: CI-consumed test file)
