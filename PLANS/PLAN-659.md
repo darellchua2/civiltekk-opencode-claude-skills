@@ -24,10 +24,11 @@
 
 ### Phase 1: README section
 
-- [ ] **1.1** Add a subsection directly under the Skill Profiles block (after the `--skill-profile` command examples and the #481 note, before the next `###` heading): title `#### Installed a skill the primary session can't see?` with: (a) the mechanism (lean deploys a skill deny-all-first allowlist — a skill not in the allow list is invisible to primary sessions even though it is on disk); (b) the per-skill fix — add `{"action": "skill", "resource": "<skill-name>", "effect": "allow"}` to `deploy/opencode.json` `permissions` (keep the shipped file as source of truth) and re-run `./deploy/setup.sh`, ACCEPTING the config copy when prompted (stale allow rules are reconciled only on an accepted copy); (c) the wholesale alternative `./deploy/setup.sh --skill-profile full`; (d) links to `LEARNINGS/patterns/command-referenced-skills-need-deploy-allowlist-entries.md` and `LEARNINGS/conventions/add-skill-deploy-checklist.md` as the deeper checklist. Do NOT alter any existing count literal or the `#481` interim note.
+- [x] **1.1** Add a subsection directly under the Skill Profiles block (after the `--skill-profile` command examples and the #481 note, before the next `###` heading): title `#### Installed a skill the primary session can't see?` with: (a) the mechanism (lean deploys a skill deny-all-first allowlist — a skill not in the allow list is invisible to primary sessions even though it is on disk); (b) the per-skill fix — add `{"action": "skill", "resource": "<skill-name>", "effect": "allow"}` to `deploy/opencode.json` `permissions` (keep the shipped file as source of truth) and re-run `./deploy/setup.sh`, ACCEPTING the config copy when prompted (stale allow rules are reconciled only on an accepted copy); (c) the wholesale alternative `./deploy/setup.sh --skill-profile full`; (d) links to `LEARNINGS/patterns/command-referenced-skills-need-deploy-allowlist-entries.md` and `LEARNINGS/conventions/add-skill-deploy-checklist.md` as the deeper checklist. Do NOT alter any existing count literal or the `#481` interim note.
     — **Why:** the ticket's user-facing gap — installation is documented, the allow step is not; twice-hit incident class with two learnings encoding it.
     — **Done when:** the subsection exists with all four elements; `grep -c "effect\": \"allow\"\|effect.*allow" README.md` gains ≥1 hit in the new block; zero existing count literals changed (`git diff README.md` shows only the new block + its heading); both LEARNINGS link targets exist (`test -f` both).
     — **Consumers affected:** humans; the new drift test reads README (unchanged contexts).
+    — **Done:** subsection added after the #481 note: deny-all-first mechanics, per-skill allow-rule JSON + setup.sh-accept-copy reconcile, --skill-profile full alternative, both LEARNINGS links; diff = +14 lines, zero count literals touched; files: README.md; fixes: none
 
 ### Phase 2: drift-test extension
 
@@ -63,3 +64,5 @@ None. No `blocked-by` refs.
 - **Pinned-phrase drift** (README rewording breaks the helper) → the failure names the phrase; helper comment states the update-in-same-PR contract.
 - **Negative fixture flakiness in CI** (temp-file handling) → mirror the existing `TEST_HOME`/mktemp patterns from `skill_profiles.bats`.
 - **Base moving again mid-run** (third time today) → the pipeline's rebase-re-gate path already proven on #654; reuse it verbatim if 10a blocks.
+
+## Execution trace

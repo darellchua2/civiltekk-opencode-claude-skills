@@ -227,6 +227,20 @@ Default state of every pack is **OFF**. Design history: [issue #268](https://git
 
 > **Interim workaround (#481):** the 4 reviewer agents' 26-skill union is temporarily primary-visible in lean because opencode v2.0.11 ignores agent-frontmatter `skill` allows in child sessions ([upstream anomalyco/opencode#50149](https://github.com/anomalyco/opencode/issues/50149)). This note is the deferral record.
 
+#### Installed a skill the primary session can't see?
+
+Lean deploys carry a **skill deny-all-first allowlist**: every installed skill stays on disk, but the primary session can only invoke a skill that has an explicit allow rule. A freshly `npx … add`-ed skill is therefore on disk yet invisible to the primary session — subagents are profile-immune and keep full access.
+
+Per-skill fix (the shipped file stays the source of truth):
+
+```json
+{ "action": "skill", "resource": "<skill-name>", "effect": "allow" }
+```
+
+Add that rule to `deploy/opencode.json`'s `permissions` array, then re-run `./deploy/setup.sh` and **accept the config copy** when prompted — stale allow rules are reconciled only on an accepted copy (declining keeps your existing config untouched). The wholesale alternative: `./deploy/setup.sh --skill-profile full` ships the allowlist verbatim.
+
+Adding a skill **to this repo** touches five surfaces, not one — the deeper checklist lives in [`LEARNINGS/patterns/command-referenced-skills-need-deploy-allowlist-entries.md`](LEARNINGS/patterns/command-referenced-skills-need-deploy-allowlist-entries.md) and [`LEARNINGS/conventions/add-skill-deploy-checklist.md`](LEARNINGS/conventions/add-skill-deploy-checklist.md).
+
 **Notes:**
 - `filesystem` MCP is **permanently removed** — built-in `read`/`write`/`edit`/`glob`/`grep`/`bash` cover it; a filesystem MCP caused tool-selection ambiguity.
 - Opt-in servers ship **telemetry pre-disabled**: chrome-devtools (`--no-usage-statistics`, `--no-performance-crux`, `--redact-network-headers`, update-check off) and next-devtools (`NEXT_TELEMETRY_DISABLED=1`). The enabled `zai-*` servers send data by design (that is their function); `codegraph` is purely local.
