@@ -30,34 +30,41 @@
 
 ### Phase 1: Router + harness profile side files
 
-- [ ] **1.1** Write `skills/civiltekk-coding-harness-setup-skill/SKILL.md` router: frontmatter (name `civiltekk-coding-harness-setup-skill`, description ≤50 words keeping triggers "set up harness for this repo / harness parity / project harness setup / setup pi, opencode, claude, codex", license Apache-2.0, compatibility opencode, `metadata.harness: "opencode"`, category `Harness Setup`); body = What-I-do one-screen, layer rules as one-liners (skills neutral-first in `.agents/skills/` with refreshed `.claude/skills/` copies; canonical `AGENTS.md` + `CLAUDE.md` `@AGENTS.md` shim with content-bearing-CLAUDE.md conflict surfacing; per-harness config backup-then-merge; MCP per supported harness with pi honestly reported extensions/no-MCP), detection scan table, version detect (`opencode --version` then config-shape fallback), decision tree (zero → ask; one → offer team standard; multiple → parity mode), freshness gate (per-side-file doc URLs, fetch unless version pinned, offline → embedded baseline + disclosure), write rules (create-if-absent, marker-append, backup-then-merge with vendored jq/node deep-merge one-liners), parity-matrix report + revert instructions, side-file load table, ask-mechanism capability-binding block (OpenCode question tool / Claude Code AskUserQuestion / plain-reply fallback)
+- [x] **1.1** Write `skills/civiltekk-coding-harness-setup-skill/SKILL.md` router: frontmatter (name `civiltekk-coding-harness-setup-skill`, description ≤50 words keeping triggers "set up harness for this repo / harness parity / project harness setup / setup pi, opencode, claude, codex", license Apache-2.0, compatibility opencode, `metadata.harness: "opencode"`, category `Harness Setup`); body = What-I-do one-screen, layer rules as one-liners (skills neutral-first in `.agents/skills/` with refreshed `.claude/skills/` copies; canonical `AGENTS.md` + `CLAUDE.md` `@AGENTS.md` shim with content-bearing-CLAUDE.md conflict surfacing; per-harness config backup-then-merge; MCP per supported harness with pi honestly reported extensions/no-MCP), detection scan table, version detect (`opencode --version` then config-shape fallback), decision tree (zero → ask; one → offer team standard; multiple → parity mode), freshness gate (per-side-file doc URLs, fetch unless version pinned, offline → embedded baseline + disclosure), write rules (create-if-absent, marker-append, backup-then-merge with vendored jq/node deep-merge one-liners), parity-matrix report + revert instructions, side-file load table, ask-mechanism capability-binding block (OpenCode question tool / Claude Code AskUserQuestion / plain-reply fallback)
     — **Why:** the router is the skill's contract; every later file and test depends on its shape.
     — **Done when:** file exists, frontmatter parses (registry build in 2.1 warns on nothing), description ≤50 words, no sibling-skill path inside any fenced code block; detection table states case-insensitive filename matching plus an explicit fall-through heuristic (harness-shaped signal not listed → ask, never guess).
     — **Consumers affected:** installer/build-registry.mjs, README (Phase 2).
-- [ ] **1.2** Write `references/harnesses/opencode-v2.md`: project/global skill dirs incl. compat `.claude/skills/` + `.agents/skills/`, opencode.json v2 keys relevant to setup (mcp.servers atomicity rule, agents model pins), verify commands, official doc URLs (opencode.ai/v2/docs/skills, /docs/agents), WHEN+WHAT load rule declared in router table
+    — **Done:** router SKILL.md authored: frontmatter (47-word description, 4 triggers), layer one-liners, detect/ask/load/freshness/write/report steps, gates, governance; files: skills/civiltekk-coding-harness-setup-skill/SKILL.md; fixes: none
+- [x] **1.2** Write `references/harnesses/opencode-v2.md`: project/global skill dirs incl. compat `.claude/skills/` + `.agents/skills/`, opencode.json v2 keys relevant to setup (mcp.servers atomicity rule, agents model pins), verify commands, official doc URLs (opencode.ai/v2/docs/skills, /docs/agents), WHEN+WHAT load rule declared in router table
     — **Why:** opencode v2 is the team's primary harness; its side file carries the atomic-replace MCP semantics the merge rules must honor.
     — **Done when:** every value has a doc citation or verify-locally note; load rule present in router table.
     — **Consumers affected:** router load table (1.1).
-- [ ] **1.3** Write `references/harnesses/opencode-v1.md`: same skeleton for v1 config shape, v1→v2 version-detection markers, prose-only pointer to `opencode-v2-migration-skill` for conversions
+    — **Done:** opencode-v2 profile: dirs incl. compat reads, FULL-entry MCP atomicity, agent-pin safety, version markers, 3 doc URLs; files: references/harnesses/opencode-v2.md; fixes: none
+- [x] **1.3** Write `references/harnesses/opencode-v1.md`: same skeleton for v1 config shape, v1→v2 version-detection markers, prose-only pointer to `opencode-v2-migration-skill` for conversions
     — **Why:** parity must not silently write v2 keys into a v1 install; detection markers make the branch decision checkable.
     — **Done when:** skeleton complete with citations/verify-locally notes; no sibling path in fenced code.
     — **Consumers affected:** router load table (1.1).
-- [ ] **1.4** Write `references/harnesses/pi.md`: `.pi/skills/` + `.agents/skills/` project dirs, AGENTS.md/CLAUDE.md native, settings.json skills array only as override, extensions-not-MCP asymmetry (parity matrix must report it), doc URLs (pi.dev, badlogic/pi-mono skills docs)
+    — **Done:** opencode-v1 profile: v1 skeleton, singular/plural dir verify-locally note, migration-skill prose handoff; files: references/harnesses/opencode-v1.md; fixes: none
+- [x] **1.4** Write `references/harnesses/pi.md`: `.pi/skills/` + `.agents/skills/` project dirs, AGENTS.md/CLAUDE.md native, settings.json skills array only as override, extensions-not-MCP asymmetry (parity matrix must report it), doc URLs (pi.dev, badlogic/pi-mono skills docs)
     — **Why:** pi is the team's second harness and the MCP-asymmetric case the matrix must not lie about.
     — **Done when:** skeleton complete; MCP row explicitly documented as unsupported/extensions-path.
     — **Consumers affected:** router load table (1.1).
-- [ ] **1.5** Write `references/harnesses/claude-code.md`: `.claude/skills/` project dir, `CLAUDE.md` as `@AGENTS.md` import shim + conflict rule, `.mcp.json` syntax, verify commands, doc URLs
+    — **Done:** pi profile: native dirs, AGENTS.md/CLAUDE.md native, extensions-not-MCP asymmetry stated; files: references/harnesses/pi.md; fixes: none
+- [x] **1.5** Write `references/harnesses/claude-code.md`: `.claude/skills/` project dir, `CLAUDE.md` as `@AGENTS.md` import shim + conflict rule, `.mcp.json` syntax, verify commands, doc URLs
     — **Why:** Claude Code is the one harness needing both a skills copy and an instructions shim — the two neutral-first exceptions.
     — **Done when:** skeleton complete; shim procedure and conflict rule stated with verify-locally note on import syntax.
     — **Consumers affected:** router load table (1.1).
-- [ ] **1.6** Write `references/harnesses/codex.md`: `.codex/skills/` + `.agents/skills` REPO scope, AGENTS.md global/root/subdir layering, config.toml `[mcp_servers]` syntax, optional `openai.yaml` note, doc URLs
+    — **Done:** claude-code profile: .claude/skills shim rationale, @AGENTS.md import + conflict rule, .mcp.json; files: references/harnesses/claude-code.md; fixes: none
+- [x] **1.6** Write `references/harnesses/codex.md`: `.codex/skills/` + `.agents/skills` REPO scope, AGENTS.md global/root/subdir layering, config.toml `[mcp_servers]` syntax, optional `openai.yaml` note, doc URLs
     — **Why:** codex reads the neutral skills dir but has its own MCP syntax — a values-only translation case.
     — **Done when:** skeleton complete with citations.
     — **Consumers affected:** router load table (1.1).
-- [ ] **1.7** Write `skills/civiltekk-coding-harness-setup-skill/README.md`: human usage + contribute-a-side-file walkthrough (copy skeleton, add load-table row) — links only, mirrors no router rule
+    — **Done:** codex profile: .agents/skills REPO scope (cwd+parent), AGENTS.md layering, TOML MCP warning, openai.yaml note; files: references/harnesses/codex.md; fixes: none
+- [x] **1.7** Write `skills/civiltekk-coding-harness-setup-skill/README.md`: human usage + contribute-a-side-file walkthrough (copy skeleton, add load-table row) — links only, mirrors no router rule
     — **Why:** extension path for new harnesses must live where humans read, not in the load-weighted router.
     — **Done when:** README contains zero duplicated router rules (link, don't mirror).
     — **Consumers affected:** none (never read at load).
+    — **Done:** skill README: usage, install, add-a-profile walkthrough, links only — zero mirrored router rules; files: README.md (skill dir); fixes: none
 
 ### Phase 2: Registry + deploy/docs sync
 
