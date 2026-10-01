@@ -2001,3 +2001,19 @@
 - **Date**: 2026-09-30
 - **Summary**: Skills named by shipped command templates must appear in the deploy skill allowlist — the catch-all skill deny makes unlisted = unresolvable at runtime (architecture-review-skill was missing; /review-inline + v2 Step 7 broke mid-run on 2026-09-30)
 - **Date**: 2026-10-01
+
+### Commands consolidate to inline-default; subagent arm is explicit opt-in
+
+- **File**: `LEARNINGS/decisions/commands-consolidate-inline-default.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: One command per flow, inline default; the execution-mode fork lives in the skill layer (3-condition subagent opt-in, inline fallback with note); suffixed spellings hard-deleted; opt-in phrase CI-pinned on every restating surface (#656)
+- **Date**: 2026-10-01
+
+### Live-config permissions drift behind the prompt-guarded deploy copy
+
+- **File**: `LEARNINGS/anti-patterns/live-config-permissions-drift-behind-prompt-guard.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Template-added permission entries never reach a customized live config (prompt-guarded copy preserves permissions); surgical deploys must diff+restore the allowlist; a mid-run skill-load denial is a drift signal (#656)
+- **Date**: 2026-10-01

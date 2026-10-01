@@ -8,14 +8,14 @@
 
 From ticket #656 — inherited verbatim; these are the definition of done:
 
-- [ ] `deploy/opencode.json`: `run-worktree-pipeline` carries the inline-default template + arm-selection sentence (`agent: build`, `subagent: false`); `run-plan` routes to the inline executor by default; `run-worktree-pipeline-v2` and `run-plan-v2` keys are deleted
-- [ ] `worktree-pipeline-skill` SKILL.md carries the arm-selection rule (inline default; subagent = explicit request + OpenCode harness + deps resolve, else inline fallback with note) as a portability capability block; preflight checks the inline dep set first and the subagent set only on opt-in
-- [ ] `plan-execution-inline-skill` and `plan-execution-skill` each carry a sibling-routing one-liner with the same 3 conditions
-- [ ] README command table + two-flavors paragraph rewritten: one flavor per flow, inline default, subagent opt-in OpenCode-only
-- [ ] `tests/test_v2_pipeline_contract.bats` repurposed to pin the consolidated entry (inline-default pins, opt-in conditions, both `-v2` keys absent); no test anywhere pins `run-plan-v2`
-- [ ] `installer/presets/pack-inline-workers.json` `-v2` wording updated
-- [ ] `installer/registry.json` regenerated if any SKILL.md description changed
-- [ ] Live `~/.config/opencode/opencode.json` surgically updated (2 command keys updated, 2 v2 keys deleted)
+- [x] `deploy/opencode.json`: `run-worktree-pipeline` carries the inline-default template + arm-selection sentence (`agent: build`, `subagent: false`); `run-plan` routes to the inline executor by default; `run-worktree-pipeline-v2` and `run-plan-v2` keys are deleted
+- [x] `worktree-pipeline-skill` SKILL.md carries the arm-selection rule (inline default; subagent = explicit request + OpenCode harness + deps resolve, else inline fallback with note) as a portability capability block; preflight checks the inline dep set first and the subagent set only on opt-in
+- [x] `plan-execution-inline-skill` and `plan-execution-skill` each carry a sibling-routing one-liner with the same 3 conditions
+- [x] README command table + two-flavors paragraph rewritten: one flavor per flow, inline default, subagent opt-in OpenCode-only
+- [x] `tests/test_v2_pipeline_contract.bats` repurposed to pin the consolidated entry (inline-default pins, opt-in conditions, both `-v2` keys absent); no test anywhere pins `run-plan-v2`
+- [x] `installer/presets/pack-inline-workers.json` `-v2` wording updated
+- [x] `installer/registry.json` regenerated if any SKILL.md description changed
+- [x] Live `~/.config/opencode/opencode.json` surgically updated (2 command keys updated, 2 v2 keys deleted)
 
 ## Dependency & Consumer Map
 
@@ -98,6 +98,7 @@ GATE e849424 tier=light lint=t (JSON.parse + deep-equal siblings vs HEAD) typech
 
 — **Done (4.1):** README updated — both command table rows carry inline-default wording, two-flavors paragraph → "One execution flavor — inline by default" with the opt-in + fallback-note semantics, preset table row + category listing repointed; zero `-v2` spellings remain; files: README.md; fixes: none
 — **Done (4.2):** preset `$comment` + `description` surgically repointed to the inline-default commands; JSON parses; `skills` array untouched; files: installer/presets/pack-inline-workers.json; fixes: none
+— **Done (5.1):** live `~/.config/opencode/opencode.json` surgically updated at its own 2-space indentation (first attempt assumed template indentation — no-op, no write; re-ran adapted): both consolidated entries deep-equal template, both `-v2` keys deleted, command set matches template, sibling entries + mcp deep-equal pre-change baseline, `architecture-review-skill` allow entry restored (allowlist 71, no duplicates — skill load confirmed working in-session); files: ~/.config/opencode/opencode.json (user-space, no repo commit); fixes: none
 — **Done (4.3):** `git diff --stat installer/registry.json` empty — all Phase 1 skill edits verified body-only, no regen needed (justification: registry derives from description frontmatter, which is byte-unchanged); files: none; fixes: none
 
 - [x] **4.1** Update `README.md`: command table (single `/run-worktree-pipeline` + `/run-plan` rows with inline-default descriptions), replace the two-flavors paragraph (~line 24) with the single-flavor contract (inline default everywhere; subagent orchestration OpenCode-only on explicit request), fix the preset table row (~95) and category listing (~274) wording.
@@ -117,7 +118,7 @@ GATE e849424 tier=light lint=t (JSON.parse + deep-equal siblings vs HEAD) typech
 
 ### Phase 5: Live user-space deploy (local mutation — no repo commit)
 
-- [ ] **5.1** Surgically update `~/.config/opencode/opencode.json`: set `commands.run-worktree-pipeline` and `commands.run-plan` to the Phase 2 entries (byte-matching the template), delete both `-v2` keys, preserving every other key including `permissions` customizations. Additionally restore the template-declared skill-allow entries missing from the live allowlist — at minimum `architecture-review-skill` (drift observed during Step 7: template allows it, live 69-entry allowlist does not, skill load got `permission.rejected` — review Finding 1). Verify: file parses; the two keys equal the template entries; the `-v2` keys are gone; sibling entries byte-unchanged; `architecture-review-skill` present in the allowlist.
+- [x] **5.1** Surgically update `~/.config/opencode/opencode.json`: set `commands.run-worktree-pipeline` and `commands.run-plan` to the Phase 2 entries (byte-matching the template), delete both `-v2` keys, preserving every other key including `permissions` customizations. Additionally restore the template-declared skill-allow entries missing from the live allowlist — at minimum `architecture-review-skill` (drift observed during Step 7: template allows it, live 69-entry allowlist does not, skill load got `permission.rejected` — review Finding 1). Verify: file parses; the two keys equal the template entries; the `-v2` keys are gone; sibling entries byte-unchanged; `architecture-review-skill` present in the allowlist.
     — **Why:** the live config is what the next `/run-worktree-pipeline` invocation actually reads; without this, the merge lands only on next full deploy (whose config copy is prompt-guarded — PLAN-613 precedent) — and the prompt-guarded copy also strands every template-added permission entry (Finding 1).
     — **Done when:** the node JSON assertions above all pass against the live file.
     — **Consumers affected:** every command invocation in the user's sessions from now on.
