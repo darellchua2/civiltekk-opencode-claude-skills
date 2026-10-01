@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.15.0](https://github.com/darellchua2/civiltekk-skills/compare/v12.14.0...v12.15.0) (2026-10-01)
+
+### Features
+
+* **commands:** consolidate pipeline and plan commands into inline-default single commands ([#658](https://github.com/darellchua2/civiltekk-skills/issues/658)) ([d0cda4d](https://github.com/darellchua2/civiltekk-skills/commit/d0cda4d6e70cec9cc82a821a99338097409ac850)), closes [#656](https://github.com/darellchua2/civiltekk-skills/issues/656) [#656](https://github.com/darellchua2/civiltekk-skills/issues/656) [#656](https://github.com/darellchua2/civiltekk-skills/issues/656) [#656](https://github.com/darellchua2/civiltekk-skills/issues/656) [#656](https://github.com/darellchua2/civiltekk-skills/issues/656) [#656](https://github.com/darellchua2/civiltekk-skills/issues/656) [#656](https://github.com/darellchua2/civiltekk-skills/issues/656) [#656](https://github.com/darellchua2/civiltekk-skills/issues/656)
+
 ## [12.14.0](https://github.com/darellchua2/civiltekk-skills/compare/v12.13.0...v12.14.0) (2026-10-01)
 
 ### Features
