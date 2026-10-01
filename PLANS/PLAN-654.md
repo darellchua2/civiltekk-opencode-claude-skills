@@ -22,7 +22,8 @@
 | `skills/civiltekk-coding-harness-setup-skill/references/harnesses/*.md` (new, 5 files) | SKILL.md load table | the skill's runtime flow (reader loads per current step); nothing else — repo tooling only reads SKILL.md frontmatter | low |
 | `installer/registry.json` (regenerated) | new SKILL.md frontmatter | `installer/init.mjs` (reads registry only), setup.sh category output (line 4084) | low |
 | `README.md` Skill Categories row (edited) | skill category `Harness Setup` exists in registry | humans; `tests/test_count_drift.bats` (count-sync enforcement) | low |
-| `deploy/setup.sh` / `deploy/setup.ps1` | none expected — counts auto-derive from `category:` frontmatter (setup.sh:441-447; ps1 mirror) | end-user installs | low |
+| `deploy/setup.sh` / `deploy/setup.ps1` | none expected — counts auto-derive from `category:` frontmatter (setup.sh:441-447); setup.ps1 is a parameter forwarder (setup.ps1:109,125) inheriting that logic | end-user installs | low |
+| `deploy/skill-profiles.json` `lean` array | skill frontmatter exists (2.1) | lean-deploy primary sessions (description ~90 tokens each); `tests/test_skill_profiles.bats` | low |
 | `.gitignore` (LEARNINGS negations, pipeline Step 9) | LEARNINGS bodies written during run | git add of learned bodies | low |
 
 ## Implementation Phases
@@ -31,7 +32,7 @@
 
 - [ ] **1.1** Write `skills/civiltekk-coding-harness-setup-skill/SKILL.md` router: frontmatter (name `civiltekk-coding-harness-setup-skill`, description ≤50 words keeping triggers "set up harness for this repo / harness parity / project harness setup / setup pi, opencode, claude, codex", license Apache-2.0, compatibility opencode, `metadata.harness: "opencode"`, category `Harness Setup`); body = What-I-do one-screen, layer rules as one-liners (skills neutral-first in `.agents/skills/` with refreshed `.claude/skills/` copies; canonical `AGENTS.md` + `CLAUDE.md` `@AGENTS.md` shim with content-bearing-CLAUDE.md conflict surfacing; per-harness config backup-then-merge; MCP per supported harness with pi honestly reported extensions/no-MCP), detection scan table, version detect (`opencode --version` then config-shape fallback), decision tree (zero → ask; one → offer team standard; multiple → parity mode), freshness gate (per-side-file doc URLs, fetch unless version pinned, offline → embedded baseline + disclosure), write rules (create-if-absent, marker-append, backup-then-merge with vendored jq/node deep-merge one-liners), parity-matrix report + revert instructions, side-file load table, ask-mechanism capability-binding block (OpenCode question tool / Claude Code AskUserQuestion / plain-reply fallback)
     — **Why:** the router is the skill's contract; every later file and test depends on its shape.
-    — **Done when:** file exists, frontmatter parses (registry build in 2.1 warns on nothing), description ≤50 words, no sibling-skill path inside any fenced code block.
+    — **Done when:** file exists, frontmatter parses (registry build in 2.1 warns on nothing), description ≤50 words, no sibling-skill path inside any fenced code block; detection table states case-insensitive filename matching plus an explicit fall-through heuristic (harness-shaped signal not listed → ask, never guess).
     — **Consumers affected:** installer/build-registry.mjs, README (Phase 2).
 - [ ] **1.2** Write `references/harnesses/opencode-v2.md`: project/global skill dirs incl. compat `.claude/skills/` + `.agents/skills/`, opencode.json v2 keys relevant to setup (mcp.servers atomicity rule, agents model pins), verify commands, official doc URLs (opencode.ai/v2/docs/skills, /docs/agents), WHEN+WHAT load rule declared in router table
     — **Why:** opencode v2 is the team's primary harness; its side file carries the atomic-replace MCP semantics the merge rules must honor.
@@ -64,24 +65,28 @@
     — **Why:** registry.json is the installer's source of truth; an uncommitted regen breaks `npm ci`-style reproducibility and init.mjs.
     — **Done when:** `git diff installer/registry.json` shows exactly one new skill entry; committed.
     — **Consumers affected:** installer/init.mjs, setup.sh category output.
-- [ ] **2.2** Update `README.md` Skill Categories table: add `Harness Setup` row (count 1, the five harness profiles in the description cell)
-    — **Why:** README is the hardcoded category surface (line 271 table); `test_count_drift.bats` enforces README-vs-derived sync.
-    — **Done when:** row added; test_count_drift green in 3.1.
-    — **Consumers affected:** humans; test_count_drift.
-- [ ] **2.3** Verify `deploy/setup.sh` + `deploy/setup.ps1` need no edit (category counts auto-derive from frontmatter per setup.sh:441-447); if any count-drift or help-parity test says otherwise, apply the minimal fix it names
-    — **Why:** the sync table's "update counts" obligation is satisfied structurally; proving no-edit is cheaper than blind edits.
+- [ ] **2.2** Update `README.md`: add the `Harness Setup` row to the Skill Categories table AND sweep every total-count literal to the mechanically derived value (skills total at lines 76 and 259: 121 → 122; primary-visible at line 220: 69 → 70; derive each via `find skills -maxdepth 1 -type d | wc -l` and the lean array length — never hand-count)
+    — **Why:** review finding F1: the count literals at README.md:76/220/259 have no test coverage (`test_count_drift.bats` covers agent counts in setup scripts only), so an unswept literal rots silently.
+    — **Done when:** every count literal in README matches the mechanically derived number (`grep -n "121\|69 " README.md` returns only non-count matches); Harness Setup row present.
+    — **Consumers affected:** humans; test_count_drift (3.1).
+- [ ] **2.3** Verify `deploy/setup.sh` + `deploy/setup.ps1` need no edit: counts auto-derive from `category:` frontmatter (setup.sh:441-447) and setup.ps1 carries no count logic — it forwards `--skill-profile`/`--skills-only` to the shared engine (setup.ps1:109,125); if any count-drift or help-parity test says otherwise, apply the minimal fix it names
+    — **Why:** review finding F2: the mirror claim was asserted, not inspected; naming the actual mechanism (forwarding) makes the no-edit provable rather than assumed.
     — **Done when:** test_count_drift + test_help_parity green with zero setup-script edits, or the named minimal fix applied.
     — **Consumers affected:** end-user installs.
+- [ ] **2.4** Add `civiltekk-coding-harness-setup-skill` to the `lean` array in `deploy/skill-profiles.json` (primary-visible per user decision 2026-10-01; precedent: `opencode-repo-setup-skill` already in lean)
+    — **Why:** requirements gap F5 resolution — the skill is user-invoked interactive setup; invisible-to-primary would defeat its trigger phrases and leave the README:220 literal stale.
+    — **Done when:** lean array length = 70 and contains the skill name; `tests/test_skill_profiles.bats` green in 3.1.
+    — **Consumers affected:** lean-deploy primary sessions (~90 tokens/session); README:220 literal (2.2).
 
 ### Phase 3: Guard tests + smoke detection
 
-- [ ] **3.1** Run guard set: `bats tests/test_skill_isolation.bats tests/test_portability.bats tests/test_count_drift.bats tests/test_requires_skills.bats` — all green
-    — **Why:** these four encode the isolation contract, portability rules 1–2, count sync, and dependency-map invariant the ticket's AC name.
+- [ ] **3.1** Run guard set: `bats tests/test_skill_isolation.bats tests/test_portability.bats tests/test_count_drift.bats tests/test_requires_skills.bats tests/test_skill_profiles.bats` — all green
+    — **Why:** these five encode the isolation contract, portability rules 1–2, count sync, dependency-map invariant, and lean-profile integrity the ticket's AC name.
     — **Done when:** exit 0 on all four files.
     — **Consumers affected:** CI pipeline.
 - [ ] **3.2** Frontmatter gate re-check on the final SKILL.md: name = dir, description word count ≤50 with triggers present, category `Harness Setup`, `metadata.harness "opencode"`
     — **Why:** the description gate is a hard cap the registry build only warns about — it must be checked explicitly.
-    — **Done when:** printed word count ≤50 and grep shows all four trigger phrases.
+    — **Done when:** printed word count ≤50 and `grep -i` shows all four trigger phrases (case-insensitive per the #423/#512 false-green class).
     — **Consumers affected:** registry entry, skill discoverability.
 - [ ] **3.3** Smoke A (multi-harness detection, read-only): run the router's detection + parity-matrix steps against this configurator repo; confirm the matrix reflects actual signals (AGENTS.md, opencode.json, `.claude/` if present, absent `.pi/`, `.agents/`)
     — **Why:** AC requires evidence the decision tree works on a real multi-signal repo without writing anything.
