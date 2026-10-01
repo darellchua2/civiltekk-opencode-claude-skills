@@ -192,6 +192,11 @@
         },
         {
             "action": "skill",
+            "resource": "civiltekk-coding-harness-setup-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
             "resource": "opencode-skills-maintainer-skill",
             "effect": "allow"
         },
