@@ -130,7 +130,7 @@ Load these skills to apply the correct standards and conventions:
 - **version-bump-standard**: The CanvasTekk release standard (dev → uat → main, PR-label-driven versioning, workflow templates, onboarding/audit scripts)
 - **semantic-release-convention**: Single source of truth for commit → PR → merge → release → CI/CD conventions, versioning labels, changelog generation
 - **civiltekk-pr-workflow** (`create` + `merge` routes): PR creation with quality checks and semver labels; post-merge — merge, CI monitoring, auto-fix, JIRA status update, branch cleanup
-- **ticketing-skill**: Full ticket lifecycle on GitHub Issues or JIRA — create, classify/label (incl. semver labels, PR-only), update from commits, close post-merge, ticket-key↔branch plumbing
+- **ticketing-skill**: Full ticket lifecycle on GitHub Issues or JIRA — create, classify/label (incl. semver labels, PR-only), start (in-progress), update from commits, close post-merge, ticket-key↔branch plumbing
 - **changelog-python-cliff**: Generate changelogs via git-cliff with PEP 440 versioning
 - **civiltekk-documentation-sync**: Keep docs synchronized when adding skills/subagents and audit doc drift (counts, PLAN-vs-reality, orphans)
 - **civiltekk-ponytail-audit** (`debt-ledger` route): Harvest `ponytail:` shortcut markers into a debt ledger — ceiling + upgrade trigger per marker, no-trigger rot flags — during repo audits

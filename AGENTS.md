@@ -4,9 +4,9 @@ Repo conventions only. Usage docs (install, deploy commands, file tree, chaining
 
 ## Repository Purpose
 
-Multi-mode OpenCode configurator:
-1. **User-space deploy** — `./deploy/setup.sh` copies config, agents, skills to `~/.config/opencode/`.
-2. **Individual install** — `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>` pulls the named skill/agent plus its declared prerequisites (`dependency-map.json` `requiresSkills` auto-installs them with a notice; `--no-deps` opts out) (shadcn-style copy model). Default target `~/.config/opencode/` (auto-discovered, no config touch); `--project` installs agents/config under `./.opencode/` with skills going to `./.agents/skills/` (Agent Skills standard dir natively discovered by OpenCode and pi; `.opencode/skills/` remains a valid explicit location); `--target claude|both` writes `~/.claude/skills/` (Agent Skills open standard; `--format` is a deprecated alias) and — since #457 — agents to `~/.claude/agents/` with additive `permissions`→`tools`/`disallowedTools` translation + synthesized `name:` (lossy, warned); `--target agents` writes the cross-tool shared `~/.agents/{agents,skills}/` (skills read by Kimi Code and pi, agents read by Kimi Code only — pi has no agents concept; verbatim copies, agents model-unpinned); `agents`/`claude` targets have no project destination — `--project` with them notes and uses the opencode project target (test-pinned behavior, #454/#455); `--target kimi` writes Kimi Code native dirs (`~/.kimi-code/{agents,skills}/` user, `.kimi-code/{agents,skills}/` project) with additive `permissions`→`tools`/`disallowedTools` translation (lossy, warned); `--target kilo` writes Kilo Code native dirs (`~/.config/kilo/agent/` + `~/.kilo/skills/` user, `.kilo/{agents,skills}/` project) with additive `permissions`→`permission`-map translation (lossy, warned); `--target zcode` writes ZCode dirs (`~/.zcode/{agents,skills}/` user only — the ZCode subagents Beta is user-level, so project installs note and use the opencode project target) with additive `permissions`→`tools`/`disallowedTools` translation plus ZCode deviations (lossy, warned: `subagent` rules dropped — ZCode forbids nested subagents; `tools:` omitted for skill-allow agents — ZCode allowlists are exhaustive; `steps:`→`maxTurns:`); `--target copilot` writes agents to `~/.copilot/agents/` (user) and `.claude/agents/` (project — the documented Claude-format workspace agents dir) with claude-translate reuse, and skills to `.github/skills/` (project; `.github/skills` is the documented workspace skills dir). See [issue #304](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/304).
+Multi-mode OpenCode configurator: user-space deploy (`./deploy/setup.sh` → `~/.config/opencode/`) and shadcn-style individual installs (`npx github:darellchua2/civiltekk-opencode-claude-skills add <name>`) with per-skill prerequisites (`installer/dependency-map.json` `requiresSkills`; `--no-deps` opts out).
+
+Install targets (`--project`, `--target claude|agents|kimi|kilo|zcode|copilot`), their destination dirs, and translation caveats live in `README.md` — the usage-docs home (target support: [issue #304](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/304)).
 
 ## Source of Truth
 
@@ -19,11 +19,11 @@ Every skill directory under `skills/` (name suffix or not — e.g. the `gsap-*` 
 - **Cross-skill code duplication is intentional.** Shared helpers are vendored per skill (per-skill copy model), not factored into shared packages. Do not "DRY up" duplicated code across skills by extracting a common module — that is the exact regression this contract bans.
 - **No new shared `_`-prefixed dirs** (e.g. a `skills/_common/`). The former `skills/_common/scripts` engine was vendored into each pptx skill as `scripts/_common/` and the shared dir deleted.
 - **Vendored copies stay in sync**: the three pptx skills' `scripts/_common` trees must remain byte-identical (guard-enforced). Fix a vendored bug once, copy to all three trees, run the guard.
-- **Cross-skill runtime deps are banned by default.** The declared exceptions, all in the guard's allowlist: `pptx-template-modifier-skill → pptx-generate-slide-skill` (#437 — capability split: the modifier extends templates, the slide engine fills), `plan-execution-inline-skill → {testing,linting,responsive-audit}-inline-skill + civiltekk-documentation-inline-skill` (#597 — the inline executor routes its delegate matrix to the inline worker family), and `{autoresearch-code, autoresearch-ml, autoresearch-research}-skill → autoresearch-core-skill` (#602 — the loop skills cite the core protocol host's references at runtime). The guard's `HANDOFF1_OWNER`/`HANDOFF1_TARGETS` + `HANDOFF2_OWNER`/`HANDOFF2_TARGETS` vars (uniform owner → space-separated-targets shape) plus the `HANDOFF3_OWNERS`/`HANDOFF3_TARGETS` multi-owner pair (every owner maps to every target) — mirrored by the `dependency-map.json` `requiresSkills` entries — are the source of truth for the allowlist: a new handoff updates those first, then the SKILL.md prose — or duplicate the code instead.
+- **Cross-skill runtime deps are banned by default.** The declared exceptions, all in the guard's allowlist: `pptx-template-modifier-skill → pptx-generate-slide-skill` (#437 — capability split: the modifier extends templates, the slide engine fills), `plan-execution-inline-skill → {testing,linting,responsive-audit}-inline-skill + civiltekk-documentation-inline-skill` (#597 — the inline executor routes its delegate matrix to the inline worker family), and `{autoresearch-code, autoresearch-ml, autoresearch-research}-skill → autoresearch-core-skill` (#602 — the loop skills cite the core protocol host's references at runtime). The guard's `HANDOFF1_OWNER`/`HANDOFF1_TARGETS` + `HANDOFF2_OWNER`/`HANDOFF2_TARGETS` vars (uniform owner → space-separated-targets shape) plus the `HANDOFF3_OWNERS`/`HANDOFF3_TARGETS` multi-owner pair (every owner maps to every target) — mirrored by the `installer/dependency-map.json` `requiresSkills` entries — are the source of truth for the allowlist: a new handoff updates those first, then the SKILL.md prose — or duplicate the code instead.
 
 ## Secret Masking
 
-Vibeguard masks `.env` secrets in provider-bound traffic via regex patterns (`plugins/vibeguard.config.json`). **OpenCode v2: shipped as a local v2 port (`plugins/opencode-vibeguard-v2.ts`, npm pin removed) — masking is active; the `permissions` deny rules for `*.env` are the second layer.** Behavioral rules: `deploy/.AGENTS.md` §Secret Hygiene. Verification + per-project overlay: `security-audit-skill` (also documents residual risks: `/share` plaintext, no fail-closed, plaintext session DB).
+Vibeguard masks `.env` secrets in provider-bound traffic via regex patterns (`plugins/vibeguard.config.json`). **OpenCode v2: shipped as a local v2 port (`plugins/opencode-vibeguard-v2.ts`, npm pin removed) — masking is active; the `permissions` deny rules for `*.env` are the second layer.** Verification + per-project overlay: `security-audit-skill` (also documents residual risks: `/share` plaintext, no fail-closed, plaintext session DB).
 
 ## Dependency Management
 
@@ -55,7 +55,7 @@ Pick by purpose: correctness-critical → `reasoning`; exploratory → `fast`; d
 
 **Vision fallback:** when native perception is unavailable ("model does not support image input", text-only session), image-analyzer, error-resolver, and uiux-reviewer fall back to the inline bash recipe embedded in `image-analyzer-subagent`, calling the Z.AI vision API directly at `glm-5.3-flash` — the same multimodal model, invoked over raw HTTP instead of the provider binding (coding-plan endpoint preferred, PAAS fallback; requires `ZAI_API_KEY`).
 
-**Resolution precedence (highest wins):** project `.opencode/agent-overrides.json` > global `~/.config/opencode/agent-overrides.json` > project `.opencode/models.json` > global `~/.config/opencode/models.json` > `installer/models.default.json`. Swap provider: `setup.sh --provider <p>`; mix per tier: `setup.sh --mix` (stored in `models.json`, re-resolve with `--models-only`); per-agent pin: global `agent-overrides.json`. Built-ins `explore`→`fast` and `general`→`reasoning` are patched in `opencode.json`, not the tier registry.
+**Resolution precedence (highest wins):** project `.opencode/agent-overrides.json` > global `~/.config/opencode/agent-overrides.json` > project `.opencode/models.json` > global `~/.config/opencode/models.json` > `installer/models.default.json`. Swap provider: `setup.sh --provider <p>`; mix per tier: `setup.sh --mix` (stored in `models.json`, re-resolve with `--models-only`); per-agent pin: global `agent-overrides.json`. Built-ins `explore`→`fast` and `general`→`reasoning` are patched by `deploy/setup.sh` (models written into the deployed `opencode.json` at `deploy/setup.sh:728-743`), not the tier registry.
 
 ## Adding Skills or Subagents — Sync Rules
 
@@ -86,7 +86,7 @@ Skill gating does NOT belong in SKILL.md — it lives in the `permissions` array
 
 **Agents — runtime-read keys:** `description` (required), `steps`, `disabled`, `system` (JSON prompt key; legacy `prompt` auto-translated), `model` (string or `model#variant`), `permissions` (NOT deprecated `tools`; array of `{action,resource,effect}` rules), `mode`, `hidden`, `color`, `request.body.temperature`, `request.body.top_p`. Source files ship no `model:` — tiers inject it at deploy time. `category` is installer-registry-only. Source agent `.md` files ship native v2 frontmatter: `permissions:` rules arrays (order matters — last matching rule wins), no `model:` (tier-injected at deploy); the markdown body is the system prompt.
 
-After ANY frontmatter change: run `node installer/build-registry.mjs` and commit `registry.json`.
+After ANY frontmatter change: run `node installer/build-registry.mjs` and commit `installer/registry.json`.
 
 ### Portability contract
 
@@ -118,11 +118,7 @@ All subagents return (additive signal fields allowed beyond, never replacing):
 
 ## Project Learnings
 
-`LEARNINGS/` is a template in this repo; in target projects, check it before reviewing/planning. Storage: `LEARNINGS/*.md` (the `memory` tool's plugin has no v2 release — pin removed; watch for a v2-compatible `opencode-superlocalmemory`). The manifest is auto-injected per session by the local plugin (ported to the v2 plugin API — active) — see user-level Memory Hygiene.
-
-## Extract-then-Delegate
-
-When a subagent needs domain knowledge, the primary loads the skill, extracts relevant parameters, and passes ONLY those params to the subagent — heavy knowledge stays in the compactable primary context.
+`LEARNINGS/` is a template in this repo; in target projects, check it before reviewing/planning. Storage, the recall/capture procedure, and the auto-inject manifest live in user-level `deploy/.AGENTS.md` §Memory Hygiene.
 
 ## Office Document Extraction Routing
 

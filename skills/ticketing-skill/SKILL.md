@@ -1,10 +1,11 @@
 ---
 name: ticketing-skill
 description: >-
-  Ticket lifecycle for GitHub Issues and JIRA — create, classify/label,
-  update from commits, close (post-merge, idempotent), ticket-key↔branch
-  plumbing. CRUD only: no branches, PLANs, execution. Triggers: any
-  ticket/issue create·label·update·close, bug report, feature request.
+  Ticket lifecycle for GitHub Issues and JIRA — create, start (in-progress),
+  classify/label, update from commits, close (post-merge, idempotent),
+  ticket-key↔branch plumbing. CRUD only: no branches, PLANs, execution.
+  Triggers: any ticket/issue create·start·label·update·close, bug report,
+  feature request.
 license: Apache-2.0
 compatibility: opencode
 category: Git/Workflow
@@ -19,7 +20,7 @@ Consolidates `ticket-creation-skill`, `git-issue-labeler-skill`,
 Ticket CRUD and classification on GitHub Issues or JIRA — nothing else:
 
 1. **Detect Platform** (§Platform Detection) — GitHub or JIRA
-2. **Route the lifecycle op** (§Lifecycle): create · classify/label · update · close · git plumbing
+2. **Route the lifecycle op** (§Lifecycle): create · classify/label · start · update · close · git plumbing
 3. **Load the platform values** (`references/github.md` / `references/jira.md`)
 
 Branch creation, PLAN generation, execution, and release/versioning belong to
@@ -141,6 +142,24 @@ comment a clarification request.
 
 Vocabularies, keyword tables, LABELS arrays, GitHub↔JIRA mappings:
 `references/github.md` §Label vocabulary, `references/jira.md` §Vocabulary.
+
+### Start (execution begins)
+
+When implementation of a ticket begins — the pipeline's worktree-creation
+boundary; `worktree-pipeline-skill` Step 4 is the canonical caller:
+
+1. **Check current status first** — already in-progress or beyond
+   (done-category) → skip the transition. This is the check-first guard,
+   mirroring §Close's transition-once rule.
+2. **Transition** to the in-progress-category target: JIRA per
+   `references/jira.md` §Transitions; **GitHub = no-op with a note** —
+   issues have no status field; close-on-merge rides `Closes #N`.
+3. **Honest state**: a ticket that fails, halts, or stays held mid-run
+   legitimately remains In Progress — work started; never revert it to
+   mask a failure.
+
+Never block the calling workflow on this op (§MCP Availability Guard
+applies — JIRA unavailable → report the transition skipped).
 
 ### Update (commit progress)
 

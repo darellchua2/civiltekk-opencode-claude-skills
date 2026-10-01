@@ -432,6 +432,11 @@
         },
         {
             "action": "skill",
+            "resource": "architecture-review-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
             "resource": "reviewer-baseline-skill",
             "effect": "allow"
         },
@@ -472,7 +477,17 @@
         },
         {
             "action": "skill",
+            "resource": "playwright-responsive-audit-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
             "resource": "plan-execution-inline-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
+            "resource": "code-review-inline-skill",
             "effect": "allow"
         },
         {
@@ -547,8 +562,8 @@
             "subagent": true
         },
         "review-inline": {
-            "description": "Architecture review executed in-session (no subagent): load the deployed architecture-review-subagent definition as your checklist and run the identical workflow in this context. Usage: /review-inline <review target — diff range, files, or PLAN>",
-            "template": "Load the deployed file agents/architecture-review-subagent.md as your checklist IN THIS SESSION for: $ARGUMENTS. Deploy-mode path: CLI ~/.config/opencode/agents/architecture-review-subagent.md; Docker /app/.opencode/agents/architecture-review-subagent.md — if neither resolves, report the review as unavailable and stop. Same workflow, same severity gates, same Return Contract — but in-session: state the review scope before starting and keep findings evidence-backed (file:line).",
+            "description": "Architecture review executed in-session (no subagent): load the skill `architecture-review-skill` (reviewer-baseline-skill first) and run the decision-tree review in this context. Usage: /review-inline <review target — diff range, files, or PLAN>",
+            "template": "Load the skill `architecture-review-skill` (reviewer-baseline-skill first) IN THIS SESSION and review: $ARGUMENTS — the skill owns the decision-tree routing, review axes, blast-radius gate, finding schema, severity rubric, and Return Contract. If it does not resolve, report the review as unavailable and stop. Same severity gates — in-session: state the review scope before starting and keep findings evidence-backed (file:line).",
             "agent": "build",
             "subagent": false
         },
@@ -558,9 +573,15 @@
             "agent": "build"
         },
         "run-worktree-pipeline-v2": {
-            "description": "Worktree pipeline, fully inline — zero subagents end to end: worktree-pipeline-skill with every phase in-session (Step 7 plan review, Step 8 execution via plan-execution-inline-skill, Step 9 code review, Step 10 PR — deployed reviewer agent definitions loaded as checklists, no subagent spawns). Usage: /run-worktree-pipeline-v2 [--dry-run] [base-branch] <ticket-refs...>",
-            "template": "Load the skill `worktree-pipeline-skill` and run it fully for: $ARGUMENTS — spawn NO subagents anywhere in the run. Your cwd stays the session checkout: scope every worktree-scoped operation explicitly (git -C <ticket-repo> for diffs; absolute <root>/<KEY>/ paths for file reads). At Step 7, run each selected reviewer (architecture/uiux) IN-SESSION: load the deployed file agents/<reviewer>-subagent.md as your checklist (deploy-mode path: CLI ~/.config/opencode/agents/<reviewer>-subagent.md; Docker /app/.opencode/agents/<reviewer>-subagent.md — if neither resolves, skip that reviewer with a note per the skill's Step 7 soft-dep rule: never run a review without its checklist, never spawn a subagent in its place), load `reviewer-baseline-skill` first, same severity gates + Return Contract; relay any Requirements Gaps in-session by loading agents/requirements-specialist-subagent.md Mode R the same way (unresolvable → surface the gaps to the user directly and proceed on their answers, per the skill's relay rule). At Step 8, execute `plan-execution-inline-skill` with the explicit PLAN path. At Step 9, load agents/code-review-subagent.md as your in-session checklist (same deploy-mode resolution paths; unresolvable → report the code review as unavailable and stop — Step 9 is the unconditional backstop with no further net) and review the diff yourself — compute git -C <ticket-repo> diff origin/<base>...feat/<KEY> directly, read touched files only at absolute <root>/<KEY>/ paths, write LEARNINGS entries directly, max 2 fix-and-re-review iterations + full re-gate before fix pushes unchanged. At Step 10, load agents/pr-workflow-subagent.md as your in-session checklist (same resolution paths; unresolvable → stop — declared hard dep): create the PR with gh in-session and watch the merge via a background shell poll (gh pr checks --watch), never a subagent.",
+            "description": "Worktree pipeline, fully inline — zero subagents end to end: worktree-pipeline-skill with every phase in-session (Step 7 plan review — architecture via the architecture-review-skill decision tree, Step 8 execution via plan-execution-inline-skill, Step 9 code review via code-review-inline-skill, Step 10 PR via the skill civiltekk-pr-workflow-skill create route, no subagent spawns). Usage: /run-worktree-pipeline-v2 [--dry-run] [base-branch] <ticket-refs...>",
+            "template": "Load the skill `worktree-pipeline-skill` and run it fully for: $ARGUMENTS — spawn NO subagents anywhere in the run. Your cwd stays the session checkout: scope every worktree-scoped operation explicitly (git -C <ticket-repo> for diffs; absolute <root>/<KEY>/ paths for file reads). At Step 7, run each selected reviewer IN-SESSION with `reviewer-baseline-skill` first: ARCHITECTURE review loads the skill `architecture-review-skill` — the decision-tree routing, review axes, blast-radius gate, finding schema, and Return Contract live there (unresolvable → skip that reviewer with a note per the skill's Step 7 soft-dep rule); UI/UX review loads the deployed file agents/uiux-reviewer-subagent.md as your checklist (deploy-mode path: CLI ~/.config/opencode/agents/uiux-reviewer-subagent.md — if it does not resolve, skip that reviewer with a note per the skill's Step 7 soft-dep rule); never run a review without its skill/checklist, never spawn a subagent in its place; relay any Requirements Gaps in-session by loading agents/requirements-specialist-subagent.md Mode R the same way (unresolvable → surface the gaps to the user directly and proceed on their answers, per the skill's relay rule). At Step 8, execute `plan-execution-inline-skill` with the explicit PLAN path. At Step 9, invoke the skill `code-review-inline-skill` for the code review (pass the ticket repo and the diff range `origin/<base>...feat/<KEY>`; the skill owns baseline-first and checklist resolution — unresolvable checklist → it reports the review unavailable and you stop: Step 9 is the unconditional backstop with no further net); max 2 fix-and-re-review iterations + full re-gate before fix pushes unchanged. At Step 10, invoke the skill `civiltekk-pr-workflow-skill` (create route — it owns framework detection, the gate-memo check, the PR body, and the semver label; the skill's pipeline pins apply: PR target `<base>`, the `tier=full` gate-memo citation for the pushed SHA, `Closes <TICKET_ID>` with the `#`; unresolvable → stop — declared hard dep): create the PR with gh in-session and watch the merge via a background shell poll (gh pr checks --watch), never a subagent.",
             "agent": "build",
+            "subagent": false
+        },
+        "worktree-pipeline-preview": {
+            "description": "Plan-mode-safe pipeline preview — read-only walk-through of worktree-pipeline-skill: sync/preflight/dry-run reported in-chat, no worktree, no commits, no pushes, no PRs, no file writes. Usage: /worktree-pipeline-preview [base-branch] <ticket-refs...>",
+            "template": "Load the skill `worktree-pipeline-skill` and run a PREVIEW for: $ARGUMENTS — spawn NO subagents anywhere in the run; if the skill does not resolve or load, report the command as unavailable and stop with the install hint: npx github:darellchua2/civiltekk-opencode-claude-skills add worktree-pipeline-skill. Read-only contract: inspect only (git status/log/diff, gh issue view); no fetch/pull/push, no worktree creation, no branches, no commits, no PRs, no file writes — present the would-be PLAN content in the conversation instead of writing PLANS/. Walk each pipeline step, report what it would do, then stop before Step 8 execution.",
+            "agent": "plan",
             "subagent": false
         }
     },

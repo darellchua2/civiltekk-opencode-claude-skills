@@ -113,8 +113,11 @@ assert len(rules)==1 and rules[0]['effect']=='allow', 'deny rule must flip in pl
   done
 }
 
-@test "deploy_agents_md_references_routing_rule" {
-  grep -q "4-tier routing in repo-root" deploy/.AGENTS.md
+@test "deploy_agents_md_has_no_routing_duplicate" {
+  # deploy/.AGENTS.md was slimmed (e278d2d): the 4-tier routing table's single
+  # home is repo-root AGENTS.md (pinned by agents_md_has_extraction_routing_section).
+  # Guard against the table re-growing in the user-level file.
+  ! grep -q "Office Document Extraction Routing" deploy/.AGENTS.md
 }
 
 # =============================================================================

@@ -17,9 +17,10 @@ category: Git/Workflow
 I run the **full ticket-to-merged-PR pipeline**, one ticket at a time, each in
 its own **git worktree** so the main working tree stays free. I am the
 orchestrator: heavy knowledge lives in the skills/subagents I drive
-(`ticketing-skill` for new tickets, `plan-execution-skill` --gate for
-execution, `pr-workflow-subagent` for the PR) — I own sequencing, PLAN
-authoring, worktree lifecycle, and re-validation.
+(`ticketing-skill` for new tickets, `plan-execution-skill` --gate (v1) or
+`plan-execution-inline-skill` (v2) for execution, `pr-workflow-subagent`
+(v1) or skill `civiltekk-pr-workflow-skill` create route (v2 inline) for the
+PR) — I own sequencing, PLAN authoring, worktree lifecycle, and re-validation.
 
 Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 
@@ -61,14 +62,23 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   and the would-be `feat/<KEY>` branch + worktree names (per repo), then
   stop before Step 2. Read-only: no writes, no branch/worktree/remote
   mutations.
-- **Dependency preflight (per-skill installs)**: hard deps — skill
-  `plan-execution-skill` --gate (Step 8), agents `code-review-subagent`
-  (Step 9) and `pr-workflow-subagent` (Step 10). Any missing → abort
+- **Dependency preflight (per-skill installs, resolved per arm)**: the
+  subagent arm (v1 `/run-worktree-pipeline`) hard-requires skill
+  `plan-execution-skill` --gate (Step 8) and agents `code-review-subagent`
+  (Step 9) + `pr-workflow-subagent` (Step 10). The inline arm
+  (`/run-worktree-pipeline-v2` — its template's "spawn NO subagents"
+  directive marks it) hard-requires skill `plan-execution-inline-skill`
+  (Step 8) + skill `code-review-inline-skill` (Step 9 — the wrapper
+  resolves the deployed `agents/code-review-subagent.md` checklist itself)
+  + skill `civiltekk-pr-workflow-skill` (Step 10, create route), resolved by
+  the skill loader. Any missing dep for the resolved arm → abort
   (`failed`) with the install hint
   `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>`. Soft deps
   degrade with a note: `ticketing-skill` (only for new-work tickets,
   Step 3), `architecture-review-subagent` / `uiux-reviewer-subagent` /
-  `requirements-specialist-subagent` (Step 7 skip-with-note rule).
+  `requirements-specialist-subagent` (Step 7 skip-with-note rule). The
+  inline arm routes architecture review to skill `architecture-review-skill`
+  (reviewer-baseline-skill first) instead of the deployed agent file.
 - **Execution model (pipelined)**: ticket order = authoring order, but only
   **one implementation runs at a time**. The next ticket's implementation
   starts once the active ticket has **created its PR (Step 10a)** — not once
@@ -135,6 +145,15 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    `info/exclude` is not honored by linked worktrees). Never symlink the
    main checkout's `.codegraph/` into the worktree — the index reflects the
    main checkout's branch state and paths (sharing undocumented).
+   **Ticket start transition (worktree exists = work began)**: once the
+   worktree is created, tracker tickets get the `ticketing-skill` §Start
+   transition (check-first idempotent; GitHub issues = no-op with a note —
+   no status field, `Closes #N` covers close-on-merge). The Atlassian §MCP
+   Availability Guard applies — JIRA unavailable → report the transition
+   skipped, never block the run. A ticket that later fails or stays held
+   legitimately remains In Progress (`ticketing-skill` §Start honest-state
+   rule). `--dry-run` and `/worktree-pipeline-preview` stay read-only: they
+   stop before any mutation and never transition.
 5. **Re-validate**: cross-check the ticket description once more against the
    latest `origin/<base>` content **in the worktree**; if stale, update the
    ticket and note deltas before proceeding.
@@ -147,7 +166,9 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    ones only (a selected reviewer absent from this session's agent list →
    skip it with a note; per-skill installs may not carry every reviewer):
    - `architecture-review-subagent` iff the Consumer Map has **cross-module
-     nodes** (a consumer beyond the node itself).
+     nodes** (a consumer beyond the node itself). Inline arm: run the review
+     in-session via skill `architecture-review-skill` (reviewer-baseline-skill
+     first) — the Task-call route below is the v1 arm.
    - `uiux-reviewer-subagent` iff **frontend signal** (tsx/jsx/vue/svelte/css
      files, components/pages/app paths, UI keywords in the diff).
    No proactive requirements review — requirements coverage is
@@ -179,7 +200,9 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    skill defines none of them); the executor commits + pushes per phase and
    writes the gate memo, and the run's last gate — the **ticket exit
    gate** — is full.
-9. **Code review**: `code-review-subagent` has `edit: deny` (bash is allowlisted to read-only git, and its cwd is the session checkout, not the worktree) — **you compute
+9. **Code review** (inline arm: invoke `code-review-inline-skill` — it owns
+   baseline-first, checklist resolution, and the review loop; the remainder
+   of this section describes the subagent arm): `code-review-subagent` has `edit: deny` (bash is allowlisted to read-only git, and its cwd is the session checkout, not the worktree) — **you compute
    the diff** (`git diff origin/<base>...feat/<KEY>` and `--stat`) and embed
    it (file list + hunks) in the Task prompt. Fix findings: severity ≥
    Major mandatory; Minor by judgment. **Re-gate after review fixes**: fix
@@ -190,18 +213,34 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    non-empty `Requirements Gaps` array per Step 7's relay rule before fixing.
    **LEARNINGS capture is yours, not the reviewer's**: reviewers have no
    write access — they return LEARNINGS candidates as report content (a
-   `LEARNINGS candidates:` block). For each candidate, write
+   `LEARNINGS candidates:` block). LEARNINGS writes stay working-tree only
+   through the run — Step 8 phase commits never stage them (canonical
+   rule: `continuous-learning-skill` step 6). For each candidate, write
    `LEARNINGS/<category>/<slug>.md` in the worktree (skip if the file
-   already exists; suffix `-2` on a genuine distinct-entry collision),
-   append its `_index.md` entry, and commit them with the review-fix
-   commit — or a dedicated `chore(learnings)` commit when the review
-   found nothing to fix. Any PLAN re-ticks from review fixes (gate-memo
-   append, Done-line updates) fold into that same review-fix/learnings
-   commit — never their own `docs(plan)` commit.
+   already exists; suffix `-2` on a genuine distinct-entry collision) and
+   append its `_index.md` entry. At end of ticket — after the bounded
+   review loop, before Step 10a — land **one dedicated `chore(learnings)`
+   commit** sweeping every LEARNINGS write of the run (phase-time captures
+   plus review candidates: all bodies + `_index.md`), never folded into a
+   review-fix commit. In repos that ignore `LEARNINGS/**/*.md`, that same
+   commit also appends each new body's `!LEARNINGS/<category>/<slug>.md`
+   negation to `.gitignore` — the add otherwise errors on / silently drops
+   the ignored body file. Any PLAN re-ticks / gate-memo appends from review
+   fixes fold into this same commit — its tree is docs-only and its memo
+   names the gated implementation SHA Step 10a cites; anything code-shaped
+   riding it is a fix commit and takes the re-gate rule. Refresh any
+   tracked `_index.md` entry restating the learnings-timing rule (e.g. the
+   #445 single-writer row) in this same commit.
    **Bounded loop: max 2
    fix-and-re-review iterations** — exhaustion → halt per §Failure Policy.
 10. **PR + merge watching** — split: 10a foreground, 10b background.
-    **10a — PR creation (foreground).** First the **authoritative overlap
+    **10a — PR creation (foreground).** Inline arm: invoke skill
+    `civiltekk-pr-workflow-skill` (create route) — it owns framework
+    detection, the gate-memo check, the PR body, and the semver label; the
+    pipeline pins below (target `<base>`, the `tier=full` memo citation,
+    `Closes <TICKET_ID>`) still apply, and the merge watcher is 10b's
+    background shell (never a subagent); the remainder of this section
+    describes the subagent arm. First the **authoritative overlap
     re-check** (the §6f early leg is advisory only): `comm -12` of
     `git -C <ticket-repo> diff --name-only origin/<base>...feat/<KEY> | sort`
     against each earlier
@@ -239,6 +278,21 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
     §Phase 1 head-class rule); capture the merge
     SHA via `gh pr view -R <owner/name> <num> --json mergeCommit`; report the outcome to the
     main session (merge SHA on success; the failing check names on red).
+    **Red-verdict guard:** a red verdict matches only `statusCheckRollup`
+    conclusions `FAILURE` / `TIMED_OUT` / `CANCELLED` (plus the
+    pending-at-timeout rule below) — `SKIPPED` and `NEUTRAL` are never red
+    (GitHub marks not-applicable jobs `SKIPPED`, so docs-only PRs carry them
+    in the rollup and stay green). A green watch (exit 0) proceeds to merge
+    even when the rollup contains `SKIPPED` entries — exit 0 remains the
+    primary green signal. When the watch exits non-zero with checks
+    reported, classify before declaring red:
+
+    ```bash
+    jq '[.statusCheckRollup[] | select(.conclusion == "FAILURE" or .conclusion == "TIMED_OUT" or .conclusion == "CANCELLED")] | length'
+    ```
+
+    Nonzero count → red; zero → not red — report for manual verdict rather
+    than auto-merge (the green watch, not the count, authorizes merging).
     The `-R <owner/name>` flags are mandatory — the watcher runs
     unattended, so prose scoping rules elsewhere never reach it (session
     repo ≠ ticket repo for `repo/KEY` tickets).

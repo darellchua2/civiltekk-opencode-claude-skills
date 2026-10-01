@@ -2,6 +2,93 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.12.1](https://github.com/darellchua2/civiltekk-skills/compare/v12.12.0...v12.12.1) (2026-10-01)
+
+### Bug Fixes
+
+* **config:** allow architecture-review-skill in the deploy skill allowlist ([3360f57](https://github.com/darellchua2/civiltekk-skills/commit/3360f57f8e4b3fdd8a7caa6df8ba383f9d383dda))
+
+## [12.12.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.11.0...v12.12.0) (2026-09-30)
+
+### Features
+
+* **pipeline:** route v2 Step 10 PR creation through civiltekk-pr-workflow-skill ([#653](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/653)) ([54a6caf](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/54a6caf91099b7fc164347e647f65e83ab74696f)), closes [#652](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/652) [#652](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/652) [#652](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/652)
+
+## [12.11.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.10.0...v12.11.0) (2026-09-29)
+
+### Features
+
+* **skills:** add architecture-review-skill, route v2 arch review to it ([#651](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/651)) ([f392061](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/f392061c3fa05416bcb393c5ee2f0c2da22533b0)), closes [#650](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/650) [#650](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/650) [#650](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/650)
+
+## [12.10.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.9.0...v12.10.0) (2026-09-29)
+
+### Features
+
+* **ticketing:** Start ticket transition — In Progress at worktree creation ([#649](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/649)) ([bf2ecaf](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/bf2ecafc1eb19fcc4c46ea2967b27f78364839fa)), closes [#648](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/648)
+
+## [12.9.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.8.1...v12.9.0) (2026-09-29)
+
+### Features
+
+* **skill:** harden Step 10b merge watcher guard against SKIPPED checks ([#647](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/647)) ([442031a](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/442031a3d4fd9ee9bbbb3d70e9dfdca9c84dd0ab)), closes [#644](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/644) [#644](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/644) [#644](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/644)
+
+### Bug Fixes
+
+* **skills:** audit defects — skill-generalizer YAML, maintainer self-check, REST label fallback ([#645](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/645)) ([#646](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/646)) ([ae1d24d](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/ae1d24d1dc80754d309575aef0b3f39df7e552e5))
+
+## [12.8.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.8.0...v12.8.1) (2026-09-29)
+
+### Bug Fixes
+
+* **skills:** LEARNINGS captures commit at write time and end of ticket ([#643](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/643)) ([60657ed](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/60657edea13123fae8bd39ba2ccce28a341d04bd)), closes [#642](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/642) [#642](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/642) [#642](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/642)
+
+## [12.8.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.7.0...v12.8.0) (2026-09-28)
+
+### Features
+
+* **skill:** code-review-inline-skill + v2 pipeline Step 9 rewiring ([#640](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/640)) ([53ba20d](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/53ba20dd7aab46c21c748297b9aabb781da5456b)), closes [#635](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/635)
+
+## [12.7.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.6.1...v12.7.0) (2026-09-28)
+
+### Features
+
+* **commands:** add plan-mode-safe /worktree-pipeline-preview ([#639](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/639)) ([9e7cc3a](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/9e7cc3a30dc5cce7d953369cab082874bf5d7ff4)), closes [#638](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/638) [#638](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/638)
+
+## [12.6.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.6.0...v12.6.1) (2026-09-28)
+
+### Bug Fixes
+
+* AGENTS.md ([e278d2d](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/e278d2d648545880af10c1f5c4f7128a01451bc8))
+
+### Documentation
+
+* **agents:** drop subagent-first mandate from §Delegation ([#634](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/634)) ([2ff643c](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/2ff643c37961585d8231488af2921aca025ebe78)), closes [#631](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/631)
+* purge stale doc references; minimize AGENTS.md ([#636](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/636)) ([#637](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/637)) ([bec8d8c](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/bec8d8c16256b353dba5f4447b3fcfe62a3fc91e))
+
+## [12.6.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.5.0...v12.6.0) (2026-09-28)
+
+### Features
+
+* **deploy:** activate changed plugin sets via service restart ([#633](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/633)) ([ec99d5e](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/ec99d5e7dc690a50a1c6273decfb64f7a343f07c)), closes [#624](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/624) [#588](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/588)
+
+## [12.5.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.4.0...v12.5.0) (2026-09-28)
+
+### Features
+
+* **pptx:** layout_name first-class targeting — port [#261](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/261) to the post-restructure tree ([#632](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/632)) ([05423a0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/05423a041ac59a3e86967ee2c7618e10d1d5de4c))
+
+## [12.4.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.3.0...v12.4.0) (2026-09-28)
+
+### Features
+
+* **skills:** arm-aware pipeline preflight + v2 contract guard + follow-up sweep ([#627](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/627)) ([b016e8c](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/b016e8ca6f3d703fc1010f0535b82fcf9bfebb89)), closes [#617](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/617)
+
+## [12.3.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.2.1...v12.3.0) (2026-09-28)
+
+### Features
+
+* **plugins:** keep busy sessions alive past the 60-min location TTL ([#624](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/624)) ([#629](https://github.com/darellchua2/civiltekk-opencode-claude-skills/issues/629)) ([d85b6ec](https://github.com/darellchua2/civiltekk-opencode-claude-skills/commit/d85b6ec817078d62fb743f4e6be12096af6e1004))
+
 ## [12.2.1](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.2.0...v12.2.1) (2026-09-28)
 
 ### Bug Fixes

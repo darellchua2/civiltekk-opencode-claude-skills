@@ -1,6 +1,12 @@
 ---
 name: skill-generalizer
-description: Generalize a skill beyond its origin: strip names, parameterize case-local constants, move domain-locked values to opt-in side files, split oversized bodies into load-rule'd routers, enforce ≤50-word descriptions. Use for generalize skill, de-specify skill, make skill generic, skill audit for specificity, skill consistency review, split region-specific rules into reference files.
+description: >-
+  Generalize a skill beyond its origin: strip names, parameterize case-local
+  constants, move domain-locked values to opt-in side files, split oversized
+  bodies into load-rule'd routers, enforce ≤50-word descriptions. Use for
+  generalize skill, de-specify skill, make skill generic, skill audit for
+  specificity, skill consistency review, split region-specific rules into
+  reference files.
 license: Apache-2.0
 compatibility: opencode
 metadata:

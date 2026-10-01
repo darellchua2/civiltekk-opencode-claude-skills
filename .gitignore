@@ -43,6 +43,7 @@ LEARNINGS/**/*.md
 !LEARNINGS/solutions/process-exit-truncates-async-pipe-writes-drain-first.md
 !LEARNINGS/anti-patterns/guard-test-literals-are-plan-consumers.md
 !LEARNINGS/decisions/preset-closure-over-new-requireskills-handoffs.md
+!LEARNINGS/decisions/commands-pin-agent-per-execution-mode.md
 !LEARNINGS/solutions/opencode-v2-commands-agent-subagent-semantics.md
 !LEARNINGS/solutions/commands-model-pins-bypass-tier-resolver.md
 !LEARNINGS/anti-patterns/plan-done-claims-outrun-committed-tree.md
@@ -63,11 +64,17 @@ LEARNINGS/**/*.md
 !LEARNINGS/patterns/advance-on-ship-guard-must-cover-merged-prs.md
 !LEARNINGS/anti-patterns/hold-resume-rules-must-match-parked-state.md
 !LEARNINGS/patterns/background-command-templates-inline-scoping-flags.md
+!LEARNINGS/patterns/statuscheckrollup-skipped-conclusions-not-red.md
 !LEARNINGS/patterns/contracts-adding-rebases-must-state-force-push.md
 !LEARNINGS/anti-patterns/worktree-teardown-leaves-opencode-registry-rows.md
+!LEARNINGS/anti-patterns/embedded-diff-hunks-unverifiable-probe-git-head-first.md
+!LEARNINGS/anti-patterns/amend-after-sed-needs-restage.md
 
 # Generated research-report artifacts (regenerate from docs/opencode-agent-tooling-research-2026-09-24.md)
 docs/OpenCode-Agent-Tooling-Research-2026-09-24.docx
 docs/OpenCode-Agent-Tooling-Research-2026-09-24.interactive.html
 !LEARNINGS/anti-patterns/plan-line-targets-must-clear-frontmatter-boundary.md
 !LEARNINGS/conventions/section-pins-target-heading-anchors.md
+!LEARNINGS/anti-patterns/bats-backtick-phrase-pins-command-substitution.md
+!LEARNINGS/decisions/merged-ticket-plan-edits-bypass-pipeline.md
+!LEARNINGS/patterns/command-referenced-skills-need-deploy-allowlist-entries.md

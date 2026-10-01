@@ -153,3 +153,28 @@ SLIDE_SCHEMAS: Dict[str, Dict[str, Dict[str, Any]]] = {
 
 # Reverse lookup: every slide_type the engine understands.
 VALID_SLIDE_TYPES = tuple(SLIDE_SCHEMAS.keys())
+
+
+def _build_all_field_specs() -> Dict[str, Dict[str, Any]]:
+    """Union of every field spec across the 8 slide types + extended fields.
+
+    GIT-93 Phase 4: used by the validator's generic per-field path for
+    ``layout_name``-targeted slides (unknown slide_type). First-wins on
+    duplicate field names (specs are consistent across types for a given
+    name — e.g. ``title``/``notes``/``body`` are identical everywhere).
+    """
+    specs: Dict[str, Dict[str, Any]] = {}
+    for schema in SLIDE_SCHEMAS.values():
+        for bucket in ("required", "optional"):
+            for name, spec in schema.get(bucket, {}).items():
+                specs.setdefault(name, spec)
+    # Extended fields (multi-slot backfill + layout_name targeting — not in
+    # the per-type schemas but recognized by the engine/backfill pass).
+    specs["layout_name"] = {"type": "string"}
+    specs["body_slots"] = {"type": "array"}
+    specs["image_paths"] = {"type": "array"}
+    specs["title_slots"] = {"type": "array"}
+    return specs
+
+
+ALL_FIELD_SPECS = _build_all_field_specs()

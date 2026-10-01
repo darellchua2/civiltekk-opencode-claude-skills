@@ -15,6 +15,14 @@
 
 ## Entries
 
+### setup.sh repoints the opencode-setup shim to the clone it runs in
+
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/setup-sh-repoint-shim-to-invoking-clone.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: Running `deploy/setup.sh` from an ephemeral pipeline worktree symlinks `~/.local/bin/opencode-setup` to the worktree (`deploy/setup.sh:4731`) — merge cleanup then dangles the user's shim. Always redeploy from the main checkout, post-merge (#631).
+
 ### A `grep -c` in a pipeline's last position only asserts "at least one"
 
 - **Category**: anti-patterns
@@ -263,7 +271,7 @@
 - **File**: `LEARNINGS/decisions/reviewer-learnings-return-as-content.md`
 - **Confidence**: n.a.
 - **Scope**: project
-- **Summary**: Reviewer subagents hold no edit permissions — they emit `LEARNINGS candidates:` blocks (Category/File/Confidence/Scope/Summary/Date) and the pipeline orchestrator writes files, appends _index.md, and commits in the worktree (#445 single-writer rule).
+- **Summary**: Reviewer subagents hold no edit permissions — they emit `LEARNINGS candidates:` blocks (Category/File/Confidence/Scope/Summary/Date) and the pipeline orchestrator writes files, appends _index.md, and lands one end-of-ticket `chore(learnings)` commit in the worktree (#445 single-writer rule; commit timing per `continuous-learning-skill` step 6).
 
 ### v1-to-v2 CLI migration must uninstall before install
 
@@ -594,7 +602,7 @@
 - **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-20 (#448 plan review)
-- **Summary**: Every local plugin that hooks `ctx.tool.hook('execute.before')` becomes a **concurrent writer** on the same `event.input` field, with ordering decided by plugin glob order (an implementation detail, currently alphabetical). `plugins/vibeguard.ts:490-496` registers an unguarded (all-tools) hook that mutates `event.input` **in place** (`restoreDeep`) to unmask `__VG_…__` placeholders before executio
+- **Summary**: Every local plugin that hooks `ctx.tool.hook('execute.before')` becomes a **concurrent writer** on the same `event.input` field, with ordering decided by plugin glob order (an implementation detail, currently alphabetical). `plugins/opencode-vibeguard-v2.ts:504-508` registers an unguarded (all-tools) hook that mutates `event.input` **in place** (`restoreDeep`) to unmask `__VG_…__` placeholders before executio
 
 ### `setup.sh --dry-run` under non-interactive stdin takes the skills-only path — plugin deploy is never previewed
 
@@ -1922,3 +1930,74 @@
 - **Summary**: setup.sh deploys from its own checkout, so a post-worktree-deploy refresh from main silently reverts user-space config; --yes does not flip the overwrite prompt and "✓ Copied" is a status display — verify parity at fix-push time (#613 review)
 - **Date**: 2026-09-27
 - bats-file-level-path-expansion-before-home-swap
+
+- **File**: `LEARNINGS/solutions/disposed-gate-finally-rearm-timer.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: Recursive async sweep timers re-arm via `.finally(schedule)` behind a `disposed` flag — sync re-arm overlaps sweeps; cleanup mid-sweep re-arms a leaked timer otherwise (#624 gate flake)
+- **Date**: 2026-09-28
+
+- **File**: `LEARNINGS/conventions/plugin-stream-death-must-surface.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: Bare `catch {}` around event.subscribe hides abnormal stream death; mirror auto-continue: `if (!controller.signal.aborted) logAlways(..., 'error')` (#624 review WARN)
+- **Date**: 2026-09-28
+
+- **File**: `LEARNINGS/decisions/opencode-v2-location-ttl-same-title-update-touch.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: v2.0.18 refreshes the 60-min location TTL only on durable events; same-title `ctx.session.update` is the keepalive touch — `rename`/`active` absent at 2.0.18, falsy titles regenerate (#624)
+- **File**: `LEARNINGS/anti-patterns/count-pins-hide-in-assertion-strings.md`
+- **Confidence**: 0.8
+- **Scope**: project
+- **Summary**: Pinned counts hide in assertion string literals, not just test names/comments — grep the payloads when bumping, and count gate failures instead of tailing output (#617 review)
+- **Date**: 2026-09-28
+
+- **File**: `LEARNINGS/conventions/skill-profile-membership-four-surface-sync.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Summary**: Profile membership changes touch four surfaces together (shipped allows, profile array, count-pin assertions, README prose) — enumerate deferral chains of lean skills before merging (#617 review)
+- **Date**: 2026-09-28
+
+- **File**: `LEARNINGS/anti-patterns/amend-after-sed-needs-restage.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: A working-tree sed between `git add` and `git commit --amend` commits the stale index — same-second amends are byte-identical no-ops, the SHA silently stays, and the placeholder ships (working-tree grep shows the fixed text because it reads the uncommitted file). Re-stage before amending; verify via `git show HEAD:<file>` (#636)
+- **Date**: 2026-09-28
+
+- **File**: `LEARNINGS/decisions/commands-pin-agent-per-execution-mode.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: State-mutating pipeline commands pin `agent: "build"` (unpinning = plan-mode half-run at first mutating step); read-only preview variants pin `agent: "plan"`; plan-mode value ships as a separate preview command, never by loosening the pin; shipped entries stay model-free (#638)
+- **Date**: 2026-09-28
+
+### statusCheckRollup SKIPPED conclusions are not red
+
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/statuscheckrollup-skipped-conclusions-not-red.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: A merge-watcher red verdict matches only `FAILURE`/`TIMED_OUT`/`CANCELLED` — GitHub marks not-applicable jobs `SKIPPED`, so docs-only PRs roll them up while green and a "not SUCCESS/NEUTRAL = red" guard refuses good merges (#642/#644 evidence, #644)
+- **Date**: 2026-09-29
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/done-when-grep-template-placeholder-false-green.md`
+- **Confidence**: 0.95
+- **Scope**: project
+- **Summary**: A Done-when grep keyed on concrete text that the pre-edit template carries only in placeholder form (`agents/<reviewer>-subagent.md`) can never fail — always confirm the grep returns nonzero on the base tree first; for placeholders, grep the placeholder sentence to 0 plus a positive count of the new reference (#650)
+- **Date**: 2026-09-29
+- **Category**: patterns
+- **File**: `LEARNINGS/patterns/count-guards-close-in-adder-phase.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: End-state count guards (registry totals, doc-count tables, resolver-count tests) go red in any phase that adds the counted entity — pull the registry/doc-count closure steps into the same phase gate window as the addition instead of splitting them across phases (#650, contrast #648 which added nothing)
+- **Date**: 2026-09-29
+- **Summary**: A bats `[[ ]]` phrase pin containing backticks runs the backtick content as command substitution — pin backtick-free substrings (one assertion per fragment) when the template prose quotes skill names (#652)
+- **Date**: 2026-09-30
+- **Category**: anti-patterns
+- **File**: `LEARNINGS/anti-patterns/bats-backtick-phrase-pins-command-substitution.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Summary**: Merged tickets' PLAN edits never route through the worktree pipeline — Step 2's merged-check skips before PLAN work; reconcile stale PLAN content on merged tickets as a direct docs PR against the base branch (#652, canvastekk DA-3151/DA-3152)
+- **Date**: 2026-09-30
+- **Summary**: Skills named by shipped command templates must appear in the deploy skill allowlist — the catch-all skill deny makes unlisted = unresolvable at runtime (architecture-review-skill was missing; /review-inline + v2 Step 7 broke mid-run on 2026-09-30)
+- **Date**: 2026-10-01
