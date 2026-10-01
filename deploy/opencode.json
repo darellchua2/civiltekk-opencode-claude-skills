@@ -432,6 +432,11 @@
         },
         {
             "action": "skill",
+            "resource": "architecture-review-skill",
+            "effect": "allow"
+        },
+        {
+            "action": "skill",
             "resource": "reviewer-baseline-skill",
             "effect": "allow"
         },
