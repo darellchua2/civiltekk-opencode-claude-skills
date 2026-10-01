@@ -96,17 +96,21 @@ GATE e849424 tier=light lint=t (JSON.parse + deep-equal siblings vs HEAD) typech
 
 ### Phase 4: Docs + installer wording (one commit)
 
-- [ ] **4.1** Update `README.md`: command table (single `/run-worktree-pipeline` + `/run-plan` rows with inline-default descriptions), replace the two-flavors paragraph (~line 24) with the single-flavor contract (inline default everywhere; subagent orchestration OpenCode-only on explicit request), fix the preset table row (~95) and category listing (~274) wording.
+— **Done (4.1):** README updated — both command table rows carry inline-default wording, two-flavors paragraph → "One execution flavor — inline by default" with the opt-in + fallback-note semantics, preset table row + category listing repointed; zero `-v2` spellings remain; files: README.md; fixes: none
+— **Done (4.2):** preset `$comment` + `description` surgically repointed to the inline-default commands; JSON parses; `skills` array untouched; files: installer/presets/pack-inline-workers.json; fixes: none
+— **Done (4.3):** `git diff --stat installer/registry.json` empty — all Phase 1 skill edits verified body-only, no regen needed (justification: registry derives from description frontmatter, which is byte-unchanged); files: none; fixes: none
+
+- [x] **4.1** Update `README.md`: command table (single `/run-worktree-pipeline` + `/run-plan` rows with inline-default descriptions), replace the two-flavors paragraph (~line 24) with the single-flavor contract (inline default everywhere; subagent orchestration OpenCode-only on explicit request), fix the preset table row (~95) and category listing (~274) wording.
     — **Why:** README is the usage-docs home; it currently teaches the dead `-v2` commands.
     — **Done when:** no `-v2` command spelling remains in README; the paragraph states default + opt-in + fallback-note semantics.
     — **Consumers affected:** humans; docs-sync audits (counts unchanged — no skills/agents added or removed).
 
-- [ ] **4.2** Update `installer/presets/pack-inline-workers.json` `$comment` + `description`: replace `/run-worktree-pipeline-v2` / `/run-plan-v2` command references with the consolidated inline-default names (e.g. "the /run-worktree-pipeline inline architecture-review route"). Surgical string edits only — the file is hand-maintained and regenerating would drop it.
+- [x] **4.2** Update `installer/presets/pack-inline-workers.json` `$comment` + `description`: replace `/run-worktree-pipeline-v2` / `/run-plan-v2` command references with the consolidated inline-default names (e.g. "the /run-worktree-pipeline inline architecture-review route"). Surgical string edits only — the file is hand-maintained and regenerating would drop it.
     — **Why:** the preset prose names commands that will not exist.
     — **Done when:** both fields parse as JSON and carry no `-v2` spelling; `skills` array byte-unchanged.
     — **Consumers affected:** `installer/init.mjs --preset inline-workers` consumers, preset documentation.
 
-- [ ] **4.3** Registry check: confirm no SKILL.md `description` frontmatter changed in Phase 1 (all edits body-only). If — and only if — any description changed, run `node installer/build-registry.mjs` and commit the regen; otherwise report `installer/registry.json` byte-unchanged with that justification.
+- [x] **4.3** Registry check: confirm no SKILL.md `description` frontmatter changed in Phase 1 (all edits body-only). If — and only if — any description changed, run `node installer/build-registry.mjs` and commit the regen; otherwise report `installer/registry.json` byte-unchanged with that justification.
     — **Why:** the registry derives from frontmatter; body-only edits must not touch it (spurious regens churn the diff).
     — **Done when:** `git diff --stat installer/registry.json` is empty with the body-only justification stated, or the regen is committed alongside the verified frontmatter change.
     — **Consumers affected:** `installer/init.mjs` (reads registry.json), build-registry CI expectations.
@@ -136,3 +140,4 @@ GATE e849424 tier=light lint=t (JSON.parse + deep-equal siblings vs HEAD) typech
 - **Live-config surgical edit clobbers permissions** → 5.1 asserts sibling entries byte-unchanged; baseline = `git show origin/main:deploy/opencode.json` for template equality, never the possibly-drifted live copy.
 - **Hand-maintained preset dropped by a careless regen** → 4.2 is surgical string edits; no generator runs.
 GATE 487e8b1 tier=light lint=n.a typecheck=n.a build=n.a unit=t (bats contract 11/11; sweep dispositioned) e2e=n.a
+GATE 0ac028b tier=full lint=t (JSON.parse preset) typecheck=n.a build=n.a unit=t (bats tests/ 646/646 — full suite, exit-gate tree: Phase 5 is repo-commit-free) e2e=n.a
