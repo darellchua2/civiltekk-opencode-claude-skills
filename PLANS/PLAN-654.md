@@ -6,12 +6,12 @@
 
 ## Acceptance Criteria
 
-- [ ] `skills/civiltekk-coding-harness-setup-skill/` exists: router `SKILL.md` + `references/harnesses/{opencode-v1,opencode-v2,pi,claude-code,codex}.md`
+- [x] `skills/civiltekk-coding-harness-setup-skill/` exists: router `SKILL.md` + `references/harnesses/{opencode-v1,opencode-v2,pi,claude-code,codex}.md`
 - [ ] Router carries: detection scan, version detect (`opencode --version` + config-shape fallback), decision tree (zero → ask; one → offer team standard; multiple → parity mode), freshness gate, backup-then-merge write rules, parity-matrix report + revert instructions
 - [ ] Every side file has a WHEN+WHAT load rule in the router; no preload instruction; values carry citations or verify-locally notes
 - [ ] Frontmatter contract: name = dir, description ≤50 words with triggers, license Apache-2.0, compatibility opencode, `metadata.harness "opencode"`, category Harness Setup
 - [ ] Self-contained: no sibling-skill paths in fenced code; prose-only handoffs; isolation + portability guard tests green
-- [ ] `node installer/build-registry.mjs` run, `installer/registry.json` committed; counts + category updated in `deploy/setup.sh`, `deploy/setup.ps1`, `README.md`
+- [x] `node installer/build-registry.mjs` run, `installer/registry.json` committed; counts + category updated in `deploy/setup.sh`, `deploy/setup.ps1`, `README.md`
 - [ ] Detection smoke-tested on this repo (multi-harness signals) and a scratch repo holding only `.pi/` (single-harness path)
 
 ## Dependency & Consumer Map
@@ -68,22 +68,26 @@
 
 ### Phase 2: Registry + deploy/docs sync
 
-- [ ] **2.1** Run `node installer/build-registry.mjs`; verify `installer/registry.json` gains the skill under category `Harness Setup` with no warnings; commit the regenerated registry
+- [x] **2.1** Run `node installer/build-registry.mjs`; verify `installer/registry.json` gains the skill under category `Harness Setup` with no warnings; commit the regenerated registry
     — **Why:** registry.json is the installer's source of truth; an uncommitted regen breaks `npm ci`-style reproducibility and init.mjs.
     — **Done when:** `git diff installer/registry.json` shows exactly one new skill entry; committed.
     — **Consumers affected:** installer/init.mjs, setup.sh category output.
-- [ ] **2.2** Update `README.md`: add the `Harness Setup` row to the Skill Categories table AND sweep every total-count literal to the mechanically derived value (skills total at lines 76 and 259: 121 → 122; primary-visible at line 220: 69 → 70; derive each via `find skills -maxdepth 1 -type d | wc -l` and the lean array length — never hand-count)
+    — **Done:** build-registry ran clean (no warnings), registry.json +12/-2 with the entry under category Harness Setup, harness=opencode; --check drift guard green; files: installer/registry.json; fixes: none
+- [x] **2.2** Update `README.md`: add the `Harness Setup` row to the Skill Categories table AND sweep every total-count literal to the mechanically derived value (skills total at lines 76 and 259: 121 → 122; primary-visible at line 220: 69 → 70; derive each via `find skills -maxdepth 1 -type d | wc -l` and the lean array length — never hand-count)
     — **Why:** review finding F1: the count literals at README.md:76/220/259 have no test coverage (`test_count_drift.bats` covers agent counts in setup scripts only), so an unswept literal rots silently.
     — **Done when:** every count literal in README matches the mechanically derived number (`grep -n "121\|69 " README.md` returns only non-count matches); Harness Setup row present.
     — **Consumers affected:** humans; test_count_drift (3.1).
-- [ ] **2.3** Verify `deploy/setup.sh` + `deploy/setup.ps1` need no edit: counts auto-derive from `category:` frontmatter (setup.sh:441-447) and setup.ps1 carries no count logic — it forwards `--skill-profile`/`--skills-only` to the shared engine (setup.ps1:109,125); if any count-drift or help-parity test says otherwise, apply the minimal fix it names
+    — **Done:** 6 count literals swept 121->122 (lines 5/76/102/220/259/261), 69->70 primary-visible, Harness Setup row added after OpenCode Meta, #654 history clause; files: README.md; fixes: none
+- [x] **2.3** Verify `deploy/setup.sh` + `deploy/setup.ps1` need no edit: counts auto-derive from `category:` frontmatter (setup.sh:441-447) and setup.ps1 carries no count logic — it forwards `--skill-profile`/`--skills-only` to the shared engine (setup.ps1:109,125); if any count-drift or help-parity test says otherwise, apply the minimal fix it names
     — **Why:** review finding F2: the mirror claim was asserted, not inspected; naming the actual mechanism (forwarding) makes the no-edit provable rather than assumed.
     — **Done when:** test_count_drift + test_help_parity green with zero setup-script edits, or the named minimal fix applied.
     — **Consumers affected:** end-user installs.
-- [ ] **2.4** Add `civiltekk-coding-harness-setup-skill` to the `lean` array in `deploy/skill-profiles.json` (primary-visible per user decision 2026-10-01; precedent: `opencode-repo-setup-skill` already in lean)
+    — **Done:** setup.sh per-category auto-derive confirmed (441-447); setup.ps1 confirmed parameter forwarder (109/125); zero setup-script edits; files: none; fixes: none
+- [x] **2.4** Add `civiltekk-coding-harness-setup-skill` to the `lean` array in `deploy/skill-profiles.json` (primary-visible per user decision 2026-10-01; precedent: `opencode-repo-setup-skill` already in lean)
     — **Why:** requirements gap F5 resolution — the skill is user-invoked interactive setup; invisible-to-primary would defeat its trigger phrases and leave the README:220 literal stale.
     — **Done when:** lean array length = 70 and contains the skill name; `tests/test_skill_profiles.bats` green in 3.1.
     — **Consumers affected:** lean-deploy primary sessions (~90 tokens/session); README:220 literal (2.2).
+    — **Done:** lean array 69->70 with the new skill; SHIPPED ALLOW RULE added to deploy/opencode.json permissions (lean<=allows invariant — gate caught its absence, profile application had failed closed); tests/skill_profiles.bats literals 69->70; files: deploy/skill-profiles.json, deploy/opencode.json, tests/skill_profiles.bats; fixes: allow rule + test literals (1 gate fix)
 
 ### Phase 3: Guard tests + smoke detection
 
@@ -123,3 +127,7 @@ None. No `blocked-by` refs.
 - **Guard false positives** (isolation regex catching path-shaped prose) → sibling skills referenced by name in prose only; all fenced examples use generic or own-skill paths.
 - **Count drift** (README hardcoded table) → 2.2 updates the row; 3.1 runs test_count_drift as the mechanical backstop.
 - **Registry category mismatch** → 2.1 verifies the JSON entry in the same phase that introduces the frontmatter.
+
+## Execution trace
+
+GATE 5a68190 tier=light lint=n.a typecheck=n.a build=- unit=t e2e=n.a (bats test_skill_isolation + test_portability 10/10 exit 0; description 47 words, 4 triggers — Phase 1, docs-only phase)
