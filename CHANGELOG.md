@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.12.1](https://github.com/darellchua2/civiltekk-skills/compare/v12.12.0...v12.12.1) (2026-10-01)
+
+### Bug Fixes
+
+* **config:** allow architecture-review-skill in the deploy skill allowlist ([3360f57](https://github.com/darellchua2/civiltekk-skills/commit/3360f57f8e4b3fdd8a7caa6df8ba383f9d383dda))
+
 ## [12.12.0](https://github.com/darellchua2/civiltekk-opencode-claude-skills/compare/v12.11.0...v12.12.0) (2026-09-30)
 
 ### Features
