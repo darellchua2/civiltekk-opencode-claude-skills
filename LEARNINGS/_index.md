@@ -1999,3 +1999,5 @@
 - **Scope**: project
 - **Summary**: Merged tickets' PLAN edits never route through the worktree pipeline — Step 2's merged-check skips before PLAN work; reconcile stale PLAN content on merged tickets as a direct docs PR against the base branch (#652, canvastekk DA-3151/DA-3152)
 - **Date**: 2026-09-30
+- **Summary**: Skills named by shipped command templates must appear in the deploy skill allowlist — the catch-all skill deny makes unlisted = unresolvable at runtime (architecture-review-skill was missing; /review-inline + v2 Step 7 broke mid-run on 2026-09-30)
+- **Date**: 2026-10-01
