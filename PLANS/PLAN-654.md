@@ -138,3 +138,4 @@ GATE 5a68190 tier=light lint=n.a typecheck=n.a build=- unit=t e2e=n.a (bats test
 
 GATE f0a660b tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (52 bats files green after 1 gate fix: shipped allow rule in deploy/opencode.json + skill_profiles literals 69->70; registry drift OK skills=122; Phase 2)
 GATE 471446b tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (52 bats files green on the review-fixed tree — final implementation SHA; review: 0 BLOCK / 0 WARN / 1 NOTE-fixed)
+GATE 452839c tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (52 bats files green on the rebased tree after #630 landed mid-run — registry skills=123, both allow/lean sets intact; supersedes the 471446b memo which named the pre-rebase SHA)
