@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [12.13.0](https://github.com/darellchua2/civiltekk-skills/compare/v12.12.1...v12.13.0) (2026-10-01)
+
+### Features
+
+* **skills:** add browser-fallback-skill ([#628](https://github.com/darellchua2/civiltekk-skills/issues/628)) ([#630](https://github.com/darellchua2/civiltekk-skills/issues/630)) ([d56643a](https://github.com/darellchua2/civiltekk-skills/commit/d56643a21d3332bcdb3e9dcfde370ebbf8711872))
+
 ## [12.12.1](https://github.com/darellchua2/civiltekk-skills/compare/v12.12.0...v12.12.1) (2026-10-01)
 
 ### Bug Fixes
