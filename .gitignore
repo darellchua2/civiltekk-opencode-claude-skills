@@ -80,3 +80,4 @@ docs/OpenCode-Agent-Tooling-Research-2026-09-24.interactive.html
 !LEARNINGS/patterns/command-referenced-skills-need-deploy-allowlist-entries.md
 !LEARNINGS/anti-patterns/unasserted-sub-silently-noops.md
 !LEARNINGS/conventions/add-skill-deploy-checklist.md
+!LEARNINGS/anti-patterns/documented-cli-behavior-needs-source-verification.md
