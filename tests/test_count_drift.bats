@@ -55,3 +55,44 @@ AGENTS_DIR="agents"
   echo "setup.sh count_skills output: $setup_count" >&3
   [ "$setup_count" = "$actual" ]
 }
+
+# =============================================================================
+# README count literals — derived numbers must match the file (#659)
+# Pinned-phrase contract: each grep anchors its number to a README count
+# context. A PR that rewords one of these phrases updates this list in the
+# same PR — never grep bare numbers (false-green class #423/#512).
+# =============================================================================
+
+readme_count_assert() { # $1 = path to the README under test
+    local readme="$1"
+    local disk lean
+    disk=$(find "$SKILLS_DIR" -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')
+    lean=$(node -e "console.log(require(process.cwd() + '/deploy/skill-profiles.json').lean.length)")
+
+    # skill-total contexts (same derivation as skill_count_matches_disk above)
+    # every check fail-fast: a bare sequence would return only the LAST grep's
+    # status and mask earlier misses (#423/#512 false-green class).
+    grep -qE "\*\*${disk} ready-to-load skills" "$readme" || return 1
+    grep -qE "\+ ${disk} skills\." "$readme" || return 1
+    grep -qE "# ${disk} skill directories" "$readme" || return 1
+    grep -qE "${disk} skills stay on disk" "$readme" || return 1
+    grep -qE "Skill catalog — ${disk} skills by category" "$readme" || return 1
+    grep -qE "Current count: \*\*${disk}\*\*" "$readme" || return 1
+    # primary-visible context (lean array length)
+    grep -qE "\(${lean} primary-visible skills" "$readme" || return 1
+}
+
+@test "readme_skill_total_and_lean_match_derived" {
+    readme_count_assert "README.md"
+}
+
+@test "readme_stale_literal_fails" {
+    # Negative fixture: a corrupted count must fail the helper — proves the
+    # guard can fail (mirrors skill_profiles.bats' phantom-rule fixture).
+    d="$(mktemp -d)"
+    sed -E "s/Current count: \*\*[0-9]+\*\*/Current count: **0**/" README.md > "$d/README.md"
+    grep -q 'Current count: \*\*0\*\*' "$d/README.md"   # corruption landed
+    run readme_count_assert "$d/README.md"
+    [ "$status" -ne 0 ]
+    rm -rf "$d"
+}
