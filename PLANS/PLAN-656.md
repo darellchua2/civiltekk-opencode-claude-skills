@@ -58,17 +58,23 @@ GATE 62da9cb tier=light lint=n.a typecheck=n.a build=n.a unit=t e2e=n.a
 
 ### Phase 2: Command layer — merge + delete (one commit)
 
-- [ ] **2.1** Rewrite `deploy/opencode.json` → `commands.run-worktree-pipeline`: template = the current `run-worktree-pipeline-v2` template body, prefixed with the arm sentence "Run fully INLINE by default per worktree-pipeline-skill §arm selection — subagent orchestration only on explicit user request + OpenCode + deps resolve (unavailable → proceed inline with a prominent note)." Set `subagent: false`; keep `agent: "build"`; update `description` to the single-flavor contract (usage line unchanged).
+— **Done (2.1):** `run-worktree-pipeline` template = arm sentence + full former-v2 template (extracted programmatically — no transcription); `agent: build`, `subagent: false`; description single-flavor; files: deploy/opencode.json; fixes: none
+— **Done (2.2):** `run-plan` template routes inline-default with the 3-condition opt-in to `plan-execution-skill` --gate; `subagent: false`; description keeps /goal-path note; files: deploy/opencode.json; fixes: none
+— **Done (2.3):** both `-v2` keys deleted; commands = [run-plan, create-ticket, run-worktree-pipeline, review-arch, review-inline, worktree-pipeline-preview]; siblings + permissions + mcp deep-equal HEAD; files: deploy/opencode.json; fixes: render() first attempt dropped trailing commas on middle entries → JSON invalid → restored from git and re-ran with comma fix (1 fix, caught by the in-script parse)
+
+GATE e849424 tier=light lint=t (JSON.parse + deep-equal siblings vs HEAD) typecheck=n.a build=n.a unit=stale-until-3.1 (contract test pins deleted v2 key — intentional transition state, PLAN-650 precedent; push deferred to Phase 3 boundary — never push red) e2e=n.a
+
+- [x] **2.1** Rewrite `deploy/opencode.json` → `commands.run-worktree-pipeline`: template = the current `run-worktree-pipeline-v2` template body, prefixed with the arm sentence "Run fully INLINE by default per worktree-pipeline-skill §arm selection — subagent orchestration only on explicit user request + OpenCode + deps resolve (unavailable → proceed inline with a prominent note)." Set `subagent: false`; keep `agent: "build"`; update `description` to the single-flavor contract (usage line unchanged).
     — **Why:** one command, inline default — the ticket's core consolidation; `subagent: false` keeps command execution in-session for the inline arm.
     — **Done when:** template carries "spawn NO subagents anywhere in the run" + all four inline skill names + the arm sentence; `subagent === false`; `agent === "build"`; JSON parses.
     — **Consumers affected:** every pipeline invocation; `tests/test_v2_pipeline_contract.bats` (pins this entry); setup.sh deploys.
 
-- [ ] **2.2** Rewrite `deploy/opencode.json` → `commands.run-plan`: template = "Execute the plan file given as the argument INLINE by default via `plan-execution-inline-skill` (same gate contract): $ARGUMENTS. Route to `plan-execution-skill` --gate (subagent workers) ONLY on explicit user request + OpenCode harness + the skill resolving; otherwise proceed inline with a note." Set `subagent: false`; keep `agent: "build"`; update `description` (keep the /goal-path note).
+- [x] **2.2** Rewrite `deploy/opencode.json` → `commands.run-plan`: template = "Execute the plan file given as the argument INLINE by default via `plan-execution-inline-skill` (same gate contract): $ARGUMENTS. Route to `plan-execution-skill` --gate (subagent workers) ONLY on explicit user request + OpenCode harness + the skill resolving; otherwise proceed inline with a note." Set `subagent: false`; keep `agent: "build"`; update `description` (keep the /goal-path note).
     — **Why:** same consolidation for the plan pair; routing (not skill merge) per ticket decision.
     — **Done when:** template names both executors + the 3-condition opt-in; `subagent === false`; JSON parses.
     — **Consumers affected:** every /run-plan invocation; long-hands-off /goal runs that cite it.
 
-- [ ] **2.3** Delete `commands.run-worktree-pipeline-v2` and `commands.run-plan-v2` from `deploy/opencode.json` (same commit as 2.1–2.2).
+- [x] **2.3** Delete `commands.run-worktree-pipeline-v2` and `commands.run-plan-v2` from `deploy/opencode.json` (same commit as 2.1–2.2).
     — **Why:** hard-delete per ticket decision — the `-v2` spellings are the collision surface; prose mentioning them now resolves to the single inline-default command.
     — **Done when:** neither key exists in the parsed JSON; sibling command entries byte-unchanged.
     — **Consumers affected:** muscle-memory `-v2` invocations (fail loudly in the palette → user retypes the single name), docs and tests updated in Phases 3–4.
