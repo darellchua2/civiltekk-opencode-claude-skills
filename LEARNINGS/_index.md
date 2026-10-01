@@ -2043,3 +2043,10 @@
 - **Scope**: project
 - **Summary**: A dep its step rule classifies skip-with-note must not appear in the preflight hard-abort list — two homes, opposite dispositions, abort wins; hard-list = run-meaningful deps only (#656)
 - **Date**: 2026-10-01
+### Anti-pattern: prose restating CLI behavior ships unverified against the implementing source
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/documented-cli-behavior-needs-source-verification.md`
+- **Confidence**: n.a.
+- **Scope**: project
+- **Summary**: install.md claimed claude `.claude/` as a project destination; `TARGETS` (installer/init.mjs) gives claude no project dirs and `--project --target claude` degrades to opencode dirs with a note — `.claude/agents` is copilot's. Rule: verify every prose CLI-behavior claim by grepping its distinctive token in the implementing source (destination table, flag parser), not the README; PLAN Done-whens for such prose must name the source table, not just the CLI usage header (#657 review).
