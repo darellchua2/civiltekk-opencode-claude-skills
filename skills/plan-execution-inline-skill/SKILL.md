@@ -27,6 +27,12 @@ invocation — neither skill is a trial variant of the other.
 access instead of a fresh subagent window. There is no harness-enforced
 isolation, so the discipline below is advisory — follow it anyway.
 
+**Sibling routing (arm selection):** this skill is the DEFAULT executor for
+`/run-plan` and worktree-pipeline Step 8. The subagent sibling
+`plan-execution-skill` (--gate) runs only on explicit user request + OpenCode
+harness + its deps resolving; any unmet condition → this skill executes the
+plan inline with a note (never abort).
+
 ## Shared PLAN contract
 
 Identical to `plan-execution-skill` — parse the same structure:

@@ -18,6 +18,12 @@ category: Git/Workflow
 
 I execute PLAN.md files phase-by-phase in one of three modes. Pick the mode from the invocation:
 
+**Sibling routing (arm selection):** this skill is the OPT-IN executor — it
+runs only on explicit user request + OpenCode harness + its deps resolving
+(the subagent arm of `/run-plan` and worktree-pipeline Step 8); otherwise
+`plan-execution-inline-skill` executes the same plan inline (same gate
+contract).
+
 ## Modes
 
 **This Modes section supersedes any other session-shape framing elsewhere in this document.**

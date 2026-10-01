@@ -17,10 +17,11 @@ category: Git/Workflow
 I run the **full ticket-to-merged-PR pipeline**, one ticket at a time, each in
 its own **git worktree** so the main working tree stays free. I am the
 orchestrator: heavy knowledge lives in the skills/subagents I drive
-(`ticketing-skill` for new tickets, `plan-execution-skill` --gate (v1) or
-`plan-execution-inline-skill` (v2) for execution, `pr-workflow-subagent`
-(v1) or skill `civiltekk-pr-workflow-skill` create route (v2 inline) for the
-PR) — I own sequencing, PLAN authoring, worktree lifecycle, and re-validation.
+(`ticketing-skill` for new tickets, `plan-execution-inline-skill` by
+default (`plan-execution-skill` --gate on explicit subagent opt-in) for
+execution, skill `civiltekk-pr-workflow-skill` create route by default
+(`pr-workflow-subagent` on the opt-in subagent arm) for the PR) — I own
+sequencing, PLAN authoring, worktree lifecycle, and re-validation.
 
 Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
 
@@ -62,18 +63,31 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   and the would-be `feat/<KEY>` branch + worktree names (per repo), then
   stop before Step 2. Read-only: no writes, no branch/worktree/remote
   mutations.
+- **Arm selection (default inline — capability binding per AGENTS.md
+  §Portability contract)**: every invocation runs the **inline arm** —
+  fully in-session, zero subagents — unless the **subagent arm is opted
+  in**, which requires ALL three: (1) the user explicitly requested
+  subagent orchestration, (2) the harness is OpenCode, (3) the subagent
+  deps resolve (preflight below). Any unmet condition → run inline with a
+  prominent note (requested-but-unavailable → say so and proceed inline;
+  never abort on a subagent-arm miss once the inline deps resolve).
+  - OpenCode: subagent tool + deployed agents — opt-in only
+  - Claude Code: subagents not wired for this skill — inline always
+  - Other/none: inline always
 - **Dependency preflight (per-skill installs, resolved per arm)**: the
-  subagent arm (v1 `/run-worktree-pipeline`) hard-requires skill
-  `plan-execution-skill` --gate (Step 8) and agents `code-review-subagent`
-  (Step 9) + `pr-workflow-subagent` (Step 10). The inline arm
-  (`/run-worktree-pipeline-v2` — its template's "spawn NO subagents"
-  directive marks it) hard-requires skill `plan-execution-inline-skill`
-  (Step 8) + skill `code-review-inline-skill` (Step 9 — the wrapper
-  resolves the deployed `agents/code-review-subagent.md` checklist itself)
-  + skill `civiltekk-pr-workflow-skill` (Step 10, create route), resolved by
-  the skill loader. Any missing dep for the resolved arm → abort
-  (`failed`) with the install hint
-  `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>`. Soft deps
+  inline arm (the default) hard-requires skill
+  `plan-execution-inline-skill` (Step 8) + skill `code-review-inline-skill`
+  (Step 9 — the wrapper resolves the deployed `agents/code-review-subagent.md`
+  checklist itself) + skill `civiltekk-pr-workflow-skill` (Step 10, create
+  route) + `architecture-review-skill` (Step 7 review,
+  `reviewer-baseline-skill` first), resolved by the skill loader. The
+  opt-in subagent arm hard-requires skill `plan-execution-skill` --gate
+  (Step 8) and agents `code-review-subagent` (Step 9) +
+  `pr-workflow-subagent` (Step 10). Any missing dep for the arm actually
+  running → abort (`failed`) with the install hint
+  `npx github:darellchua2/civiltekk-opencode-claude-skills add <name>`
+  (sole exception: the opted-in subagent arm with unresolvable deps falls
+  back inline per the arm-selection rule). Soft deps
   degrade with a note: `ticketing-skill` (only for new-work tickets,
   Step 3), `architecture-review-subagent` / `uiux-reviewer-subagent` /
   `requirements-specialist-subagent` (Step 7 skip-with-note rule). The
@@ -99,7 +113,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   (push `--force-with-lease` after a resume rebase). Contrast: 6f/10a
   overlap holds park AFTER PLAN authoring, so their resume continues at
   Step 7 / 10a. Tickets still held when nothing else is runnable are
-  reported deferred at run end, not failed. (No tracker link traversal in v1 —
+  reported deferred at run end, not failed. (No tracker link traversal —
   body text only.)
 
 ## Steps 2-10 — per ticket (in order)
@@ -166,9 +180,10 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    ones only (a selected reviewer absent from this session's agent list →
    skip it with a note; per-skill installs may not carry every reviewer):
    - `architecture-review-subagent` iff the Consumer Map has **cross-module
-     nodes** (a consumer beyond the node itself). Inline arm: run the review
-     in-session via skill `architecture-review-skill` (reviewer-baseline-skill
-     first) — the Task-call route below is the v1 arm.
+     nodes** (a consumer beyond the node itself). Default (inline arm): run
+     the review in-session via skill `architecture-review-skill`
+     (reviewer-baseline-skill first) — the Task-call route below is the
+     opt-in subagent arm.
    - `uiux-reviewer-subagent` iff **frontend signal** (tsx/jsx/vue/svelte/css
      files, components/pages/app paths, UI keywords in the diff).
    No proactive requirements review — requirements coverage is
@@ -190,9 +205,10 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    mismatch (nothing measurable exists yet). Apply findings to the
    PLAN; re-review only when findings were structural. Zero selected
    reviewers → skip delegation entirely.
-8. **Execute**: run `/run-plan PLANS/PLAN-${KEY}.md`
-   (`plan-execution-skill` --gate) **inside the worktree** — always pass the
-   explicit PLAN path, never rely on branch-name auto-detect. Plan review
+8. **Execute**: run `plan-execution-inline-skill` with
+   `PLANS/PLAN-${KEY}.md` **inside the worktree** — always pass the explicit
+   PLAN path, never rely on branch-name auto-detect (opt-in subagent arm:
+   `plan-execution-skill` --gate with the same explicit path). Plan review
    happened upstream in Step 7 — the executor must not re-review. Gate
    sequence, tier selection (light default per phase; full per
    `verification-loop-skill` §Tiered gating), pass semantics, and memo
@@ -200,9 +216,9 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    skill defines none of them); the executor commits + pushes per phase and
    writes the gate memo, and the run's last gate — the **ticket exit
    gate** — is full.
-9. **Code review** (inline arm: invoke `code-review-inline-skill` — it owns
+9. **Code review** (default — inline arm: invoke `code-review-inline-skill`; it owns
    baseline-first, checklist resolution, and the review loop; the remainder
-   of this section describes the subagent arm): `code-review-subagent` has `edit: deny` (bash is allowlisted to read-only git, and its cwd is the session checkout, not the worktree) — **you compute
+   of this section describes the opt-in subagent arm): `code-review-subagent` has `edit: deny` (bash is allowlisted to read-only git, and its cwd is the session checkout, not the worktree) — **you compute
    the diff** (`git diff origin/<base>...feat/<KEY>` and `--stat`) and embed
    it (file list + hunks) in the Task prompt. Fix findings: severity ≥
    Major mandatory; Minor by judgment. **Re-gate after review fixes**: fix
@@ -234,7 +250,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
    **Bounded loop: max 2
    fix-and-re-review iterations** — exhaustion → halt per §Failure Policy.
 10. **PR + merge watching** — split: 10a foreground, 10b background.
-    **10a — PR creation (foreground).** Inline arm: invoke skill
+    **10a — PR creation (foreground).** Default (inline arm): invoke skill
     `civiltekk-pr-workflow-skill` (create route) — it owns framework
     detection, the gate-memo check, the PR body, and the semver label; the
     pipeline pins below (target `<base>`, the `tier=full` memo citation,
