@@ -6,13 +6,13 @@
 
 ## Acceptance Criteria
 
-- [ ] `skills/civiltekk-install-assistant/` — router SKILL.md + `references/{find,install,maintain}.md`, frontmatter house-contract conformant, all files inside the skill dir
-- [ ] find route resolves catalog via installer read modes (`--list agents|skills|categories`, `--describe`, `--expand`, in-repo `node installer/init.mjs` shortcut), ranks matches by intent
-- [ ] install route: dry-run before every write, `--no-deps` explicit-only, consent before global, post-install file verification
-- [ ] maintain route: `update`, `update --prune`, `remove` with honest state reporting
-- [ ] AGENTS.md wire-up is append-only with conflict detection; `deploy/.AGENTS.md` gains exactly one additive section
-- [ ] `installer/registry.json` regenerated (skills 123→124) and staged; README counts + category row updated consistently (all six surfaces + changelog chain)
-- [ ] `tests/test_skill_isolation.bats` passes (plus registry-vs-disk suites green)
+- [x] `skills/civiltekk-install-assistant/` — router SKILL.md + `references/{find,install,maintain}.md`, frontmatter house-contract conformant, all files inside the skill dir
+- [x] find route resolves catalog via installer read modes (`--list agents|skills|categories`, `--describe`, `--expand`, in-repo `node installer/init.mjs` shortcut), ranks matches by intent
+- [x] install route: dry-run before every write, `--no-deps` explicit-only, consent before global, post-install file verification
+- [x] maintain route: `update`, `update --prune`, `remove` with honest state reporting
+- [x] AGENTS.md wire-up is append-only with conflict detection; `deploy/.AGENTS.md` gains exactly one additive section
+- [x] `installer/registry.json` regenerated (skills 123→124) and staged; README counts + category row updated consistently (all six surfaces + changelog chain)
+- [x] `tests/test_skill_isolation.bats` passes (plus registry-vs-disk suites green)
 
 ## Dependency & Consumer Map
 
@@ -77,21 +77,24 @@ _Every step MUST be atomic and carry rationale. Reject any step missing a "Why".
 
 ### Phase 3: Global AGENTS.md enforcement (additive only)
 
-- [ ] **3.1** Append one `## Skill & Agent Installation` section to `deploy/.AGENTS.md` — 3-line router (user-scope installs and updates route through `civiltekk-install-assistant` when present; search the catalog before authoring; never hand-edit installed copies), procedure stays in the skill (pointer-only, drift-proof)
+- [x] **3.1** Append one `## Skill & Agent Installation` section to `deploy/.AGENTS.md` — 3-line router (user-scope installs and updates route through `civiltekk-install-assistant` when present; search the catalog before authoring; never hand-edit installed copies), procedure stays in the skill (pointer-only, drift-proof)
     — **Why:** global enforcement surface for user-scope installs; ticket scope requires exactly one additive section with zero modification of existing content
     — **Done when:** `git diff main...HEAD -- deploy/.AGENTS.md` shows only appended lines at end-of-file (no context-line rewrites); section is ≤4 lines of prose
     — **Consumers affected:** `~/.config/opencode/AGENTS.md` on next deploy; all deployed sessions
+    — **Done:** Section appended after Memory Hygiene: 3 pointer-only prose lines + heading; diff proves append-only (zero removed lines), no existing content touched; files: deploy/.AGENTS.md; fixes: none
 
 ### Phase 4: Verification gates (no product edits — evidence only)
 
-- [ ] **4.1** Run `tests/test_skill_isolation.bats` (isolation contract: no `_common` refs, no path escapes, vendored-copy drift) and the registry-vs-disk suites (`tests/init.bats`, `tests/deploy_delegate.bats`) — all green
+- [x] **4.1** Run `tests/test_skill_isolation.bats` (isolation contract: no `_common` refs, no path escapes, vendored-copy drift) and the registry-vs-disk suites (`tests/init.bats`, `tests/deploy_delegate.bats`) — all green
     — **Why:** mechanical enforcement of the two contracts this ticket touches (skill isolation; registry-sync-per-commit)
     — **Done when:** all three bats files exit 0
     — **Consumers affected:** CI parity
-- [ ] **4.2** Number+verb sweep proving surface completeness: `grep -rnE "123 (ready-to-load|skills?|skill director|by category)|Current count: \*\*123\*\*" README.md deploy/setup.sh deploy/setup.ps1 opencode_app/README.md` → empty; `grep -c "civiltekk-install-assistant" README.md deploy/.AGENTS.md installer/registry.json` → ≥1 each; confirm `git diff main...HEAD --stat` touches only mapped files
+    — **Done:** test_skill_isolation.bats + init.bats + deploy_delegate.bats green (56 named tests ok, 0 fail) inside the full suite 642/642; fixes: none
+- [x] **4.2** Number+verb sweep proving surface completeness: `grep -rnE "123 (ready-to-load|skills?|skill director|by category)|Current count: \*\*123\*\*" README.md deploy/setup.sh deploy/setup.ps1 opencode_app/README.md` → empty; `grep -c "civiltekk-install-assistant" README.md deploy/.AGENTS.md installer/registry.json` → ≥1 each; confirm `git diff main...HEAD --stat` touches only mapped files
     — **Why:** the blast-radius pattern's verification form — proves both failure classes (name-keyed and number-keyed) are clean and the diff matches the consumer map
     — **Done when:** sweep greps return expected results; diff file list == consumer-map first column minus the no-edit rows
     — **Consumers affected:** reviewers (Step 9 diff scope)
+    — **Done:** Number+verb sweep clean across README.md/deploy/setup.sh/deploy/setup.ps1/opencode_app/README.md (surfaced the 5th surface README:220 at Phase 1, fixed there); name-grep >=1 in README.md + deploy/.AGENTS.md + registry.json; diff file list == consumer map (7 tracked files, no-edit rows proven); fixes: none
 
 ## Technical Notes
 
@@ -113,3 +116,8 @@ None — standalone ticket (no `blocked-by:`).
 | Frontmatter contract violation breaking the indexer | build-registry regen (1.5) fails loudly on malformed frontmatter — treated as a Phase 1 gate, not an afterthought |
 | AGENTS.md edit leaking beyond append | 3.1 Done-when requires append-only diff; install route's wire-up block (1.3) carries the same rule for runtime use |
 | Skill name/flag drift vs installer reality | 1.2 Done-when requires every command verified against `installer/init.mjs:11-26` |
+
+## Trace
+
+GATE a1e8011 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (Phase 1 evidence: full suite 642/642 after 1 gate-fix round — Phase 2 doc edits pulled in; registry regen skills=124; full tier: cross-module Consumer Map node registry.json + count anchors)
+GATE ba95831 tier=full lint=t typecheck=n.a build=t unit=t e2e=n.a (ticket exit gate, run on the phase-3 tree before its commit; bats 642/642 exit 0; registry skills=124 idempotent; sweep clean incl. 5th count surface README:220; AC1-AC7 PASS)
