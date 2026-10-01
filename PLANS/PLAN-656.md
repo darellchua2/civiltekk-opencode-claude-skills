@@ -142,3 +142,5 @@ GATE e849424 tier=light lint=t (JSON.parse + deep-equal siblings vs HEAD) typech
 - **Hand-maintained preset dropped by a careless regen** → 4.2 is surgical string edits; no generator runs.
 GATE 487e8b1 tier=light lint=n.a typecheck=n.a build=n.a unit=t (bats contract 11/11; sweep dispositioned) e2e=n.a
 GATE 0ac028b tier=full lint=t (JSON.parse preset) typecheck=n.a build=n.a unit=t (bats tests/ 646/646 — full suite, exit-gate tree: Phase 5 is repo-commit-free) e2e=n.a
+
+GATE bd1863f tier=full lint=n.a typecheck=n.a build=n.a unit=t (bats tests/ full re-gate after Step 9 review fix — architecture-review-skill restored to soft-dep semantics) e2e=n.a

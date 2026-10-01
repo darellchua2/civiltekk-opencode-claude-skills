@@ -79,8 +79,7 @@ Usage: `/run-worktree-pipeline [--dry-run] [base-branch] <ticket-refs...>`
   `plan-execution-inline-skill` (Step 8) + skill `code-review-inline-skill`
   (Step 9 — the wrapper resolves the deployed `agents/code-review-subagent.md`
   checklist itself) + skill `civiltekk-pr-workflow-skill` (Step 10, create
-  route) + `architecture-review-skill` (Step 7 review,
-  `reviewer-baseline-skill` first), resolved by the skill loader. The
+  route), resolved by the skill loader. The
   opt-in subagent arm hard-requires skill `plan-execution-skill` --gate
   (Step 8) and agents `code-review-subagent` (Step 9) +
   `pr-workflow-subagent` (Step 10). Any missing dep for the arm actually
