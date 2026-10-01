@@ -55,6 +55,15 @@
 - **Scope**: project
 - **Summary**: Copy CI's setup lines (PATH export, env) into runnable doc snippets — bats lives off-PATH at tests/lib/bats-core/bin; bare `bats` fails on clean machines (#539).
 
+### Add-a-skill deploy completion set
+
+- **Category**: convention
+- **File**: `LEARNINGS/conventions/add-skill-deploy-checklist.md`
+- **Confidence**: 0.9
+- **Scope**: project
+- **Date**: 2026-10-01
+- **Summary**: One new skill touches five surfaces: skill tree, registry.json regen, deploy/opencode.json allow rule (lean MUST be a subset — apply-skill-profile fails closed without it), skill-profiles.json lean + its count literal, README counts + category row. #654's gate caught the missing allow as 7 test failures.
+
 ### Tracked LEARNINGS entries need gitignore negations
 
 - **Category**: conventions
@@ -626,10 +635,19 @@
 
 - **Category**: anti-pattern
 - **File**: `LEARNINGS/anti-patterns/dangling-cross-reference-in-ac.md`
-- **Confidence**: 0.8
+- **Confidence**: 0.85
 - **Scope**: project
 - **Date**: 2026-09-20
 - **Summary**: PLAN-470's AC delegated full/quick/single-step step lists to "the table in Technical Notes" — no such table existed (Technical Notes held only a criticality list). Per-step atomicity checks (Why/Done-when/Consumers all present) passed while the AC pointed at a nonexistent artifact, leaving pin authoring (1.6) with unspecified expected values.
+
+### Anti-pattern: unasserted substitution silently no-ops then gets claimed done
+
+- **Category**: anti-pattern
+- **File**: `LEARNINGS/anti-patterns/unasserted-sub-silently-noops.md`
+- **Confidence**: 0.85
+- **Scope**: project
+- **Date**: 2026-10-01
+- **Summary**: A scripted substitution matched nothing (pattern `)\n` vs text `).\n`), the Done line claimed the edit anyway, and only diff review caught it. Assert substitutions by post-write marker check; Done lines claim only read-back-confirmed work.
 
 ### Delta derived from a single surface duplicates entries in the other
 

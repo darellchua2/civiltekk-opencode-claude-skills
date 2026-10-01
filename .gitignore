@@ -78,3 +78,5 @@ docs/OpenCode-Agent-Tooling-Research-2026-09-24.interactive.html
 !LEARNINGS/anti-patterns/bats-backtick-phrase-pins-command-substitution.md
 !LEARNINGS/decisions/merged-ticket-plan-edits-bypass-pipeline.md
 !LEARNINGS/patterns/command-referenced-skills-need-deploy-allowlist-entries.md
+!LEARNINGS/anti-patterns/unasserted-sub-silently-noops.md
+!LEARNINGS/conventions/add-skill-deploy-checklist.md
